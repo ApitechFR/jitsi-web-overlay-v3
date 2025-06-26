@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <title>WebConférence de l'État</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="WebConférence de l'État" />
+    <meta name="author" content="GMCD MTES" />
+  </head>
+  <body>
+    <header>
+      <p>Bonjour,</p>
+      <p>
+        Vous avez effectué une demande de création de la conférence <i>{{roomName}}</i> sur notre
+        site.
+      </p>
+    </header>
+    <main>
+      <p>Voici les liens pour accéder à la conférence :</p>
+      <p
+        style="
+          overflow-wrap: break-word;
+          margin: 10px;
+          color: black;
+          background-color: white;
+          border-radius: 2px;
+          font-weight: bold;
+        "
+      >
+        Lien modérateur (Valable pendant {{expireHours}} heure(s)) :
+        <br />
+        <small>Ce lien vous permet de contrôler le fonctionnement de votre conférence.</small>
+        <br />
+        <a href="{{jwtConferenceLink}}">{{jwtConferenceLink}}</a>
+      </p>
+      <p
+        style="
+          margin: 10px;
+          color: black;
+          background-color: white;
+          border-radius: 2px;
+          font-weight: bold;
+        "
+      >
+        Lien invité :
+        <br />
+        <small>Ce lien doit être communiqué à vos invités.</small>
+        <br />
+        <a href="{{conferenceLink}}">{{conferenceLink}}</a>
+      </p>
+    </main>
+    <footer style="margin-top: 20px">
+      <p>
+        Pour nous contacter :
+        <ul>
+          <li>
+            Assistance : <a href="mailto:assistance@webconf.numerique.gouv.fr"
+              >assistance@webconf.numerique.gouv.fr</a
+            >
+          </li>
+          <li>
+            Autres demandes : <a href="mailto:contact@webconf.numerique.gouv.fr"
+              >contact@webconf.numerique.gouv.fr</a
+            >
+          </li>
+        </ul>
+      </p>
+    </footer>
+  </body>
+</html>
