@@ -1,0 +1,52 @@
+.parent {
+    position: relative;
+}
+
+.logout {
+    position: absolute;
+    top: 40px;
+    right: 20%;
+}
+
+.buttons {
+    display: flex;
+    flex-direction: column;
+}
+
+.modalContainer {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    height: 300px;
+}
+
+.flexBox {
+    display: flex;
+    flex-direction: column;
+}
+
+.firstFlexBox {
+    width: 35%;
+}
+
+.firstFlexBox button {
+    text-align: left;
+    font-weight: bold;
+    font-size: 1.0em;
+}
+
+.firstFlexBoxGap {
+    gap: 10px;
+}
+
+.secondFlexBox {
+    width: 65%;
+    padding-left: 20px;
+}
+
+.separator {
+    background-color: grey;
+    width: 1px;
+    border-radius: 50%;
+}
+

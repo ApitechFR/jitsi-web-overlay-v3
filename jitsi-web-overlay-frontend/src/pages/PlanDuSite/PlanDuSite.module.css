@@ -1,0 +1,14 @@
+.rootDiv {
+    width: fit-content;
+    /* margin: auto; */
+    margin-left: 20%;
+    height: 800px;
+    margin-top: 5%;
+    display: flex;
+    flex-direction: column;
+}
+
+.flex-item {
+    margin-top: 2rem;
+    /* text-decoration: none; */
+}

@@ -1,0 +1,20 @@
+.buttonMoreInfo {
+
+}
+
+.frameContainerButton {
+    display: flex;
+    justify-content: end;
+}
+
+.popupBoxContent {
+    height: 100%;
+}
+
+.boxFrame, .iframeContent {
+    height: 100%;
+}
+
+.iframeContent {
+    width: 100%;
+}

@@ -1,0 +1,22 @@
+.content {
+    margin: 20px 80px 100px;
+    width: 45%;
+}
+
+.titleBlock {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.titleBlock h1 {
+    font-size: 2.0em;
+    margin: 0;
+    padding: 0;
+}
+
+.titleBlock .adminTag {
+    padding: 0px 20px;
+}

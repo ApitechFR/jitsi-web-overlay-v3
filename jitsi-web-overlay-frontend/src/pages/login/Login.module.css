@@ -1,0 +1,221 @@
+.home {
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 80px;
+}
+
+.homeGrey {
+    margin: 0 auto;
+    width: 100%;
+}
+
+.homeGrey2 {
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.orgc {
+    display: flex;
+    align-items:flex-start;
+    justify-content: space-between;
+}
+
+.sectionDiv1 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sectionDiv2 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.div2 {
+    display: flex;
+    align-items: center;
+    margin-top: 30px;
+}
+
+.div1 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 300px;
+    margin-right: 40px;
+    margin-top: 30px;
+}
+
+.section {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.homeTitle {
+    margin-bottom: 5px;
+}
+
+
+
+
+
+
+
+@font-face{font-family:"Open Sans";src:url(./fonts/open-sans/OpenSans-Regular.ttf);font-weight:400}
+@font-face{font-family:"Open Sans";src:url(./fonts/open-sans/OpenSans-Bold.ttf);font-weight:700}
+@font-face{font-family:"Open Sans";src:url(./fonts/open-sans/OpenSans-Italic.ttf);font-weight:400;font-style:italic}
+@font-face{font-family:"Open Sans";src:url(./fonts/open-sans/OpenSans-BoldItalic.ttf);font-weight:700;font-style:italic}
+@font-face{font-family:"Open Sans";src:url(./fonts/open-sans/OpenSans-Light.ttf);font-weight:100}
+@font-face{font-family:"Open Sans";src:url(./fonts/open-sans/OpenSans-LightItalic.ttf);font-weight:100;font-style:italic}
+
+
+
+@media only screen and (max-width: 600px) {
+
+    .homeTitle {
+        margin-bottom: 5px;
+        padding-left: 5%;
+        padding-right: 5%;
+    }
+    
+    .home {
+        /* margin: 0 auto; */
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 80px;
+        padding-left: 5%;
+        padding-right: 5%;
+        text-align: center;
+    }
+
+    .orgc {
+        display: flex;
+        flex-direction: column;
+        align-items:flex-start;
+        justify-content: space-between;
+        text-align: center;
+    }
+
+    .div2 {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 30px;
+        text-align: center;
+    }
+}
+
+.modalContent {
+    margin-bottom: 0px;
+}
+
+.textInput {
+    width: 300px;
+}
+
+.button {
+    margin-left: 10px;
+    height: 25px;
+}
+
+.close {
+    height: 5px;
+}
+
+.modalButtons {
+    width: 520px;
+    text-align: center;
+    padding: 0 100px;
+    /* padding: 0px 120px;
+    margin-top: 10px; */
+}
+
+.emailCodeButton {
+    width: 535px;
+    text-align: center;
+    padding: 0px 170px;
+}
+
+.roomNameConditionValid{
+    display: block;
+    color: green;
+}
+
+.roomNameConditionNotValid{
+    display: block;
+    color: red;
+}
+
+.fromAndMessage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.modalButtons {
+    height: 20px;
+    margin-bottom: 30px;
+}
+
+@media only screen and (max-width: 600px) {
+
+    .form {
+        display: flex;
+        flex-direction: column;
+        justify-content:center;
+    }
+
+    .button {
+        height: 25px;
+        width: 60%;
+        margin-left: 20%;
+    }
+
+    .modal {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        width: 100%;
+        margin: auto;
+    }
+
+    .modalButtons {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        margin: auto;
+        padding: 0 5px;
+
+    }
+
+    .modalButton {
+        margin-top: 5px;
+    }
+}
