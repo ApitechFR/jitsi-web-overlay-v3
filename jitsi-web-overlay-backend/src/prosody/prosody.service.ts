@@ -90,6 +90,7 @@ export class ProsodyService {
       const res = await Promise.all(stats_prosody_urls);
       const data = [];
       res.forEach((element) => data.push(element.data));
+      console.log({data});
       return data;
     } catch (error) {
       this.logger.error("le serveur jicofo n'est pas disponible", error);

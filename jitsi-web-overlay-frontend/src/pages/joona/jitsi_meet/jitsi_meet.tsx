@@ -10,6 +10,9 @@ export default function JitsiMeet() {
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState(0);
     const { roomName } = useParams();
+    const participantCountRef = useRef(0);
+    const startTimeRef = useRef<Date | null>(null);
+    const hasStartedRef = useRef(false);
 
     const navigate = useNavigate();
 
@@ -179,6 +182,41 @@ export default function JitsiMeet() {
                 getIFrameRef={handleJitsiIFrameRef1}
                 onApiReady={externalApi => {
                     handleRecordingStatus(externalApi);
+
+                    externalApi.on('videoConferenceJoined', () => {
+                        participantCountRef.current += 1;
+                        console.log("participants from videoConferenceJoined : ", participantCountRef.current);
+                        startTimeRef.current = new Date();
+                        hasStartedRef.current = true;
+                    });
+
+                    externalApi.on('participantJoined', () => {
+                        participantCountRef.current += 1;
+                        console.log("participants from participantJoined : ", participantCountRef.current);
+                    });
+
+                    externalApi.on('participantLeft', async () => {
+                        participantCountRef.current -= 1;
+                        console.log("participants from participantLeft : ", participantCountRef.current);
+
+                        if (participantCountRef.current === 0 && hasStartedRef.current) {
+                            const endTime = new Date();
+
+                            const payload = {
+                                name: roomName,
+                                start_time: startTimeRef.current!.toISOString(),
+                                end_time: endTime.toISOString(),
+                                created_by: 1,
+                            };
+
+                            await fetch(`${API_BASE_URL}/conferences`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload),
+                            });
+                        }
+                    });
+                    //------------------------------------------------------------------------------------
                 }}
                 onReadyToClose={onClose}
             />
