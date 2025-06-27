@@ -6,7 +6,7 @@ services:
     env_file:
       - .env
     ports:
-      - '${BACKEND_PORT}:${PORT}'
+      - '${PORT}:${PORT}'
     restart: unless-stopped
   jitsi-web-overlay-frontend:
     build:
