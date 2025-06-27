@@ -16,6 +16,12 @@
     mask-image: url("../../icons/user/user-fill.svg");
 }
 
+.fr-icon-external-link-fill::before,
+.fr-icon-external-link-fill::after {
+    -webkit-mask-image: url("../../icons/system/external-link-fill.svg");
+    mask-image: url("../../icons/system/external-link-fill.svg");
+}
+
 .fr-icon-information-line::before,
 .fr-icon-information-line::after {
     -webkit-mask-image: url("../../icons/system/information-line.svg");
@@ -60,6 +66,11 @@
     .fr-icon-user-fill::before,
     .fr-icon-user-fill::after {
         background-image: url("../../icons/user/user-fill.svg");
+    }
+    
+    .fr-icon-external-link-fill::before,
+    .fr-icon-external-link-fill::after {
+        background-image: url("../../icons/system/external-link-fill.svg");
     }
     
     .fr-icon-information-line::before,

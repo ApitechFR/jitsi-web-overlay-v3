@@ -1,9 +1,10 @@
-import { useState, MouseEventHandler, MouseEvent, useRef, useEffect, FormEvent } from 'react';
+import { useState, useRef, FormEvent } from 'react';
 import styles from './HomeJoona.module.css';
 import Input from '@codegouvfr/react-dsfr/Input';
 import Button from '@codegouvfr/react-dsfr/Button';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import { useNavigate } from 'react-router-dom';
+import RandExp from 'randexp';
 
 interface AuthModalProps {
   roomName: string;
@@ -22,65 +23,72 @@ interface AuthModalProps {
 function HomeJoona(props: AuthModalProps) {
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [isError, setIsError] = useState(false)
+  const [isError, setIsError] = useState(false);
 
-  useEffect(() => {
-    if (props.roomName) {
-      setIsError(false)
-    }
-  }, [props.roomName])
+  const regexEnv = import.meta.env.VITE_CONFERENCE_NAME_REGEX;
+  const regexPattern = regexEnv ?? '^[A-Z0-9]{8}$';
+  const regexName = new RegExp(regexPattern);
 
+  function isValidRoomName(name: string): boolean {
+    return regexName.test(name);
+  }
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!props.roomName) {
+    if (!props.roomName || !isValidRoomName(props.roomName)) {
       setIsError(true)
       return
     };
+    setIsError(false);
     props.setRoomName(props.roomName);
     navigate(`/${props.roomName}`);
   }
 
   function generateRoomName() {
-    return props.setRoomName(
-      Math.random().toString(36).slice(2).toUpperCase() +
-      Math.floor(Math.random() * 10) +
-      Math.floor(Math.random() * 10) +
-      Math.floor(Math.random() * 10)
-    );
+    const name = new RandExp(regexName).gen();
+    return name;
   }
+
   return (
     <div className={styles.homeContainer}>
       <div className={styles.firstContainer}>
         <h1 className={styles.homeTitle}>Rejoindre une visio conférence</h1>
-        <div style={{ width: '70%', margin: 'auto' }}>
-          <div style={{ display: 'flex', width: '100%' }}>
+        <div className={styles.inputsRoom}>
+          <div className={styles.joinPart}>
             <Input
               label=""
               id="conferenceName"
+              state={isError ? 'error' : 'default'}
               nativeInputProps={{
                 placeholder: 'Saisissez votre nom de conférence',
                 value: props.roomName,
-                onChange: (e) => props.setRoomName(e.currentTarget.value),
+                onChange: (e) => {
+                  const value = e.currentTarget.value;
+                  props.setRoomName(value);
+                  setIsError(!isValidRoomName(value));
+                },
                 ref: inputRef,
               }}
+              stateRelatedMessage={
+                isError && import.meta.env.VITE_CONFERENCE_NAME_REGEX_MESSAGE
+              }
               style={{ width: '100%' }}
             />
             <Button
               className={styles.plusButton}
-              onClick={generateRoomName}
-              // onClick={e => {
-              //   e.preventDefault();
-              //   verifyAndSetVAlue(generateRoomName());
-              // }}
+              onClick={() => {
+                const newName = generateRoomName();
+                props.setRoomName(newName);
+                setIsError(!isValidRoomName(newName));
+              }}
               type="button"
             >
               <ShuffleIcon />
             </Button>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className={styles.buttonsPart}>
             <Button
-              // disabled
+              disabled={!isValidRoomName(props.roomName)}
               onClick={(e) => onSubmit(e)}
               className={styles.joinButton}
             >
@@ -106,7 +114,7 @@ function HomeJoona(props: AuthModalProps) {
         </div>
       </div>
       <div className={styles.secondContainer}>
-        <img src="" alt="test" />
+        <img src="src\assets\illustration homepage visio by apitech.svg" alt="homepage side image" />
       </div>
     </div>
   );
