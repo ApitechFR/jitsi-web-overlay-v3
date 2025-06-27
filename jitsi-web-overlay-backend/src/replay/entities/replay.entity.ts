@@ -1,4 +1,3 @@
-// import { Conference } from 'src/conference/entities/conference.entity';
 import { Conference } from '../../conference/entities/conference.entity';
 import {
   Column,
@@ -14,22 +13,39 @@ export class Replay {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Conference, (conference) => conference.replays)
+  @Column({ type: 'uuid', nullable: true })
+  uid: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  file_path: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  status: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  message: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  conference_name: string;
+
+  @ManyToOne(() => Conference, (conference) => conference.replays, {
+    nullable: true,
+  })
   @JoinColumn({ name: 'conference_id' })
   conference: Conference;
 
-  @Column({ type: 'char' })
-  file_path: string;
+  @Column({ type: 'uuid' })
+  conference_uid: string;
 
-  @Column({ type: 'time' })
+  @Column({ type: 'varchar', nullable: true })
   duration: string;
 
-  @CreateDateColumn()
+  @Column({ type: 'varchar', nullable: true })
+  added_by: string;
+
+  @CreateDateColumn({ name: 'created_at' })
   created_at: Date;
 
-  @Column({ type: 'varchar' })
-  status: string;
-
-  @Column()
-  added_by: number;
+  @CreateDateColumn({ name: 'updated_at' })
+  updated_at: Date;
 }

@@ -12,6 +12,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ReplayModule } from './replay/replay.module';
 
 function getDatabaseImports() {
   const dbType = process.env.DB_TYPE;
@@ -93,6 +94,7 @@ function getDatabaseImports() {
     StatsModule,
     FeedbackModule,
     ProsodyModule,
+    ReplayModule
   ],
   controllers: [AppController],
   providers: [AppService],
