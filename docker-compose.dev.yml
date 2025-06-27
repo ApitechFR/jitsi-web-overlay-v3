@@ -1,0 +1,50 @@
+services:
+  jitsi-web-overlay-backend:
+    build:
+      context: .
+      dockerfile: ./jitsi-web-overlay-backend/Dockerfile
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    env_file:
+      - .env.development
+    depends_on:
+      - mariadb
+      - mongo
+    command: npm run start:dev
+  jitsi-web-overlay-frontend:
+    build:
+      context: .
+      dockerfile: ./jitsi-web-overlay-frontend/Dockerfile
+    ports:
+      - '5173:5173'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+  mariadb:
+    image: mariadb:11
+    restart: always
+    environment:
+      MARIADB_ROOT_USER: ${DB_USERNAME}
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
+    ports:
+      - '3306:3306'
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+  mongo:
+    image: mongo:6
+    restart: always
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mariadb_data:
+  mongo_data:

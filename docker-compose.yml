@@ -1,0 +1,19 @@
+services:
+  jitsi-web-overlay-backend:
+    build:
+      context: .
+      dockerfile: ./jitsi-web-overlay-backend/Dockerfile.prod
+    env_file:
+      - .env
+    ports:
+      - '${BACKEND_PORT}:${PORT}'
+    restart: unless-stopped
+  jitsi-web-overlay-frontend:
+    build:
+      context: .
+      dockerfile: ./jitsi-web-overlay-frontend/Dockerfile.prod
+    ports:
+      - '${FRONTEND_PORT}:80'
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
