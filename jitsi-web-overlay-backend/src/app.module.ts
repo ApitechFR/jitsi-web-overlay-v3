@@ -21,7 +21,9 @@ function getDatabaseImports() {
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: async (configService: ConfigService) => ({
-          uri: configService.get<string>('MONGODB_URI') || 'mongodb://localhost/wce',
+          uri:
+            configService.get<string>('MONGODB_URI') ||
+            'mongodb://localhost/wce',
         }),
       }),
     ];
@@ -97,4 +99,4 @@ function getDatabaseImports() {
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}
