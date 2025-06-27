@@ -25,7 +25,7 @@ function getDatabaseImports() {
         }),
       }),
     ];
-  } else if (dbType === 'mariaDB' || dbType === 'mysql') {
+  } else if (dbType === 'mariadb' || dbType === 'mysql') {
     return [
       TypeOrmModule.forRootAsync({
         imports: [ConfigModule],
@@ -36,7 +36,7 @@ function getDatabaseImports() {
           port: parseInt(configService.get('DB_PORT'), 10) || 3306,
           username: configService.get('DB_USERNAME'),
           password: configService.get('DB_PASSWORD'),
-          database: configService.get('DB_DATABASE'),
+          database: configService.get('DB_NAME'),
           autoLoadEntities: true,
           synchronize: configService.get<string>('NODE_ENV') !== 'production',
         }),
