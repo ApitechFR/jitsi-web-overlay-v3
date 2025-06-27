@@ -34,7 +34,7 @@ export class AuthenticationController {
     private readonly conferenceService: IConferenceService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-  ) { }
+  ) {}
 
   @Get('whereami')
   @ApiOkResponse({ description: "retoune 'RIE' ou 'INTERNET' " })
@@ -125,9 +125,12 @@ export class AuthenticationController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
+    if (!request?.signedCookies) {
+      throw new UnauthorizedException('Cookies manquants');
+    }
     const { idToken } =
-      request?.signedCookies?.refreshToken &&
-      this.jwtService.decode(request?.signedCookies?.refreshToken);
+      request.signedCookies.refreshToken &&
+      this.jwtService.decode(request.signedCookies.refreshToken);
     const state = crypto.randomBytes(32).toString('hex');
     response.cookie('state', state, {
       httpOnly: true,
@@ -148,7 +151,10 @@ export class AuthenticationController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const sendedState = request?.signedCookies?.state;
+    if (!request?.signedCookies) {
+      throw new UnauthorizedException('Cookies manquants');
+    }
+    const sendedState = request.signedCookies.state;
     const { state } = query;
 
     if (state !== sendedState) {
@@ -169,7 +175,10 @@ export class AuthenticationController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    let refreshToken = request.signedCookies?.refreshToken;
+    if (!request?.signedCookies) {
+      throw new UnauthorizedException('Cookies manquants');
+    }
+    let refreshToken = request.signedCookies.refreshToken;
     try {
       await this.jwtService.verify(refreshToken);
 
