@@ -1,16 +1,31 @@
-import { Controller, Post, Req, Body, BadRequestException, Inject, Headers } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Req,
+  Body,
+  BadRequestException,
+  Inject,
+  Headers,
+  Param,
+  Get,
+  Delete,
+} from '@nestjs/common';
 import { Request } from 'express';
 import { FeedbackDTO } from './DTOs/feedback.dto';
 import { IFeedbackService } from './interfaces/feedback-service.interface';
-import { Param, Get, Delete } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiBody, ApiNotFoundResponse, ApiOkResponse } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBody,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+} from '@nestjs/swagger';
 
 @Controller('feedback')
 export class FeedbackController {
   constructor(
     @Inject(IFeedbackService)
     private readonly feedbackService: IFeedbackService,
-  ) { }
+  ) {}
 
   @Post()
   @ApiOkResponse({ description: '' })
@@ -30,23 +45,27 @@ export class FeedbackController {
   ) {
     const ip = req.ip;
     const jmmc_id = req.signedCookies?.['jmmc_objectId'];
-<<<<<<< refactor/visio-service-unification
-    const isFromInternet = fromInternetHeader?.toLocaleLowerCase() === 'internet';
-=======
-    const isFromInternet = fromInternetHeader?.toLowerCase() === 'internet';
->>>>>>> dev
+
+    const isFromInternet =
+      fromInternetHeader?.toLocaleLowerCase() === 'internet';
 
     const isValidVPNContext =
       (body.isVPN === -1 && isFromInternet) ||
       ((body.isVPN === 0 || body.isVPN === 1) && !isFromInternet);
 
     if (!isValidVPNContext) {
-      throw new BadRequestException('Veuillez vérifier les informations que vous avez envoyées.');
+      throw new BadRequestException(
+        'Veuillez vérifier les informations que vous avez envoyées.',
+      );
     }
 
-    return this.feedbackService.createFeedback(body, jmmc_id, ip, req.headers['user-agent']);
+    return this.feedbackService.createFeedback(
+      body,
+      jmmc_id,
+      ip,
+      req.headers['user-agent'],
+    );
   }
-
 
   @Get()
   async getAll() {
@@ -62,5 +81,4 @@ export class FeedbackController {
   async remove(@Param('id') id: string) {
     return this.feedbackService.deleteFeedback(id);
   }
-
 }
