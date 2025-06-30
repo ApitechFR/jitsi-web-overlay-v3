@@ -1,14 +1,21 @@
-# Étape 1 : Image de base Node.js
+
+
 FROM node:bookworm
+
 
 WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
 
 COPY . .
 
-EXPOSE 5173
+
+RUN npm install --force
+
+
+
+EXPOSE 3000
+
 
 CMD ["npm", "run", "dev"]

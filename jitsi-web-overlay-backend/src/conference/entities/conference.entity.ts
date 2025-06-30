@@ -32,7 +32,9 @@ export class Conference {
   @CreateDateColumn()
   created_at: Date;
 
-  @OneToMany(() => Participant, (participant) => participant.conference, { cascade: true })
+  @OneToMany(() => Participant, (participant) => participant.conference, {
+    cascade: true,
+  })
   participants: Participant[];
 
   @OneToMany(() => Replay, (replay) => replay.conference, { cascade: true })

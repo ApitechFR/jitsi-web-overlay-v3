@@ -6,35 +6,37 @@ import { IFeedbackService } from '../interfaces/feedback-service.interface';
 import { FeedbackDTO } from '../DTOs/feedback.dto';
 import { mapDtoToFeedbackEntity } from '../utils/feedback.mapper';
 
-
 @Injectable()
 export class FeedbackServiceSQL implements IFeedbackService<Feedback> {
-    constructor(
-        @InjectRepository(Feedback)
-        private readonly feedbackRepository: Repository<Feedback>,
-    ) { }
+  constructor(
+    @InjectRepository(Feedback)
+    private readonly feedbackRepository: Repository<Feedback>,
+  ) {}
 
-
-    async createFeedback(dto: FeedbackDTO, jmmcId: string, ip: string): Promise<Feedback> {
-        try {
-            const feedbackData = mapDtoToFeedbackEntity(dto, ip, jmmcId);
-            const entity = this.feedbackRepository.create(feedbackData);
-            return await this.feedbackRepository.save(entity);
-        } catch (error) {
-            throw new InternalServerErrorException('Impossible de créer le feedback');
-        }
+  async createFeedback(
+    dto: FeedbackDTO,
+    jmmcId: string,
+    ip: string,
+  ): Promise<Feedback> {
+    try {
+      const feedbackData = mapDtoToFeedbackEntity(dto, ip, jmmcId);
+      const entity = this.feedbackRepository.create(feedbackData);
+      return await this.feedbackRepository.save(entity);
+    } catch (error) {
+      console.error('Error creating feedback:', error);
+      throw new InternalServerErrorException('Impossible de créer le feedback');
     }
+  }
 
+  async getAllFeedback() {
+    return this.feedbackRepository.find();
+  }
 
-    async getAllFeedback() {
-        return this.feedbackRepository.find();
-    }
+  async getFeedbackById(id: string) {
+    return this.feedbackRepository.findOne({ where: { id: +id } });
+  }
 
-    async getFeedbackById(id: string) {
-        return this.feedbackRepository.findOne({ where: { id: +id } });
-    }
-
-    async deleteFeedback(id: string) {
-        await this.feedbackRepository.delete(+id);
-    }
+  async deleteFeedback(id: string) {
+    await this.feedbackRepository.delete(+id);
+  }
 }

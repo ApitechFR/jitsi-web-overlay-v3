@@ -9,7 +9,15 @@ import {
   Put,
   Headers,
 } from '@nestjs/common';
-import { ApiTags, ApiBody, ApiOkResponse, ApiNotFoundResponse, ApiUnauthorizedResponse, ApiBadRequestResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBody,
+  ApiOkResponse,
+  ApiNotFoundResponse,
+  ApiUnauthorizedResponse,
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
 import { IConferenceService } from './interfaces/conference-service.interface';
 import { CreateConferenceDTO } from './DTOs/conference.dto';
@@ -20,12 +28,10 @@ import { RoomNameDto } from './DTOs/room-name.dto';
 @ApiTags('Conferences')
 @Controller('')
 export class ConferenceController {
-
   constructor(
     @Inject(IConferenceService)
     private readonly conferenceService: IConferenceService,
-  ) { }
-
+  ) {}
 
   @Post('conferences')
   @ApiOkResponse({ description: 'Conférence créée avec succès' })
@@ -33,13 +39,11 @@ export class ConferenceController {
     return this.conferenceService.create(dto);
   }
 
-
   @Get('conferences')
   @ApiOkResponse({ description: 'Liste des conférences' })
   async findAll() {
     return this.conferenceService.findAll();
   }
-
 
   @Get('conferences/:id')
   @ApiOkResponse({ description: 'Conférence trouvée' })
@@ -48,13 +52,11 @@ export class ConferenceController {
     return this.conferenceService.findOne(id);
   }
 
-
   @Delete('conferences/:id')
   @ApiOkResponse({ description: 'Conférence supprimée' })
   async delete(@Param('id') id: string) {
     return this.conferenceService.delete(id);
   }
-
 
   @Put('conferences/:id')
   @ApiOkResponse({ description: 'Conférence mise à jour' })
@@ -68,14 +70,14 @@ export class ConferenceController {
     return { message: 'Mise à jour non supportée pour cette base.' };
   }
 
-
   @Get('roomExists/:roomName')
   @ApiOkResponse({ description: 'retourne roomName si la conférence existe' })
-  @ApiNotFoundResponse({ description: "retourne 404 si la conférence n'existe pas" })
+  @ApiNotFoundResponse({
+    description: "retourne 404 si la conférence n'existe pas",
+  })
   async roomExists(@Param() params: RoomNameDto) {
     return this.conferenceService.roomExists(params.roomName);
   }
-
 
   @Get('/:roomName')
   @ApiOkResponse({
@@ -98,11 +100,15 @@ export class ConferenceController {
     @Headers('webconf-user-region') webconfUserRegion: string,
     @Headers('authorization') accessToken: string,
   ) {
-    accessToken = accessToken && accessToken.split(' ')[1];
-    return this.conferenceService.getRoomAccessToken(params.roomName, webconfUserRegion, accessToken);
+    accessToken = accessToken?.split(' ')[1];
+    return this.conferenceService.getRoomAccessToken(
+      params.roomName,
+      webconfUserRegion,
+      accessToken,
+    );
   }
 
-  //send token by email 
+  //send token by email
   @Post('conference/create/byemail')
   @ApiOkResponse({
     description: "retourne { isWhitelisted: true, sended: 'email sended' }",
