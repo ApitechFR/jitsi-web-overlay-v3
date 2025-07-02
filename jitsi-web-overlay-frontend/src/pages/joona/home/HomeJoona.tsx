@@ -2,6 +2,7 @@ import { useState, useRef, FormEvent } from 'react';
 import styles from './HomeJoona.module.css';
 import Input from '@codegouvfr/react-dsfr/Input';
 import Button from '@codegouvfr/react-dsfr/Button';
+import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import { useNavigate } from 'react-router-dom';
 import RandExp from 'randexp';
@@ -24,6 +25,7 @@ function HomeJoona(props: AuthModalProps) {
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isError, setIsError] = useState(false);
+  const [isAlertVisible, setIsAlertVisible] = useState(false);
 
   const regexEnv = import.meta.env.VITE_CONFERENCE_NAME_REGEX;
   const regexPattern = regexEnv ?? '^[A-Z0-9]{8}$';
@@ -47,6 +49,19 @@ function HomeJoona(props: AuthModalProps) {
   function generateRoomName() {
     const name = new RandExp(regexName).gen();
     return name;
+  }
+
+  function onCopyLink() {
+    const textToCopy = `${window.location.origin}/${props.roomName}`;
+
+    if (textToCopy) {
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        setIsAlertVisible(true);
+        setTimeout(() => {
+          setIsAlertVisible(false);
+        }, 3000);
+      });
+    }
   }
 
   return (
@@ -103,12 +118,22 @@ function HomeJoona(props: AuthModalProps) {
                 Tester votre matériel
               </Button> */}
               <Button
-                onClick={function noRefCheck() { }}
+                onClick={onCopyLink}
                 priority="tertiary"
               >
                 Copier le lien
                 <i className="fr-icon-clipboard-line fr-btn--icon-right" aria-hidden="true"></i>
               </Button>
+              {isAlertVisible && (
+                <div className={styles.alertContainer}>
+                  <Alert
+                    severity="success"
+                    title="Lien copié avec succès !"
+                    description=""
+                    small
+                  />
+                </div>
+            )}
             </div>
           </div>
         </div>
