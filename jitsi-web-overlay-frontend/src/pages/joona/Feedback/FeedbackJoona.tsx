@@ -3,6 +3,7 @@ import Input from '@codegouvfr/react-dsfr/Input';
 
 import styles from './FeedbackJoona.module.css'
 import Button from '@codegouvfr/react-dsfr/Button';
+import StarRating from '../../../components/joona/stars/StarRating';
 
 
 function FeedbackJoona () {
@@ -17,6 +18,7 @@ function FeedbackJoona () {
                     max={100}
                     min={0}
                 /> */}
+                <StarRating />
                 <Input
                     label="Laissez un commentaire."
                     textArea
