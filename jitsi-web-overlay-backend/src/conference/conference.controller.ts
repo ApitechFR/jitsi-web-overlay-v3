@@ -20,7 +20,7 @@ import {
 } from '@nestjs/swagger';
 
 import { IConferenceService } from './interfaces/conference-service.interface';
-import { CreateConferenceDTO } from './DTOs/conference.dto';
+import { CreateConferenceDTO, EndConferenceDTO } from './DTOs/conference.dto';
 import { ByEmailDTO } from './DTOs/byEmail.dto';
 import { JwtDTO } from './DTOs/jwt.dto';
 import { RoomNameDto } from './DTOs/room-name.dto';
@@ -31,7 +31,7 @@ export class ConferenceController {
   constructor(
     @Inject(IConferenceService)
     private readonly conferenceService: IConferenceService,
-  ) {}
+  ) { }
 
   @Post('conferences')
   @ApiOkResponse({ description: 'Conférence créée avec succès' })
@@ -68,6 +68,16 @@ export class ConferenceController {
       return (this.conferenceService as any).update(id, body);
     }
     return { message: 'Mise à jour non supportée pour cette base.' };
+  }
+
+  @Put('conferences/confname/:confName')
+  async updateEndTime(
+    @Param('confName') confName: string,
+    @Body() dto: EndConferenceDTO,
+  ) {
+    console.log("from controlleur confName : ", confName);
+    console.log("from controlleur endTime : ", dto.end_time);
+    return this.conferenceService.updateEndTimeConferenceByName(confName, dto.end_time);
   }
 
   @Get('roomExists/:roomName')

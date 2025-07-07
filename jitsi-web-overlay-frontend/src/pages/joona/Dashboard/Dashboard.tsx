@@ -32,17 +32,23 @@ function Dashboard() {
 
         const setupData = async () => {
             const data = await fetchStats();
+            const totalParticipants = data.participants || 0;
+            const totalConferences = data.conferences || 1; // éviter division par zéro
+
+            const MoyParticipantsPerConf = totalConferences > 0
+                ? Math.round(totalParticipants / totalConferences)
+                : 0;
 
             const dataFromDB: Record<string, number> = {
                 users: data.total_participants,
                 confNb: data.total_conferences_created,
                 confTime: 89,
-                confMoyPart: 74,
+                confMoyPart: MoyParticipantsPerConf,
                 confMaxSimult: 12,
                 partMaxSimult: 245
             };
 
-            const mergedData = cardsData.map(meta => ({
+            const mergedData: any = cardsData.map((meta: any) => ({
                 ...meta,
                 valeur: dataFromDB[meta.key] ?? 0
             }));
@@ -100,7 +106,7 @@ function Dashboard() {
                     />
                     {datasCard && (
                         <div className={styles.cardsSection}>
-                            {datasCard.map(card => (
+                            {datasCard.map((card: any) => (
                                 <Card
                                     background
                                     border

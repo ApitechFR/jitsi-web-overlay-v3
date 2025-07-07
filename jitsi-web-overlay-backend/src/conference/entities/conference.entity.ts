@@ -24,7 +24,7 @@ export class Conference {
   end_time: Date;
 
   @Column()
-  created_by: number;
+  created_by: string;
 
   @UpdateDateColumn()
   updated_at: Date;

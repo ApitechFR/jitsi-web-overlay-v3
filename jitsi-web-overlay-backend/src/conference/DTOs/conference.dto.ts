@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { IsDateString, IsInt, IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 export class CreateConferenceDTO {
   @ApiProperty()
@@ -16,6 +16,12 @@ export class CreateConferenceDTO {
   end_time: Date;
 
   @ApiProperty()
-  @IsInt()
-  created_by: number;
+  @IsUUID()
+  created_by: string;
+}
+
+export class EndConferenceDTO {
+  @ApiProperty()
+  @IsDateString()
+  end_time: Date;
 }
