@@ -5,17 +5,37 @@ import { IConferenceService } from '../interfaces/conference-service.interface';
 import { CreateConferenceDTO } from '../DTOs/conference.dto';
 import { Conference } from '../entities/conference.entity';
 import { ProsodyService } from '../../prosody/prosody.service';
+import { ConferenceStatus } from '../enum/conference-status.enum';
+import { Room } from '../../room/entities/room.entity';
 
 @Injectable()
 export class ConferenceServiceSQL implements IConferenceService {
   constructor(
     @InjectRepository(Conference)
     private readonly conferenceRepo: Repository<Conference>,
+    @InjectRepository(Room)
+    private readonly roomRepo: Repository<Room>,
     private readonly prosodyService: ProsodyService,
   ) { }
 
   async create(data: CreateConferenceDTO): Promise<Conference> {
-    const conf = this.conferenceRepo.create(data);
+
+    let room = await this.roomRepo.findOne({ where: { uid: data.room_uid } });
+
+    if (!room) {
+      room = this.roomRepo.create({
+        uid: data.room_uid,
+        name: data.name,
+        created_by: data.created_by,
+      });
+      await this.roomRepo.save(room);
+    }
+
+    const conf = this.conferenceRepo.create({
+      ...data,
+      room:room,
+      status: ConferenceStatus.STARTED,
+    });
     return this.conferenceRepo.save(conf);
   }
 
@@ -51,6 +71,7 @@ export class ConferenceServiceSQL implements IConferenceService {
     }
 
     conf.end_time = new Date(endTime);
+    conf.status = ConferenceStatus.COMPLETED;
     return this.conferenceRepo.save(conf);
   }
 
@@ -68,7 +89,7 @@ export class ConferenceServiceSQL implements IConferenceService {
 
   async roomExists(roomName: string) {
     const exists = await this.prosodyService.roomExists(roomName);
-    console.log({exists})
+    console.log({ exists })
     if (exists && exists.length > 0) {
       return { roomName };
     } else {

@@ -17,18 +17,21 @@ import {
 import { Participant } from '../participant/entities/participant.entity';
 import { Replay } from '../replay/entities/replay.entity';
 import { User } from '../users/entities/users.entity';
+import { RoomModule } from '../room/room.module';
+import { Room } from '../room/entities/room.entity';
 
 @Module({
   imports: [
     HttpModule,
     ProsodyModule,
+    RoomModule,
     ...(process.env.DB_TYPE === 'mongodb'
       ? [
           MongooseModule.forFeature([
             { name: WhiteListedDomains.name, schema: WhiteListedDomainsSchema },
           ]),
         ]
-      : [TypeOrmModule.forFeature([Conference, Participant, Replay, User])]),
+      : [TypeOrmModule.forFeature([Conference, Participant, Replay, User, Room])]),
   ],
   controllers: [ConferenceController],
   providers: [
@@ -46,11 +49,10 @@ import { User } from '../users/entities/users.entity';
           ConferenceServiceSQL,
           {
             provide: IConferenceService,
-            inject: [ConferenceServiceSQL],
-            useFactory: (sql: ConferenceServiceSQL) => sql,
+            useExisting: ConferenceServiceSQL,
           },
         ]),
   ],
   exports: [IConferenceService],
 })
-export class ConferenceModule {}
+export class ConferenceModule { }

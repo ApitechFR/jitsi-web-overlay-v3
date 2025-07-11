@@ -32,33 +32,53 @@ export const checkConferenceEnd = async (roomName: string) => {
 
 export const createConference = async (roomName: string) => {
     const startTime = new Date();
-    console.log("start time : ", startTime)
-    const endTimeFirst = new Date();
-    const payload = {
-        name: roomName,
-        start_time: startTime.toISOString(),
-        end_time: endTimeFirst.toISOString(),
-        created_by: uuidv4(),
-    };
-    console.log({ payload })
+    console.log("start time : ", startTime);
+    const createdBy = uuidv4();
 
     const roomExists = await checkRoomExists(roomName);
     if (!roomExists) {
         try {
+            const roomPayload = {
+                name: roomName,
+                created_by: createdBy,
+            };
+
+            const roomResponse = await fetch(`${API_BASE_URL}/room`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(roomPayload),
+            });
+
+            if (!roomResponse.ok) {
+                throw new Error(`Erreur lors de la création de la room : ${roomResponse.status}`);
+            }
+
+            const room = await roomResponse.json();
+
+            console.log({ room });
+
+            const payload = {
+                room_uid: room.uid,
+                name: roomName,
+                start_time: startTime.toISOString(),
+                created_by: createdBy,
+            };
+            console.log({ payload })
+
             console.log("before fetch")
-            const response = await fetch(`${API_BASE_URL}/conferences`, {
+            const conferenceResponse  = await fetch(`${API_BASE_URL}/conferences`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
 
-            if (!response.ok) {
-                throw new Error(`Erreur HTTP ! statut : ${response.status}`);
+            if (!conferenceResponse .ok) {
+                throw new Error(`Erreur HTTP ! statut : ${conferenceResponse .status}`);
             }
 
             console.log("after fetch");
-            console.log({ response });
-            return await response.json();;
+            console.log({ conferenceResponse  });
+            return await conferenceResponse .json();;
         } catch (error) {
             console.error('Erreur lors de la creation de la conference :', error);
         }

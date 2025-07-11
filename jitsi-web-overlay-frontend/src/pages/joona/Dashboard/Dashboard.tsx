@@ -40,8 +40,8 @@ function Dashboard() {
                 : 0;
 
             const dataFromDB: Record<string, number> = {
-                users: data.total_participants,
-                confNb: data.total_conferences_created,
+                users: data.participants,
+                confNb: data.conferences,
                 confTime: 89,
                 confMoyPart: MoyParticipantsPerConf,
                 confMaxSimult: 12,
