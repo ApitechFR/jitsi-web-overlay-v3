@@ -165,15 +165,16 @@ export default function JitsiMeet() {
 
     const enableJibriApitechApi = import.meta.env.VITE_ENABLE_JIBRI_APITECH_API;
     const jibriApitechApiDomain = import.meta.env.VITE_JIBRI_APITECH_API_DOMAIN;
+    const jitsiAPIOptions = (window as any).jitsiAPIOptions;
 
     //jitsiAPIOptions ???
-    const jitsiAPIOptions = {
-        eventId: '12345',
-        roomName: roomName ?? '',
-        uploadCallbackJwt: 'jwt',
-        uploadCallbackUrl: 'https://api',
-        uploadCallbackDomainUrl: 'https://api',
-    };
+    // const jitsiAPIOptions = {
+    //     eventId: '12345',
+    //     roomName: roomName ?? '',
+    //     uploadCallbackJwt: 'jwt',
+    //     uploadCallbackUrl: 'https://api',
+    //     uploadCallbackDomainUrl: 'https://api',
+    // };
 
     const handlejibriApitechApi = () => {
         console.log(`enableJibriApitechApi=${enableJibriApitechApi}`);
@@ -185,13 +186,12 @@ export default function JitsiMeet() {
             jibriApitechApiDomain &&
             jibriApitechApiDomain !== "process.env.JIBRI_APITECH_API_DOMAIN"
         ) {
-            const {
-                eventId,
-                roomName,
-                uploadCallbackJwt,
-                uploadCallbackUrl,
-                uploadCallbackDomainUrl,
-            } = jitsiAPIOptions;
+
+			let eventId = jitsiAPIOptions.eventId;
+			let roomName = jitsiAPIOptions.roomName;
+			let uploadCallbackJwt = jitsiAPIOptions.uploadCallbackJwt;
+			let uploadCallbackUrl = jitsiAPIOptions.uploadCallbackUrl;
+			let uploadCallbackDomainUrl = jitsiAPIOptions.uploadCallbackDomainUrl;
 
             if (!eventId || !roomName || !uploadCallbackJwt) {
                 console.warn("Certains paramètres pour register_eventid sont manquants.");
