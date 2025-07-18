@@ -7,6 +7,7 @@ import { Conference } from '../entities/conference.entity';
 import { ProsodyService } from '../../prosody/prosody.service';
 import { ConferenceStatus } from '../enum/conference-status.enum';
 import { Room } from '../../room/entities/room.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class ConferenceServiceSQL implements IConferenceService {
@@ -25,14 +26,14 @@ export class ConferenceServiceSQL implements IConferenceService {
     if (!room) {
       room = this.roomRepo.create({
         uid: data.room_uid,
-        name: data.name,
-        created_by: data.created_by,
+        name: data.name
       });
       await this.roomRepo.save(room);
     }
 
     const conf = this.conferenceRepo.create({
       ...data,
+      uid: uuidv4(),
       room:room,
       status: ConferenceStatus.STARTED,
     });
@@ -43,9 +44,9 @@ export class ConferenceServiceSQL implements IConferenceService {
     return this.conferenceRepo.find({ relations: ['participants', 'replays'] });
   }
 
-  async findOne(id: string): Promise<Conference> {
+  async findOne(uid: string): Promise<Conference> {
     return this.conferenceRepo.findOne({
-      where: { id: +id },
+      where: { uid },
       relations: ['participants', 'replays'],
     });
   }

@@ -19,10 +19,6 @@ export class CreateConferenceDTO {
   @IsOptional()
   @IsDateString()
   end_time?: Date;
-
-  @ApiProperty()
-  @IsUUID()
-  created_by: string;
 }
 
 export class EndConferenceDTO {

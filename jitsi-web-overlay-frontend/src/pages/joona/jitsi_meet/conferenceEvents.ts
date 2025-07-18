@@ -61,7 +61,6 @@ export const createConference = async (roomName: string) => {
                 room_uid: room.uid,
                 name: roomName,
                 start_time: startTime.toISOString(),
-                created_by: createdBy,
             };
             console.log({ payload })
 
@@ -78,7 +77,7 @@ export const createConference = async (roomName: string) => {
 
             console.log("after fetch");
             console.log({ conferenceResponse  });
-            return await conferenceResponse .json();;
+            return await roomResponse.json();;
         } catch (error) {
             console.error('Erreur lors de la creation de la conference :', error);
         }

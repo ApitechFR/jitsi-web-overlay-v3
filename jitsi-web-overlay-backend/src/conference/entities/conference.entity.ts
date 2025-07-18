@@ -26,8 +26,8 @@ export class Conference {
   @Column({ type: 'timestamp', nullable: true })
   end_time: Date | null;
 
-  @Column()
-  created_by: string;
+  @Column({ unique: true })
+  uid: string;
 
   @Column()
   status: string;
@@ -46,7 +46,7 @@ export class Conference {
   @OneToMany(() => Replay, (replay) => replay.conference, { cascade: true })
   replays: Replay[];
 
-  @JoinColumn({ name: 'room_uid', referencedColumnName: 'uid'  })
+  @JoinColumn({ name: 'room_uid', referencedColumnName: 'uid' })
   @ManyToOne(() => Room, (room) => room.conferences)
   room: Room;
 }
