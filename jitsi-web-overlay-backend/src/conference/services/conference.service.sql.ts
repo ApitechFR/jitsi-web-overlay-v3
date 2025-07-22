@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { IConferenceService } from '../interfaces/conference-service.interface';
 import { CreateConferenceDTO } from '../DTOs/conference.dto';
 import { Conference } from '../entities/conference.entity';
@@ -34,7 +34,7 @@ export class ConferenceServiceSQL implements IConferenceService {
     const conf = this.conferenceRepo.create({
       ...data,
       uid: uuidv4(),
-      room:room,
+      room: room,
       status: ConferenceStatus.STARTED,
     });
     return this.conferenceRepo.save(conf);
@@ -74,6 +74,96 @@ export class ConferenceServiceSQL implements IConferenceService {
     conf.end_time = new Date(endTime);
     conf.status = ConferenceStatus.COMPLETED;
     return this.conferenceRepo.save(conf);
+  }
+
+  async countAll(): Promise<number> {
+    return await this.conferenceRepo.count();
+  }
+
+  async countAllToday(): Promise<number> {
+    const now = new Date();
+
+    const startOfDay = new Date(now);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(now);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    return await this.conferenceRepo.count({
+      where: {
+        created_at: Between(startOfDay, endOfDay),
+      },
+    });
+  }
+
+  async countAllByMonth(): Promise<number> {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    return await this.conferenceRepo.count({
+      where: {
+        created_at: Between(startOfMonth, endOfMonth),
+      },
+    });
+  }
+
+  async countAllByYear(): Promise<number> {
+    const now = new Date();
+    const startOfYear = new Date(now.getFullYear(), 0, 1); // 01/01
+    const endOfYear = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999); // 31/12
+
+    return await this.conferenceRepo.count({
+      where: {
+        created_at: Between(startOfYear, endOfYear),
+      },
+    });
+  }
+
+  async countAllByWeek(): Promise<number> {
+    const now = new Date();
+    const day = now.getDay(); // 0 = dimanche, 1 = lundi, ..., 6 = samedi
+
+    // Trouver lundi de cette semaine
+    const diffToMonday = (day === 0 ? -6 : 1 - day);
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() + diffToMonday);
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    // Lundi + 6 = dimanche
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+
+    return await this.conferenceRepo.count({
+      where: {
+        created_at: Between(startOfWeek, endOfWeek),
+      },
+    });
+  }
+
+  async getDuration(uid: string): Promise<string> {
+    const conference = await this.conferenceRepo.findOne({
+      where: { uid },
+    });
+
+    if (!conference) {
+      throw new NotFoundException(`Conference with uid ${uid} not found`);
+    }
+
+    const start = conference.start_time;
+    const end = conference.end_time ?? new Date();
+
+    const durationMs = end.getTime() - start.getTime();
+    //const durationInMinutes = Math.floor(durationMs / 60000);
+
+    const totalSeconds = Math.floor(durationMs / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
   }
 
   async delete(id: string): Promise<void> {

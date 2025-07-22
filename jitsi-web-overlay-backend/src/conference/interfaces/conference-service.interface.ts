@@ -3,6 +3,12 @@ import { CreateConferenceDTO } from '../DTOs/conference.dto';
 export const IConferenceService = Symbol('IConferenceService');
 
 export interface IConferenceService<T = any> {
+  countAll?(): Promise<T>;
+  countAllToday?(): Promise<T>;
+  countAllByMonth?(): Promise<T>;
+  countAllByYear?(): Promise<T>;
+  countAllByWeek?(): Promise<T>;
+  getDuration?(uid: string): Promise<T>;
   updateEndTimeConferenceByName?(confName: string, end_time: Date): Promise<T>;
   create?(data: CreateConferenceDTO): Promise<T>;
   findAll?(): Promise<T[]>;

@@ -8,6 +8,7 @@ import {
   Post,
   Put,
   Headers,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -78,6 +79,36 @@ export class ConferenceController {
     console.log("from controlleur confName : ", confName);
     console.log("from controlleur endTime : ", dto.end_time);
     return this.conferenceService.updateEndTimeConferenceByName(confName, dto.end_time);
+  }
+
+  @Get('conferences/count/all')
+  async countAll(): Promise<{ total: number }> {
+    const total = await this.conferenceService.countAll();
+    return { total };
+  }
+
+  @Get('conferences/count/:filter')
+  async countByFilter(
+    @Param('filter') filter: string,
+  ): Promise<{ total: number }> {
+    switch (filter) {
+      case 'today':
+        return { total: await this.conferenceService.countAllToday() };
+      case 'week':
+        return { total: await this.conferenceService.countAllByWeek() };
+      case 'month':
+        return { total: await this.conferenceService.countAllByMonth() };
+      case 'year':
+        return { total: await this.conferenceService.countAllByYear() };
+      default:
+        throw new BadRequestException('Invalid filter value');
+    }
+  }
+
+  @Get('conferences/:uid/duration')
+  async getDuration(@Param('uid') uid: string): Promise<{ duration: number }> {
+    const duration = await this.conferenceService.getDuration(uid);
+    return { duration };
   }
 
   @Get('roomExists/:roomName')
