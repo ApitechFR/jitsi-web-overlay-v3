@@ -1,11 +1,10 @@
 import { Footer, FooterProps } from '@codegouvfr/react-dsfr/Footer';
 
-interface props {
-  headerFooterDisplayItem: FooterProps.BottomItem;
-  style: any;
+interface FooterJoonaProps {
+  readonly headerFooterDisplayItem: FooterProps.BottomItem;
 }
 
-function FooterJoona({ headerFooterDisplayItem, style }: props) {
+function FooterJoona({ headerFooterDisplayItem }: FooterJoonaProps) {
   return (
     <Footer
       accessibility="fully compliant"
@@ -18,13 +17,12 @@ function FooterJoona({ headerFooterDisplayItem, style }: props) {
         à la gestion et au développement de votre entreprise.
         "
       termsLinkProps={{
-        to: '#'
+        to: '#',
       }}
       websiteMapLinkProps={{
-        to: '#'
+        to: '#',
       }}
       bottomItems={[headerFooterDisplayItem]}
-
     />
   );
 }
