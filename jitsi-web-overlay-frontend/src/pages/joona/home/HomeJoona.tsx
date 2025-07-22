@@ -1,4 +1,4 @@
-import { useState, useRef, FormEvent } from 'react';
+import { useState, useRef, FormEvent, useEffect } from 'react';
 import styles from './HomeJoona.module.css';
 import Input from '@codegouvfr/react-dsfr/Input';
 import Button from '@codegouvfr/react-dsfr/Button';
@@ -31,6 +31,16 @@ function HomeJoona(props: AuthModalProps) {
   const regexPattern = regexEnv ?? '^[A-Z0-9]{8}$';
   const regexName = new RegExp(regexPattern);
 
+  useEffect(() => {
+    if (isAlertVisible) {
+      const timeout = setTimeout(() => {
+        setIsAlertVisible(false);
+      }, 3000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [isAlertVisible]);
+
   function isValidRoomName(name: string): boolean {
     return regexName.test(name);
   }
@@ -57,9 +67,6 @@ function HomeJoona(props: AuthModalProps) {
     if (textToCopy) {
       navigator.clipboard.writeText(textToCopy).then(() => {
         setIsAlertVisible(true);
-        setTimeout(() => {
-          setIsAlertVisible(false);
-        }, 3000);
       });
     }
   }
@@ -139,7 +146,7 @@ function HomeJoona(props: AuthModalProps) {
         </div>
       </div>
       <div className={styles.secondContainer}>
-        <img src="src\assets\illustration homepage visio by apitech.svg" alt="homepage side image" />
+        <img src="src/assets/illustration_homepage_visio_by_apitech.svg" alt="Image page d’accueil" />
       </div>
     </div>
   );

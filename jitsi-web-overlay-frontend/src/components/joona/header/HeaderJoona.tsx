@@ -8,7 +8,7 @@ import { useState } from 'react';
 import JitsiFrame from '../iframePopup/JitsiFrame';
 import WeboverlayFrame from '../iframePopup/WeboverlayFrame';
 import VoxifyFrame from '../iframePopup/VoxifyFrame';
-import docUtilisateur from '/doc/Documentation utilisateur Visio By Apitech.pdf'
+import docUtilisateur from '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf'
 
 type errorObj = {
   message: string;
