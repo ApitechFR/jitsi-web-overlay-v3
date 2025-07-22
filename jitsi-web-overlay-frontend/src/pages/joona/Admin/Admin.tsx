@@ -4,7 +4,7 @@ import { Select } from "@codegouvfr/react-dsfr/Select";
 import { Upload } from "@codegouvfr/react-dsfr/Upload";
 import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import styles from './Admin.module.css'
 
@@ -39,13 +39,17 @@ function Admin () {
             const formatter = new Intl.DateTimeFormat('en-US', options);
             const parts = formatter.formatToParts(date);
             const offset = parts.find(p => p.type === 'timeZoneName')?.value || '';
-
+            
             return offset.replace('GMT', 'UTC');
         } catch {
             return '';
         }
     };
 
+    const timeZonesWithOffsets = useMemo(() => {
+        return timeZones.map(tz => [tz, formatOffset(tz)]);
+    }, [timeZones]);
+    
     return (
         <div className={styles.content}>
             <Breadcrumb
@@ -73,9 +77,9 @@ function Admin () {
                         }}
                     >
                         <option value="" disabled hidden>Sélectionnez un fuseau horaire</option>
-                        {timeZones.map(tz => (
+                        {timeZonesWithOffsets.map(([tz, offset]) => (
                             <option key={tz} value={tz}>
-                            {`${tz} (${formatOffset(tz)})`}
+                                {`${tz} (${offset})`}
                             </option>
                         ))}
                     </Select>
