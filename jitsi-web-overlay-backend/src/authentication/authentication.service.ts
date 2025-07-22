@@ -18,15 +18,30 @@ export class AuthenticationService {
     private readonly configService: ConfigService,
   ) {}
 
-  loginAuthorize(state: string, nonce: string) {
-    return `${this.configService.get('AGENTCONNECT_URL')}/api/v2/authorize?response_type=code&acr_values=eidas1&scope=${this.configService.get('AGENTCONNECT_SCOPE')}&client_id=${this.configService.get('AGENTCONNECT_CLIENTID')}&redirect_uri=${this.configService.get('AGENTCONNECT_REDIRECT_URL')}/login_callback&state=${state}&nonce=${nonce}`;
+  loginAuthorize(
+    state: string,
+    nonce: string,
+    provider: 'oidc' | 'agentconnect' = 'oidc',
+  ) {
+    const redirectUri =
+      provider === 'agentconnect'
+        ? this.configService.get('AGENTCONNECT_REDIRECT_URL')
+        : this.configService.get('OIDC_REDIRECT_URL');
+    return `${this.configService.get('AUTHORIZATION_ENDPOINT')}/?response_type=code&acr_values=eidas1&scope=${this.configService.get('OIDC_SCOPE')}&client_id=${this.configService.get('OIDC_CLIENTID')}&redirect_uri=${redirectUri}&state=${state}&nonce=${nonce}`;
   }
 
-  async loginCallback(code: string, state: string, sendedState: string) {
-    const client_id = this.configService.get('AGENTCONNECT_CLIENTID');
-    const client_secret = this.configService.get('AGENTCONNECT_SECRET');
+  async loginCallback(
+    code: string,
+    state: string,
+    sendedState: string,
+    provider: 'oidc' | 'agentconnect' = 'oidc',
+  ) {
+    const client_id = this.configService.get('OIDC_CLIENTID');
+    const client_secret = this.configService.get('OIDC_SECRET');
     const redirect_uri =
-      this.configService.get('AGENTCONNECT_REDIRECT_URL') + '/login_callback';
+      provider === 'agentconnect'
+        ? this.configService.get('AGENTCONNECT_REDIRECT_URL')
+        : this.configService.get('OIDC_REDIRECT_URL');
 
     if (sendedState !== state) {
       this.logger.warn(
@@ -41,7 +56,7 @@ export class AuthenticationService {
       const {
         data: { access_token: accessToken, id_token: idToken },
       } = await this.httpService.axiosRef.post(
-        `${this.configService.get('AGENTCONNECT_URL')}/api/v2/token`,
+        `${this.configService.get('TOKEN_ENDPOINT')}`,
         queryString.stringify({
           grant_type: 'authorization_code',
           code,
@@ -49,29 +64,39 @@ export class AuthenticationService {
           client_secret,
           redirect_uri,
         }),
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          proxy: false,
-          httpsAgent: new HttpsProxyAgent(
-            this.configService.get('AGENTCONNECT_PROXYURL'),
-          ),
-        },
+        provider === 'agentconnect'
+          ? {
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+              },
+              proxy: false,
+              httpsAgent: new HttpsProxyAgent(
+                this.configService.get('AGENTCONNECT_PROXYURL'),
+              ),
+            }
+          : {
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+              },
+            },
       );
       this.logger.log(
         "accessToken récupéré d'agentConnect {/authentication/login_callback} route",
       );
 
       const { data: userinfo } = await this.httpService.axiosRef.get(
-        `${this.configService.get('AGENTCONNECT_URL')}/api/v2/userinfo`,
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-          proxy: false,
-          httpsAgent: new HttpsProxyAgent(
-            this.configService.get('AGENTCONNECT_PROXYURL'),
-          ),
-        },
+        `${this.configService.get('USERINFO_ENDPOINT')}`,
+        provider === 'agentconnect'
+          ? {
+              headers: { Authorization: `Bearer ${accessToken}` },
+              proxy: false,
+              httpsAgent: new HttpsProxyAgent(
+                this.configService.get('AGENTCONNECT_PROXYURL'),
+              ),
+            }
+          : {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            },
       );
       this.logger.log(
         "userinfo récupéré d'agentConnect {/authentication/login_callback} route",
@@ -81,25 +106,31 @@ export class AuthenticationService {
     } catch (error) {
       this.logger.error(
         "erreur lors de récupération de l'accessToken ou userinfo d'agentConnect",
-        error,
+        {
+          message: error?.message,
+          status: error?.response?.status,
+          data: error?.response?.data,
+          config: error?.config,
+        },
       );
       throw new NotFoundException(
-        "erreur lors de récupération de l'accessToken ou userinfo d'agentConnect",
+        `erreur lors de récupération de l'accessToken ou userinfo d'agentConnect: ${error?.message}`,
       );
     }
   }
 
-  logout(state, idToken) {
+  logout(state, idToken, provider: 'oidc' | 'agentconnect' = 'oidc') {
     this.logger.log('{/authentication/logout} route');
+    const redirectUri =
+      provider === 'agentconnect'
+        ? this.configService.get('AGENTCONNECT_REDIRECT_URL')
+        : this.configService.get('OIDC_REDIRECT_URL');
     const query = {
       id_token_hint: idToken,
       state,
-      post_logout_redirect_uri:
-        this.configService.get('AGENTCONNECT_REDIRECT_URL') +
-        '/logout_callback',
+      post_logout_redirect_uri: redirectUri,
     };
-    const url =
-      this.configService.get('AGENTCONNECT_URL') + '/api/v2/session/end' + '?';
+    const url = this.configService.get('OIDC_END_SESSION_ENDPOINT') + '?';
     return url + queryString.stringify(query);
   }
 }
