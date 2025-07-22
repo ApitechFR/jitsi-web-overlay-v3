@@ -3,6 +3,7 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Feedback } from '../schemas/Feedback.schema';
@@ -10,16 +11,15 @@ import { Model } from 'mongoose';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { catchError, firstValueFrom } from 'rxjs';
-import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class FeedbackService {
   private readonly logger = new Logger(FeedbackService.name);
   constructor(
-    @InjectModel(Feedback.name) private feedbackModel: Model<Feedback>,
-    private configService: ConfigService,
+    @InjectModel(Feedback.name) private readonly feedbackModel: Model<Feedback>,
+    private readonly configService: ConfigService,
     private readonly httpService: HttpService,
-  ) { }
+  ) {}
 
   async createFeedback(body: FeedbackDTO, jmmc_id: string, ip: string) {
     const { data } = await firstValueFrom(
@@ -29,7 +29,7 @@ export class FeedbackService {
         )
         .pipe(
           catchError((err: any) => {
-            if (err.response && err.response.data) {
+            if (err.response?.data) {
               throw new NotFoundException(err.response.data.message);
             }
             this.logger.error('le serveur jmmc ne repond pas');
@@ -40,7 +40,7 @@ export class FeedbackService {
     if (data) {
       const allreadyExists = await this.feedbackModel.findById(jmmc_id);
       if (!allreadyExists) {
-        const metric = await new this.feedbackModel({
+        const metric = new this.feedbackModel({
           ip: this.ip2int(ip),
           ...body,
           jmmc_id,

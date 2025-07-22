@@ -8,11 +8,20 @@ import {
   Post,
   Put,
   Headers,
+  BadRequestException,
 } from '@nestjs/common';
-import { ApiTags, ApiBody, ApiOkResponse, ApiNotFoundResponse, ApiUnauthorizedResponse, ApiBadRequestResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBody,
+  ApiOkResponse,
+  ApiNotFoundResponse,
+  ApiUnauthorizedResponse,
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 
 import { IConferenceService } from './interfaces/conference-service.interface';
-import { CreateConferenceDTO } from './DTOs/conference.dto';
+import { CreateConferenceDTO, EndConferenceDTO } from './DTOs/conference.dto';
 import { ByEmailDTO } from './DTOs/byEmail.dto';
 import { JwtDTO } from './DTOs/jwt.dto';
 import { RoomNameDto } from './DTOs/room-name.dto';
@@ -20,12 +29,10 @@ import { RoomNameDto } from './DTOs/room-name.dto';
 @ApiTags('Conferences')
 @Controller('')
 export class ConferenceController {
-
   constructor(
     @Inject(IConferenceService)
     private readonly conferenceService: IConferenceService,
   ) { }
-
 
   @Post('conferences')
   @ApiOkResponse({ description: 'Conférence créée avec succès' })
@@ -33,13 +40,11 @@ export class ConferenceController {
     return this.conferenceService.create(dto);
   }
 
-
   @Get('conferences')
   @ApiOkResponse({ description: 'Liste des conférences' })
   async findAll() {
     return this.conferenceService.findAll();
   }
-
 
   @Get('conferences/:id')
   @ApiOkResponse({ description: 'Conférence trouvée' })
@@ -48,13 +53,11 @@ export class ConferenceController {
     return this.conferenceService.findOne(id);
   }
 
-
   @Delete('conferences/:id')
   @ApiOkResponse({ description: 'Conférence supprimée' })
   async delete(@Param('id') id: string) {
     return this.conferenceService.delete(id);
   }
-
 
   @Put('conferences/:id')
   @ApiOkResponse({ description: 'Conférence mise à jour' })
@@ -68,14 +71,54 @@ export class ConferenceController {
     return { message: 'Mise à jour non supportée pour cette base.' };
   }
 
+  @Put('conferences/confname/:confName')
+  async updateEndTime(
+    @Param('confName') confName: string,
+    @Body() dto: EndConferenceDTO,
+  ) {
+    console.log("from controlleur confName : ", confName);
+    console.log("from controlleur endTime : ", dto.end_time);
+    return this.conferenceService.updateEndTimeConferenceByName(confName, dto.end_time);
+  }
+
+  @Get('conferences/count/all')
+  async countAll(): Promise<{ total: number }> {
+    const total = await this.conferenceService.countAll();
+    return { total };
+  }
+
+  @Get('conferences/count/:filter')
+  async countByFilter(
+    @Param('filter') filter: string,
+  ): Promise<{ total: number }> {
+    switch (filter) {
+      case 'today':
+        return { total: await this.conferenceService.countAllToday() };
+      case 'week':
+        return { total: await this.conferenceService.countAllByWeek() };
+      case 'month':
+        return { total: await this.conferenceService.countAllByMonth() };
+      case 'year':
+        return { total: await this.conferenceService.countAllByYear() };
+      default:
+        throw new BadRequestException('Invalid filter value');
+    }
+  }
+
+  @Get('conferences/:uid/duration')
+  async getDuration(@Param('uid') uid: string): Promise<{ duration: number }> {
+    const duration = await this.conferenceService.getDuration(uid);
+    return { duration };
+  }
 
   @Get('roomExists/:roomName')
   @ApiOkResponse({ description: 'retourne roomName si la conférence existe' })
-  @ApiNotFoundResponse({ description: "retourne 404 si la conférence n'existe pas" })
+  @ApiNotFoundResponse({
+    description: "retourne 404 si la conférence n'existe pas",
+  })
   async roomExists(@Param() params: RoomNameDto) {
     return this.conferenceService.roomExists(params.roomName);
   }
-
 
   @Get('/:roomName')
   @ApiOkResponse({
@@ -98,11 +141,15 @@ export class ConferenceController {
     @Headers('webconf-user-region') webconfUserRegion: string,
     @Headers('authorization') accessToken: string,
   ) {
-    accessToken = accessToken && accessToken.split(' ')[1];
-    return this.conferenceService.getRoomAccessToken(params.roomName, webconfUserRegion, accessToken);
+    accessToken = accessToken?.split(' ')[1];
+    return this.conferenceService.getRoomAccessToken(
+      params.roomName,
+      webconfUserRegion,
+      accessToken,
+    );
   }
 
-  //send token by email 
+  //send token by email
   @Post('conference/create/byemail')
   @ApiOkResponse({
     description: "retourne { isWhitelisted: true, sended: 'email sended' }",

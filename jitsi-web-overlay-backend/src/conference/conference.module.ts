@@ -10,47 +10,49 @@ import { RoomNameValidator } from '../common/validators/room-name.validator';
 import { ConferenceServiceMongo } from './services/conference.service.mongo';
 import { ConferenceServiceSQL } from './services/conference.service.sql';
 import { IConferenceService } from './interfaces/conference-service.interface';
-import { WhiteListedDomains, WhiteListedDomainsSchema } from '../schemas/WhiteListedDomains.schema';
+import {
+  WhiteListedDomains,
+  WhiteListedDomainsSchema,
+} from '../schemas/WhiteListedDomains.schema';
 import { Participant } from '../participant/entities/participant.entity';
-import { Replay } from 'src/replay/entities/replay.entity';
-import { User } from 'src/users/entities/users.entity';
-
+import { Replay } from '../replay/entities/replay.entity';
+import { User } from '../users/entities/users.entity';
+import { RoomModule } from '../room/room.module';
+import { Room } from '../room/entities/room.entity';
 
 @Module({
   imports: [
     HttpModule,
     ProsodyModule,
+    RoomModule,
     ...(process.env.DB_TYPE === 'mongodb'
       ? [
-        MongooseModule.forFeature([
-          { name: WhiteListedDomains.name, schema: WhiteListedDomainsSchema },
-        ]),
-      ]
-      : [TypeOrmModule.forFeature([Conference, Participant, Replay, User])]),
+          MongooseModule.forFeature([
+            { name: WhiteListedDomains.name, schema: WhiteListedDomainsSchema },
+          ]),
+        ]
+      : [TypeOrmModule.forFeature([Conference, Participant, Replay, User, Room])]),
   ],
   controllers: [ConferenceController],
   providers: [
     RoomNameValidator,
     ...(process.env.DB_TYPE === 'mongodb'
       ? [
-        ConferenceServiceMongo,
-        {
-          provide: IConferenceService,
-          inject: [ConferenceServiceMongo, ConfigService],
-          useFactory: (mongo: ConferenceServiceMongo, configService: ConfigService) => mongo,
-        },
-      ]
+          ConferenceServiceMongo,
+          {
+            provide: IConferenceService,
+            inject: [ConferenceServiceMongo, ConfigService],
+            useFactory: (mongo: ConferenceServiceMongo) => mongo,
+          },
+        ]
       : [
-        ConferenceServiceSQL,
-        {
-          provide: IConferenceService,
-          inject: [ConferenceServiceSQL, ConfigService],
-          useFactory: (sql: ConferenceServiceSQL, configService: ConfigService) => sql,
-        },
-      ]),
+          ConferenceServiceSQL,
+          {
+            provide: IConferenceService,
+            useExisting: ConferenceServiceSQL,
+          },
+        ]),
   ],
   exports: [IConferenceService],
 })
 export class ConferenceModule { }
-
-

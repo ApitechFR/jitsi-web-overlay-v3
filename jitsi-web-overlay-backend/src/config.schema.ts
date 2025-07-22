@@ -32,12 +32,14 @@ export const configValidationSchema = joi.object({
   //mongodb
   MONGO_URI: joi.when('DB_TYPE', {
     is: 'mongodb',
-    then: joi.string()
+    then: joi
+      .string()
       .uri({ scheme: ['mongodb', 'mongodb+srv'] })
       .required()
       .messages({
         'any.required': 'MONGO_URI is required when DB_TYPE is mongodb',
-        'string.uri': 'MONGO_URI doit commencer par "mongodb://" ou "mongodb+srv://"',
+        'string.uri':
+          'MONGO_URI doit commencer par "mongodb://" ou "mongodb+srv://"',
       }),
     otherwise: joi.string().optional().allow('', null),
   }),
@@ -46,11 +48,19 @@ export const configValidationSchema = joi.object({
   MONGODB_USEUNIFIEDTOPOLOGY: joi.boolean(),
 
   // MariaDB
-  DB_HOST: joi.string().when('DB_TYPE', { is: 'mariadb', then: joi.required() }),
+  DB_HOST: joi
+    .string()
+    .when('DB_TYPE', { is: 'mariadb', then: joi.required() }),
   DB_PORT: joi.number().default(3306),
-  DB_USERNAME: joi.string().when('DB_TYPE', { is: 'mariadb', then: joi.required() }),
-  DB_PASSWORD: joi.string().when('DB_TYPE', { is: 'mariadb', then: joi.required() }),
-  DB_NAME: joi.string().when('DB_TYPE', { is: 'mariadb', then: joi.required() }),
+  DB_USERNAME: joi
+    .string()
+    .when('DB_TYPE', { is: 'mariadb', then: joi.required() }),
+  DB_PASSWORD: joi
+    .string()
+    .when('DB_TYPE', { is: 'mariadb', then: joi.required() }),
+  DB_NAME: joi
+    .string()
+    .when('DB_TYPE', { is: 'mariadb', then: joi.required() }),
 
   //prosody
   PROSODY_AVAILABLE_INSTANCES: joi.string().required(),
@@ -59,5 +69,8 @@ export const configValidationSchema = joi.object({
   JICOFO_AVAILABLE_INSTANCES: joi.string().required(),
 
   //environment
-  NODE_ENV: joi.string().valid('development', 'production', 'test').default('development'),
+  NODE_ENV: joi
+    .string()
+    .valid('development', 'production', 'test')
+    .default('development'),
 });

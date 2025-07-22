@@ -27,6 +27,7 @@ export class ProsodyService {
     const index = 0;
     try {
       const { data } = await this.httpService.axiosRef.get(urls[index]);
+      console.log("data from getRoomFromProsody : ", data);
       return data;
     } catch (error) {
       if (urls.length > 1) {
@@ -49,7 +50,7 @@ export class ProsodyService {
               `/room?domain=${prosody_domain}&room=${roomName.toLocaleLowerCase()}&subdomain=`,
           )
         : null;
-
+    console.log({room_prosody_urls});
     if (await this.getRoomFromProsody(room_prosody_urls)) {
       return this.getRoomFromProsody(room_prosody_urls);
     } else {
@@ -90,6 +91,7 @@ export class ProsodyService {
       const res = await Promise.all(stats_prosody_urls);
       const data = [];
       res.forEach((element) => data.push(element.data));
+      console.log({data});
       return data;
     } catch (error) {
       this.logger.error("le serveur jicofo n'est pas disponible", error);

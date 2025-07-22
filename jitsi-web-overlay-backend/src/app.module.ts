@@ -13,6 +13,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ReplayModule } from './replay/replay.module';
+import { RoomModule } from './room/room.module';
 
 function getDatabaseImports() {
   const dbType = process.env.DB_TYPE;
@@ -22,11 +23,13 @@ function getDatabaseImports() {
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: async (configService: ConfigService) => ({
-          uri: configService.get<string>('MONGODB_URI') || 'mongodb://localhost/wce',
+          uri:
+            configService.get<string>('MONGODB_URI') ||
+            'mongodb://localhost/wce',
         }),
       }),
     ];
-  } else if (dbType === 'mariaDB' || dbType === 'mysql') {
+  } else if (dbType === 'mariadb' || dbType === 'mysql') {
     return [
       TypeOrmModule.forRootAsync({
         imports: [ConfigModule],
@@ -37,7 +40,7 @@ function getDatabaseImports() {
           port: parseInt(configService.get('DB_PORT'), 10) || 3306,
           username: configService.get('DB_USERNAME'),
           password: configService.get('DB_PASSWORD'),
-          database: configService.get('DB_DATABASE'),
+          database: configService.get('DB_NAME'),
           autoLoadEntities: true,
           synchronize: configService.get<string>('NODE_ENV') !== 'production',
         }),
@@ -94,9 +97,10 @@ function getDatabaseImports() {
     StatsModule,
     FeedbackModule,
     ProsodyModule,
-    ReplayModule
+    ReplayModule,
+    RoomModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

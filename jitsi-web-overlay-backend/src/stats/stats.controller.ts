@@ -4,7 +4,7 @@ import { ApiNotFoundResponse, ApiResponse } from '@nestjs/swagger';
 
 @Controller('stats')
 export class StatsController {
-  constructor(private statsService: StatsService) {}
+  constructor(private statsService: StatsService) { }
 
   @Get('/homePage')
   @ApiResponse({
@@ -17,5 +17,18 @@ export class StatsController {
   })
   async homePageStats() {
     return this.statsService.homePageStats();
+  }
+
+  @Get('/dashboard')
+  @ApiResponse({
+    status: 200,
+    description:
+      'retourne le nombre de participants et le nombre de conférences',
+  })
+  @ApiNotFoundResponse({
+    description: "le serveur jicofo n'est pas disponible",
+  })
+  async dashboardStats() {
+    return this.statsService.dashboardStats();
   }
 }

@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 import cardsData from '../../../data/cardConfig.json';
 import Button from '@codegouvfr/react-dsfr/Button';
 
-function Dashboard () {
+function Dashboard() {
 
     const [isToogleActive, setIsToogleActive] = useState(false);
     const [datasCard, setDatasCard] = useState([]);
@@ -18,27 +18,50 @@ function Dashboard () {
         setIsToogleActive(!isToogleActive);
     }
 
-    useEffect(() => {
-        const dataFromDB: Record<string, number> = {
-        users: 1523,
-        confNb: 348,
-        confTime: 89,
-        confMoyPart: 74,
-        confMaxSimult: 12,
-        partMaxSimult: 245
-        };
-    
-        const mergedData = cardsData.map(meta => ({
-        ...meta,
-        valeur: dataFromDB[meta.key] ?? 0
-        }));
+    const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
-        setDatasCard(mergedData);
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/stats/dashboard`);
+                return await response.json();
+            } catch (error) {
+                console.error('Erreur lors de la récupération des données :', error);
+            }
+        };
+
+        const setupData = async () => {
+            const data = await fetchStats();
+            const totalParticipants = data.participants || 0;
+            const totalConferences = data.conferences || 1; // éviter division par zéro
+
+            const MoyParticipantsPerConf = totalConferences > 0
+                ? Math.round(totalParticipants / totalConferences)
+                : 0;
+
+            const dataFromDB: Record<string, number> = {
+                users: data.participants,
+                confNb: data.conferences,
+                confTime: 89,
+                confMoyPart: MoyParticipantsPerConf,
+                confMaxSimult: 12,
+                partMaxSimult: 245
+            };
+
+            const mergedData: any = cardsData.map((meta: any) => ({
+                ...meta,
+                valeur: dataFromDB[meta.key] ?? 0
+            }));
+
+            setDatasCard(mergedData);
+        };
+
+        setupData();
     }, []);
 
     return (
         <div className={styles.content}>
-           <Breadcrumb
+            <Breadcrumb
                 currentPageLabel="Dashboard"
                 homeLinkProps={{
                     to: '/'
@@ -54,49 +77,49 @@ function Dashboard () {
                         name="radio"
                         options={[
                             {
-                            label: 'Aujourd\'hui',
-                            nativeInputProps: {
-                                value: 'value1'
-                            }
+                                label: 'Aujourd\'hui',
+                                nativeInputProps: {
+                                    value: 'value1'
+                                }
                             },
                             {
-                            label: 'Cette semaine',
-                            nativeInputProps: {
-                                value: 'value2'
-                            }
+                                label: 'Cette semaine',
+                                nativeInputProps: {
+                                    value: 'value2'
+                                }
                             },
                             {
-                            label: 'Ce mois-ci',
-                            nativeInputProps: {
-                                value: 'value3'
-                            }
+                                label: 'Ce mois-ci',
+                                nativeInputProps: {
+                                    value: 'value3'
+                                }
                             },
                             {
-                            label: 'Cette année',
-                            nativeInputProps: {
-                                value: 'value4'
-                            }
+                                label: 'Cette année',
+                                nativeInputProps: {
+                                    value: 'value4'
+                                }
                             }
                         ]}
                         orientation="horizontal"
                         state="default"
-                        />
-                        {datasCard && (
-                            <div className={styles.cardsSection}>
-                                {datasCard.map(card => (
-                                    <Card
-                                        background
-                                        border
-                                        desc={card.description}
-                                        size="medium"
-                                        title={card.valeur}
-                                        titleAs="h2"
-                                        className={styles.cardStyle}
-                                        key={card.key}
-                                    />
-                                ))}
-                            </div>
-                        )}
+                    />
+                    {datasCard && (
+                        <div className={styles.cardsSection}>
+                            {datasCard.map((card: any) => (
+                                <Card
+                                    background
+                                    border
+                                    desc={card.description}
+                                    size="medium"
+                                    title={card.valeur}
+                                    titleAs="h2"
+                                    className={styles.cardStyle}
+                                    key={card.key}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </article>
                 <aside className={styles.periodBlock}>
                     <ToggleSwitch
@@ -115,7 +138,7 @@ function Dashboard () {
                                     nativeInputProps={{
                                         type: 'date'
                                     }}
-                                    />
+                                />
                                 <Input
                                     label="Date de fin"
                                     nativeInputProps={{
@@ -125,7 +148,7 @@ function Dashboard () {
                             </div>
                             <div className={styles.validButton}>
                                 <Button
-                                    onClick={function noRefCheck(){}}
+                                    onClick={function noRefCheck() { }}
                                 >
                                     <span>Valider</span>
                                 </Button>
