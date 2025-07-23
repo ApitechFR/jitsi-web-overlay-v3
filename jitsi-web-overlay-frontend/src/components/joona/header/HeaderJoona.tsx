@@ -1,14 +1,14 @@
-import { Header } from '@codegouvfr/react-dsfr/Header';
-import styles from './HeaderJoona.module.css';
-import '@gouvfr-lasuite/integration/dist/css/gaufre.css';
-import Button from '@codegouvfr/react-dsfr/Button';
-import { createModal } from '@codegouvfr/react-dsfr/Modal';
-import { useIsModalOpen } from '@codegouvfr/react-dsfr/Modal/useIsModalOpen';
 import { useState } from 'react';
 import JitsiFrame from '../iframePopup/JitsiFrame';
 import WeboverlayFrame from '../iframePopup/WeboverlayFrame';
 import VoxifyFrame from '../iframePopup/VoxifyFrame';
 import docUtilisateur from '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf'
+
+import styles from './HeaderJoona.module.css';
+
+import { Header } from "@apitechfr/react-dsapitech/Header";
+import { createModal } from "@apitechfr/react-dsapitech/Modal";
+import { useIsModalOpen } from "@apitechfr/react-dsapitech/Modal/useIsModalOpen";
 
 type errorObj = {
   message: string;
@@ -62,7 +62,7 @@ function HeaderJoona({ authenticated }: headerProps) {
           <Header
               brandTop={<>INTITULE<br />OFFICIEL</>}
               homeLinkProps={{
-                to: '/',
+                href: '/',
                 title: 'Accueil - Nom de l’entité (ministère, secrétariat d‘état, gouvernement)'
               }}
               id="fr-header-header-with-quick-access-items"
@@ -95,36 +95,36 @@ function HeaderJoona({ authenticated }: headerProps) {
               navigation={[
                 {
                   linkProps: {
-                    to: '/',
+                    href: '/',
                     target: '_self',
-                    replace: true,
+                    // replace: true,
                   },
                   text: 'Accueil'
                 },
                 {
                   linkProps: {
-                    to: '/profile',
+                    href: '/profile',
                     target: '_self',
                   },
                   text: 'Mon compte'
                 },
                 {
                   linkProps: {
-                    to: '#',
+                    href: '#',
                     target: '_self'
                   },
                   text: 'Conférences'
                 },
                 {
                   linkProps: {
-                    to: '/admin',
+                    href: '/admin',
                     target: '_self'
                   },
                   text: 'Administration'
                 },
                 {
                   linkProps: {
-                    to: '/dashboard',
+                    href: '/dashboard',
                     target: '_self'
                   },
                   text: 'Dashboard'
@@ -136,7 +136,7 @@ function HeaderJoona({ authenticated }: headerProps) {
           <Header
             brandTop={<>INTITULE<br />OFFICIEL</>}
             homeLinkProps={{
-              to: '/',
+              href: '/',
               title: 'Accueil - Nom de l’entité (ministère, secrétariat d‘état, gouvernement)'
             }}
             id="fr-header-header-with-quick-access-items"
