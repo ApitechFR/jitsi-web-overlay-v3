@@ -1,6 +1,6 @@
-import Input from '@codegouvfr/react-dsfr/Input';
-import { Breadcrumb } from "@codegouvfr/react-dsfr/Breadcrumb";
-import { Tag } from "@codegouvfr/react-dsfr/Tag";
+import { Input } from "@apitechfr/react-dsapitech/Input";
+import { Breadcrumb } from "@apitechfr/react-dsapitech/Breadcrumb";
+import { Tag } from "@apitechfr/react-dsapitech/Tag"
 
 import styles from './Profile.module.css'
 import { useState } from 'react';
@@ -14,7 +14,7 @@ function Profile () {
             <Breadcrumb
                 currentPageLabel="Mon compte"
                 homeLinkProps={{
-                    to: '/'
+                    href: '/'
                 }}
                 segments={[]}
             />
