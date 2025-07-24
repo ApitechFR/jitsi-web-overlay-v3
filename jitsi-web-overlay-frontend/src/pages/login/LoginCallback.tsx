@@ -18,7 +18,6 @@ export default function LoginCallback({
   setError,
 }: LoginCallbackProps) {
   const navigate = useNavigate();
-  console.log('[LoginCallback] Component mounted');
 
   const [popupError, setPopupError] = useState<string | null>(null);
 
@@ -27,27 +26,11 @@ export default function LoginCallback({
     const urlParams = new URLSearchParams(queryString);
     const stateFromUrl = urlParams.get('state');
     const stateStored = sessionStorage.getItem('oidc_state');
-    console.log(
-      '[LoginCallback] URL params:',
-      Object.fromEntries(urlParams.entries())
-    );
-    console.log(
-      '[LoginCallback] stateFromUrl:',
-      stateFromUrl,
-      'stateStored:',
-      stateStored
-    );
     if (urlParams.get('error_description')) {
-      console.warn('[LoginCallback] error_description detected, navigating -2');
       navigate(-2);
       return;
     }
     if (stateFromUrl !== stateStored) {
-      console.error(
-        '[LoginCallback] State mismatch:',
-        stateFromUrl,
-        stateStored
-      );
       setError({
         message: "Erreur d'authentification (state mismatch)",
         error: { status: '401', stack: '' },
@@ -57,13 +40,6 @@ export default function LoginCallback({
     }
     // Nettoie le state après usage
     sessionStorage.removeItem('oidc_state');
-    console.log(
-      '[LoginCallback] Calling backend /authentication/login_callback',
-      {
-        code: urlParams.get('code'),
-        state: stateFromUrl,
-      }
-    );
     api
       .get(
         `/authentication/login_callback?code=${urlParams.get(
@@ -71,25 +47,18 @@ export default function LoginCallback({
         )}&state=${stateFromUrl}`
       )
       .then(res => {
-        console.log('[LoginCallback] Backend response:', res.data);
         if (res.data.roomName && res.data.jwt) {
           localStorage.setItem('auth', res.data.accessToken);
           setAuthenticated(true);
-          console.log(
-            '[LoginCallback] Authenticated, redirecting to room:',
-            res.data.roomName
-          );
           navigate(`/${res.data.roomName}?jwt=${res.data.jwt}`);
           return;
         }
         if (res.data.jwt) {
           localStorage.setItem('auth', res.data.accessToken);
           setAuthenticated(true);
-          console.log('[LoginCallback] Authenticated, redirecting to /');
           navigate(`/`);
           return;
         } else {
-          console.warn('[LoginCallback] No jwt in response, redirecting to /');
           navigate(`/`);
         }
       })
@@ -99,18 +68,8 @@ export default function LoginCallback({
         const message = "Erreur d'authentification";
         if (error.response) {
           status = error.response.status?.toString() || '';
-          console.error(
-            '[LoginCallback] Backend error response:',
-            error.response
-          );
         } else if (error.request) {
           status = '400';
-          console.error(
-            '[LoginCallback] Backend error request:',
-            error.request
-          );
-        } else {
-          console.error('[LoginCallback] Backend error:', error);
         }
         setError({
           message,
