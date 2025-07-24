@@ -15,7 +15,7 @@
     "copy-lasuite-assets": "cp -r node_modules/@gouvfr-lasuite/integration/dist/ public/@gouvfr-lasuite/integration"
   },
   "dependencies": {
-    "@apitechfr/react-dsapitech": "^1.23.13",
+    "@apitechfr/react-dsapitech": "^1.23.14",
     "@codegouvfr/react-dsfr": "^0.76.3",
     "@emotion/react": "^11.11.1",
     "@emotion/style": "^0.8.0",

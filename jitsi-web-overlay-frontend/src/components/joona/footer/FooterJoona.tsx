@@ -1,9 +1,4 @@
-import { Footer, FooterProps } from "@apitechfr/react-dsapitech/Footer"
-
-interface props {
-  headerFooterDisplayItem: FooterProps.BottomItem;
-  style: any;
-}
+import { Footer } from "@apitechfr/react-dsapitech/Footer"
 
 function FooterJoona() {
   return (
