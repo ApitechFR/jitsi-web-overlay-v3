@@ -1,3 +1,4 @@
+import { validateRoomName } from '../../utils/roomName';
 import { createModal } from '@codegouvfr/react-dsfr/Modal';
 import { Button } from '@codegouvfr/react-dsfr/Button';
 import { Input } from '@codegouvfr/react-dsfr/Input';
@@ -28,13 +29,6 @@ interface AuthModalProps {
   readonly setOpen: (open: boolean) => void;
   readonly buttons: boolean;
   readonly openModal: boolean;
-}
-
-function roomNameConstraintOk(roomName: string) {
-  // Au moins une lettre, au moins 3 chiffres, longueur >= 10
-  return /^(?=(?:[a-zA-Z\d]*[a-zA-Z]))(?=(?:[a-zA-Z\d]*\d){3})[a-zA-Z\d]{10,}$/.test(
-    roomName
-  );
 }
 
 export default function AuthModal(props: AuthModalProps) {
@@ -177,7 +171,7 @@ export default function AuthModal(props: AuthModalProps) {
           // onClick={handle}
           type="submit"
           className={styles.button}
-          disabled={!roomNameConstraintOk(props.roomName)}
+          disabled={!validateRoomName(props.roomName)}
         >
           Rejoindre ou créer
         </Button>

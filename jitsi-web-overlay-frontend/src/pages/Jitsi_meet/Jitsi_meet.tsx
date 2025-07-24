@@ -1,3 +1,4 @@
+import { validateRoomName } from '../../utils/roomName';
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useEffect } from 'react';
@@ -22,6 +23,16 @@ interface JitsiMeetProps {
   jwt: string | undefined;
 }
 
+interface DecodedJwt {
+  exp: number;
+  room?: string;
+  [key: string]: unknown;
+}
+
+interface WindowWithSetupRenderer extends Window {
+  setupRenderer?: (api: unknown, options: object) => void;
+}
+
 const Jitsi_meet = ({
   setError,
   joinConference,
@@ -43,18 +54,9 @@ const Jitsi_meet = ({
     }
   };
 
-  console.log('jwt', jwt);
-
   const handleReadyToClose = () => {
     navigate('/feedback');
   };
-
-  function roomNameConstraintOk(roomName: string | undefined) {
-    // Au moins une lettre, au moins 3 chiffres, longueur >= 10
-    const regex =
-      /^(?=(?:[a-zA-Z0-9]*[a-zA-Z]))(?=(?:[a-zA-Z0-9]*\d){3})[a-zA-Z0-9]{10,}$/;
-    return !!roomName && regex.test(roomName);
-  }
 
   const renderSpinner = () => {
     return (
@@ -64,11 +66,9 @@ const Jitsi_meet = ({
     );
   };
 
-  // ...existing code...
-
   useEffect(() => {
     if (roomName && jwt) {
-      if (!roomNameConstraintOk(roomName)) {
+      if (!validateRoomName(roomName)) {
         setError({
           message: `Le nom de la conférence ${roomName} n'est pas valide. Merci de respecter la convention de nommage indiquée dans le formulaire.`,
           error: { status: '404', stack: '' },
@@ -77,15 +77,12 @@ const Jitsi_meet = ({
         return;
       }
       try {
-        const decodedToken = jwt_decode(jwt);
+        const decodedToken = jwt_decode<DecodedJwt>(jwt);
         const currentDate = new Date();
-        const exp =
-          typeof (decodedToken as any).exp === 'number'
-            ? (decodedToken as any).exp
-            : 0;
+        const exp = typeof decodedToken.exp === 'number' ? decodedToken.exp : 0;
         if (
-          (decodedToken as any).room === undefined ||
-          (decodedToken as any).room !== roomName ||
+          decodedToken.room === undefined ||
+          decodedToken.room !== roomName ||
           exp * 1000 < currentDate.getTime()
         ) {
           setError({
@@ -108,7 +105,7 @@ const Jitsi_meet = ({
       navigate('/error');
       return;
     }
-    if (roomName && !roomNameConstraintOk(roomName)) {
+    if (roomName && !validateRoomName(roomName)) {
       setRoomName(roomName);
       setError({
         message: `Le nom de la conférence ${roomName} n'est pas valide. Merci de respecter la convention de nommage indiquée dans le formulaire.`,
@@ -123,31 +120,22 @@ const Jitsi_meet = ({
           return navigate('/error');
         }
         if (res.data.jwt) {
-          joinConference(roomName as string);
+          joinConference(roomName);
         }
       });
     }
-  }, [roomName, jwt]);
+  }, [roomName, jwt, joinConference, navigate, setError, setRoomName]);
 
   return (
     <JitsiMeeting
       domain={import.meta.env.VITE_JITSI_DOMAIN}
-      roomName={roomName as string}
+      roomName={roomName ?? ''}
       jwt={jwt1 || undefined}
       spinner={renderSpinner}
-      onApiReady={externalApi => {
-        if (
-          typeof (
-            window as unknown as {
-              setupRenderer?: (api: any, options: object) => void;
-            }
-          ).setupRenderer === 'function'
-        ) {
-          (
-            window as unknown as {
-              setupRenderer: (api: any, options: object) => void;
-            }
-          ).setupRenderer(externalApi, {});
+      onApiReady={(externalApi: unknown) => {
+        const win = window as WindowWithSetupRenderer;
+        if (typeof win.setupRenderer === 'function') {
+          win.setupRenderer(externalApi, {});
         }
       }}
       onReadyToClose={handleReadyToClose}
