@@ -89,17 +89,8 @@ export class AuthenticationController {
     const { code, state } = query;
     const sendedState = request.signedCookies?.state;
     const roomName = request.signedCookies?.roomName;
-    console.log('---[loginCallback]---');
-    console.log('Query params:', query);
-    console.log('sendedState (cookie):', sendedState);
-    console.log('roomName (cookie):', roomName);
-    if (state !== sendedState) {
-      console.error('State mismatch:', state, sendedState);
-    }
     const { userinfo, idToken } =
       await this.authenticationService.loginCallback(code, state, sendedState);
-    console.log('userinfo:', userinfo);
-    console.log('idToken:', idToken);
 
     const tokenClaims = {
       iss: this.configService.get('JITSI_JITSIJWT_ISS'),
@@ -108,7 +99,6 @@ export class AuthenticationController {
       email: this.jwtService.decode(userinfo)?.email,
       idToken,
     };
-    console.log('tokenClaims:', tokenClaims);
 
     const refreshToken = this.jwtService.sign({
       exp: moment().add(12, 'hours').unix(),
@@ -118,8 +108,6 @@ export class AuthenticationController {
       exp: moment().add(15, 'minutes').unix(),
       ...tokenClaims,
     });
-    console.log('refreshToken:', refreshToken);
-    console.log('accessToken:', accessToken);
 
     response.clearCookie('state');
     response.clearCookie('roomName');
@@ -134,8 +122,6 @@ export class AuthenticationController {
       ...this.conferenceService.sendToken(roomName),
       accessToken,
     };
-    console.log('Response to frontend:', result);
-    console.log('---[loginCallback END]---');
     return result;
   }
 
@@ -156,7 +142,8 @@ export class AuthenticationController {
       secure: process.env.NODE_ENV === 'production',
       signed: true,
     });
-    return { url: this.authenticationService.logout(state, idToken) };
+    const logoutUrl = this.authenticationService.logout(state, idToken);
+    return { url: logoutUrl };
   }
 
   @Get('logout_callback')
@@ -179,7 +166,12 @@ export class AuthenticationController {
       );
     }
 
-    response.clearCookie('refreshToken');
+    response.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      signed: true,
+      path: '/',
+    });
     response.clearCookie('state');
     return { url: '/' };
   }
@@ -222,7 +214,7 @@ export class AuthenticationController {
 
       return { accessToken };
     } catch (error) {
-      throw new UnauthorizedException('veuillez vous authentifier');
+      throw new UnauthorizedException(`veuillez vous authentifier ${error}`);
     }
   }
 }

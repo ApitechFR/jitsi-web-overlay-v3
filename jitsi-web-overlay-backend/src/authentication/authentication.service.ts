@@ -124,13 +124,15 @@ export class AuthenticationService {
     const redirectUri =
       provider === 'agentconnect'
         ? this.configService.get('AGENTCONNECT_REDIRECT_URL')
-        : this.configService.get('OIDC_REDIRECT_URL');
+        : this.configService.get('OIDC_LOGOUT_REDIRECT_URL') ||
+          this.configService.get('OIDC_REDIRECT_URL');
     const query = {
       id_token_hint: idToken,
       state,
       post_logout_redirect_uri: redirectUri,
     };
     const url = this.configService.get('OIDC_END_SESSION_ENDPOINT') + '?';
-    return url + queryString.stringify(query);
+    const fullUrl = url + queryString.stringify(query);
+    return fullUrl;
   }
 }
