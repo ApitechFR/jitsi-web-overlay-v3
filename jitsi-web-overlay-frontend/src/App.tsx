@@ -1,4 +1,3 @@
-console.log('[App] composant monté');
 import Home from './pages/home/Home';
 import Layout from './components/layout/Layout';
 import { useState, useEffect } from 'react';
@@ -169,7 +168,7 @@ function App() {
         } else {
           setRoomName(roomName);
           setJwt(res.data.jwt);
-          // ...existing code...
+
           return res;
         }
       })
@@ -177,7 +176,6 @@ function App() {
         if (res?.data) {
           if (res.data.jwt) {
             setJwt(res.data.jwt);
-            console.log('--------------------', res.data.jwt);
             return navigate(`/${res.data.roomName}`, {
               replace: true,
             });
