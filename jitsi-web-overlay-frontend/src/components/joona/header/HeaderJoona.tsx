@@ -20,6 +20,7 @@ function HeaderJoona({ authenticated }: HeaderJoonaProps) {
   const logOut = () => {
     fetch(`${import.meta.env.VITE_BASE_URL}/authentication/logout`, {
       redirect: 'manual',
+      credentials: 'include',
     }).then(res => {
       window.location.href = res.url;
     });

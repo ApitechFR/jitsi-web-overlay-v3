@@ -17,6 +17,7 @@ function HeaderComponent({ authenticated, setError }: HeaderProps) {
   const logOut = () => {
     fetch(`${import.meta.env.VITE_BASE_URL}/authentication/logout`, {
       redirect: 'manual',
+      credentials: 'include',
     })
       .then(res => {
         window.location.href = res.url;
