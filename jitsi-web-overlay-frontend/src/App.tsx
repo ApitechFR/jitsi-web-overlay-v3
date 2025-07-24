@@ -92,10 +92,7 @@ function App() {
   };
 
   const verifyAccessToken = () => {
-    console.log('[verifyAccessToken] called');
     const accessToken = localStorage.getItem('auth');
-    // Log cookies visible to JS before refreshToken call
-    console.log('[verifyAccessToken] document.cookie:', document.cookie);
     if (accessToken && accessToken !== 'false') {
       try {
         const { exp } = jwtDecode(accessToken) as JwtPayload;
@@ -115,21 +112,18 @@ function App() {
     }
 
     // Token invalide → tentative de refresh
-    console.log('[verifyAccessToken] Appel à /authentication/refreshToken');
     api
       .get('/authentication/refreshToken', { withCredentials: true })
       .then(res => {
-        console.log('[verifyAccessToken] Réponse refreshToken:', res);
         localStorage.setItem('auth', res.data.accessToken);
         setAuthenticated(true);
       })
       .catch(err => {
-        console.warn('[verifyAccessToken] Erreur refreshToken:', err);
         localStorage.setItem('auth', 'false');
         setAuthenticated(false);
         // Bloque la redirection automatique OIDC, affiche une erreur
         setError({
-          message: "Vous n'êtes pas authentifié. Veuillez vous connecter.",
+          message: "Vous n'êtes pas authentifié. Veuillez vous connecter ",
           error: { status: '401', stack: '' },
         });
       });
@@ -138,7 +132,6 @@ function App() {
   useEffect(() => {
     //if (location.pathname !== '/login_callback' && location.pathname !== '/') {
     if (location.pathname !== '/login_callback') {
-      console.log('[App] useEffect mount, appel verifyAccessToken');
       verifyAccessToken();
       const intervalId = setInterval(verifyAccessToken, 1000 * 3600);
       return () => clearInterval(intervalId);
@@ -208,9 +201,6 @@ function App() {
         navigate('/error');
       });
   };
-
-  // ...existing code...
-
   return (
     <MuiDsfrThemeProvider>
       <Routes>
@@ -247,6 +237,8 @@ function App() {
               />
               <Route path="profile" element={<Profile />} />
               <Route path="dashboard" element={<Dashboard />} />
+              <Route path="/logout/callback" element={<LogoutCallback />} />
+
               <Route
                 path="/login_callback"
                 element={
@@ -299,15 +291,17 @@ function App() {
                 />
               }
             />
-            <Route
-              path="logout_callback"
+            {/* <Route
+              path="/authentication/logout_callback"
               element={
                 <LogoutCallback
-                  setAuthenticated={setAuthenticated}
-                  setError={setError}
+                // setAuthenticated={setAuthenticated}
+                //setError={setError}
                 />
               }
-            />
+            /> */}
+            <Route path="/logout/callback" element={<LogoutCallback />} />
+
             <Route
               path="/"
               element={
