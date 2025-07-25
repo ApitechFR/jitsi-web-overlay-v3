@@ -1,8 +1,8 @@
-// import { Range } from "@codegouvfr/react-dsfr/Range";
 import Input from '@codegouvfr/react-dsfr/Input';
+import Button from '@codegouvfr/react-dsfr/Button';
+import RadioButtons from '@codegouvfr/react-dsfr/RadioButtons';
 
 import styles from './FeedbackJoona.module.css'
-import Button from '@codegouvfr/react-dsfr/Button';
 import StarRating from '../../../components/joona/stars/StarRating';
 
 
@@ -12,22 +12,36 @@ function FeedbackJoona () {
         <div className={styles.content}>
             <h1 className={styles.title}>Mesurez la qualité du service</h1>
             <div className={styles.contentFeedback}>
-                {/* <Range
-                    hintText="Texte de description additionnel, valeur de 0 à 100."
-                    label="Label"
-                    max={100}
-                    min={0}
-                /> */}
-                <StarRating />
-                <Input
-                    label="Laissez un commentaire."
-                    textArea
-                />
-                <div className={styles.validButtonFeedback}>
-                    <Button>
-                        <span>Valider</span>
-                    </Button>
-                </div>
+                <form action="">
+                    <StarRating />
+                    <Input
+                        label="Laissez un commentaire."
+                        textArea
+                    />
+                    <RadioButtons
+                        legend="Vous en pensez quoi ?"
+                        name="radio"
+                        options={[
+                            {
+                            label: 'Parfait',
+                            nativeInputProps: {
+                                value: 'value1'
+                            }
+                            },
+                            {
+                            label: 'Moyen',
+                            nativeInputProps: {
+                                value: 'value2'
+                            }
+                            },
+                        ]}
+                        />
+                    <div className={styles.validButtonFeedback}>
+                        <Button>
+                            <span>Envoyer</span>
+                        </Button>
+                    </div>
+                </form>
             </div>
         </div>
     )
