@@ -25,9 +25,9 @@ function StarRating () {
               <svg
                 width="48"
                 height="48"
-                fill={isFilled ? "#ffb400" : "none"}
-                stroke="#ffb400"
-                strokeWidth="2"
+                fill={isFilled ? "#6f6f6fff" : "none"}
+                stroke="#6f6f6fff"
+                strokeWidth="1"
               >
                 <use xlinkHref="#star" />
               </svg>
@@ -36,7 +36,6 @@ function StarRating () {
         })}
       </div>
 
-      <p>Note actuelle : {currentRating}/{maxRating}</p>
     </div>
   );
 };
