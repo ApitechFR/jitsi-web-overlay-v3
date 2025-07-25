@@ -24,4 +24,5 @@ package.*
 *.sln
 *.sw?
 .env
+.env.development
 
