@@ -117,7 +117,7 @@ function HeaderJoona({ authenticated }: headerProps) {
                 },
                 {
                   linkProps: {
-                    to: '#',
+                    to: '/admin',
                     target: '_self'
                   },
                   text: 'Administration'

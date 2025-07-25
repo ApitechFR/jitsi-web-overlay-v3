@@ -33,6 +33,7 @@ import Dashboard from './pages/joona/Dashboard/Dashboard';
 import LayoutJoona from './components/joona/layout/LayoutJoona';
 import HomeJoona from './pages/joona/home/HomeJoona';
 import JitsiMeet from './pages/joona/jitsi_meet/jitsi_meet';
+import Admin from './pages/joona/Admin/Admin';
 
 type errorObj = {
   message: string;
@@ -273,6 +274,7 @@ function App() {
             />
             <Route path="profile" element={<Profile />} />
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path='admin' element={<Admin />} />
           </Route>
         </>
       )}
