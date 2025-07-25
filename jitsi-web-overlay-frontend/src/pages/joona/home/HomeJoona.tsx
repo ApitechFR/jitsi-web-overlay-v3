@@ -9,6 +9,15 @@ import { useNavigate } from 'react-router-dom';
 interface HomeJoonaProps {
   readonly roomName: string;
   readonly setRoomName: (roomName: string) => void;
+  readonly setIsWhitelisted: (value: boolean | null) => void;
+  readonly isWhitelisted: boolean | null;
+  readonly email: string;
+  readonly setEmail: (email: string) => void;
+  readonly sendEmail: (roomName: string) => void;
+  readonly joinConference: (roomName: string) => void;
+  readonly authenticated: boolean | null;
+  readonly conferenceNumber: number;
+  readonly participantNumber: number;
 }
 
 function HomeJoona(props: HomeJoonaProps) {

@@ -2,6 +2,7 @@ import { JitsiMeeting } from '@jitsi/react-sdk';
 import { useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import { logDebug } from '../../../utils/logDebug';
 // import Feedback from '../Feedback/Feedback';
 
 // type JitsiMeetProps = { roomName: string };
@@ -61,10 +62,10 @@ export default function JitsiMeet() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Erreur :', errorData);
+        logDebug('Erreur :', errorData);
       }
     } catch (error) {
-      console.error('Erreur :', error);
+      logDebug('Erreur :', error);
     }
   };
 
@@ -114,7 +115,7 @@ export default function JitsiMeet() {
         checkTimeout.current = null;
       }
     } catch (error) {
-      console.error('Erreur lors de la vérification du replay :', error);
+      logDebug('Erreur lors de la vérification du replay :', error);
     }
   };
 

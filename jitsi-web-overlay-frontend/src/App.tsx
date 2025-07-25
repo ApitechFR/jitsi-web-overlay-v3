@@ -1,6 +1,7 @@
 import Home from './pages/home/Home';
 import Layout from './components/layout/Layout';
 import { useState, useEffect } from 'react';
+import { logDebug } from './utils/logDebug';
 import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import FAQ from './pages/FAQ/FAQ.md';
 import DonneesPerso from './pages/DonneesPerso/DonneesPerso.md';
@@ -100,7 +101,7 @@ function App() {
           return;
         }
       } catch (e) {
-        console.warn('Erreur de décodage du JWT', e);
+        logDebug('Erreur de décodage du JWT', e);
       }
     }
 
