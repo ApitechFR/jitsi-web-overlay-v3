@@ -1,10 +1,5 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from 'react';
+import { createContext, useState, useEffect, useMemo, ReactNode } from 'react';
+import { decodeJwt } from '../utils/decodeJwt';
 
 interface AuthContextType {
   authenticated: boolean | null;
@@ -18,15 +13,31 @@ export const AuthContext = createContext<AuthContextType | undefined>(
   undefined
 );
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [authenticated] = useState<boolean | null>(null);
+export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
+  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [email, setEmailState] = useState<string>('');
 
   useEffect(() => {
-    // check authentication status from localStorage or API
+    // Vérifie la présence d'un JWT valide dans le localStorage
+    const token = localStorage.getItem('auth');
+    let isAuth = false;
+    if (token) {
+      const decoded = decodeJwt(token);
+      // Vérifie l'expiration du token si le champ exp existe
+      if (
+        decoded &&
+        typeof decoded === 'object' &&
+        typeof decoded.exp === 'number'
+      ) {
+        const now = Date.now() / 1000;
+        isAuth = decoded.exp > now;
+      } else {
+        isAuth = true;
+      }
+    }
+    setAuthenticated(isAuth);
     const storedEmail = localStorage.getItem('email') || '';
     setEmailState(storedEmail);
-    // add logic to check authentication status from backend
   }, []);
 
   const setEmail = (mail: string) => {
@@ -48,11 +59,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const contextValue = useMemo(
+    () => ({ authenticated, email, setEmail, login, logout }),
+    [authenticated, email]
+  );
   return (
-    <AuthContext.Provider
-      value={{ authenticated, email, setEmail, login, logout }}
-    >
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 }
