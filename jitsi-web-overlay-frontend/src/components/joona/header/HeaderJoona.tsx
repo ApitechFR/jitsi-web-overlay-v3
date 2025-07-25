@@ -108,34 +108,38 @@ function HeaderJoona({ authenticated }: HeaderJoonaProps) {
               },
               text: 'Accueil',
             },
-            {
-              linkProps: {
-                to: '/profile',
-                target: '_self',
-              },
-              text: 'Mon compte',
-            },
-            {
-              linkProps: {
-                to: '#',
-                target: '_self',
-              },
-              text: 'Conférences',
-            },
-            {
-              linkProps: {
-                to: '#',
-                target: '_self',
-              },
-              text: 'Administration',
-            },
-            {
-              linkProps: {
-                to: '/dashboard',
-                target: '_self',
-              },
-              text: 'Dashboard',
-            },
+            ...(authenticated
+              ? [
+                  {
+                    linkProps: {
+                      to: '/profile',
+                      target: '_self',
+                    },
+                    text: 'Mon compte',
+                  },
+                  {
+                    linkProps: {
+                      to: '#',
+                      target: '_self',
+                    },
+                    text: 'Conférences',
+                  },
+                  {
+                    linkProps: {
+                      to: '#',
+                      target: '_self',
+                    },
+                    text: 'Administration',
+                  },
+                  {
+                    linkProps: {
+                      to: '/dashboard',
+                      target: '_self',
+                    },
+                    text: 'Dashboard',
+                  },
+                ]
+              : []),
           ]}
           serviceTitle="Joona.fr"
         />
