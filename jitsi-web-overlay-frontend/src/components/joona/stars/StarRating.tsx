@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React from "react";
 import SvgDefs from "../svgDef/SvgDefs";
 
 import styles from './StarRating.module.css'
 
-function StarRating () {
-  const [currentRating, setCurrentRating] = useState(0);
+interface StarRatingProps {
+  rating: number;
+  changeRating: (value: number) => void;
+}
+
+function StarRating ({ rating, changeRating }: StarRatingProps) {
   const maxRating = 5;
 
   return (
@@ -13,13 +17,13 @@ function StarRating () {
       <div className={styles.starsGroup}>
         {Array.from({ length: maxRating }, (_, index) => {
           const starNumber = index + 1;
-          const isFilled = starNumber <= currentRating;
+          const isFilled = starNumber <= rating;
 
           return (
             <button
               key={starNumber}
               type="button"
-              onClick={() => setCurrentRating(starNumber)}
+              onClick={() => changeRating(starNumber)}
               className={styles.starStyle}
             >
               <svg
