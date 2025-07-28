@@ -1,7 +1,7 @@
 import Swal from "sweetalert2";
 
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL;
+export const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export const showLoadingToast = (message: string) => {
     Swal.fire({
@@ -50,15 +50,22 @@ export const checkVideo = async (roomName: string, checkVideoInterval: NodeJS.Ti
         const response = await fetch(`${API_BASE_URL}/api/visioreplay/findReplay/${encodeURIComponent(conference_name)}`);
         const data = await response.json();
 
-        if (data === "terminated") {
+        if (data.status === "terminated") {
             Swal.fire({
                 title: 'Succès !',
                 text: `La vidéo pour "${conference_name}" a été enregistrée avec succès.`,
                 icon: 'success',
-                toast: true,
                 position: 'top-end',
-                showConfirmButton: false,
-                showCloseButton: true
+                showCloseButton: true,
+                confirmButtonText: 'Voir l’enregistrement',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'small-swal-popup'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = `/visioreplay?room=${encodeURIComponent(data.conference_uid)}`;
+                }
             });
 
             if (checkVideoInterval) clearInterval(checkVideoInterval);
@@ -66,7 +73,7 @@ export const checkVideo = async (roomName: string, checkVideoInterval: NodeJS.Ti
             checkVideoInterval = null;
             checkTimeout = null;
 
-        } else if (data === "error-uploading-rsync") {
+        } else if (data.status === "error-uploading-rsync") {
             Swal.fire({
                 title: 'Erreur !',
                 text: `Une erreur est survenue lors de l'enregistrement de la vidéo pour "${conference_name}". Veuillez contacter le support.`,
