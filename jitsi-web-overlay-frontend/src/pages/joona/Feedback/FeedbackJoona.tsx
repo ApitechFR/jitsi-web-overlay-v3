@@ -4,16 +4,18 @@ import RadioButtons from '@codegouvfr/react-dsfr/RadioButtons';
 
 import styles from './FeedbackJoona.module.css'
 import StarRating from '../../../components/joona/stars/StarRating';
-
+import { useState } from 'react';
 
 function FeedbackJoona () {
+
+    const [rating, setRating] = useState(0);
 
     return (
         <div className={styles.content}>
             <h1 className={styles.title}>Mesurez la qualité du service</h1>
             <div className={styles.contentFeedback}>
-                <form action="">
-                    <StarRating />
+                <form action="" onSubmit={e => e.preventDefault()}>
+                    <StarRating rating={rating} changeRating={setRating} />
                     <Input
                         label="Laissez un commentaire."
                         textArea
@@ -25,13 +27,13 @@ function FeedbackJoona () {
                             {
                             label: 'Parfait',
                             nativeInputProps: {
-                                value: 'value1'
+                                value: 'good'
                             }
                             },
                             {
                             label: 'Moyen',
                             nativeInputProps: {
-                                value: 'value2'
+                                value: 'medium'
                             }
                             },
                         ]}
