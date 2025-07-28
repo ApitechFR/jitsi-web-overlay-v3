@@ -8,13 +8,20 @@ import { handleRecordingStatus } from './visioReplay';
 
 // type JitsiMeetProps = { roomName: string };
 
-export default function JitsiMeet() {
+interface JitsiMeetProps {
+    jwt: any;
+}
+
+export default function JitsiMeet({
+    jwt,
+}: JitsiMeetProps) {
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState(0);
     const { roomName } = useParams();
     const participantCountRef = useRef(0);
     const checkVideoInterval = useRef<NodeJS.Timeout | null>(null);
     const checkTimeout = useRef<NodeJS.Timeout | null>(null);
+    const jwt1 = jwt ? jwt : window.location.search.split('=')[1];
 
     const navigate = useNavigate();
 
@@ -25,6 +32,8 @@ export default function JitsiMeet() {
         iframeRef.style.height = '100%';
         iframeRef.style.width = '100%';
     };
+
+    console.log('jwt', jwt);
 
     const onClose = () => {
         setOpen(false);
@@ -56,11 +65,11 @@ export default function JitsiMeet() {
             jibriApitechApiDomain !== "process.env.JIBRI_APITECH_API_DOMAIN"
         ) {
 
-			let eventId = jitsiAPIOptions.eventId;
-			let roomName = jitsiAPIOptions.roomName;
-			let uploadCallbackJwt = jitsiAPIOptions.uploadCallbackJwt;
-			let uploadCallbackUrl = jitsiAPIOptions.uploadCallbackUrl;
-			let uploadCallbackDomainUrl = jitsiAPIOptions.uploadCallbackDomainUrl;
+            let eventId = jitsiAPIOptions.eventId;
+            let roomName = jitsiAPIOptions.roomName;
+            let uploadCallbackJwt = jitsiAPIOptions.uploadCallbackJwt;
+            let uploadCallbackUrl = jitsiAPIOptions.uploadCallbackUrl;
+            let uploadCallbackDomainUrl = jitsiAPIOptions.uploadCallbackDomainUrl;
 
             if (!eventId || !roomName || !uploadCallbackJwt) {
                 console.warn("Certains paramètres pour register_eventid sont manquants.");
@@ -107,6 +116,7 @@ export default function JitsiMeet() {
                 domain={import.meta.env.VITE_JITSI_DOMAIN}
 
                 roomName={roomName ? roomName : ''}
+                jwt={jwt1 ? jwt1 : undefined}
                 getIFrameRef={handleJitsiIFrameRef1}
                 onApiReady={externalApi => {
                     handlejibriApitechApi();
