@@ -13,8 +13,9 @@ export class CreateReplayDto {
     conference_name: string;
 }
 export class UpdateReplayDto {
+    @IsOptional()
     @IsString()
-    uid: string;
+    uid?: string;
 
     @IsOptional()
     @IsString()

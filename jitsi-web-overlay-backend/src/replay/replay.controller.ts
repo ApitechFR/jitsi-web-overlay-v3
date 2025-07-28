@@ -1,9 +1,11 @@
-import { Body, Controller, Get, HttpException, HttpStatus, InternalServerErrorException, NotFoundException, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, InternalServerErrorException, NotFoundException, Param, Post, Put, Query, Res } from '@nestjs/common';
 import { ReplayService } from './replay.service';
 import { CreateReplayDto, UpdateReplayDto } from './DTOs/replay.dto';
 import { Replay } from './entities/replay.entity';
 import * as fs from 'fs';
 import * as FormData from 'form-data';
+import { Response } from 'express';
+import * as path from 'path';
 
 @Controller('api/visioreplay')
 export class ReplayController {
@@ -135,7 +137,7 @@ export class ReplayController {
     }
 
     @Get('findReplay/:conference_name')
-    async findReplayByConfName(@Param('conference_name') conference_name: string): Promise<string> {
+    async findReplayByConfName(@Param('conference_name') conference_name: string): Promise<Replay> {
         try {
             const replay = await this.replayService.findReplayByConfName(conference_name);
 
@@ -143,7 +145,7 @@ export class ReplayController {
                 throw new NotFoundException('Aucun replay trouvé');
             }
 
-            return replay.status;
+            return replay;
         } catch (error) {
             console.error("Erreur lors de la récupération du replay :", error.message);
             throw new InternalServerErrorException(error.message);
@@ -178,5 +180,42 @@ export class ReplayController {
         return {
             message: `L'eventid '${eventid}' est enregistré pour la conf '${confname}'`,
         };
+    }
+
+    @Get('video')
+    downloadVideo(
+        @Query('path') rawPath: string,
+        @Res() res: Response,
+    ) {
+        const decodedPath = decodeURIComponent(rawPath || '').trim();
+
+        if (!decodedPath || !fs.existsSync(decodedPath)) {
+            throw new HttpException('Fichier introuvable', HttpStatus.NOT_FOUND);
+        }
+
+        const stat = fs.statSync(decodedPath);
+        const stream = fs.createReadStream(decodedPath);
+        const safeFilename = path.basename(decodedPath);
+
+        console.log('Chemin fichier reçu:', decodedPath);
+
+        res.set({
+            'Content-Disposition': `attachment; filename="${safeFilename}"`,
+            'Content-Type': 'video/mp4',
+            'Content-Length': stat.size,
+        });
+
+        stream.pipe(res);
+    }
+
+
+    @Get('replay')
+    async findAll(): Promise<Replay[]> {
+        return this.replayService.findAll();
+    }
+
+    @Get('replay/:conference_uid')
+    async getByLatestConfUID(@Param('conference_uid') conference_uid: string) {
+        return this.replayService.findByLatestConferenceUID(conference_uid);
     }
 }

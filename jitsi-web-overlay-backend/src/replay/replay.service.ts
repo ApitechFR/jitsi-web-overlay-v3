@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Replay } from './entities/replay.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateReplayDto, UpdateReplayDto } from './DTOs/replay.dto';
@@ -8,6 +8,7 @@ import { join } from 'path';
 import * as fs from 'fs';
 import { RegisterEvent } from './entities/register_event.entity';
 import { RegisterEventDto } from './DTOs/register_event.dto';
+import { Conference } from '../conference/entities/conference.entity';
 
 @Injectable()
 export class ReplayService {
@@ -16,15 +17,48 @@ export class ReplayService {
         private readonly replayRepository: Repository<Replay>,
         @InjectRepository(RegisterEvent)
         private readonly registerEventRepository: Repository<RegisterEvent>,
+        @InjectRepository(Conference)
+        private readonly conferenceRepository: Repository<Conference>,
+        private dataSource: DataSource,
     ) { }
+
+    async findAll(): Promise<Replay[]> {
+        return this.replayRepository.find({
+            where: {
+                status: 'terminated',
+            },
+            order: {
+                created_at: 'DESC',
+            },
+            relations: ['conference'],
+        });
+    }
+
+    async findByLatestConferenceUID(conference_uid: string): Promise<Replay[]> {
+        return this.replayRepository.find({
+            where: {
+                status: 'terminated',
+                conference: { uid: conference_uid },
+            },
+            relations: ['conference'],
+            order: {
+                created_at: 'DESC',
+            },
+        });
+    }
 
     async createReplay(data: CreateReplayDto): Promise<Replay> {
         try {
+            const conference = await this.conferenceRepository.findOne({
+                where: { name: data.conference_name },
+                order: { created_at: 'DESC' },
+            });
+
             const replay = this.replayRepository.create({
                 status: data.status,
                 message: data.message,
                 conference_name: data.conference_name,
-                conference_uid: uuidv4(),
+                conference: conference,
             });
 
             return await this.replayRepository.save(replay);

@@ -31,17 +31,8 @@ export class Replay {
   @ManyToOne(() => Conference, (conference) => conference.replays, {
     nullable: true,
   })
-  @JoinColumn({ name: 'conference_id' })
+  @JoinColumn({ name: 'conference_uid', referencedColumnName: 'uid' })
   conference: Conference;
-
-  @Column({ type: 'uuid' })
-  conference_uid: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  duration: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  added_by: string;
 
   @CreateDateColumn({ name: 'created_at' })
   created_at: Date;
