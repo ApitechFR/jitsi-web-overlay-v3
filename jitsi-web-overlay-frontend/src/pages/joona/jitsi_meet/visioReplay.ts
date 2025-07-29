@@ -3,6 +3,10 @@ import Swal from "sweetalert2";
 
 export const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
+const envValue  = import.meta.env.VITE_REPLAY_CHECK_TIMEOUT_MS;
+const parsed = Number(envValue );
+export const REPLAY_CHECK_TIMEOUT_MS = Number.isFinite(parsed) ? parsed : 600000;
+
 export const showLoadingToast = (message: string) => {
     Swal.fire({
         title: message,
@@ -135,7 +139,7 @@ export const handleRecordingStatus = (api: any, roomName: string, checkVideoInte
                         showConfirmButton: false,
                         showCloseButton: true
                     });
-                }, 600000); // 10 min
+                }, REPLAY_CHECK_TIMEOUT_MS); // 10 min
             }
         }
     });
