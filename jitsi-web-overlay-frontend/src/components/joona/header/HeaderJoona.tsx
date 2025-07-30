@@ -16,8 +16,8 @@ type errorObj = {
 };
 
 interface headerProps {
-  authenticated: boolean | null;
-  setAuthenticated: (e: boolean) => void;
+  isConnected: boolean | null;
+  setIsConnected: (e: boolean) => void;
   setError: (obj: errorObj) => void;
 }
 
@@ -30,9 +30,7 @@ function openModal () {
   modal.open();
 }
 
-function HeaderJoona({ authenticated }: headerProps) {
-
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+function HeaderJoona(props: headerProps) {
 
   const isOpen = useIsModalOpen(modal);
 
@@ -58,7 +56,7 @@ function HeaderJoona({ authenticated }: headerProps) {
   return (
     <>
       <div className={styles.parent}>
-        {isAuthenticated ? (
+        {props.isConnected ? (
           <Header
               brandTop={<>INTITULE<br />OFFICIEL</>}
               homeLinkProps={{

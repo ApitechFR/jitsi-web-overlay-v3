@@ -7,19 +7,18 @@ import ShuffleIcon from '@mui/icons-material/Shuffle';
 import { useNavigate } from 'react-router-dom';
 import RandExp from 'randexp';
 
+import { createModal } from "@codegouvfr/react-dsfr/Modal";
+
 interface AuthModalProps {
   roomName: string;
-  email: string;
-  isWhitelisted: boolean | null;
-  setEmail: (mail: string) => void;
-  sendEmail: (mail: string) => void;
-  setIsWhitelisted: (e: any) => void;
   setRoomName: (e: any) => void;
-  joinConference: (e: any) => void;
-  authenticated: boolean | null;
-  conferenceNumber: number;
-  participantNumber: number;
+  isConnected: boolean;
 }
+
+const modal = createModal({
+  id: "auth-modal",
+  isOpenedByDefault: false,
+});
 
 function HomeJoona(props: AuthModalProps) {
   const navigate = useNavigate();
@@ -47,6 +46,12 @@ function HomeJoona(props: AuthModalProps) {
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
+
+    if (!props.isConnected) {
+      modal.open();
+      return;
+    }
+
     if (!props.roomName || !isValidRoomName(props.roomName)) {
       setIsError(true)
       return
@@ -148,6 +153,13 @@ function HomeJoona(props: AuthModalProps) {
       <div className={styles.secondContainer}>
         <img src="src/assets/illustration_homepage_visio_by_apitech.svg" alt="Image page d’accueil" />
       </div>
+
+      <modal.Component title="">
+        <div className={styles.contentModal}>
+          <h1>La conférence n'a pas encore démarré</h1>
+          <p>Si vous disposez d'un compte Visio By Apitech vous pouvez vous authentifier, sinon merci de patienter</p>
+        </div>
+      </modal.Component>
     </div>
   );
 }

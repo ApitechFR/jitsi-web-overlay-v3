@@ -62,6 +62,7 @@ function App() {
   const [conferenceNumber, setConferenceNumber] = useState(0);
   const [participantsNumber, setparticipantsNumber] = useState(0);
   const [msg, setMsg] = useState<ReactNode>(<></>);
+  const [isConnected, setIsConnected] = useState(false);
 
   const appName = import.meta.env.VITE_APP_NAME;
 
@@ -248,8 +249,8 @@ function App() {
             path="/"
             element={
               <LayoutJoona
-                authenticated={authenticated}
-                setAuthenticated={setAuthenticated}
+                isConnected={isConnected}
+                setIsConnected={setIsConnected}
                 setError={setError}
               />
             }
@@ -260,15 +261,7 @@ function App() {
                 <HomeJoona
                   roomName={roomName}
                   setRoomName={setRoomName}
-                  setIsWhitelisted={setIsWhitelisted}
-                  isWhitelisted={isWhitelisted}
-                  email={email}
-                  setEmail={setEmail}
-                  sendEmail={sendEmail}
-                  joinConference={joinConference}
-                  authenticated={authenticated}
-                  conferenceNumber={conferenceNumber}
-                  participantNumber={participantsNumber}
+                  isConnected={isConnected}
                 />
               }
             />

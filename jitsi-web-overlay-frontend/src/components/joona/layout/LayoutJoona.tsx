@@ -13,15 +13,15 @@ type errorObj = {
 };
 
 interface headerProps {
-  authenticated: boolean | null;
-  setAuthenticated: (e: boolean) => void;
+  isConnected: boolean | null;
+  setIsConnected: (e: boolean) => void;
   setError: (obj: errorObj) => void;
 }
-export default function LayoutJoona(propos: headerProps) {
+export default function LayoutJoona(props: headerProps) {
   return (
     <div className={styles.layout}>
       <header>
-        <Header {...propos} />
+        <Header {...props} />
       </header>
       <main>
         <Outlet />
