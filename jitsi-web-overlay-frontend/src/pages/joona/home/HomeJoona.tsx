@@ -8,6 +8,7 @@ import { Input } from '@apitechfr/react-dsapitech/Input';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import { useNavigate } from 'react-router-dom';
 import { Alert } from '@apitechfr/react-dsapitech/Alert';
+import { createModal } from "@apitechfr/react-dsapitech/Modal";
 
 interface HomeJoonaProps {
   readonly roomName: string;
@@ -22,6 +23,11 @@ interface HomeJoonaProps {
   readonly conferenceNumber: number;
   readonly participantNumber: number;
 }
+
+const modal = createModal({
+  id: "auth-modal",
+  isOpenedByDefault: false,
+});
 
 function HomeJoona(props: HomeJoonaProps) {
   const navigate = useNavigate();
@@ -58,6 +64,12 @@ function HomeJoona(props: HomeJoonaProps) {
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
+
+    if (!props.authenticated) {
+      modal.open();
+      return;
+    }
+    
     if (!props.roomName || !isValidRoomName(props.roomName)) {
       setIsError(true);
       return;
@@ -144,6 +156,13 @@ function HomeJoona(props: HomeJoonaProps) {
           alt="Image page d’accueil"
         />
       </div>
+
+      <modal.Component title="">
+        <div className={styles.contentModal}>
+          <h1>La conférence n'a pas encore démarré</h1>
+          <p>Si vous disposez d'un compte Visio By Apitech vous pouvez vous authentifier, sinon merci de patienter</p>
+        </div>
+      </modal.Component>
     </div>
   );
 }

@@ -23,9 +23,9 @@ import api from './axios/axios';
 import LoginCallback from './pages/login/LoginCallback';
 import LogoutCallback from './pages/login/LogoutCallback';
 import Error from './pages/Error/Error';
-import MuiDsfrThemeProvider from '@codegouvfr/react-dsfr/mui';
+import MuiDsfrThemeProvider from '@apitechfr/react-dsapitech/mui';
 import PlanDuSite from './pages/PlanDuSite/PlanDuSite';
-import { fetchUserInfos } from './utils/userInfos';
+import jwtDecode from 'jwt-decode';
 
 import Profile from './pages/joona/Profile/Profile';
 import Dashboard from './pages/joona/Dashboard/Dashboard';
@@ -101,13 +101,37 @@ function App() {
       });
   };
 
-  const verifyAuthentication = () => {
-    fetchUserInfos()
-      .then(userInfos => {
-        setAuthenticated(!!userInfos);
+  const verifyAccessToken = () => {
+    const accessToken = localStorage.getItem('auth');
+    if (accessToken && accessToken !== 'false') {
+      try {
+        const { exp } = jwtDecode<JwtPayload>(accessToken);
+        if (Date.now() <= exp * 1000) {
+          setAuthenticated(true);
+          return;
+        }
+      } catch (e) {
+        logDebug('Erreur de décodage du JWT', e);
+      }
+    }
+
+    // Si le token localStorage est à 'false', on ne tente pas de refresh
+    if (!accessToken || accessToken === 'false') {
+      setAuthenticated(false);
+      return;
+    }
+
+    // Token invalide → tentative de refresh
+    api
+      .get('/authentication/refreshToken', { withCredentials: true })
+      .then(res => {
+        localStorage.setItem('auth', res.data.accessToken);
+        setAuthenticated(true);
       })
-      .catch(() => {
+      .catch(err => {
+        localStorage.setItem('auth', 'false');
         setAuthenticated(false);
+        console.error('Erreur lors du rafraîchissement du token', err);
         setError({
           message: "Vous n'êtes pas authentifié. Veuillez vous connecter ",
           error: { status: '401', stack: '' },
@@ -120,8 +144,8 @@ function App() {
       location.pathname !== '/login_callback' &&
       location.pathname !== '/login/callback'
     ) {
-      verifyAuthentication();
-      const intervalId = setInterval(verifyAuthentication, 1000 * 3600);
+      verifyAccessToken();
+      const intervalId = setInterval(verifyAccessToken, 1000 * 3600);
       return () => clearInterval(intervalId);
     }
   }, [location.pathname]);
