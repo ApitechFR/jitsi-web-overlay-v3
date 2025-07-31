@@ -10,6 +10,12 @@ import { Header } from "@apitechfr/react-dsapitech/Header";
 import { createModal } from "@apitechfr/react-dsapitech/Modal";
 import { useIsModalOpen } from "@apitechfr/react-dsapitech/Modal/useIsModalOpen";
 
+import styles from './HeaderJoona.module.css';
+
+import { Header } from "@apitechfr/react-dsapitech/Header";
+import { createModal } from "@apitechfr/react-dsapitech/Modal";
+import { useIsModalOpen } from "@apitechfr/react-dsapitech/Modal/useIsModalOpen";
+
 type errorObj = {
   message: string;
   error: { status: string; stack: string };
