@@ -45,15 +45,6 @@ export default function JitsiMeet({
     const jibriApitechApiDomain = import.meta.env.VITE_JIBRI_APITECH_API_DOMAIN;
     const jitsiAPIOptions = (window as any).jitsiAPIOptions;
 
-    //jitsiAPIOptions ???
-    // const jitsiAPIOptions = {
-    //     eventId: '12345',
-    //     roomName: roomName ?? '',
-    //     uploadCallbackJwt: 'jwt',
-    //     uploadCallbackUrl: 'https://api',
-    //     uploadCallbackDomainUrl: 'https://api',
-    // };
-
     const handlejibriApitechApi = () => {
         console.log(`enableJibriApitechApi=${enableJibriApitechApi}`);
         console.log(`jibriApitechApiDomain=${jibriApitechApiDomain}`);

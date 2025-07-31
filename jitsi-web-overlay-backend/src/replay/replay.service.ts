@@ -112,7 +112,6 @@ export class ReplayService {
             const isEnabled = process.env.ENABLE_JIBRI_APITECH_API === 'true';
 
             if (replay_status === 'uploaded-rsync' && fs.existsSync(filePath)) {
-                console.log('file exist:', true);
                 if (!isEnabled) {
                     console.log({ isEnabled });
                     replay_status = 'terminated';

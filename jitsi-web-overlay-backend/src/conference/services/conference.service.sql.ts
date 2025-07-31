@@ -60,8 +60,6 @@ export class ConferenceServiceSQL implements IConferenceService {
   }
 
   async updateEndTimeConferenceByName(confName: string, endTime: Date) {
-    console.log("from service confName : ", confName);
-    console.log("from service endTime : ", endTime);
     const conf = await this.conferenceRepo.findOne({
       where: { name: confName, end_time: null },
       order: { start_time: 'DESC' },

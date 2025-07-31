@@ -76,8 +76,6 @@ export class ConferenceController {
     @Param('confName') confName: string,
     @Body() dto: EndConferenceDTO,
   ) {
-    console.log("from controlleur confName : ", confName);
-    console.log("from controlleur endTime : ", dto.end_time);
     return this.conferenceService.updateEndTimeConferenceByName(confName, dto.end_time);
   }
 
