@@ -1,8 +1,8 @@
 {
-  "name": "wce-api",
-  "version": "0.0.1",
+  "name": "jitsi-web-overlay-v3",
+  "version": "3.0.1",
   "description": "",
-  "author": "",
+  "author": "APITECH",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {

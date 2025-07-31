@@ -34,6 +34,8 @@ import LayoutJoona from './components/joona/layout/LayoutJoona';
 import HomeJoona from './pages/joona/home/HomeJoona';
 import JitsiMeet from './pages/joona/jitsi_meet/jitsi_meet';
 import ReplayList from './pages/joona/replayList/ReplayList';
+import Admin from './pages/joona/Admin/Admin';
+import FeedbackJoona from './pages/joona/Feedback/FeedbackJoona';
 
 type errorObj = {
   message: string;
@@ -275,6 +277,8 @@ function App() {
             <Route path="profile" element={<Profile />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="visioreplay" element={<ReplayList />} />
+            <Route path='admin' element={<Admin />} />
+            <Route path="feedback" element={<FeedbackJoona />} />
           </Route>
         </>
       )}
