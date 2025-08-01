@@ -1,8 +1,9 @@
 import { useState, useRef, FormEvent, useEffect } from 'react';
 import styles from './HomeJoona.module.css';
-import Input from '@codegouvfr/react-dsfr/Input';
-import Button from '@codegouvfr/react-dsfr/Button';
-import { Alert } from "@codegouvfr/react-dsfr/Alert";
+// import Input from '@codegouvfr/react-dsfr/Input';
+// import Button from '@codegouvfr/react-dsfr/Button';
+import { Button } from "@apitechfr/react-dsapitech/Button";
+import { Input } from "@apitechfr/react-dsapitech/Input"
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import { useNavigate } from 'react-router-dom';
 import RandExp from 'randexp';
