@@ -1,29 +1,25 @@
-# Use the official Node.js runtime as the base image
-FROM node:bookworm as build
 
-# Set the working directory in the container
-WORKDIR .
+FROM node:20-bookworm-slim AS build
 
-# Copy package.json and package-lock.json to the working directory
+WORKDIR /app
+
 COPY package*.json ./
-
-# Copy the entire application code to the container
 COPY . .
-
-# Install dependencies
 RUN npm install --force
 
-# Build the React app for production
+
+
 RUN npm run build
 
-# Use Nginx as the production server
+# Stage for serving the built application
 FROM nginx:alpine
 
-# Copy the built React app to Nginx's web server directory
-COPY --from=build ./dist /usr/share/nginx/html
+RUN rm /etc/nginx/conf.d/default.conf
 
-# Expose port 80 for the Nginx server
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+COPY --from=build /app/dist /usr/share/nginx/html
+
 EXPOSE 80
 
-# Start Nginx when the container runs
 CMD ["nginx", "-g", "daemon off;"]
