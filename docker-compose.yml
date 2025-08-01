@@ -35,7 +35,7 @@ services:
     volumes:
       - mariadb_data:/var/lib/mysql
 
-  visioreplay-ssh:
+  visioreplay-ssh-v3:
     image: alpine:latest
     env_file: ./.env
     restart: always
