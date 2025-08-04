@@ -149,7 +149,7 @@ function HomeJoona(props: AuthModalProps) {
       </div>
       <div className={styles.secondContainer}>
         <img
-          src="src/assets/illustration_homepage_visio_by_apitech.svg"
+          src="/assets/illustration_homepage_visio_by_apitech.svg"
           alt="Image page d’accueil"
         />
       </div>
