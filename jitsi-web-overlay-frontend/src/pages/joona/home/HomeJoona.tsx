@@ -1,4 +1,3 @@
-import { useRef, FormEvent } from 'react';
 import { generateRoomName } from '../../../utils/roomName';
 import { useState, useRef, FormEvent, useEffect } from 'react';
 import styles from './HomeJoona.module.css';
@@ -8,6 +7,7 @@ import { Button } from '@apitechfr/react-dsapitech/Button';
 import { Input } from '@apitechfr/react-dsapitech/Input';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import { useNavigate } from 'react-router-dom';
+import { Alert } from '@apitechfr/react-dsapitech/Alert';
 
 interface HomeJoonaProps {
   readonly roomName: string;
@@ -45,6 +45,15 @@ function HomeJoona(props: HomeJoonaProps) {
 
   function isValidRoomName(name: string): boolean {
     return regexName.test(name);
+  }
+   function onCopyLink() {
+    const textToCopy = `${window.location.origin}/${props.roomName}`;
+
+    if (textToCopy) {
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        setIsAlertVisible(true);
+      });
+    }
   }
 
   function onSubmit(e: FormEvent) {

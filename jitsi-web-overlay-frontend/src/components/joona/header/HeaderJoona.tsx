@@ -1,16 +1,10 @@
-import { Header } from '@codegouvfr/react-dsfr/Header';
+
 import styles from './HeaderJoona.module.css';
-import '@gouvfr-lasuite/integration/dist/css/gaufre.css';
-import Button from '@codegouvfr/react-dsfr/Button';
-import { createModal } from '@codegouvfr/react-dsfr/Modal';
-import { useIsModalOpen } from '@codegouvfr/react-dsfr/Modal/useIsModalOpen';
 import { useState } from 'react';
 import JitsiFrame from '../iframePopup/JitsiFrame';
 import WeboverlayFrame from '../iframePopup/WeboverlayFrame';
 import VoxifyFrame from '../iframePopup/VoxifyFrame';
 import docUtilisateur from '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf'
-
-import styles from './HeaderJoona.module.css';
 
 import { Header } from "@apitechfr/react-dsapitech/Header";
 import { createModal } from "@apitechfr/react-dsapitech/Modal";
@@ -123,9 +117,9 @@ function HeaderJoona({ authenticated }: HeaderJoonaProps) {
           navigation={[
             {
               linkProps: {
-                to: '/',
+                href: '/',
                 target: '_self',
-                replace: true,
+                
               },
               text: 'Accueil',
             },
@@ -133,28 +127,28 @@ function HeaderJoona({ authenticated }: HeaderJoonaProps) {
               ? [
                   {
                     linkProps: {
-                      to: '/profile',
+                      href: '/profile',
                       target: '_self',
                     },
                     text: 'Mon compte',
                   },
                   {
                     linkProps: {
-                      to: '#',
+                      href: '#',
                       target: '_self',
                     },
                     text: 'Conférences',
                   },
                   {
                     linkProps: {
-                      to: '#',
+                      href: '#',
                       target: '_self',
                     },
                     text: 'Administration',
                   },
                   {
                     linkProps: {
-                      to: '/dashboard',
+                      href: '/dashboard',
                       target: '_self',
                     },
                     text: 'Dashboard',

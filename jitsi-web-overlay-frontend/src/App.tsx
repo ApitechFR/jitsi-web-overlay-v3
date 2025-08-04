@@ -28,6 +28,7 @@ import HomeJoona from './pages/joona/home/HomeJoona';
 import JitsiMeet from './pages/joona/jitsi_meet/jitsi_meet';
 import JitsiMeetWrapper from './JitsiMeetWrapper';
 import Admin from './pages/joona/Admin/Admin';
+
 import FeedbackJoona from './pages/joona/Feedback/FeedbackJoona';
 
 type errorObj = {
@@ -56,7 +57,7 @@ function App() {
   const [conferenceNumber, setConferenceNumber] = useState(0);
   const [participantsNumber, setparticipantsNumber] = useState(0);
 
-  const AppTemplate = import.meta.env.VITE_APP_TEMPLATE || "joona";
+  const AppTemplate = import.meta.env.VITE_APP_TEMPLATE || 'joona';
 
   const sendEmail = (roomName: string) => {
     api
@@ -158,7 +159,7 @@ function App() {
       });
   }, []);
 
-  const joinConference = (roomName: string) => {
+  const joinConference = () => {
     api
       .get(`/${roomName}`)
       .then(res => {
@@ -171,7 +172,6 @@ function App() {
         } else {
           setRoomName(roomName);
           setJwt(res.data.jwt);
-
           return res;
         }
       })
