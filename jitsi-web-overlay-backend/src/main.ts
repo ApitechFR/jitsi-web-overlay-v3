@@ -27,7 +27,7 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
   app.use(cookieParser(`${process.env.COOKIE_SECRET}`));
-  await app.listen(process.env.PORT || 3001);
+  await app.listen(process.env.BACKEND_PORT || 3030);
 }
 
 bootstrap();
