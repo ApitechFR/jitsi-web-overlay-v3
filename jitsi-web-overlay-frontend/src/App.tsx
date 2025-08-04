@@ -335,7 +335,7 @@ function App() {
                 path="/wce-api/*"
                 element={
                   <Navigate
-                    to={`/${import.meta.env.VITE_BASE_URL}`}
+                    to={`/${import.meta.env.VITE_API_URL}`}
                     replace={true}
                   />
                 }

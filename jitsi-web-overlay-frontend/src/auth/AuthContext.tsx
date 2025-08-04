@@ -46,13 +46,13 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
   };
 
   const login = (room?: string) => {
-    let url = `${import.meta.env.VITE_BASE_URL}/authentication/login_authorize`;
+    let url = `${import.meta.env.VITE_API_URL}/authentication/login_authorize`;
     if (room) url += `?room=${room}`;
     window.location.href = url;
   };
 
   const logout = () => {
-    fetch(`${import.meta.env.VITE_BASE_URL}/authentication/logout`, {
+    fetch(`${import.meta.env.VITE_API_URL}/authentication/logout`, {
       redirect: 'manual',
     }).then(res => {
       window.location.href = res.url;

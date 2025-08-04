@@ -1,14 +1,13 @@
-
 import styles from './HeaderJoona.module.css';
 import { useState } from 'react';
 import JitsiFrame from '../iframePopup/JitsiFrame';
 import WeboverlayFrame from '../iframePopup/WeboverlayFrame';
 import VoxifyFrame from '../iframePopup/VoxifyFrame';
-import docUtilisateur from '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf'
+import docUtilisateur from '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf';
 
-import { Header } from "@apitechfr/react-dsapitech/Header";
-import { createModal } from "@apitechfr/react-dsapitech/Modal";
-import { useIsModalOpen } from "@apitechfr/react-dsapitech/Modal/useIsModalOpen";
+import { Header } from '@apitechfr/react-dsapitech/Header';
+import { createModal } from '@apitechfr/react-dsapitech/Modal';
+import { useIsModalOpen } from '@apitechfr/react-dsapitech/Modal/useIsModalOpen';
 
 interface HeaderJoonaProps {
   readonly authenticated: boolean | null;
@@ -21,7 +20,7 @@ const modal = createModal({
 
 function HeaderJoona({ authenticated }: HeaderJoonaProps) {
   const logOut = () => {
-    fetch(`${import.meta.env.VITE_BASE_URL}/authentication/logout`, {
+    fetch(`${import.meta.env.VITE_API_URL}/authentication/logout`, {
       redirect: 'manual',
       credentials: 'include',
     }).then(res => {
@@ -35,7 +34,7 @@ function HeaderJoona({ authenticated }: HeaderJoonaProps) {
 
   const openPdf = () => {
     window.open(docUtilisateur, '_blank', 'noopener,noreferrer');
-  }
+  };
 
   const renderModalContent = () => {
     switch (modalContent) {
@@ -68,14 +67,14 @@ function HeaderJoona({ authenticated }: HeaderJoonaProps) {
           }}
           id="fr-header-header-with-quick-access-items"
           quickAccessItems={[
-                {
-                  buttonProps: {
-                    onClick: openPdf,
-                    className: 'fr-btn--icon-right'
-                  },
-                  iconId: 'fr-icon-external-link-fill',
-                  text: 'Documentation utilisateur'
-                },
+            {
+              buttonProps: {
+                onClick: openPdf,
+                className: 'fr-btn--icon-right',
+              },
+              iconId: 'fr-icon-external-link-fill',
+              text: 'Documentation utilisateur',
+            },
             {
               buttonProps: {
                 onClick: modal.open.bind(modal),
@@ -105,7 +104,7 @@ function HeaderJoona({ authenticated }: HeaderJoonaProps) {
                       sessionStorage.setItem('oidc_state', state);
                       // Redirige avec le state en paramètre
                       window.location.href = `${
-                        import.meta.env.VITE_BASE_URL
+                        import.meta.env.VITE_API_URL
                       }/authentication/login_authorize?state=${state}`;
                     },
                     className: 'fr-btn fr-btn--icon-right',
@@ -119,7 +118,6 @@ function HeaderJoona({ authenticated }: HeaderJoonaProps) {
               linkProps: {
                 href: '/',
                 target: '_self',
-                
               },
               text: 'Accueil',
             },
