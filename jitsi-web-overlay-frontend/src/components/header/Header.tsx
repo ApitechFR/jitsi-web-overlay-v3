@@ -1,7 +1,6 @@
-
+import styles from './Header.module.css';
 import { Header } from '@codegouvfr/react-dsfr/Header';
 import { Gaufre } from '@gouvfr-lasuite/integration';
-import styles from './Header.module.css';
 import '@gouvfr-lasuite/integration/dist/css/gaufre.css';
 
 type errorObj = {
@@ -9,24 +8,35 @@ type errorObj = {
   error: { status: string; stack: string };
 };
 
-interface headerProps {
-  authenticated: boolean | null;
-  setAuthenticated: (e: boolean) => void;
-  setError: (obj: errorObj) => void;
+interface HeaderProps {
+  readonly authenticated: boolean | null;
+  readonly setError: (obj: errorObj) => void;
 }
 
-function HeaderComponent({ authenticated }: headerProps) {
+function HeaderComponent({ authenticated, setError }: HeaderProps) {
   const logOut = () => {
     fetch(`${import.meta.env.VITE_API_URL}/authentication/logout`, {
       redirect: 'manual',
-    }).then(res => {
-      if (res.type === 'opaqueredirect') {
+      credentials: 'include',
+    })
+      .then(res => {
         window.location.href = res.url;
-      } else {
-        // handle normally / pass on to next handler
-        window.location.href = res.url;
-      }
-    });
+      })
+      .catch((error: unknown) => {
+        setError({
+          message: 'Erreur lors de la déconnexion',
+          error: {
+            status:
+              typeof error === 'object' && error !== null && 'status' in error
+                ? (error as { status?: string }).status ?? 'unknown'
+                : 'unknown',
+            stack:
+              typeof error === 'object' && error !== null && 'stack' in error
+                ? (error as { stack?: string }).stack ?? ''
+                : '',
+          },
+        });
+      });
   };
   return (
     <div className={styles.parent}>
@@ -43,7 +53,7 @@ function HeaderComponent({ authenticated }: headerProps) {
           title: "Accueil - Webconférence de l'Etat",
         }}
         quickAccessItems={[
-          <Gaufre />,
+          <Gaufre key="gaufre" />,
           {
             iconId: 'fr-icon-mail-fill',
             linkProps: {

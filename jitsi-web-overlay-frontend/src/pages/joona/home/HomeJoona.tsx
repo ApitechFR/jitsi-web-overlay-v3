@@ -1,3 +1,5 @@
+import { useRef, FormEvent } from 'react';
+import { generateRoomName } from '../../../utils/roomName';
 import { useState, useRef, FormEvent, useEffect } from 'react';
 import styles from './HomeJoona.module.css';
 // import Input from '@codegouvfr/react-dsfr/Input';
@@ -6,24 +8,22 @@ import { Button } from '@apitechfr/react-dsapitech/Button';
 import { Input } from '@apitechfr/react-dsapitech/Input';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import { useNavigate } from 'react-router-dom';
-import RandExp from 'randexp';
-import { Alert } from '@apitechfr/react-dsapitech/Alert';
 
-interface AuthModalProps {
-  roomName: string;
-  email: string;
-  isWhitelisted: boolean | null;
-  setEmail: (mail: string) => void;
-  sendEmail: (mail: string) => void;
-  setIsWhitelisted: (e: any) => void;
-  setRoomName: (e: any) => void;
-  joinConference: (e: any) => void;
-  authenticated: boolean | null;
-  conferenceNumber: number;
-  participantNumber: number;
+interface HomeJoonaProps {
+  readonly roomName: string;
+  readonly setRoomName: (roomName: string) => void;
+  readonly setIsWhitelisted: (value: boolean | null) => void;
+  readonly isWhitelisted: boolean | null;
+  readonly email: string;
+  readonly setEmail: (email: string) => void;
+  readonly sendEmail: (roomName: string) => void;
+  readonly joinConference: (roomName: string) => void;
+  readonly authenticated: boolean | null;
+  readonly conferenceNumber: number;
+  readonly participantNumber: number;
 }
 
-function HomeJoona(props: AuthModalProps) {
+function HomeJoona(props: HomeJoonaProps) {
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isError, setIsError] = useState(false);
@@ -58,21 +58,9 @@ function HomeJoona(props: AuthModalProps) {
     navigate(`/${props.roomName}`);
   }
 
-  function generateRoomName() {
-    const name = new RandExp(regexName).gen();
-    return name;
+  function handleGenerateRoomName() {
+    props.setRoomName(generateRoomName());
   }
-
-  function onCopyLink() {
-    const textToCopy = `${window.location.origin}/${props.roomName}`;
-
-    if (textToCopy) {
-      navigator.clipboard.writeText(textToCopy).then(() => {
-        setIsAlertVisible(true);
-      });
-    }
-  }
-
   return (
     <div className={styles.homeContainer}>
       <div className={styles.firstContainer}>
@@ -86,11 +74,7 @@ function HomeJoona(props: AuthModalProps) {
               nativeInputProps={{
                 placeholder: 'Saisissez votre nom de conférence',
                 value: props.roomName,
-                onChange: e => {
-                  const value = e.currentTarget.value;
-                  props.setRoomName(value);
-                  setIsError(!isValidRoomName(value));
-                },
+                onChange: e => props.setRoomName(e.currentTarget.value),
                 ref: inputRef,
               }}
               stateRelatedMessage={
@@ -100,19 +84,17 @@ function HomeJoona(props: AuthModalProps) {
             />
             <Button
               className={styles.plusButton}
-              onClick={() => {
-                const newName = generateRoomName();
-                props.setRoomName(newName);
-                setIsError(!isValidRoomName(newName));
-              }}
+              onClick={handleGenerateRoomName}
               type="button"
             >
               <ShuffleIcon />
             </Button>
           </div>
-          <div className={styles.buttonsPart}>
+          <div
+            style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+          >
             <Button
-              disabled={!isValidRoomName(props.roomName)}
+              // disabled
               onClick={e => onSubmit(e)}
               className={styles.joinButton}
             >

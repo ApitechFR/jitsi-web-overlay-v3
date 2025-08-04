@@ -5,12 +5,13 @@ import { Badge } from '@codegouvfr/react-dsfr/Badge';
 import styles from './Home.module.css';
 import AuthModal from './AuthModal';
 import { Accordion } from '@codegouvfr/react-dsfr/Accordion';
-import { Alert } from '@codegouvfr/react-dsfr/Alert';
+// import { Alert } from '@codegouvfr/react-dsfr/Alert';
 import MuiAlert from '@mui/material/Alert';
 import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import api from '../../axios/axios';
-import { redirect, useNavigate } from 'react-router-dom';
+import { validateRoomName } from '../../utils/roomName';
+import { useNavigate } from 'react-router-dom';
 import { fr } from '@codegouvfr/react-dsfr';
 
 interface AuthModalProps {
@@ -19,9 +20,9 @@ interface AuthModalProps {
   isWhitelisted: boolean | null;
   setEmail: (mail: string) => void;
   sendEmail: (mail: string) => void;
-  setIsWhitelisted: (e: any) => void;
-  setRoomName: (e: any) => void;
-  joinConference: (e: any) => void;
+  setIsWhitelisted: (isWhitelisted: boolean | null) => void;
+  setRoomName: (roomName: string) => void;
+  joinConference: () => void;
   authenticated: boolean | null;
   setButtons: (a: boolean) => void;
   buttons: boolean;
@@ -31,7 +32,6 @@ interface AuthModalProps {
 
 function HomeForm(props: AuthModalProps) {
   const [message, setMessage] = useState<JSX.Element | string>(<></>);
-  const [messageType, setMessageType] = useState<string>('');
   const [open, setOpen] = useState(false);
   const [openModal, setOpenModal] = useState(false);
 
@@ -49,38 +49,38 @@ function HomeForm(props: AuthModalProps) {
       props.setRoomName(room);
       if (roomNameConstraintOk(room)) {
         api.get('/authentication/whereami').then(res => {
-          if (res.data.toLowerCase() == 'internet') {
+          if (res.data.toLowerCase() === 'internet') {
             if (!props.authenticated) {
-              // modal.open();
               setOpenModal(true);
             }
             if (props.authenticated) {
-              props.joinConference(room);
+              props.joinConference();
             }
-          }
-          if (res.data.toLowerCase() !== 'internet') {
-            props.joinConference(room);
+          } else {
+            props.joinConference();
           }
         });
       }
     } else if (roomNameConstraintOk(props.roomName)) {
       api
         .get('/roomExists/' + props.roomName)
-        .then(res => {
+        .then(() => {
           return navigate('/' + props.roomName);
         })
-        .catch(err => {
+        .catch(() => {
           api.get('/authentication/whereami').then(res => {
             if (res.data.toLowerCase() == 'internet') {
               if (!props.authenticated) {
                 setOpenModal(true);
               }
               if (props.authenticated) {
-                return props.joinConference(props.roomName);
+                props.joinConference();
+                return;
               }
             }
             if (res.data.toLowerCase() !== 'internet') {
-              return props.joinConference(props.roomName);
+              props.joinConference();
+              return;
             }
           });
         });
@@ -88,133 +88,97 @@ function HomeForm(props: AuthModalProps) {
     setOpenModal(false);
   }
 
-  const change = (e: string) => {
-    verifyAndSetVAlue(e);
-  };
-  const pattern = new RegExp(
-    '^(?=(?:[a-zA-Z0-9]*[a-zA-Z]))(?=(?:[a-zA-Z0-9]*[0-9]){3})[a-zA-Z0-9]{10,}$'
+  const verifyAndSetVAlue = React.useCallback(
+    (value: string) => {
+      if (value) {
+        if (validateRoomName(value)) {
+          props.setRoomName(value);
+          setMessage(
+            <div className={styles.message}>
+              <Badge className={styles.badge} severity="success">
+                Au moins 3 chiffres
+              </Badge>
+              <Badge className={styles.badge} severity="success">
+                Un minimum de 10 caractères
+              </Badge>
+              <Badge className={styles.badge} severity="success">
+                Des chiffres et des lettres sans accents
+              </Badge>
+            </div>
+          );
+        } else {
+          props.setRoomName(value);
+          const message = (
+            <div className={styles.message}>
+              {getCountOfDigits(value) >= 3 ? (
+                <Badge className={styles.badge} severity="success">
+                  Au moins 3 chiffres
+                </Badge>
+              ) : (
+                <Badge className={styles.badge} severity="error">
+                  Au moins 3 chiffres
+                </Badge>
+              )}
+              {getCountCaracters(value) >= 10 ? (
+                <Badge className={styles.badge} severity="success">
+                  Un minimum de 10 caractères
+                </Badge>
+              ) : (
+                <Badge className={styles.badge} severity="error">
+                  Un minimum de 10 caractères
+                </Badge>
+              )}
+              {isAlphaNumeric(value) ? (
+                <Badge className={styles.badge} severity="success">
+                  Des chiffres et des lettres sans accents
+                </Badge>
+              ) : (
+                <Badge className={styles.badge} severity="error">
+                  Des chiffres et des lettres sans accents
+                </Badge>
+              )}
+            </div>
+          );
+          setMessage(message);
+        }
+      } else {
+        props.setRoomName(value);
+        setMessage('');
+      }
+    },
+    [props, setMessage]
   );
 
-  const verifyAndSetVAlue = (value: string) => {
-    if (value) {
-      if (pattern.test(value)) {
-        setMessageType('valid');
-        props.setRoomName(value);
-        setMessage(
-          <div className={styles.message}>
-            <Badge className={styles.badge} severity="success">
-              Au moins 3 chiffres
-            </Badge>
-            <Badge className={styles.badge} severity="success">
-              Un minimum de 10 caractères
-            </Badge>
-            <Badge className={styles.badge} severity="success">
-              Des chiffres et des lettres sans accents
-            </Badge>
-            {/* <small className={styles.roomNameConditionValid}>
-              
-              Au moins 3 chiffres
-            </small>
-            <small className={styles.roomNameConditionValid}>
-              
-              Un minimum de 10 caractères
-            </small>
-            <small className={styles.roomNameConditionValid}>
-              
-              Des chiffres et des lettres sans accents
-            </small> */}
-          </div>
-        );
-      } else {
-        setMessageType('error');
-        props.setRoomName(value);
-        const message = (
-          <div className={styles.message}>
-            {getCountOfDigits(value) >= 3 ? (
-              <Badge className={styles.badge} severity="success">
-                Au moins 3 chiffres
-              </Badge>
-            ) : (
-              // <small className={styles.roomNameConditionValid}>
-              //
-              //   Au moins 3 chiffres
-              // </small>
-              <Badge className={styles.badge} severity="error">
-                Au moins 3 chiffres
-              </Badge>
-              // <small className={styles.roomNameConditionNotValid}>
-              //
-              //   Au moins 3 chiffres
-              // </small>
-            )}
-            {getCountCaracters(value) >= 10 ? (
-              <Badge className={styles.badge} severity="success">
-                Un minimum de 10 caractères
-              </Badge>
-            ) : (
-              // <small className={styles.roomNameConditionValid}>
-              //
-              //   Un minimum de 10 caractères
-              // </small>
-              <Badge className={styles.badge} severity="error">
-                Un minimum de 10 caractères
-              </Badge>
-              // <small className={styles.roomNameConditionNotValid}>
-              //
-              //   Un minimum de 10 caractères
-              // </small>
-            )}
-            {isAlphaNumeric(value) ? (
-              <Badge className={styles.badge} severity="success">
-                Des chiffres et des lettres sans accents
-              </Badge>
-            ) : (
-              // <small className={styles.roomNameConditionValid}>
-              //
-              //   Des chiffres et des lettres sans accents
-              // </small>
-              <Badge className={styles.badge} severity="error">
-                Des chiffres et des lettres sans accents
-              </Badge>
-              // <small className={styles.roomNameConditionNotValid}>
-              //
-              //   Des chiffres et des lettres sans accents
-              // </small>
-            )}
-          </div>
-        );
-        setMessage(message);
-      }
-    } else {
-      setMessageType('');
-      props.setRoomName(value);
-      setMessage('');
-    }
+  const change = (e: string) => {
+    verifyAndSetVAlue(e);
   };
 
   useEffect(() => {
     verifyAndSetVAlue(props.roomName);
-  }, [props.roomName]);
+  }, [props.roomName, verifyAndSetVAlue]);
 
   const handleClose = (
-    event: Event | React.SyntheticEvent<any, Event>,
+    event: Event | React.SyntheticEvent<Element, Event>,
     reason: SnackbarCloseReason
   ) => {
     if (reason === 'clickaway') {
       return;
     }
-
     setOpen(false);
   };
 
-  const AlertMui = React.forwardRef(function Alert(props, ref) {
+  // Déplacer AlertMui et les constantes up/down en dehors du composant pour éviter leur recréation à chaque rendu
+  const AlertMui = React.forwardRef<
+    HTMLDivElement,
+    React.ComponentProps<typeof MuiAlert>
+  >(function Alert(props, ref) {
     return (
       <MuiAlert
-        onClose={event => handleClose(event, 'timeout')}
+        onClose={props.onClose}
         severity="success"
         sx={{ width: '100%' }}
         elevation={6}
-        ref={ref as any}
+        ref={ref}
         variant="filled"
         {...props}
       >
@@ -250,7 +214,8 @@ function HomeForm(props: AuthModalProps) {
               id: 'input',
               value: props.roomName,
               placeholder: 'Saisissez un nom de conférence...',
-              onChange: (e: any) => change(e.target.value),
+              onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+                change(e.target.value),
             }}
           />
 
@@ -266,12 +231,7 @@ function HomeForm(props: AuthModalProps) {
           </Button>
         </div>
         <div className={styles.confButtons}>
-          <AuthModal
-            {...props}
-            setOpen={setOpen}
-            buttons={props.buttons}
-            openModal={openModal}
-          />
+          <AuthModal {...props} setOpen={setOpen} openModal={openModal} />
           <Button
             className={styles.plusButton}
             onClick={() => props.setButtons(!props.buttons)}

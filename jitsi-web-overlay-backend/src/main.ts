@@ -17,10 +17,14 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
+
+  //Enable CORS  if not in production
+
   app.enableCors({
-    // origin: process.env.CORS_ORIGIN,
+    origin: process.env.CORS_ORIGIN,
     credentials: true,
   });
+
   app.useGlobalPipes(new ValidationPipe());
   app.use(cookieParser(`${process.env.COOKIE_SECRET}`));
   await app.listen(process.env.PORT || 3001);
