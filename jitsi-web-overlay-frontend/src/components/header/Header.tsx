@@ -17,7 +17,7 @@ interface headerProps {
 
 function HeaderComponent({ authenticated }: headerProps) {
   const logOut = () => {
-    fetch(`${import.meta.env.VITE_BASE_URL}/authentication/logout`, {
+    fetch(`${import.meta.env.VITE_API_URL}/authentication/logout`, {
       redirect: 'manual',
     }).then(res => {
       if (res.type === 'opaqueredirect') {

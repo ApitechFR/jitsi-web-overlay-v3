@@ -64,7 +64,7 @@ function App() {
   const [participantsNumber, setparticipantsNumber] = useState(0);
   const [msg, setMsg] = useState<ReactNode>(<></>);
 
-  const appName = import.meta.env.VITE_APP_NAME;
+  const AppTemplate = import.meta.env.VITE_APP_TEMPLATE || "joona";
 
   const sendEmail = (roomName: string) => {
     api
@@ -242,7 +242,7 @@ function App() {
   return (
   <MuiDsfrThemeProvider>
     <Routes>
-      {appName === "joona" && (
+      {AppTemplate === "joona" && (
         <>
           <Route path=":roomName" element={<JitsiMeet />} />
           <Route
@@ -280,7 +280,7 @@ function App() {
           </Route>
         </>
       )}
-      {appName === "webconf" && (
+      {AppTemplate === "webconf" && (
         <>
           <Route path=":roomName" element={<Wrapper />} />
           <Route
@@ -333,7 +333,7 @@ function App() {
               path="/wce-api/*"
               element={
                 <Navigate
-                  to={`/${import.meta.env.VITE_BASE_URL}`}
+                  to={`/${import.meta.env.VITE_API_URL}`}
                   replace={true}
                 />
               }

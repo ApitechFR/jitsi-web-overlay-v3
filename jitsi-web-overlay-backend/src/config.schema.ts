@@ -73,4 +73,19 @@ export const configValidationSchema = joi.object({
     .string()
     .valid('development', 'production', 'test')
     .default('development'),
+
+  //OIDC
+  OIDC_CLIENTID: joi.string().required(),
+  OIDC_ISSUER: joi.string().uri().required(),
+  OIDC_REDIRECT_URL: joi.string().uri().required(),
+  OIDC_SCOPE: joi.string().required().default('openid email profile'),
+  OIDC_SECRET: joi.string().required(),
+  OIDC_URL: joi.string().uri().required(),
+  AUTHORIZATION_ENDPOINT: joi.string().uri().required(),
+  USERINFO_ENDPOINT: joi.string().uri().required(),
+  TOKEN_ENDPOINT: joi.string().uri().required(),
+  OIDC_END_SESSION_ENDPOINT: joi.string().uri().required(),
+  
+
+
 });
