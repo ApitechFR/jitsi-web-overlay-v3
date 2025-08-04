@@ -259,6 +259,15 @@ function App() {
                 }
               />
             </Route>
+              <Route
+              path="/login_callback"
+              element={
+                <LoginCallback
+                  setAuthenticated={setAuthenticated}
+                  setError={setError}
+                />
+              }
+            />
           </>
         )}
         {AppTemplate === 'webconf' && (
