@@ -50,6 +50,7 @@ interface JwtPayload {
 }
 
 function App() {
+  console.log('[App] rendu');
   const [roomName, setRoomName] = useState('');
   const [jwt, setJwt] = useState<string | undefined>(undefined);
   const [error, setError] = useState<errorObj>({
