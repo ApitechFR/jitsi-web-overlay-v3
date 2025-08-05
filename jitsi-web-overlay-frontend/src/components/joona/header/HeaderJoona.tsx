@@ -7,7 +7,6 @@ import docUtilisateur from '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf'
 
 import { Header } from '@apitechfr/react-dsapitech/Header';
 import { createModal } from '@apitechfr/react-dsapitech/Modal';
-import { useIsModalOpen } from '@apitechfr/react-dsapitech/Modal/useIsModalOpen';
 
 interface HeaderJoonaProps {
   readonly authenticated: boolean | null;
@@ -114,15 +113,15 @@ function HeaderJoona({ authenticated }: HeaderJoonaProps) {
                 },
           ]}
           navigation={[
-            {
-              linkProps: {
-                href: '/',
-                target: '_self',
-              },
-              text: 'Accueil',
-            },
             ...(authenticated
               ? [
+                  {
+                    linkProps: {
+                      href: '/',
+                      target: '_self',
+                    },
+                    text: 'Accueil',
+                  },
                   {
                     linkProps: {
                       href: '/profile',
