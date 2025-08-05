@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import styles from './Login.module.css';
 import api from '../../axios/axios';
 import { useNavigate } from 'react-router';
-import CircularProgress from '@mui/material/CircularProgress';
 import ErrorPopup from '../../components/error/ErrorPopup';
 
 interface LoginCallbackProps {
@@ -22,27 +21,16 @@ export default function LoginCallback({
   const [popupError, setPopupError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log('[LoginCallback] useEffect triggered');
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     const stateFromUrl = urlParams.get('state');
     const stateStored = sessionStorage.getItem('oidc_state');
-    console.log(
-      '[LoginCallback] stateFromUrl:',
-      stateFromUrl,
-      'stateStored:',
-      stateStored
-    );
+
     if (urlParams.get('error_description')) {
-      console.log('[LoginCallback] error_description detected, navigating -2');
       navigate(-2);
       return;
     }
     if (stateFromUrl !== stateStored) {
-      console.error('[LoginCallback] State mismatch', {
-        stateFromUrl,
-        stateStored,
-      });
       setError({
         message: "Erreur d'authentification (state mismatch)",
         error: { status: '401', stack: '' },
@@ -55,11 +43,10 @@ export default function LoginCallback({
     const apiUrl = `/authentication/login_callback?code=${urlParams.get(
       'code'
     )}&state=${stateFromUrl}`;
-    console.log('[LoginCallback] Appel API', apiUrl);
+
     api
       .get(apiUrl)
       .then(res => {
-        console.log('[LoginCallback] API success', res.data);
         if (res.data.roomName && res.data.jwt) {
           localStorage.setItem('auth', res.data.accessToken);
           setAuthenticated(true);
@@ -70,13 +57,11 @@ export default function LoginCallback({
           localStorage.setItem('auth', res.data.accessToken);
           setAuthenticated(true);
           navigate(`/`);
-          return;
         } else {
           navigate(`/`);
         }
       })
       .catch(error => {
-        console.error('[LoginCallback] API error', error);
         localStorage.setItem('auth', 'false');
         let status = '500';
         const message = "Erreur d'authentification";

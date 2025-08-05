@@ -108,11 +108,6 @@ export class AuthenticationController {
       exp: moment().add(15, 'minutes').unix(),
       ...tokenClaims,
     });
-
-    console.log('[loginCallback] Appel de la méthode loginCallback');
-    console.log('[loginCallback] userinfo:', userinfo);
-    console.log('[loginCallback] idToken:', idToken);
-
     response.clearCookie('state');
     response.clearCookie('roomName');
 

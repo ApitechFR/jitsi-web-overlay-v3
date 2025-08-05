@@ -50,7 +50,6 @@ interface JwtPayload {
 }
 
 function App() {
-  console.log('[App] rendu');
   const [roomName, setRoomName] = useState('');
   const [jwt, setJwt] = useState<string | undefined>(undefined);
   const [error, setError] = useState<errorObj>({
@@ -106,7 +105,7 @@ function App() {
     const accessToken = localStorage.getItem('auth');
     if (accessToken && accessToken !== 'false') {
       try {
-        const { exp } = jwtDecode(accessToken) as JwtPayload;
+        const { exp } = jwtDecode<JwtPayload>(accessToken);
         if (Date.now() <= exp * 1000) {
           setAuthenticated(true);
           return;
@@ -132,7 +131,7 @@ function App() {
       .catch(err => {
         localStorage.setItem('auth', 'false');
         setAuthenticated(false);
-        // Bloque la redirection automatique OIDC, affiche une erreur
+        console.error('Erreur lors du rafraîchissement du token', err);
         setError({
           message: "Vous n'êtes pas authentifié. Veuillez vous connecter ",
           error: { status: '401', stack: '' },
@@ -140,14 +139,6 @@ function App() {
       });
   };
 
-  // useEffect(() => {
-  //   //if (location.pathname !== '/login_callback' && location.pathname !== '/') {
-  //   if (location.pathname !== '/login_callback') {
-  //     verifyAccessToken();
-  //     const intervalId = setInterval(verifyAccessToken, 1000 * 3600);
-  //     return () => clearInterval(intervalId);
-  //   }
-  // }, []);
   useEffect(() => {
     if (
       location.pathname !== '/login_callback' &&
@@ -163,9 +154,9 @@ function App() {
     api
       .get('/stats/homePage')
       .then(res => {
-        if (!res.data.authenticated) {
-          // setAuthenticated(false);
-        }
+        // if (!res.data.authenticated) {
+        //   // setAuthenticated(false);
+        // }
         setConferenceNumber(res.data.conf);
         setparticipantsNumber(res.data.part);
       })
@@ -276,6 +267,8 @@ function App() {
               />
               <Route path="profile" element={<Profile />} />
               <Route path="dashboard" element={<Dashboard />} />
+              <Route path="admin" element={<Admin />} />
+              <Route path="feedback" element={<FeedbackJoona />} />
             </Route>
           </>
         )}
