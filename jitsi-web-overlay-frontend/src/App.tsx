@@ -141,15 +141,13 @@ function App() {
   };
 
   useEffect(() => {
-    if (
-      location.pathname !== '/login_callback' &&
-      location.pathname !== '/login/callback'
-    ) {
+    //if (location.pathname !== '/login_callback' && location.pathname !== '/') {
+    if (location.pathname !== '/login_callback') {
       verifyAccessToken();
       const intervalId = setInterval(verifyAccessToken, 1000 * 3600);
       return () => clearInterval(intervalId);
     }
-  }, [location.pathname]);
+  }, []);
 
   useEffect(() => {
     api
@@ -182,6 +180,7 @@ function App() {
         } else {
           setRoomName(roomName);
           setJwt(res.data.jwt);
+
           return res;
         }
       })
@@ -249,34 +248,26 @@ function App() {
               <Route path="profile" element={<Profile />} />
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="/logout/callback" element={<LogoutCallback />} />
+
+              <Route
+                path="/login_callback"
+                element={
+                  <LoginCallback
+                    setAuthenticated={setAuthenticated}
+                    setError={setError}
+                  />
+                }
+              />
+              <Route
+                path="/login/callback"
+                element={
+                  <LoginCallback
+                    setAuthenticated={setAuthenticated}
+                    setError={setError}
+                  />
+                }
+              />
             </Route>
-            <Route
-              path="/login_callback"
-              element={
-                <LoginCallback
-                  setAuthenticated={setAuthenticated}
-                  setError={setError}
-                />
-              }
-            />
-            <Route
-              path="/login/callback"
-              element={
-                <LoginCallback
-                  setAuthenticated={setAuthenticated}
-                  setError={setError}
-                />
-              }
-            />
-            <Route
-              path="/login_callback"
-              element={
-                <LoginCallback
-                  setAuthenticated={setAuthenticated}
-                  setError={setError}
-                />
-              }
-            />
           </>
         )}
         {AppTemplate === 'webconf' && (
