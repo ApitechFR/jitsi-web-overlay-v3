@@ -4,7 +4,7 @@ services:
       context: ./jitsi-web-overlay-backend
       dockerfile: Dockerfile.dev
     ports:
-      - '3030:3030'
+      - "3030:3030"
     volumes:
       - ./jitsi-web-overlay-backend:/app
       - node_modules_backend:/app/node_modules
@@ -12,7 +12,7 @@ services:
       - .env.development
     depends_on:
       - mariadb
-      - mongo
+
     command: npx nodemon src/main.ts
 
   jitsi-web-overlay-frontend:
@@ -20,7 +20,7 @@ services:
       context: ./jitsi-web-overlay-frontend
       dockerfile: Dockerfile.dev
     ports:
-      - '3000:3000'
+      - "3000:3000"
     env_file:
       - .env.development
     volumes:
@@ -32,21 +32,14 @@ services:
     image: mariadb:11
     restart: always
     environment:
-      MARIADB_ROOT_USER: ${DB_USERNAME}
       MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
       MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_USERNAME}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
     ports:
-      - '3306:3306'
+      - "3306:3306"
     volumes:
       - mariadb_data:/var/lib/mysql
-
-  mongo:
-    image: mongo:6
-    restart: always
-    ports:
-      - '27017:27017'
-    volumes:
-      - mongo_data:/data/db
 
 volumes:
   mariadb_data:
