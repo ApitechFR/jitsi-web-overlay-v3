@@ -249,26 +249,25 @@ function App() {
               <Route path="profile" element={<Profile />} />
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="/logout/callback" element={<LogoutCallback />} />
-
-              <Route
-                path="/login_callback"
-                element={
-                  <LoginCallback
-                    setAuthenticated={setAuthenticated}
-                    setError={setError}
-                  />
-                }
-              />
-              <Route
-                path="/login/callback"
-                element={
-                  <LoginCallback
-                    setAuthenticated={setAuthenticated}
-                    setError={setError}
-                  />
-                }
-              />
             </Route>
+            <Route
+              path="/login_callback"
+              element={
+                <LoginCallback
+                  setAuthenticated={setAuthenticated}
+                  setError={setError}
+                />
+              }
+            />
+            <Route
+              path="/login/callback"
+              element={
+                <LoginCallback
+                  setAuthenticated={setAuthenticated}
+                  setError={setError}
+                />
+              }
+            />
             <Route
               path="/login_callback"
               element={
