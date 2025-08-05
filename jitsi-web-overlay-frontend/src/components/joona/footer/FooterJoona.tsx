@@ -1,4 +1,6 @@
+
 import { Footer, FooterProps } from "@apitechfr/react-dsapitech/Footer"
+
 
 interface props {
   headerFooterDisplayItem: FooterProps.BottomItem;
@@ -12,10 +14,10 @@ function FooterJoona({ headerFooterDisplayItem }: props) {
         Apitech, Éditeur Open Solutions  - L’esprit du Libre au service de la productivité.
         "
       termsLinkProps={{
-        href: '#'
+        href: '#',
       }}
       websiteMapLinkProps={{
-        href: '#'
+        href: '#',
       }}
       bottomItems={[headerFooterDisplayItem]}
     />

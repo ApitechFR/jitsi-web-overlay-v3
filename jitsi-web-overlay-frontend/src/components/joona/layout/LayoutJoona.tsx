@@ -3,7 +3,10 @@ import Header from '../header/HeaderJoona';
 import Footer from '../footer/FooterJoona';
 import { Outlet } from 'react-router-dom';
 
-import { Display, headerFooterDisplayItem } from "@apitechfr/react-dsapitech/Display"
+import {
+  Display,
+  headerFooterDisplayItem,
+} from '@apitechfr/react-dsapitech/Display';
 
 type errorObj = {
   message: string;
@@ -25,9 +28,11 @@ export default function LayoutJoona(propos: headerProps) {
         <Outlet />
       </main>
       <footer className={styles.footer}>
+
         <Footer
           headerFooterDisplayItem={headerFooterDisplayItem}
         />
+
       </footer>
       <Display />
     </div>

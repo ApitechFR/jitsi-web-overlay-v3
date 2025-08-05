@@ -1,3 +1,4 @@
+import { validateRoomName } from '../../utils/roomName';
 import { createModal } from '@codegouvfr/react-dsfr/Modal';
 import { Button } from '@codegouvfr/react-dsfr/Button';
 import { Input } from '@codegouvfr/react-dsfr/Input';
@@ -6,6 +7,7 @@ import { Badge } from '@codegouvfr/react-dsfr/Badge';
 import CalendarModalComponent from './CalendarModal';
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '../../auth/useAuth';
 
 import styles from './AuthModal.module.css';
 
@@ -15,38 +17,27 @@ const modal = createModal({
 });
 
 interface AuthModalProps {
-  roomName: string;
-  email: string;
-  isWhitelisted: boolean | null;
-  setEmail: (mail: string) => void;
-  sendEmail: (mail: string) => void;
-  setIsWhitelisted: (e: any) => void;
-  setRoomName: (e: any) => void;
-  joinConference: (e: any) => void;
-  authenticated: boolean | null;
-  setOpen: (e: boolean) => void;
-  buttons: boolean;
-  openModal: boolean;
-}
-
-function roomNameConstraintOk(roomName: string) {
-  /**
-   * Verify if the room name is valid
-   * @param {String} roomName The room name
-   * @return {Boolean}        True if the room name is valid, false otherwise
-   */
-  const regex = new RegExp(
-    '^(?=(?:[a-zA-Z0-9]*[a-zA-Z]))(?=(?:[a-zA-Z0-9]*[0-9]){3})[a-zA-Z0-9]{10,}$'
-  );
-  return regex.test(roomName);
+  readonly roomName: string;
+  readonly email: string;
+  readonly isWhitelisted: boolean | null;
+  readonly setEmail: (mail: string) => void;
+  readonly sendEmail: (mail: string) => void;
+  readonly setIsWhitelisted: (whitelisted: boolean | null) => void;
+  readonly setRoomName: (roomName: string) => void;
+  readonly joinConference: () => void;
+  readonly authenticated: boolean | null;
+  readonly setOpen: (open: boolean) => void;
+  readonly buttons: boolean;
+  readonly openModal: boolean;
 }
 
 export default function AuthModal(props: AuthModalProps) {
+  const { email, setEmail, login } = useAuth();
   const [msg, setMsg] = useState<string | null>('');
   const [buttonMsg, setButtonMsg] = useState(
     'Recevoir le code de vérification par email'
   );
-  const [isCheked, setIsChecked] = useState(false);
+  const [isChecked, setIsChecked] = useState<boolean>(false);
 
   const copyLink = () => {
     navigator.clipboard.writeText(window.location.href + props.roomName);
@@ -54,7 +45,7 @@ export default function AuthModal(props: AuthModalProps) {
   };
 
   useEffect(() => {
-    props.openModal ? modal.open() : null;
+    if (props.openModal) modal.open();
   }, [props.openModal]);
 
   useEffect(() => {
@@ -62,48 +53,33 @@ export default function AuthModal(props: AuthModalProps) {
     const mail = localStorage.getItem('email');
     const checked1 = localStorage.getItem('checked');
     const checked = checked1 === 'true';
-    if (checked) {
-      if (mail) {
-        props.setEmail(mail);
-      }
+    if (checked && mail) {
+      setEmail(mail);
     } else {
-      props.setEmail('');
+      setEmail('');
       localStorage.setItem('email', '');
     }
     setIsChecked(checked);
     setMsg(null);
     setButtonMsg('Recevoir le code de vérification par email');
-  }, []);
+  }, [setEmail, props.setIsWhitelisted]);
 
   const agentConnect = (room: string) => {
-    fetch(
-      `${
-        import.meta.env.VITE_API_URL
-      }/authentication/login_authorize?room=${room}`,
-      {
-        redirect: 'manual',
-      }
-    ).then(res => {
-      if (res.type === 'opaqueredirect') {
-        window.location.href = res.url;
-      } else {
-        // handle normally / pass on to next handler
-        window.location.href = res.url;
-      }
-    });
-  };
-  const onCheck = () => {
-    setIsChecked(!isCheked);
-    localStorage.setItem('checked', (!isCheked).toString());
+    login(room);
   };
 
-  const mailchanger = (e: any) => {
-    props.setEmail(e.target.value);
+  const onCheck = () => {
+    setIsChecked(!isChecked);
+    localStorage.setItem('checked', (!isChecked).toString());
+  };
+
+  const mailchanger = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
     localStorage.setItem('email', e.target.value);
   };
 
-  const mailSender = (e: any) => {
-    props.sendEmail(e);
+  const mailSender = (roomName: string) => {
+    props.sendEmail(roomName);
     setButtonMsg('Email non reçu ? Cliquez ici pour recevoir un nouvel email');
   };
   return (
@@ -115,14 +91,19 @@ export default function AuthModal(props: AuthModalProps) {
             conférence {props.roomName}.
           </small>
         </p>
-        <button type="button">
+        <button
+          type="button"
+          className={styles.agentConnectBtn}
+          onClick={() => agentConnect(props.roomName)}
+          aria-label="Connexion AgentConnect"
+        >
           <span className={styles.hidden} id="input-desc-error">
             text
           </span>
           <img
-            alt="agentConnect"
+            alt="AgentConnect"
             src="/static/media/ac-btn-bleu.svg"
-            onClick={() => agentConnect(props.roomName)}
+            style={{ pointerEvents: 'none' }}
           />
         </button>
         <p>
@@ -142,8 +123,8 @@ export default function AuthModal(props: AuthModalProps) {
             'aria-describedby': 'input3-desc-error',
             'aria-labelledby': 'input3-desc-error',
             id: 'input3',
-            value: props.email,
-            onChange: e => mailchanger(e),
+            value: email,
+            onChange: mailchanger,
             required: true,
           }}
         />
@@ -152,10 +133,10 @@ export default function AuthModal(props: AuthModalProps) {
             {
               label: 'se rappeler de mon adresse email',
               nativeInputProps: {
-                checked: isCheked,
+                checked: isChecked,
                 name: 'checkboxes-1',
                 value: 'value1',
-                onChange: () => onCheck(),
+                onChange: onCheck,
               },
             },
           ]}
@@ -190,7 +171,7 @@ export default function AuthModal(props: AuthModalProps) {
           // onClick={handle}
           type="submit"
           className={styles.button}
-          disabled={!roomNameConstraintOk(props.roomName)}
+          disabled={!validateRoomName(props.roomName)}
         >
           Rejoindre ou créer
         </Button>
@@ -210,14 +191,5 @@ export default function AuthModal(props: AuthModalProps) {
         ) : null}
       </div>
     </>
-  );
-}
-
-function generateRoomName() {
-  return (
-    Math.random().toString(36).slice(2).toUpperCase() +
-    Math.floor(Math.random() * 10) +
-    Math.floor(Math.random() * 10) +
-    Math.floor(Math.random() * 10)
   );
 }
