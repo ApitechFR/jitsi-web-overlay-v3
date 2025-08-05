@@ -1,4 +1,6 @@
-import { Footer, FooterProps } from '@apitechfr/react-dsapitech/Footer';
+
+import { Footer, FooterProps } from "@apitechfr/react-dsapitech/Footer"
+
 
 interface props {
   headerFooterDisplayItem: FooterProps.BottomItem;
