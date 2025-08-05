@@ -1,6 +1,10 @@
-import { Footer } from "@apitechfr/react-dsapitech/Footer"
+import { Footer, FooterProps } from '@apitechfr/react-dsapitech/Footer';
 
-function FooterJoona() {
+interface props {
+  headerFooterDisplayItem: FooterProps.BottomItem;
+}
+
+function FooterJoona({ headerFooterDisplayItem }: props) {
   return (
     <Footer
       accessibility="fully compliant"
@@ -8,11 +12,12 @@ function FooterJoona() {
         Apitech, Éditeur Open Solutions  - L’esprit du Libre au service de la productivité.
         "
       termsLinkProps={{
-        href: '#'
+        href: '#',
       }}
       websiteMapLinkProps={{
-        href: '#'
+        href: '#',
       }}
+      bottomItems={[headerFooterDisplayItem]}
     />
   );
 }
