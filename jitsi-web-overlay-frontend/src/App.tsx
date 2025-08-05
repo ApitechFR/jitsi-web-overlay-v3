@@ -2,7 +2,13 @@ import Home from './pages/home/Home';
 import Layout from './components/layout/Layout';
 import { useState, useEffect } from 'react';
 import { logDebug } from './utils/logDebug';
-import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
+import {
+  Routes,
+  Route,
+  useNavigate,
+  Navigate,
+  useLocation,
+} from 'react-router-dom';
 import FAQ from './pages/FAQ/FAQ.md';
 import DonneesPerso from './pages/DonneesPerso/DonneesPerso.md';
 import Contact from './pages/Contact/Contact.md';
@@ -57,6 +63,7 @@ function App() {
   const [conferenceNumber, setConferenceNumber] = useState(0);
   const [participantsNumber, setparticipantsNumber] = useState(0);
 
+  const location = useLocation();
   const AppTemplate = import.meta.env.VITE_APP_TEMPLATE || 'joona';
 
   const sendEmail = (roomName: string) => {
@@ -133,13 +140,15 @@ function App() {
   };
 
   useEffect(() => {
-    //if (location.pathname !== '/login_callback' && location.pathname !== '/') {
-    if (location.pathname !== '/login_callback') {
+    if (
+      location.pathname !== '/login_callback' &&
+      location.pathname !== '/login/callback'
+    ) {
       verifyAccessToken();
       const intervalId = setInterval(verifyAccessToken, 1000 * 3600);
       return () => clearInterval(intervalId);
     }
-  }, []);
+  }, [location.pathname]);
 
   useEffect(() => {
     api
@@ -259,7 +268,7 @@ function App() {
                 }
               />
             </Route>
-              <Route
+            <Route
               path="/login_callback"
               element={
                 <LoginCallback
