@@ -1,6 +1,10 @@
-import { Footer } from "@apitechfr/react-dsapitech/Footer"
+import { Footer, FooterProps } from "@apitechfr/react-dsapitech/Footer"
 
-function FooterJoona() {
+interface props {
+  headerFooterDisplayItem: FooterProps.BottomItem;
+}
+
+function FooterJoona({ headerFooterDisplayItem }: props) {
   return (
     <Footer
       accessibility="fully compliant"
@@ -13,6 +17,7 @@ function FooterJoona() {
       websiteMapLinkProps={{
         href: '#'
       }}
+      bottomItems={[headerFooterDisplayItem]}
     />
   );
 }

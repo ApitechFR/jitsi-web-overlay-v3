@@ -26,8 +26,7 @@ export default function LayoutJoona(propos: headerProps) {
       </main>
       <footer className={styles.footer}>
         <Footer
-          // style="footer"
-          // headerFooterDisplayItem={headerFooterDisplayItem}
+          headerFooterDisplayItem={headerFooterDisplayItem}
         />
       </footer>
       <Display />
