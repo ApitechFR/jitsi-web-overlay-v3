@@ -62,6 +62,10 @@ function HomeJoona(props: AuthModalProps) {
   }
 
   function onCopyLink() {
+    if (!props.roomName || !isValidRoomName(props.roomName)) {
+      return;
+    }
+
     const textToCopy = `${window.location.origin}/${props.roomName}`;
 
     if (textToCopy) {
@@ -140,7 +144,7 @@ function HomeJoona(props: AuthModalProps) {
                     small
                   />
                 </div>
-            )}
+              )}
             </div>
           </div>
         </div>

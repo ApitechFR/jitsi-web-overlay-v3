@@ -1,8 +1,8 @@
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import { useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { checkConferenceEnd, createConference, fetchStats } from './conferenceEvents';
-import { handleRecordingStatus } from './visioReplay';
+import { checkConferenceEnd, createConference, fetchStats } from './conference_events';
+import { handleRecordingStatus } from './visio_replay';
 
 // import Feedback from '../Feedback/Feedback';
 

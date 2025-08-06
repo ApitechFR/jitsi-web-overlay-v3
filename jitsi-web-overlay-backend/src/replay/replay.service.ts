@@ -35,16 +35,21 @@ export class ReplayService {
     }
 
     async findByLatestConferenceUID(conference_uid: string): Promise<Replay[]> {
-        return this.replayRepository.find({
-            where: {
-                status: 'terminated',
-                conference: { uid: conference_uid },
-            },
-            relations: ['conference'],
-            order: {
-                created_at: 'DESC',
-            },
-        });
+        try {
+            return this.replayRepository.find({
+                where: {
+                    status: 'terminated',
+                    conference: { uid: conference_uid },
+                },
+                relations: ['conference'],
+                order: {
+                    created_at: 'DESC',
+                },
+            });
+        } catch (error) {
+            console.error('Error fetching replays by conference UID:', error);
+            throw new InternalServerErrorException('Could not fetch replays for the specified conference.');
+        }
     }
 
     async createReplay(data: CreateReplayDto): Promise<Replay> {
