@@ -50,16 +50,9 @@ export default function AuthModal(props: AuthModalProps) {
 
   useEffect(() => {
     props.setIsWhitelisted(null);
-    const mail = localStorage.getItem('email');
-    const checked1 = localStorage.getItem('checked');
-    const checked = checked1 === 'true';
-    if (checked && mail) {
-      setEmail(mail);
-    } else {
-      setEmail('');
-      localStorage.setItem('email', '');
-    }
-    setIsChecked(checked);
+    
+    setEmail('');
+    setIsChecked(false);
     setMsg(null);
     setButtonMsg('Recevoir le code de vérification par email');
   }, [setEmail, props.setIsWhitelisted]);
@@ -70,12 +63,10 @@ export default function AuthModal(props: AuthModalProps) {
 
   const onCheck = () => {
     setIsChecked(!isChecked);
-    localStorage.setItem('checked', (!isChecked).toString());
   };
 
   const mailchanger = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
-    localStorage.setItem('email', e.target.value);
   };
 
   const mailSender = (roomName: string) => {

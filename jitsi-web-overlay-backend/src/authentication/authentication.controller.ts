@@ -29,7 +29,7 @@ import { IConferenceService } from '../conference/interfaces/conference-service.
 @Controller('authentication')
 export class AuthenticationController {
   /**
-   * Retourne les infos utilisateur extraites du JWT (cookie httpOnly)
+   * Return user information from the JWT.
    */
   @Get('userinfo')
   @ApiOkResponse({ description: 'Retourne les infos utilisateur du JWT' })
@@ -44,7 +44,7 @@ export class AuthenticationController {
       if (!decoded) {
         throw new UnauthorizedException('JWT invalide');
       }
-      // On retourne les infos utiles (email, nom, rôle, etc.)
+      
       return decoded;
     } catch {
       throw new UnauthorizedException('JWT invalide');

@@ -1,3 +1,4 @@
+import { decodeJwt } from './decodeJwt';
 export interface UserInfos {
   email?: string;
   nom?: string;
@@ -17,7 +18,17 @@ export async function fetchUserInfos(): Promise<UserInfos | null> {
       credentials: 'include',
     });
     if (!res.ok) return null;
-    return await res.json();
+    const data = await res.json();
+    
+    if (data.idToken && typeof data.idToken === 'string') {
+      try {
+        return decodeJwt(data.idToken);
+      } catch {
+        
+        return data;
+      }
+    }
+    return data;
   } catch {
     return null;
   }
