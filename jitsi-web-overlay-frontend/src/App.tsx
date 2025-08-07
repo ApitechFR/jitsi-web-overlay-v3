@@ -65,7 +65,7 @@ function App() {
   const [participantsNumber, setparticipantsNumber] = useState(0);
   const [msg, setMsg] = useState<ReactNode>(<></>);
 
-  const appName = import.meta.env.VITE_APP_NAME;
+  const appName = import.meta.env.VITE_APP_TEMPLATE;
 
   const sendEmail = (roomName: string) => {
     api

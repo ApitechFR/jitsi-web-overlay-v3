@@ -1,10 +1,11 @@
 import { Injectable } from "@nestjs/common";
-import { IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { ReplayStatus } from "../enum/replay_status.enum";
 
 @Injectable()
 export class CreateReplayDto {
-    @IsString()
-    status: string;
+    @IsEnum(ReplayStatus)
+    status: ReplayStatus;
 
     @IsString()
     message: string;
@@ -21,8 +22,8 @@ export class UpdateReplayDto {
     @IsString()
     file_path?: string;
 
-    @IsString()
-    status: string;
+    @IsEnum(ReplayStatus)
+    status: ReplayStatus;
 
     @IsOptional()
     @IsString()

@@ -7,6 +7,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { ReplayStatus } from '../enum/replay_status.enum';
 
 @Entity('replay')
 export class Replay {
@@ -19,8 +20,8 @@ export class Replay {
   @Column({ type: 'varchar', nullable: true })
   file_path: string;
 
-  @Column({ type: 'varchar', nullable: true })
-  status: string;
+  @Column({ type: 'enum', enum: ReplayStatus, nullable: true})
+  status: ReplayStatus;
 
   @Column({ type: 'varchar', nullable: true })
   message: string;

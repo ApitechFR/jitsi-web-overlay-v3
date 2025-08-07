@@ -19,7 +19,7 @@ export class StatsController {
     return this.statsService.homePageStats();
   }
 
-  @Get('/dashboard')
+  @Get('/realtime')
   @ApiResponse({
     status: 200,
     description:

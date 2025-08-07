@@ -1,7 +1,7 @@
 import Swal from "sweetalert2";
 
 
-export const API_BASE_URL = import.meta.env.VITE_BASE_URL;
+export const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const envValue  = import.meta.env.VITE_REPLAY_CHECK_TIMEOUT_MS;
 const parsed = Number(envValue );
@@ -27,7 +27,7 @@ export const startVideo = async (roomName: string) => {
     const message = "Utilisateur commence l'enregistrement";
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/visioreplay/start_recording`, {
+        const response = await fetch(`${API_BASE_URL}/replays/start_recording`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -51,7 +51,7 @@ export const checkVideo = async (roomName: string, checkVideoInterval: NodeJS.Ti
     const conference_name = roomName;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/visioreplay/findReplay/${encodeURIComponent(conference_name)}`);
+        const response = await fetch(`${API_BASE_URL}/replays/${encodeURIComponent(conference_name)}`);
         const data = await response.json();
 
         if (data.status === "terminated") {

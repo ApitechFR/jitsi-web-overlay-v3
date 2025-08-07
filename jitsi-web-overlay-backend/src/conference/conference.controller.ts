@@ -9,6 +9,7 @@ import {
   Put,
   Headers,
   BadRequestException,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -25,6 +26,8 @@ import { CreateConferenceDTO, EndConferenceDTO } from './DTOs/conference.dto';
 import { ByEmailDTO } from './DTOs/byEmail.dto';
 import { JwtDTO } from './DTOs/jwt.dto';
 import { RoomNameDto } from './DTOs/room-name.dto';
+import { ConferenceFilter } from './enum/conference_filter.enum';
+import { ParseConferenceFilterPipe } from '../../utils/ParseConferenceFilterPipe';
 
 @ApiTags('Conferences')
 @Controller('')
@@ -44,6 +47,22 @@ export class ConferenceController {
   @ApiOkResponse({ description: 'Liste des conférences' })
   async findAll() {
     return this.conferenceService.findAll();
+  }
+
+  @Get("conferences/statistics")
+  @ApiOkResponse({ description: "Statistiques des conférences" })
+  @ApiBadRequestResponse({ description: "Filtre invalide" })
+  async getStatistics(@Query("filter", new ParseConferenceFilterPipe()) filter?: ConferenceFilter) {
+    if (filter) {
+      return this.conferenceService.getStatisticsByFilter(filter);
+    }
+    return this.conferenceService.getGlobalStatistics();
+  }
+
+  @Get('conferences/:uid/duration')
+  async getDuration(@Param('uid') uid: string): Promise<{ duration: number }> {
+    const duration = await this.conferenceService.getDuration(uid);
+    return { duration };
   }
 
   @Get('conferences/:id')
@@ -79,36 +98,6 @@ export class ConferenceController {
     return this.conferenceService.updateEndTimeConferenceByName(confName, dto.end_time);
   }
 
-  @Get('conferences/count/all')
-  async countAll(): Promise<{ total: number }> {
-    const total = await this.conferenceService.countAll();
-    return { total };
-  }
-
-  @Get('conferences/count/:filter')
-  async countByFilter(
-    @Param('filter') filter: string,
-  ): Promise<{ total: number }> {
-    switch (filter) {
-      case 'today':
-        return { total: await this.conferenceService.countAllToday() };
-      case 'week':
-        return { total: await this.conferenceService.countAllByWeek() };
-      case 'month':
-        return { total: await this.conferenceService.countAllByMonth() };
-      case 'year':
-        return { total: await this.conferenceService.countAllByYear() };
-      default:
-        throw new BadRequestException('Invalid filter value');
-    }
-  }
-
-  @Get('conferences/:uid/duration')
-  async getDuration(@Param('uid') uid: string): Promise<{ duration: number }> {
-    const duration = await this.conferenceService.getDuration(uid);
-    return { duration };
-  }
-
   @Get('roomExists/:roomName')
   @ApiOkResponse({ description: 'retourne roomName si la conférence existe' })
   @ApiNotFoundResponse({
@@ -116,35 +105,6 @@ export class ConferenceController {
   })
   async roomExists(@Param() params: RoomNameDto) {
     return this.conferenceService.roomExists(params.roomName);
-  }
-
-  @Get('/:roomName')
-  @ApiOkResponse({
-    description: 'retourne roomName si la conférence est déja ouverte',
-  })
-  @ApiOkResponse({
-    description: "retourne roomName et jwt si la conférence n'est pas ouverte",
-  })
-  @ApiNotFoundResponse({
-    description: "retourne 404 si la conférence n'existe pas",
-  })
-  @ApiUnauthorizedResponse({
-    description:
-      "veuillez vous authentifier pour accéder à la webconf de l'Etat",
-  })
-  @ApiBody({ type: RoomNameDto })
-  @ApiBearerAuth()
-  async getRoomAccessToken(
-    @Param() params: RoomNameDto,
-    @Headers('webconf-user-region') webconfUserRegion: string,
-    @Headers('authorization') accessToken: string,
-  ) {
-    accessToken = accessToken?.split(' ')[1];
-    return this.conferenceService.getRoomAccessToken(
-      params.roomName,
-      webconfUserRegion,
-      accessToken,
-    );
   }
 
   //send token by email
@@ -177,5 +137,34 @@ export class ConferenceController {
   @ApiUnauthorizedResponse({ description: 'JWT invalide ou expiré' })
   async verifyToken(@Body() dto: JwtDTO) {
     return this.conferenceService.verifyToken(dto.jwt);
+  }
+
+  @Get('/:roomName')
+  @ApiOkResponse({
+    description: 'retourne roomName si la conférence est déja ouverte',
+  })
+  @ApiOkResponse({
+    description: "retourne roomName et jwt si la conférence n'est pas ouverte",
+  })
+  @ApiNotFoundResponse({
+    description: "retourne 404 si la conférence n'existe pas",
+  })
+  @ApiUnauthorizedResponse({
+    description:
+      "veuillez vous authentifier pour accéder à la webconf de l'Etat",
+  })
+  @ApiBody({ type: RoomNameDto })
+  @ApiBearerAuth()
+  async getRoomAccessToken(
+    @Param() params: RoomNameDto,
+    @Headers('webconf-user-region') webconfUserRegion: string,
+    @Headers('authorization') accessToken: string,
+  ) {
+    accessToken = accessToken?.split(' ')[1];
+    return this.conferenceService.getRoomAccessToken(
+      params.roomName,
+      webconfUserRegion,
+      accessToken,
+    );
   }
 }

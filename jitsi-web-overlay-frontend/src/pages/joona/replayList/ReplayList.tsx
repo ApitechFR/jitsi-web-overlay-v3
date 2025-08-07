@@ -31,7 +31,7 @@ const ReplayList: React.FC = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        axios.get<Replay[]>(`${API_BASE_URL}/api/visioreplay/replay/${conference_uid}`)
+        axios.get<Replay[]>(`${API_BASE_URL}/replays/conference/${conference_uid}`)
             .then((res) => setReplays(res.data))
             .catch((err) => console.error('Erreur :', err))
             .finally(() => setLoading(false));
@@ -55,7 +55,7 @@ const ReplayList: React.FC = () => {
                             priority="primary"
                             onClick={() => {
                                 window.open(
-                                    `${API_BASE_URL}/api/visioreplay/video?path=${encodeURIComponent(replay.file_path)}`,
+                                    `${API_BASE_URL}/replays/download?path=${encodeURIComponent(replay.file_path)}`,
                                     '_blank',
                                     'noopener,noreferrer'
                                 );

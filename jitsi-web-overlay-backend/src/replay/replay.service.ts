@@ -1,14 +1,15 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Replay } from './entities/replay.entity';
-import { v4 as uuidv4 } from 'uuid';
 import { CreateReplayDto, UpdateReplayDto } from './DTOs/replay.dto';
 import { join } from 'path';
+import * as path from 'path';
 import * as fs from 'fs';
 import { RegisterEvent } from './entities/register_event.entity';
 import { RegisterEventDto } from './DTOs/register_event.dto';
 import { Conference } from '../conference/entities/conference.entity';
+import { ReplayStatus } from './enum/replay_status.enum';
 
 @Injectable()
 export class ReplayService {
@@ -19,13 +20,12 @@ export class ReplayService {
         private readonly registerEventRepository: Repository<RegisterEvent>,
         @InjectRepository(Conference)
         private readonly conferenceRepository: Repository<Conference>,
-        private dataSource: DataSource,
     ) { }
 
     async findAll(): Promise<Replay[]> {
         return this.replayRepository.find({
             where: {
-                status: 'terminated',
+                status: ReplayStatus.TERMINATED,
             },
             order: {
                 created_at: 'DESC',
@@ -38,7 +38,7 @@ export class ReplayService {
         try {
             return this.replayRepository.find({
                 where: {
-                    status: 'terminated',
+                    status: ReplayStatus.TERMINATED,
                     conference: { uid: conference_uid },
                 },
                 relations: ['conference'],
@@ -77,7 +77,7 @@ export class ReplayService {
         try {
             const replay = await this.replayRepository.findOne({
                 where: {
-                    status: 'started',
+                    status: ReplayStatus.STARTED,
                     uid: null,
                     conference_name: conference_name,
                 },
@@ -116,10 +116,10 @@ export class ReplayService {
 
             const isEnabled = process.env.ENABLE_JIBRI_APITECH_API === 'true';
 
-            if (replay_status === 'uploaded-rsync' && fs.existsSync(filePath)) {
+            if (replay_status === ReplayStatus.UPLOADED_RSYNC && fs.existsSync(filePath)) {
                 if (!isEnabled) {
                     console.log({ isEnabled });
-                    replay_status = 'terminated';
+                    replay_status = ReplayStatus.TERMINATED;
                 }
             }
 
@@ -182,5 +182,18 @@ export class ReplayService {
         });
 
         return await this.registerEventRepository.save(event);
+    }
+
+    downloadVideoFile(rawPath: string): { path: string; stat: fs.Stats; safeFilename: string; } {
+        const decodedPath = decodeURIComponent(rawPath || '').trim();
+
+        if (!decodedPath || !fs.existsSync(decodedPath)) {
+            throw new HttpException('Fichier introuvable', HttpStatus.NOT_FOUND);
+        }
+
+        const stat = fs.statSync(decodedPath);
+        const safeFilename = path.basename(decodedPath);
+
+        return { path: decodedPath, stat, safeFilename };
     }
 }

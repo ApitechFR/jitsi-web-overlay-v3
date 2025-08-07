@@ -18,12 +18,12 @@ function Dashboard() {
         setIsToogleActive(!isToogleActive);
     }
 
-    const API_BASE_URL = import.meta.env.VITE_BASE_URL;
+    const API_BASE_URL = import.meta.env.VITE_API_URL;
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/stats/dashboard`);
+                const response = await fetch(`${API_BASE_URL}/stats/realtime`);
                 return await response.json();
             } catch (error) {
                 console.error('Erreur lors de la récupération des données :', error);

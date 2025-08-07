@@ -5,9 +5,10 @@ import { IConferenceService } from '../interfaces/conference-service.interface';
 import { CreateConferenceDTO } from '../DTOs/conference.dto';
 import { Conference } from '../entities/conference.entity';
 import { ProsodyService } from '../../prosody/prosody.service';
-import { ConferenceStatus } from '../enum/conference-status.enum';
+import { ConferenceStatus } from '../enum/conference_status.enum';
 import { Room } from '../../room/entities/room.entity';
 import { v4 as uuidv4 } from 'uuid';
+import { ConferenceFilter } from '../enum/conference_filter.enum';
 
 @Injectable()
 export class ConferenceServiceSQL implements IConferenceService {
@@ -74,70 +75,64 @@ export class ConferenceServiceSQL implements IConferenceService {
     return this.conferenceRepo.save(conf);
   }
 
-  async countAll(): Promise<number> {
-    return await this.conferenceRepo.count();
-  }
-
-  async countAllToday(): Promise<number> {
-    const now = new Date();
-
-    const startOfDay = new Date(now);
-    startOfDay.setHours(0, 0, 0, 0);
-
-    const endOfDay = new Date(now);
-    endOfDay.setHours(23, 59, 59, 999);
-
-    return await this.conferenceRepo.count({
-      where: {
-        created_at: Between(startOfDay, endOfDay),
-      },
+  private async countByDateRange(start: Date, end: Date): Promise<number> {
+    return this.conferenceRepo.count({
+      where: { created_at: Between(start, end) }
     });
   }
 
-  async countAllByMonth(): Promise<number> {
+  async getStatisticsByFilter(filter: ConferenceFilter): Promise<{ filter: string; total: number }> {
     const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
 
-    return await this.conferenceRepo.count({
-      where: {
-        created_at: Between(startOfMonth, endOfMonth),
-      },
-    });
+    let start: Date;
+    let end: Date;
+
+    switch (filter) {
+      case ConferenceFilter.TODAY:
+        start = new Date(now);
+        start.setHours(0, 0, 0, 0);
+        end = new Date(now);
+        end.setHours(23, 59, 59, 999);
+        break;
+
+      case ConferenceFilter.WEEK:
+        const day = now.getDay();
+        const diffToMonday = day === 0 ? -6 : 1 - day;
+        start = new Date(now);
+        start.setDate(now.getDate() + diffToMonday);
+        start.setHours(0, 0, 0, 0);
+
+        end = new Date(start);
+        end.setDate(start.getDate() + 6);
+        end.setHours(23, 59, 59, 999);
+        break;
+
+      case ConferenceFilter.MONTH:
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+        end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+        break;
+
+      case ConferenceFilter.YEAR:
+        start = new Date(now.getFullYear(), 0, 1);
+        end = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+        break;
+
+      default:
+        throw new NotFoundException(`Invalid filter: ${filter}`);
+    }
+
+    const total = await this.countByDateRange(start, end);
+    return { filter, total };
   }
 
-  async countAllByYear(): Promise<number> {
-    const now = new Date();
-    const startOfYear = new Date(now.getFullYear(), 0, 1); // 01/01
-    const endOfYear = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999); // 31/12
-
-    return await this.conferenceRepo.count({
-      where: {
-        created_at: Between(startOfYear, endOfYear),
-      },
-    });
-  }
-
-  async countAllByWeek(): Promise<number> {
-    const now = new Date();
-    const day = now.getDay(); // 0 = dimanche, 1 = lundi, ..., 6 = samedi
-
-    // Trouver lundi de cette semaine
-    const diffToMonday = (day === 0 ? -6 : 1 - day);
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() + diffToMonday);
-    startOfWeek.setHours(0, 0, 0, 0);
-
-    // Lundi + 6 = dimanche
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
-    endOfWeek.setHours(23, 59, 59, 999);
-
-    return await this.conferenceRepo.count({
-      where: {
-        created_at: Between(startOfWeek, endOfWeek),
-      },
-    });
+  async getGlobalStatistics() {
+    return {
+      total: await this.conferenceRepo.count(),
+      today: (await this.getStatisticsByFilter(ConferenceFilter.TODAY)).total,
+      week: (await this.getStatisticsByFilter(ConferenceFilter.WEEK)).total,
+      month: (await this.getStatisticsByFilter(ConferenceFilter.MONTH)).total,
+      year: (await this.getStatisticsByFilter(ConferenceFilter.YEAR)).total
+    };
   }
 
   async getDuration(uid: string): Promise<string> {

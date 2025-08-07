@@ -5,13 +5,16 @@ import { Replay } from './entities/replay.entity';
 import * as fs from 'fs';
 import * as FormData from 'form-data';
 import { Response } from 'express';
-import * as path from 'path';
+import { ReplayStatus } from './enum/replay_status.enum';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-@Controller('api/visioreplay')
+@ApiTags('replays')
+@Controller('replays')
 export class ReplayController {
     constructor(private readonly replayService: ReplayService) { }
 
     @Post('start_recording')
+    @ApiOperation({ summary: 'Commancer l\'enregistrement vidéo' })
     async createReplay(@Body() data: CreateReplayDto): Promise<Replay> {
         try {
             return await this.replayService.createReplay(data);
@@ -23,7 +26,8 @@ export class ReplayController {
         }
     }
 
-    @Put('end_recording/confname/:conference_name')
+    @Put('confname/:conference_name/end_recording')
+    @ApiOperation({ summary: 'Arrêter l\'enregistrement vidéo' })
     async updateReplayByConfName(
         @Param('conference_name') conference_name: string,
         @Body() data: UpdateReplayDto,
@@ -39,7 +43,8 @@ export class ReplayController {
         }
     }
 
-    @Put('end_recording/:uid')
+    @Put(':uid/end_recording')
+    @ApiOperation({ summary: 'Update replay par UID' })
     async updateReplayByUID(
         @Param('uid') uid: string,
         @Body() updateReplayDto: UpdateReplayDto,
@@ -116,9 +121,9 @@ export class ReplayController {
 
                 // Mise à jour du statut selon la réponse
                 if (uploadResult.statusCode >= 200 && uploadResult.statusCode < 300) {
-                    updateReplayDto.status = 'terminated';
+                    updateReplayDto.status = ReplayStatus.TERMINATED;
                 } else {
-                    updateReplayDto.status = 'error-uploading-rsync';
+                    updateReplayDto.status = ReplayStatus.ERROR_UPLOADING_RSYNC;
                 }
 
                 const updatedReplay = await this.replayService.updateReplayByUID(uid, updateReplayDto);
@@ -136,23 +141,39 @@ export class ReplayController {
         }
     }
 
-    @Get('findReplay/:conference_name')
-    async findReplayByConfName(@Param('conference_name') conference_name: string): Promise<Replay> {
-        try {
-            const replay = await this.replayService.findReplayByConfName(conference_name);
+    @Get('download')
+    @ApiOperation({ summary: 'Télécharger la vidéo' })
+    downloadVideo(
+        @Query('path') rawPath: string,
+        @Res() res: Response,
+    ) {
+        const { path: filePath, stat, safeFilename } = this.replayService.downloadVideoFile(rawPath);
 
-            if (!replay) {
-                throw new NotFoundException('Aucun replay trouvé');
-            }
+        const stream = fs.createReadStream(filePath);
 
-            return replay;
-        } catch (error) {
-            console.error("Erreur lors de la récupération du replay :", error.message);
-            throw new InternalServerErrorException(error.message);
-        }
+        res.set({
+            'Content-Disposition': `attachment; filename="${safeFilename}"`,
+            'Content-Type': 'video/mp4',
+            'Content-Length': stat.size,
+        });
+
+        stream.pipe(res);
     }
 
-    @Get('register_eventid/:confname')
+    @Get('')
+    @ApiOperation({ summary: 'Lister tous les replays' })
+    async findAll(): Promise<Replay[]> {
+        return this.replayService.findAll();
+    }
+
+    @Get('conference/:uid')
+    @ApiOperation({ summary: 'Obtenir un replay par UID de conférence' })
+    async getByLatestConfUID(@Param('conference_uid') conference_uid: string) {
+        return this.replayService.findByLatestConferenceUID(conference_uid);
+    }
+
+    @Get(':confname/register_eventid')
+    @ApiOperation({ summary: 'Enregistrer un event ID pour une conférence' })
     async register_eventid(
         @Param('confname') confname: string,
         @Query('eventid') eventid: string,
@@ -182,40 +203,20 @@ export class ReplayController {
         };
     }
 
-    @Get('video')
-    downloadVideo(
-        @Query('path') rawPath: string,
-        @Res() res: Response,
-    ) {
-        const decodedPath = decodeURIComponent(rawPath || '').trim();
+    @Get(':conference_name')
+    @ApiOperation({ summary: 'Obtenir un replay par nom de conférence' })
+    async findReplayByConfName(@Param('conference_name') conference_name: string): Promise<Replay> {
+        try {
+            const replay = await this.replayService.findReplayByConfName(conference_name);
 
-        if (!decodedPath || !fs.existsSync(decodedPath)) {
-            throw new HttpException('Fichier introuvable', HttpStatus.NOT_FOUND);
+            if (!replay) {
+                throw new NotFoundException('Aucun replay trouvé');
+            }
+
+            return replay;
+        } catch (error) {
+            console.error("Erreur lors de la récupération du replay :", error.message);
+            throw new InternalServerErrorException(error.message);
         }
-
-        const stat = fs.statSync(decodedPath);
-        const stream = fs.createReadStream(decodedPath);
-        const safeFilename = path.basename(decodedPath);
-
-        console.log('Chemin fichier reçu:', decodedPath);
-
-        res.set({
-            'Content-Disposition': `attachment; filename="${safeFilename}"`,
-            'Content-Type': 'video/mp4',
-            'Content-Length': stat.size,
-        });
-
-        stream.pipe(res);
-    }
-
-
-    @Get('replay')
-    async findAll(): Promise<Replay[]> {
-        return this.replayService.findAll();
-    }
-
-    @Get('replay/:conference_uid')
-    async getByLatestConfUID(@Param('conference_uid') conference_uid: string) {
-        return this.replayService.findByLatestConferenceUID(conference_uid);
     }
 }
