@@ -19,15 +19,6 @@ const modal = createModal({
 });
 
 function HeaderJoona({ authenticated }: HeaderJoonaProps) {
-  const logOut = () => {
-    fetch(`${import.meta.env.VITE_API_URL}/authentication/logout`, {
-      redirect: 'manual',
-      credentials: 'include',
-    }).then(res => {
-      window.location.href = res.url;
-    });
-  };
-
   const [modalContent, setModalContent] = useState<'jitsi' | 'weboverlay' | 'voxify'>('jitsi');
   const [userInfos, setUserInfos] = useState<UserInfos | null>(null);
 
@@ -39,6 +30,13 @@ function HeaderJoona({ authenticated }: HeaderJoonaProps) {
 
   const openPdf = () => {
     window.open(docUtilisateur, '_blank', 'noopener,noreferrer');
+  };
+
+  const logOut = () => {
+    // Utilise une redirection native pour que le backend puisse gérer le logout complet
+    window.location.href = `${import.meta.env.VITE_API_URL}/authentication/logout`;
+  
+  console.log('Déconnexion effectuée');
   };
 
   const renderModalContent = () => {
@@ -67,11 +65,10 @@ function HeaderJoona({ authenticated }: HeaderJoonaProps) {
           }
           homeLinkProps={{
             href: '/',
-            title:
-              'Accueil - Nom de l’entité (ministère, secrétariat d‘état, gouvernement)',
+            title: 'Accueil - Nom de l’entité (ministère, secrétariat d‘état, gouvernement)',
           }}
           id="fr-header-header-with-quick-access-items"
-          quickAccessItems={[ 
+          quickAccessItems={[
             {
               buttonProps: {
                 onClick: openPdf,
@@ -95,23 +92,16 @@ function HeaderJoona({ authenticated }: HeaderJoonaProps) {
                     className: 'fr-btn--icon-right',
                   },
                   iconId: 'fr-icon-account-circle-fill',
-                  
-                  text: `Se déconnecter`,
+                  text: 'Se déconnecter',
                 }
               : {
                   buttonProps: {
                     onClick: () => {
-                     
-                      const state = [
-                        ...crypto.getRandomValues(new Uint8Array(16)),
-                      ]
+                      const state = [...crypto.getRandomValues(new Uint8Array(16))]
                         .map(b => b.toString(16).padStart(2, '0'))
                         .join('');
                       sessionStorage.setItem('oidc_state', state);
-                      
-                      window.location.href = `${
-                        import.meta.env.VITE_API_URL
-                      }/authentication/login_authorize?state=${state}`;
+                      window.location.href = `${import.meta.env.VITE_API_URL}/authentication/login_authorize?state=${state}`;
                     },
                     className: 'fr-btn fr-btn--icon-right',
                   },
@@ -119,47 +109,16 @@ function HeaderJoona({ authenticated }: HeaderJoonaProps) {
                   text: 'Connexion',
                 },
           ]}
-          navigation={[ 
+          navigation={[
             ...(authenticated
               ? [
-                  {
-                    linkProps: {
-                      href: '/',
-                      target: '_self',
-                    },
-                    text: 'Accueil',
-                  },
-                  {
-                    linkProps: {
-                      href: '/profile',
-                      target: '_self',
-                    },
-                    text: 'Mon compte',
-                  },
-                  {
-                    linkProps: {
-                      href: '#',
-                      target: '_self',
-                    },
-                    text: 'Conférences',
-                  },
-                  
+                  { linkProps: { href: '/', target: '_self' }, text: 'Accueil' },
+                  { linkProps: { href: '/profile', target: '_self' }, text: 'Mon compte' },
+                  { linkProps: { href: '#', target: '_self' }, text: 'Conférences' },
                   ...(userInfos && (userInfos.isAdmin || userInfos.admin)
                     ? [
-                        {
-                          linkProps: {
-                            href: '/admin',
-                            target: '_self',
-                          },
-                          text: 'Administration',
-                        },
-                        {
-                          linkProps: {
-                            href: '/dashboard',
-                            target: '_self',
-                          },
-                          text: 'Dashboard',
-                        },
+                        { linkProps: { href: '/admin', target: '_self' }, text: 'Administration' },
+                        { linkProps: { href: '/dashboard', target: '_self' }, text: 'Dashboard' },
                       ]
                     : []),
                 ]
@@ -171,18 +130,10 @@ function HeaderJoona({ authenticated }: HeaderJoonaProps) {
 
       <modal.Component title="Version des services" size="large">
         <div className={styles.modalContainer}>
-          <div
-            className={`${styles.flexBox} ${styles.firstFlexBox} ${styles.firstFlexBoxGap}`}
-          >
-            <button onClick={() => setModalContent('jitsi')}>
-              Version Jitsi
-            </button>
-            <button onClick={() => setModalContent('weboverlay')}>
-              Version Web Overlay
-            </button>
-            <button onClick={() => setModalContent('voxify')}>
-              Version Voxify
-            </button>
+          <div className={`${styles.flexBox} ${styles.firstFlexBox} ${styles.firstFlexBoxGap}`}>
+            <button onClick={() => setModalContent('jitsi')}>Version Jitsi</button>
+            <button onClick={() => setModalContent('weboverlay')}>Version Web Overlay</button>
+            <button onClick={() => setModalContent('voxify')}>Version Voxify</button>
           </div>
           <div className={styles.separator} />
           <div className={styles.secondFlexBox}>{renderModalContent()}</div>
