@@ -7,7 +7,6 @@ export default function LogoutCallback() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    localStorage.removeItem('auth');
     sessionStorage.removeItem('state');
 
     navigate('/', { replace: true });

@@ -48,13 +48,11 @@ export default function LoginCallback({
       .get(apiUrl)
       .then(res => {
         if (res.data.roomName && res.data.jwt) {
-          localStorage.setItem('auth', res.data.accessToken);
           setAuthenticated(true);
           navigate(`/${res.data.roomName}?jwt=${res.data.jwt}`);
           return;
         }
         if (res.data.jwt) {
-          localStorage.setItem('auth', res.data.accessToken);
           setAuthenticated(true);
           navigate(`/`);
         } else {
@@ -62,7 +60,6 @@ export default function LoginCallback({
         }
       })
       .catch(error => {
-        localStorage.setItem('auth', 'false');
         let status = '500';
         const message = "Erreur d'authentification";
         if (error.response) {

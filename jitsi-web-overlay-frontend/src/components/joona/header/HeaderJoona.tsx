@@ -1,5 +1,6 @@
 import styles from './HeaderJoona.module.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { fetchUserInfos, UserInfos } from '../../../utils/userInfos';
 import JitsiFrame from '../iframePopup/JitsiFrame';
 import WeboverlayFrame from '../iframePopup/WeboverlayFrame';
 import VoxifyFrame from '../iframePopup/VoxifyFrame';
@@ -27,9 +28,14 @@ function HeaderJoona({ authenticated }: HeaderJoonaProps) {
     });
   };
 
-  const [modalContent, setModalContent] = useState<
-    'jitsi' | 'weboverlay' | 'voxify'
-  >('jitsi');
+  const [modalContent, setModalContent] = useState<'jitsi' | 'weboverlay' | 'voxify'>('jitsi');
+  const [userInfos, setUserInfos] = useState<UserInfos | null>(null);
+
+  useEffect(() => {
+    if (authenticated) {
+      fetchUserInfos().then(data => setUserInfos(data));
+    }
+  }, [authenticated]);
 
   const openPdf = () => {
     window.open(docUtilisateur, '_blank', 'noopener,noreferrer');
@@ -65,7 +71,7 @@ function HeaderJoona({ authenticated }: HeaderJoonaProps) {
               'Accueil - Nom de l’entité (ministère, secrétariat d‘état, gouvernement)',
           }}
           id="fr-header-header-with-quick-access-items"
-          quickAccessItems={[
+          quickAccessItems={[ 
             {
               buttonProps: {
                 onClick: openPdf,
@@ -89,19 +95,20 @@ function HeaderJoona({ authenticated }: HeaderJoonaProps) {
                     className: 'fr-btn--icon-right',
                   },
                   iconId: 'fr-icon-account-circle-fill',
-                  text: 'Se déconnecter',
+                  
+                  text: `Se déconnecter`,
                 }
               : {
                   buttonProps: {
                     onClick: () => {
-                      // Génère un state OIDC aléatoire
+                     
                       const state = [
                         ...crypto.getRandomValues(new Uint8Array(16)),
                       ]
                         .map(b => b.toString(16).padStart(2, '0'))
                         .join('');
                       sessionStorage.setItem('oidc_state', state);
-                      // Redirige avec le state en paramètre
+                      
                       window.location.href = `${
                         import.meta.env.VITE_API_URL
                       }/authentication/login_authorize?state=${state}`;
@@ -112,7 +119,7 @@ function HeaderJoona({ authenticated }: HeaderJoonaProps) {
                   text: 'Connexion',
                 },
           ]}
-          navigation={[
+          navigation={[ 
             ...(authenticated
               ? [
                   {
@@ -136,20 +143,25 @@ function HeaderJoona({ authenticated }: HeaderJoonaProps) {
                     },
                     text: 'Conférences',
                   },
-                  {
-                    linkProps: {
-                      href: '#',
-                      target: '_self',
-                    },
-                    text: 'Administration',
-                  },
-                  {
-                    linkProps: {
-                      href: '/dashboard',
-                      target: '_self',
-                    },
-                    text: 'Dashboard',
-                  },
+                  
+                  ...(userInfos && (userInfos.isAdmin || userInfos.admin)
+                    ? [
+                        {
+                          linkProps: {
+                            href: '/admin',
+                            target: '_self',
+                          },
+                          text: 'Administration',
+                        },
+                        {
+                          linkProps: {
+                            href: '/dashboard',
+                            target: '_self',
+                          },
+                          text: 'Dashboard',
+                        },
+                      ]
+                    : []),
                 ]
               : []),
           ]}
