@@ -28,6 +28,28 @@ import { IConferenceService } from '../conference/interfaces/conference-service.
 
 @Controller('authentication')
 export class AuthenticationController {
+  /**
+   * Retourne les infos utilisateur extraites du JWT (cookie httpOnly)
+   */
+  @Get('userinfo')
+  @ApiOkResponse({ description: 'Retourne les infos utilisateur du JWT' })
+  @ApiUnauthorizedResponse({ description: 'Utilisateur non authentifié' })
+  userinfo(@Req() request: Request) {
+    const refreshToken = request.signedCookies?.refreshToken;
+    if (!refreshToken) {
+      throw new UnauthorizedException('Utilisateur non authentifié');
+    }
+    try {
+      const decoded = this.jwtService.decode(refreshToken);
+      if (!decoded) {
+        throw new UnauthorizedException('JWT invalide');
+      }
+      // On retourne les infos utiles (email, nom, rôle, etc.)
+      return decoded;
+    } catch {
+      throw new UnauthorizedException('JWT invalide');
+    }
+  }
   constructor(
     private readonly authenticationService: AuthenticationService,
     @Inject(IConferenceService)
