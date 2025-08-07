@@ -1,6 +1,6 @@
 import styles from './HeaderJoona.module.css';
 import { useState, useEffect } from 'react';
-import { fetchUserInfos, getUserInitials, getUserRole, UserInfos } from '../../../utils/userInfos';
+import { fetchUserInfos, UserInfos } from '../../../utils/userInfos';
 import JitsiFrame from '../iframePopup/JitsiFrame';
 import WeboverlayFrame from '../iframePopup/WeboverlayFrame';
 import VoxifyFrame from '../iframePopup/VoxifyFrame';
@@ -95,20 +95,20 @@ function HeaderJoona({ authenticated }: HeaderJoonaProps) {
                     className: 'fr-btn--icon-right',
                   },
                   iconId: 'fr-icon-account-circle-fill',
-                  // Affiche les initiales ou le rôle à côté du bouton de déconnexion
-                  text: `Se déconnecter (${getUserInitials(userInfos) || getUserRole(userInfos)})`,
+                  
+                  text: `Se déconnecter`,
                 }
               : {
                   buttonProps: {
                     onClick: () => {
-                      // Génère un state OIDC aléatoire
+                     
                       const state = [
                         ...crypto.getRandomValues(new Uint8Array(16)),
                       ]
                         .map(b => b.toString(16).padStart(2, '0'))
                         .join('');
                       sessionStorage.setItem('oidc_state', state);
-                      // Redirige avec le state en paramètre
+                      
                       window.location.href = `${
                         import.meta.env.VITE_API_URL
                       }/authentication/login_authorize?state=${state}`;
