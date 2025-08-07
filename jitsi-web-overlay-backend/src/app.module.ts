@@ -12,6 +12,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { RoomNameValidator } from './common/validators/room-name.validator';
 
 function getDatabaseImports() {
   const dbType = process.env.DB_TYPE;
@@ -97,6 +98,7 @@ function getDatabaseImports() {
     ProsodyModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, RoomNameValidator],
+  exports: [RoomNameValidator],
 })
-export class AppModule {}
+export class AppModule { }
