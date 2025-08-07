@@ -1,5 +1,5 @@
 import { JitsiMeeting } from '@jitsi/react-sdk';
-import { useState, useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { checkConferenceEnd, createConference, fetchStats } from './conference_events';
 import { handleRecordingStatus } from './visio_replay';
@@ -23,15 +23,15 @@ export default function JitsiMeet({
     const checkTimeout = useRef<NodeJS.Timeout | null>(null);
     const jwt1 = jwt ? jwt : window.location.search.split('=')[1];
 
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const handleJitsiIFrameRef1 = (iframeRef: HTMLElement) => {
-        iframeRef.style.border = '10px solid #3d3d3d';
-        iframeRef.style.position = 'absolute';
-        iframeRef.style.background = '#3d3d3d';
-        iframeRef.style.height = '100%';
-        iframeRef.style.width = '100%';
-    };
+  const handleJitsiIFrameRef1 = (iframeRef: HTMLElement) => {
+    iframeRef.style.border = '10px solid #3d3d3d';
+    iframeRef.style.position = 'absolute';
+    iframeRef.style.background = '#3d3d3d';
+    iframeRef.style.height = '100%';
+    iframeRef.style.width = '100%';
+  };
 
     console.log('jwt', jwt);
 

@@ -1,22 +1,28 @@
-import styles from './Dashboard.module.css'
-import { Breadcrumb } from "@codegouvfr/react-dsfr/Breadcrumb";
-import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
-import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch";
-import { Input } from "@codegouvfr/react-dsfr/Input";
-import { Card } from "@codegouvfr/react-dsfr/Card";
+import styles from './Dashboard.module.css';
+import { Breadcrumb } from '@codegouvfr/react-dsfr/Breadcrumb';
+import { RadioButtons } from '@codegouvfr/react-dsfr/RadioButtons';
+import { ToggleSwitch } from '@codegouvfr/react-dsfr/ToggleSwitch';
+import { Input } from '@codegouvfr/react-dsfr/Input';
+import { Card } from '@codegouvfr/react-dsfr/Card';
 import { useEffect, useState } from 'react';
 
 import cardsData from '../../../data/cardConfig.json';
 import Button from '@codegouvfr/react-dsfr/Button';
 
+type CardData = {
+  key: string;
+  description: string;
+  valeur: number;
+  // add other properties from cardsData if needed
+};
+
 function Dashboard() {
+  const [isToogleActive, setIsToogleActive] = useState(false);
+  const [datasCard, setDatasCard] = useState<CardData[]>([]);
 
-    const [isToogleActive, setIsToogleActive] = useState(false);
-    const [datasCard, setDatasCard] = useState([]);
-
-    const handleToogleChange = () => {
-        setIsToogleActive(!isToogleActive);
-    }
+  const handleToogleChange = () => {
+    setIsToogleActive(!isToogleActive);
+  };
 
     const API_BASE_URL = import.meta.env.VITE_API_URL;
 

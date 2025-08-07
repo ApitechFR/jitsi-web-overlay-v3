@@ -1,54 +1,53 @@
-import { Header } from '@codegouvfr/react-dsfr/Header';
 import styles from './HeaderJoona.module.css';
-import '@gouvfr-lasuite/integration/dist/css/gaufre.css';
-import Button from '@codegouvfr/react-dsfr/Button';
-import { createModal } from '@codegouvfr/react-dsfr/Modal';
-import { useIsModalOpen } from '@codegouvfr/react-dsfr/Modal/useIsModalOpen';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { fetchUserInfos, UserInfos } from '../../../utils/userInfos';
 import JitsiFrame from '../iframePopup/JitsiFrame';
 import WeboverlayFrame from '../iframePopup/WeboverlayFrame';
 import VoxifyFrame from '../iframePopup/VoxifyFrame';
-import docUtilisateur from '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf'
+import docUtilisateur from '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf';
 
-type errorObj = {
-  message: string;
-  error: { status: string; stack: string };
-};
+import { Header } from '@apitechfr/react-dsapitech/Header';
+import { createModal } from '@apitechfr/react-dsapitech/Modal';
 
-interface headerProps {
-  authenticated: boolean | null;
-  setAuthenticated: (e: boolean) => void;
-  setError: (obj: errorObj) => void;
+interface HeaderJoonaProps {
+  readonly authenticated: boolean | null;
 }
 
 const modal = createModal({
-    id: "foo-modal", 
-    isOpenedByDefault: false
+  id: 'foo-modal',
+  isOpenedByDefault: false,
 });
 
-function openModal () {
-  modal.open();
-}
+function HeaderJoona({ authenticated }: HeaderJoonaProps) {
+  const logOut = () => {
+    fetch(`${import.meta.env.VITE_API_URL}/authentication/logout`, {
+      redirect: 'manual',
+      credentials: 'include',
+    }).then(res => {
+      window.location.href = res.url;
+    });
+  };
 
-function HeaderJoona({ authenticated }: headerProps) {
+  const [modalContent, setModalContent] = useState<'jitsi' | 'weboverlay' | 'voxify'>('jitsi');
+  const [userInfos, setUserInfos] = useState<UserInfos | null>(null);
 
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
-
-  const isOpen = useIsModalOpen(modal);
-
-  const [modalContent, setModalContent] = useState("jitsi");
+  useEffect(() => {
+    if (authenticated) {
+      fetchUserInfos().then(data => setUserInfos(data));
+    }
+  }, [authenticated]);
 
   const openPdf = () => {
     window.open(docUtilisateur, '_blank', 'noopener,noreferrer');
-  }
+  };
 
   const renderModalContent = () => {
     switch (modalContent) {
-      case "jitsi":
+      case 'jitsi':
         return <JitsiFrame />;
-      case "weboverlay":
+      case 'weboverlay':
         return <WeboverlayFrame />;
-      case "voxify":
+      case 'voxify':
         return <VoxifyFrame />;
       default:
         return null;
@@ -58,133 +57,135 @@ function HeaderJoona({ authenticated }: headerProps) {
   return (
     <>
       <div className={styles.parent}>
-        {isAuthenticated ? (
-          <Header
-              brandTop={<>INTITULE<br />OFFICIEL</>}
-              homeLinkProps={{
-                to: '/',
-                title: 'Accueil - Nom de l’entité (ministère, secrétariat d‘état, gouvernement)'
-              }}
-              id="fr-header-header-with-quick-access-items"
-              quickAccessItems={[
-                {
+        <Header
+          brandTop={
+            <>
+              INTITULE
+              <br />
+              OFFICIEL
+            </>
+          }
+          homeLinkProps={{
+            href: '/',
+            title:
+              'Accueil - Nom de l’entité (ministère, secrétariat d‘état, gouvernement)',
+          }}
+          id="fr-header-header-with-quick-access-items"
+          quickAccessItems={[ 
+            {
+              buttonProps: {
+                onClick: openPdf,
+                className: 'fr-btn--icon-right',
+              },
+              iconId: 'fr-icon-external-link-fill',
+              text: 'Documentation utilisateur',
+            },
+            {
+              buttonProps: {
+                onClick: modal.open.bind(modal),
+                className: 'fr-btn fr-btn--icon-right',
+              },
+              iconId: 'fr-icon-information-line',
+              text: 'Informations',
+            },
+            authenticated
+              ? {
                   buttonProps: {
-                    onClick: openPdf,
-                    className: 'fr-btn--icon-right'
-                  },
-                  iconId: 'fr-icon-external-link-fill',
-                  text: 'Documentation utilisateur'
-                },
-                {
-                  buttonProps: {
-                    onClick: modal.open.bind(modal),
-                    className: 'fr-btn fr-btn--icon-right'
-                  },
-                  iconId: 'fr-icon-information-line',
-                  text: 'Informations'
-                },
-                {
-                  buttonProps: {
-                    onClick: function noRefCheck(){},
-                    className: 'fr-btn--icon-right'
+                    onClick: logOut,
+                    className: 'fr-btn--icon-right',
                   },
                   iconId: 'fr-icon-account-circle-fill',
-                  text: 'Se déconnecter'
-                },
-              ]}
-              navigation={[
-                {
-                  linkProps: {
-                    to: '/',
-                    target: '_self',
-                    replace: true,
-                  },
-                  text: 'Accueil'
-                },
-                {
-                  linkProps: {
-                    to: '/profile',
-                    target: '_self',
-                  },
-                  text: 'Mon compte'
-                },
-                {
-                  linkProps: {
-                    to: '#',
-                    target: '_self'
-                  },
-                  text: 'Conférences'
-                },
-                {
-                  linkProps: {
-                    to: '/admin',
-                    target: '_self'
-                  },
-                  text: 'Administration'
-                },
-                {
-                  linkProps: {
-                    to: '/dashboard',
-                    target: '_self'
-                  },
-                  text: 'Dashboard'
+                  
+                  text: `Se déconnecter`,
                 }
-              ]}
-              serviceTitle="Joona.fr"
-            />
-        ) : (
-          <Header
-            brandTop={<>INTITULE<br />OFFICIEL</>}
-            homeLinkProps={{
-              to: '/',
-              title: 'Accueil - Nom de l’entité (ministère, secrétariat d‘état, gouvernement)'
-            }}
-            id="fr-header-header-with-quick-access-items"
-            quickAccessItems={[
-              {
-                buttonProps: {
-                  onClick: modal.open.bind(modal),
-                  className: 'fr-btn--icon-right'
-
+              : {
+                  buttonProps: {
+                    onClick: () => {
+                     
+                      const state = [
+                        ...crypto.getRandomValues(new Uint8Array(16)),
+                      ]
+                        .map(b => b.toString(16).padStart(2, '0'))
+                        .join('');
+                      sessionStorage.setItem('oidc_state', state);
+                      
+                      window.location.href = `${
+                        import.meta.env.VITE_API_URL
+                      }/authentication/login_authorize?state=${state}`;
+                    },
+                    className: 'fr-btn fr-btn--icon-right',
+                  },
+                  iconId: 'fr-icon-account-circle-fill',
+                  text: 'Connexion',
                 },
-                iconId: 'fr-icon-information-line',
-                text: 'Informations'
-              },
-              {
-                buttonProps: {
-                  onClick: function noRefCheck(){},
-                  className: 'fr-btn fr-btn--icon-right'
-                },
-                iconId: 'fr-icon-account-circle-fill',
-                text: 'Connexion'
-              },
-            ]}
-            serviceTitle="Joona.fr"
-          />
-        )}      
+          ]}
+          navigation={[ 
+            ...(authenticated
+              ? [
+                  {
+                    linkProps: {
+                      href: '/',
+                      target: '_self',
+                    },
+                    text: 'Accueil',
+                  },
+                  {
+                    linkProps: {
+                      href: '/profile',
+                      target: '_self',
+                    },
+                    text: 'Mon compte',
+                  },
+                  {
+                    linkProps: {
+                      href: '#',
+                      target: '_self',
+                    },
+                    text: 'Conférences',
+                  },
+                  
+                  ...(userInfos && (userInfos.isAdmin || userInfos.admin)
+                    ? [
+                        {
+                          linkProps: {
+                            href: '/admin',
+                            target: '_self',
+                          },
+                          text: 'Administration',
+                        },
+                        {
+                          linkProps: {
+                            href: '/dashboard',
+                            target: '_self',
+                          },
+                          text: 'Dashboard',
+                        },
+                      ]
+                    : []),
+                ]
+              : []),
+          ]}
+          serviceTitle="Joona.fr"
+        />
       </div>
 
-        
       <modal.Component title="Version des services" size="large">
         <div className={styles.modalContainer}>
-          <div className={`${styles.flexBox} ${styles.firstFlexBox} ${styles.firstFlexBoxGap}`}>
-            <button onClick={() => setModalContent("jitsi")}>Version Jitsi</button>
-            <button onClick={() => setModalContent("weboverlay")}>Version Web Overlay</button>
-            <button onClick={() => setModalContent("voxify")}>Version Voxify</button>
-            {/* <span>Version Jitsi</span>
-            <span>Version Web Overlay</span>
-            <span>Version Voxify</span> */}
+          <div
+            className={`${styles.flexBox} ${styles.firstFlexBox} ${styles.firstFlexBoxGap}`}
+          >
+            <button onClick={() => setModalContent('jitsi')}>
+              Version Jitsi
+            </button>
+            <button onClick={() => setModalContent('weboverlay')}>
+              Version Web Overlay
+            </button>
+            <button onClick={() => setModalContent('voxify')}>
+              Version Voxify
+            </button>
           </div>
           <div className={styles.separator} />
           <div className={styles.secondFlexBox}>{renderModalContent()}</div>
-          {/* <div className={`${styles.flexBox} ${styles.secondFlexBox}`}>
-            <h3>Titre Lorem ipsum</h3>
-            <p>
-              Lorem, ipsum dolor sit amet consectetur adipisicing elit.
-              Quidem fuga tenetur eaque sunt consequatur quae porro itaque iste enim possimus aliquid,
-              qui odio praesentium neque repellendus quibusdam cum perspiciatis doloribus.
-            </p>
-          </div> */}
         </div>
       </modal.Component>
     </>

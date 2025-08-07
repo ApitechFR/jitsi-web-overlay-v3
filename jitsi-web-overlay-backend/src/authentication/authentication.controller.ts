@@ -28,6 +28,28 @@ import { IConferenceService } from '../conference/interfaces/conference-service.
 
 @Controller('authentication')
 export class AuthenticationController {
+  /**
+   * Return user information from the JWT.
+   */
+  @Get('userinfo')
+  @ApiOkResponse({ description: 'Retourne les infos utilisateur du JWT' })
+  @ApiUnauthorizedResponse({ description: 'Utilisateur non authentifié' })
+  userinfo(@Req() request: Request) {
+    const refreshToken = request.signedCookies?.refreshToken;
+    if (!refreshToken) {
+      throw new UnauthorizedException('Utilisateur non authentifié');
+    }
+    try {
+      const decoded = this.jwtService.decode(refreshToken);
+      if (!decoded) {
+        throw new UnauthorizedException('JWT invalide');
+      }
+      
+      return decoded;
+    } catch {
+      throw new UnauthorizedException('JWT invalide');
+    }
+  }
   constructor(
     private readonly authenticationService: AuthenticationService,
     @Inject(IConferenceService)
@@ -50,19 +72,23 @@ export class AuthenticationController {
   loginAuthorize(
     @Res({ passthrough: true }) response: Response,
     @Query('room') room: string,
+    @Query('state') stateFromFrontend?: string,
   ) {
-    const state = crypto.randomBytes(32).toString('hex');
+    // Utilise le state reçu du frontend si présent, sinon génère un nouveau
+    const state = stateFromFrontend || crypto.randomBytes(32).toString('hex');
     const nonce = crypto.randomBytes(32).toString('hex');
     response.cookie('state', state, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       signed: true,
     });
-    response.cookie('roomName', room, {
-      httpOnly: true,
-      secure: true,
-      signed: true,
-    });
+    if (room) {
+      response.cookie('roomName', room, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        signed: true,
+      });
+    }
     return { url: this.authenticationService.loginAuthorize(state, nonce) };
   }
 
@@ -100,22 +126,24 @@ export class AuthenticationController {
       exp: moment().add(12, 'hours').unix(),
       ...tokenClaims,
     });
-
     const accessToken = this.jwtService.sign({
       exp: moment().add(15, 'minutes').unix(),
       ...tokenClaims,
     });
-
     response.clearCookie('state');
     response.clearCookie('roomName');
 
     response.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       signed: true,
     });
 
-    return { ...this.conferenceService.sendToken(roomName), accessToken };
+    const result = {
+      ...this.conferenceService.sendToken(roomName),
+      accessToken,
+    };
+    return result;
   }
 
   @Get('logout')
@@ -125,19 +153,18 @@ export class AuthenticationController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    if (!request?.signedCookies) {
-      throw new UnauthorizedException('Cookies manquants');
-    }
-    const { idToken } =
-      request.signedCookies.refreshToken &&
-      this.jwtService.decode(request.signedCookies.refreshToken);
+    const decoded = request?.signedCookies?.refreshToken
+      ? this.jwtService.decode(request.signedCookies.refreshToken)
+      : undefined;
+    const idToken = decoded?.idToken;
     const state = crypto.randomBytes(32).toString('hex');
     response.cookie('state', state, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       signed: true,
     });
-    return { url: this.authenticationService.logout(state, idToken) };
+    const logoutUrl = this.authenticationService.logout(state, idToken);
+    return { url: logoutUrl };
   }
 
   @Get('logout_callback')
@@ -151,10 +178,7 @@ export class AuthenticationController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    if (!request?.signedCookies) {
-      throw new UnauthorizedException('Cookies manquants');
-    }
-    const sendedState = request.signedCookies.state;
+    const sendedState = request?.signedCookies?.state;
     const { state } = query;
 
     if (state !== sendedState) {
@@ -163,7 +187,12 @@ export class AuthenticationController {
       );
     }
 
-    response.clearCookie('refreshToken');
+    response.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      signed: true,
+      path: '/',
+    });
     response.clearCookie('state');
     return { url: '/' };
   }
@@ -175,10 +204,8 @@ export class AuthenticationController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    if (!request?.signedCookies) {
-      throw new UnauthorizedException('Cookies manquants');
-    }
-    let refreshToken = request.signedCookies.refreshToken;
+    console.log('[refreshToken] Appel de la méthode refreshToken');
+    let refreshToken = request.signedCookies?.refreshToken;
     try {
       await this.jwtService.verify(refreshToken);
 
@@ -202,13 +229,13 @@ export class AuthenticationController {
 
       response.cookie('refreshToken', refreshToken, {
         httpOnly: true,
-        secure: true,
+        secure: process.env.NODE_ENV === 'production',
         signed: true,
       });
 
       return { accessToken };
     } catch (error) {
-      throw new UnauthorizedException('veuillez vous authentifier');
+      throw new UnauthorizedException(`veuillez vous authentifier ${error}`);
     }
   }
 }

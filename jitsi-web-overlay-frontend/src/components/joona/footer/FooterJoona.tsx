@@ -1,30 +1,25 @@
-import { Footer, FooterProps } from '@codegouvfr/react-dsfr/Footer';
+
+import { Footer, FooterProps } from "@apitechfr/react-dsapitech/Footer"
+
 
 interface props {
   headerFooterDisplayItem: FooterProps.BottomItem;
-  style: any;
 }
 
-function FooterJoona({ headerFooterDisplayItem, style }: props) {
+function FooterJoona({ headerFooterDisplayItem }: props) {
   return (
     <Footer
       accessibility="fully compliant"
       contentDescription="
-        Ce message est à remplacer par les informations de votre site.
-
-        Comme exemple de contenu, vous pouvez indiquer les informations 
-        suivantes : Le site officiel d’information administrative pour les entreprises.
-        Retrouvez toutes les informations et démarches administratives nécessaires à la création, 
-        à la gestion et au développement de votre entreprise.
+        Apitech, Éditeur Open Solutions  - L’esprit du Libre au service de la productivité.
         "
       termsLinkProps={{
-        to: '#'
+        href: '#',
       }}
       websiteMapLinkProps={{
-        to: '#'
+        href: '#',
       }}
       bottomItems={[headerFooterDisplayItem]}
-
     />
   );
 }

@@ -1,29 +1,44 @@
-# Use the official Node.js runtime as the base image
-FROM node:bookworm as build
+FROM node:20-bookworm-slim AS build
 
-# Set the working directory in the container
-WORKDIR .
+WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
+# Arguments pour Vite
+ARG VITE_API_URL
+ARG VITE_APP_TEMPLATE
+ARG VITE_JITSI_DOMAIN
+ARG VITE_VOXAPI_URL
+ARG VITE_CONFERENCE_NAME_REGEX
+ARG VITE_CONFERENCE_NAME_REGEX_MESSAGE
+
+ENV VITE_API_URL=$VITE_API_URL \
+    VITE_APP_TEMPLATE=$VITE_APP_TEMPLATE \
+    VITE_JITSI_DOMAIN=$VITE_JITSI_DOMAIN \
+    VITE_VOXAPI_URL=$VITE_VOXAPI_URL \
+    VITE_CONFERENCE_NAME_REGEX=$VITE_CONFERENCE_NAME_REGEX \
+    VITE_CONFERENCE_NAME_REGEX_MESSAGE=$VITE_CONFERENCE_NAME_REGEX_MESSAGE \
+    NODE_ENV=production
+
+# Copier uniquement les fichiers nécessaires pour installer
 COPY package*.json ./
 
-# Copy the entire application code to the container
+RUN mkdir -p public/@gouvfr-lasuite/integration
+# Installer les dépendances avec devDependencies (vite inclus)
+RUN npm install --legacy-peer-deps
+
+# Copier le reste du code
 COPY . .
 
-# Install dependencies
-RUN npm install --force
-
-# Build the React app for production
+# Build
 RUN npm run build
 
-# Use Nginx as the production server
+# ----------- Serveur Nginx ----------- #
 FROM nginx:alpine
 
-# Copy the built React app to Nginx's web server directory
-COPY --from=build ./dist /usr/share/nginx/html
+RUN rm /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port 80 for the Nginx server
+COPY --from=build /app/dist /usr/share/nginx/html
+
 EXPOSE 80
 
-# Start Nginx when the container runs
 CMD ["nginx", "-g", "daemon off;"]

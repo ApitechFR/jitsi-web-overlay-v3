@@ -1,34 +1,53 @@
 services:
   jitsi-web-overlay-backend:
     build:
-      context: .
-      dockerfile: ./jitsi-web-overlay-backend/Dockerfile.prod
+      context: ./jitsi-web-overlay-backend
+      dockerfile: Dockerfile
     env_file:
-      - .env
+      - ./.env
     ports:
-      - '${PORT}:${PORT}'
+      - '${BACKEND_PORT}:3030'
     restart: always
     depends_on:
       - mariadb
 
   jitsi-web-overlay-frontend:
     build:
-      context: .
-      dockerfile: ./jitsi-web-overlay-frontend/Dockerfile.prod
+      context: ./jitsi-web-overlay-frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${API_URL}
+        VITE_APP_TEMPLATE: ${APP_TEMPLATE}
+        VITE_JITSI_DOMAIN: ${JITSI_DOMAIN}
+        VITE_CONFERENCE_NAME_REGEX_MESSAGE: ${CONFERENCE_NAME_REGEX_MESSAGE}
+        VITE_VOXAPI_URL: ${VOXAPI_URL}
+        VITE_CONFERENCE_NAME_REGEX: ${CONFERENCE_NAME_REGEX}
     ports:
       - '${FRONTEND_PORT}:80'
-    environment:
-      - NODE_ENV=production
     restart: always
     depends_on:
       - jitsi-web-overlay-backend
 
-  visioreplay-ssh:
+
+  mariadb:
+    image: mariadb:11
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_USERNAME}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - '3306:3306'
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+  visioreplay-ssh-v3:
     image: alpine:latest
     env_file: ./.env
     restart: always
     ports:
-      - $HOST_DATA_SSH_PORT:22
+      - ${HOST_DATA_SSH_PORT}:22
     command:
       - /bin/sh
       - -c
