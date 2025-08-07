@@ -7,10 +7,14 @@ export default function LogoutCallback() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    sessionStorage.removeItem('state');
-
+  
+  sessionStorage.removeItem('state');
+  const timeout = setTimeout(() => {
     navigate('/', { replace: true });
-  }, [navigate]);
+  }, 500); 
+
+  return () => clearTimeout(timeout);
+}, [navigate]);
 
   return (
     <div className={styles.home}>
