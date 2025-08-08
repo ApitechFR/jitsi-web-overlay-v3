@@ -1,16 +1,101 @@
 import { JitsiMeeting } from '@jitsi/react-sdk';
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { logDebug } from '../../../utils/logDebug';
+import jwt_decode from 'jwt-decode';
+import { validateRoomName } from '../../../utils/roomName';
 // import Feedback from '../Feedback/Feedback';
 
 // type JitsiMeetProps = { roomName: string };
 
 export default function JitsiMeet() {
   const { roomName } = useParams();
-
   const navigate = useNavigate();
+  // Récupération du jwt via l'URL (?jwt=...) ou window.location.search
+  const jwt = (() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('jwt') || undefined;
+  })();
+
+  useEffect(() => {
+    console.log('[JITSI] useEffect - roomName:', roomName, 'jwt:', jwt);
+    // Vérification du nom de conférence
+    if (roomName === 'error') {
+      console.log('[JITSI] Redirection: roomName === error');
+      navigate('/error');
+      return;
+    }
+    if (roomName && !validateRoomName(roomName)) {
+      console.log('[JITSI] Redirection: roomName non valide', roomName);
+      Swal.fire({
+        title: 'Erreur',
+        text: `Le nom de la conférence ${roomName} n'est pas valide. Merci de respecter la convention de nommage indiquée dans le formulaire.`,
+        icon: 'error',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        showCloseButton: true,
+      });
+      navigate('/error');
+      return;
+    }
+    // Vérification du JWT
+    if (roomName && jwt) {
+      try {
+        interface DecodedJwt {
+          exp: number;
+          room?: string;
+          [key: string]: unknown;
+        }
+        const decodedToken = jwt_decode<DecodedJwt>(jwt);
+        const currentDate = new Date();
+        const exp = typeof decodedToken.exp === 'number' ? decodedToken.exp : 0;
+        console.log('[JITSI] JWT décodé:', decodedToken);
+        if (
+          decodedToken.room === undefined ||
+          decodedToken.room !== roomName ||
+          exp * 1000 < currentDate.getTime()
+        ) {
+          console.log('[JITSI] Redirection: JWT expiré ou roomName non valide', decodedToken);
+          Swal.fire({
+            title: 'Erreur',
+            text: "le jwt est expiré ou le nom de la conférence n'est pas valide",
+            icon: 'error',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            showCloseButton: true,
+          });
+          navigate('/error');
+        }
+      } catch (err) {
+        console.log('[JITSI] Redirection: JWT non valide', err);
+        Swal.fire({
+          title: 'Erreur',
+          text: "le jwt n'est pas valide",
+          icon: 'error',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          showCloseButton: true,
+        });
+        navigate('/error');
+      }
+    } else if (roomName && !jwt) {
+      console.log('[JITSI] Aucun JWT fourni, accès bloqué');
+      Swal.fire({
+        title: 'Erreur',
+        text: "Vous devez être authentifié pour accéder à la conférence.",
+        icon: 'error',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        showCloseButton: true,
+      });
+      navigate('/error');
+    }
+  }, [roomName, jwt, navigate]);
 
   const handleJitsiIFrameRef1 = (iframeRef: HTMLElement) => {
     iframeRef.style.border = '10px solid #3d3d3d';
@@ -50,7 +135,7 @@ export default function JitsiMeet() {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/visioreplay/start_recording`,
+        `${API_BASE_URL}/visioreplay/start_recording`,
         {
           method: 'POST',
           headers: {
@@ -75,7 +160,7 @@ export default function JitsiMeet() {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/visioreplay/findReplay/${encodeURIComponent(
+        `${API_BASE_URL}/visioreplay/findReplay/${encodeURIComponent(
           conference_name
         )}`
       );
@@ -202,6 +287,7 @@ export default function JitsiMeet() {
       <JitsiMeeting
         domain={import.meta.env.VITE_JITSI_DOMAIN}
         roomName={roomName ?? ''}
+        jwt={jwt || undefined}
         getIFrameRef={handleJitsiIFrameRef1}
         onApiReady={externalApi => {
           handleRecordingStatus(externalApi);

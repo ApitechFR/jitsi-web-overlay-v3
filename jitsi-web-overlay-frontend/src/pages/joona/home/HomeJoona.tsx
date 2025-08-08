@@ -8,6 +8,7 @@ import { Input } from '@apitechfr/react-dsapitech/Input';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import { useNavigate } from 'react-router-dom';
 import { Alert } from '@apitechfr/react-dsapitech/Alert';
+import { createModal  } from '@apitechfr/react-dsapitech/Modal';
 
 interface HomeJoonaProps {
   readonly roomName: string;
@@ -28,6 +29,7 @@ function HomeJoona(props: HomeJoonaProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isError, setIsError] = useState(false);
   const [isAlertVisible, setIsAlertVisible] = useState(false);
+ 
 
   const regexEnv = import.meta.env.VITE_CONFERENCE_NAME_REGEX;
   const regexPattern = regexEnv ?? '^[A-Z0-9]{8}$';
@@ -42,6 +44,11 @@ function HomeJoona(props: HomeJoonaProps) {
       return () => clearTimeout(timeout);
     }
   }, [isAlertVisible]);
+
+const modal = createModal({
+  id: "auth-modal",
+  isOpenedByDefault: false,
+});
 
   function isValidRoomName(name: string): boolean {
     return regexName.test(name);
@@ -62,6 +69,10 @@ function HomeJoona(props: HomeJoonaProps) {
       setIsError(true);
       return;
     }
+   if (!props.authenticated) {
+      modal.open();
+      return;
+    }
     setIsError(false);
     props.setRoomName(props.roomName);
     navigate(`/${props.roomName}`);
@@ -72,6 +83,14 @@ function HomeJoona(props: HomeJoonaProps) {
   }
   return (
     <div className={styles.homeContainer}>
+    
+        <modal.Component title="" >
+          <div className={styles.contentModal}>
+            <h1>La conférence n'a pas encore démarré</h1>
+            <p>Si vous disposez d'un compte Visio By Apitech vous pouvez vous authentifier, sinon merci de patienter</p>
+          </div>
+        </modal.Component>
+     
       <div className={styles.firstContainer}>
         <h1 className={styles.homeTitle}>Rejoindre une visio conférence</h1>
         <div className={styles.inputsRoom}>
