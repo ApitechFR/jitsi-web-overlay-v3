@@ -35,16 +35,15 @@ export class AuthenticationController {
   @ApiOkResponse({ description: 'Retourne les infos utilisateur du JWT' })
   @ApiUnauthorizedResponse({ description: 'Utilisateur non authentifié' })
   userinfo(@Req() request: Request) {
-    const refreshToken = request.signedCookies?.refreshToken;
-    if (!refreshToken) {
+    const accessToken = request.signedCookies?.accessToken;
+    if (!accessToken) {
       throw new UnauthorizedException('Utilisateur non authentifié');
     }
     try {
-      const decoded = this.jwtService.decode(refreshToken);
+      const decoded = this.jwtService.decode(accessToken);
       if (!decoded) {
         throw new UnauthorizedException('JWT invalide');
       }
-
       return decoded;
     } catch {
       throw new UnauthorizedException('JWT invalide');
@@ -119,8 +118,10 @@ export class AuthenticationController {
     const { refreshToken, accessToken } =
       this.authenticationService.generateJwtPair(tokenClaims);
 
+
     this.authenticationService.clearAllCookies(response);
     this.authenticationService.setAuthCookie(response, 'refreshToken', refreshToken);
+    this.authenticationService.setAuthCookie(response, 'accessToken', accessToken);
 
     return {
       ...this.conferenceService.sendToken(roomName),

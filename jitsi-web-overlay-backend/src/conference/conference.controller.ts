@@ -8,6 +8,7 @@ import {
   Post,
   Put,
   Headers,
+  Req,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -25,13 +26,18 @@ import { ByEmailDTO } from './DTOs/byEmail.dto';
 import { JwtDTO } from './DTOs/jwt.dto';
 import { RoomNameDto } from './DTOs/room-name.dto';
 
+
+interface AuthenticatedRequest extends Request {
+  user?: any;
+}
+
 @ApiTags('Conferences')
 @Controller('')
 export class ConferenceController {
   constructor(
     @Inject(IConferenceService)
     private readonly conferenceService: IConferenceService,
-  ) {}
+  ) { }
 
   @Post('conferences')
   @ApiOkResponse({ description: 'Conférence créée avec succès' })
@@ -138,5 +144,21 @@ export class ConferenceController {
   @ApiUnauthorizedResponse({ description: 'JWT invalide ou expiré' })
   async verifyToken(@Body() dto: JwtDTO) {
     return this.conferenceService.verifyToken(dto.jwt);
+  }
+
+
+  @Post('conferences/jitsi-jwt')
+  async generateJitsiJwt(
+    @Req() req: AuthenticatedRequest,
+    @Body('roomName') roomName: string,
+  ) {
+    // Log de debug pour vérifier l'utilisateur
+    console.log('[JITSI JWT] req.user:', req.user);
+    const user = req.user;
+    // Récupérer le profil (moderator ou non)
+
+    console.log('[JITSI JWT] user:', user);
+    const isModerator = true;
+    return this.conferenceService.generateJitsiJwt(user, isModerator, roomName);
   }
 }

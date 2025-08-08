@@ -29,7 +29,7 @@ export class AuthCookieUtil {
     }
 
     clearAllAuthCookies(response: Response) {
-        ['refreshToken', 'state', 'roomName'].forEach((cookieName) => {
+        ['refreshToken', 'state', 'roomName', 'accessToken'].forEach((cookieName) => {
             response.clearCookie(cookieName, this.getClearCookieOptions());
         });
     }

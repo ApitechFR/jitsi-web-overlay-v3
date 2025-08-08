@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -15,13 +16,14 @@ import { ProsodyService } from '../../prosody/prosody.service';
 
 @Injectable()
 export class ConferenceServiceSQL implements IConferenceService {
+  private readonly logger = new Logger(ConferenceServiceSQL.name);
   constructor(
     @InjectRepository(Conference)
     private readonly conferenceRepo: Repository<Conference>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly prosodyService: ProsodyService,
-  ) {}
+  ) { }
 
   async create(data: CreateConferenceDTO): Promise<Conference> {
     const conf = this.conferenceRepo.create(data);
@@ -105,4 +107,45 @@ export class ConferenceServiceSQL implements IConferenceService {
       );
     }
   }
+
+  generateJitsiJwt(user: any, moderator: boolean, roomName: string) {
+    try {
+      const aud = this.configService.get('JITSI_JITSIJWT_AUD') ?? 'jitsi';
+      const iss = this.configService.get('JITSI_JITSIJWT_ISS');
+      const sub = this.configService.get('JITSI_JITSIJWT_SUB');
+      const minutes = Number(this.configService.get('JITSI_JITSIJWT_EXPIRESAFTER') ?? 60);
+
+
+      const payload = {
+        context: {
+          user: {
+            avatar: user?.avatar ?? '',
+            name: user?.name ?? 'Moderator',
+            email: user?.email ?? 'moderator@apitech.fr',
+            moderator: Boolean(moderator),
+          },
+        },
+        aud,
+        iss,
+        sub,
+        room: roomName,
+        exp: moment().add(minutes, 'minutes').unix(),
+      };
+
+      const secret = this.configService.get('JITSI_JITSIJWT_SECRET');
+      let jwt;
+
+      if (secret) {
+        jwt = this.jwtService.sign(payload, { secret, noTimestamp: true });
+      } else {
+        jwt = this.configService.get('JITSI_JWT');
+      }
+
+      return { jwt, payload };
+    } catch (error) {
+      this.logger.error('Erreur lors de la création du jeton jitsi', error);
+      throw new UnauthorizedException('Erreur lors de la création du jeton jitsi');
+    }
+  }
 }
+
