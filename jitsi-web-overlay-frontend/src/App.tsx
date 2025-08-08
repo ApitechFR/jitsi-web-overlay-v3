@@ -32,7 +32,7 @@ import Dashboard from './pages/joona/Dashboard/Dashboard';
 import LayoutJoona from './components/joona/layout/LayoutJoona';
 import HomeJoona from './pages/joona/home/HomeJoona';
 import JitsiMeet from './pages/joona/jitsi_meet/jitsi_meet';
-import JitsiMeetWrapper from './JitsiMeetWrapper';
+
 import Admin from './pages/joona/Admin/Admin';
 
 import FeedbackJoona from './pages/joona/Feedback/FeedbackJoona';
@@ -250,17 +250,7 @@ function App() {
         )}
         {AppTemplate === 'webconf' && (
           <>
-            <Route
-              path=":roomName"
-              element={
-                <JitsiMeetWrapper
-                  joinConference={joinConference}
-                  setError={setError}
-                  setRoomName={setRoomName}
-                  jwt={jwt}
-                />
-              }
-            />
+            
             <Route
               path="/login_callback"
               element={
