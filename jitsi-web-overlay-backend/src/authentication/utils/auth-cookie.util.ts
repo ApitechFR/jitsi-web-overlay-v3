@@ -6,7 +6,7 @@ export class AuthCookieUtil {
 
     getCookieOptions(): Record<string, any> {
         return {
-            httpOnly: true,
+            httpOnly: this.configService.get('NODE_ENV') === 'production',
             secure: this.configService.get('NODE_ENV') === 'production',
             signed: true,
             path: '/',

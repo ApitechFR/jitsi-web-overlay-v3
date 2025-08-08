@@ -152,12 +152,8 @@ export class ConferenceController {
     @Req() req: AuthenticatedRequest,
     @Body('roomName') roomName: string,
   ) {
-    // Log de debug pour vérifier l'utilisateur
-    console.log('[JITSI JWT] req.user:', req.user);
-    const user = req.user;
-    // Récupérer le profil (moderator ou non)
 
-    console.log('[JITSI JWT] user:', user);
+    const user = req.user;
     const isModerator = true;
     return this.conferenceService.generateJitsiJwt(user, isModerator, roomName);
   }
