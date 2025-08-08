@@ -1,6 +1,6 @@
 import styles from './HeaderJoona.module.css';
-import { useState, useEffect } from 'react';
-import { fetchUserInfos, UserInfos } from '../../../utils/userInfos';
+import { useState } from 'react';
+import { useAuth } from '../../../auth/useAuth';
 import JitsiFrame from '../iframePopup/JitsiFrame';
 import WeboverlayFrame from '../iframePopup/WeboverlayFrame';
 import VoxifyFrame from '../iframePopup/VoxifyFrame';
@@ -20,13 +20,7 @@ const modal = createModal({
 
 function HeaderJoona({ authenticated }: HeaderJoonaProps) {
   const [modalContent, setModalContent] = useState<'jitsi' | 'weboverlay' | 'voxify'>('jitsi');
-  const [userInfos, setUserInfos] = useState<UserInfos | null>(null);
-
-  useEffect(() => {
-    if (authenticated) {
-      fetchUserInfos().then(data => setUserInfos(data));
-    }
-  }, [authenticated]);
+  const { user } = useAuth();
 
   const openPdf = () => {
     window.open(docUtilisateur, '_blank', 'noopener,noreferrer');
@@ -36,7 +30,7 @@ function HeaderJoona({ authenticated }: HeaderJoonaProps) {
     // Utilise une redirection native pour que le backend puisse gérer le logout complet
     window.location.href = `${import.meta.env.VITE_API_URL}/authentication/logout`;
   
-  console.log('Déconnexion effectuée');
+    console.log('Déconnexion effectuée');
   };
 
   const renderModalContent = () => {
@@ -115,7 +109,7 @@ function HeaderJoona({ authenticated }: HeaderJoonaProps) {
                   { linkProps: { href: '/', target: '_self' }, text: 'Accueil' },
                   { linkProps: { href: '/profile', target: '_self' }, text: 'Mon compte' },
                   { linkProps: { href: '#', target: '_self' }, text: 'Conférences' },
-                  ...(userInfos && (userInfos.isAdmin || userInfos.admin)
+                  ...(user && (user.isAdmin || user.admin)
                     ? [
                         { linkProps: { href: '/admin', target: '_self' }, text: 'Administration' },
                         { linkProps: { href: '/dashboard', target: '_self' }, text: 'Dashboard' },
