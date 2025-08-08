@@ -5,7 +5,7 @@ import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { JwtOidcMiddleware } from './authentication/utils/jwt-oidc.middleware';
+//import { JwtOidcMiddleware } from './authentication/utils/jwt-oidc.middleware';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 
@@ -34,8 +34,8 @@ async function bootstrap() {
   const jwtService = app.get(JwtService);
   const configService = app.get(ConfigService);
   // Appliquer le middleware uniquement sur les routes protégées
-  app.use('/conferences', new JwtOidcMiddleware(jwtService, configService).use);
-  app.use('/feedback', new JwtOidcMiddleware(jwtService, configService).use);
+  // app.use('/conferences', new JwtOidcMiddleware(jwtService, configService).use);
+  // app.use('/feedback', new JwtOidcMiddleware(jwtService, configService).use);
 
   await app.listen(process.env.BACKEND_PORT || 3030);
 }
