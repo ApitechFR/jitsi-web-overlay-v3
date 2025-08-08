@@ -1,5 +1,5 @@
 import { generateRoomName } from '../../../utils/roomName';
-import { useState, useRef, FormEvent, useEffect } from 'react';
+import { useState, useRef, FormEvent, useEffect, useMemo } from 'react';
 import styles from './HomeJoona.module.css';
 import { Button } from '@apitechfr/react-dsapitech/Button';
 import { Input } from '@apitechfr/react-dsapitech/Input';
@@ -31,15 +31,15 @@ function HomeJoona(props: HomeJoonaProps) {
   const [isError, setIsError] = useState(false);
   const [isAlertVisible, setIsAlertVisible] = useState(false);
 
-  // --- Nouveaux refs/états pour le polling ---
+  // --- Refs/états pour le polling ---
   const apiRef = useRef<any>(null);
   const timerRef = useRef<number | null>(null);
   const inFlightRef = useRef(false);
   const cancelledRef = useRef(false);
   const backoffRef = useRef(POLLING_INTERVAL);
-  const [isWaiting, setIsWaiting] = useState(false); // juste au cas où tu veuilles afficher un état
+  const [isWaiting, setIsWaiting] = useState(false);
 
-  const domain = import.meta.env.VITE_JITSI_DOMAIN; // ex: dev.joona.fr
+  const domain = import.meta.env.VITE_JITSI_DOMAIN; 
 
   const regexEnv = import.meta.env.VITE_CONFERENCE_NAME_REGEX;
   const regexPattern = regexEnv ?? '^[A-Z0-9]{8}$';
@@ -52,8 +52,11 @@ function HomeJoona(props: HomeJoonaProps) {
     }
   }, [isAlertVisible]);
 
-  // Modal
-  const modal = createModal({ id: 'auth-modal', isOpenedByDefault: false });
+  //  le modal ne doit pas être recréé à chaque render
+  const modal = useMemo(
+    () => createModal({ id: 'auth-modal', isOpenedByDefault: false }),
+    []
+  );
 
   function isValidRoomName(name: string): boolean {
     return regexName.test(name);
@@ -66,7 +69,7 @@ function HomeJoona(props: HomeJoonaProps) {
     }
   }
 
-  // ---------- Helpers Jitsi External API (pour le polling invité) ----------
+  // ---------- Helpers Jitsi External API (polling invité) ----------
   const loadExternalApi = async (host: string) => {
     if ((window as any).JitsiMeetExternalAPI) return;
     await new Promise<void>((resolve, reject) => {
@@ -122,7 +125,7 @@ function HomeJoona(props: HomeJoonaProps) {
       const parentNode = createOrGetHiddenDiv();
       const ExternalAPI = (window as any).JitsiMeetExternalAPI;
 
-      // ⚠️ pas de JWT ici. Si la room n’est pas encore créée par un user JWT, on aura authfail.
+      //  pas de JWT ici : si la room n’est pas encore créée par un user JWT → authfail
       const api = new ExternalAPI(domain, {
         roomName: props.roomName,
         parentNode,
@@ -140,15 +143,16 @@ function HomeJoona(props: HomeJoonaProps) {
       apiRef.current = api;
 
       const onJoined = () => {
-        // La conf existe, on peut y aller
+        // La conf existe → on y va
         disposeProbe();
         clearTimer();
-        modal.close(); // ferme le modal
+        setIsWaiting(false);
+        try { modal.close(); } catch {}
         navigate(`/${props.roomName}`);
       };
 
       const onConnFailed = () => {
-        // typiquement authfail tant que personne JWT n’a pas créé la salle
+        //  pas de JWT ici : si la room n’est pas encore créée par un user JWT → authfail
         disposeProbe();
         scheduleNext();
       };
@@ -173,15 +177,13 @@ function HomeJoona(props: HomeJoonaProps) {
   };
 
   const startWaitingAndProbe = () => {
-    // prepare state
     cancelledRef.current = false;
     backoffRef.current = POLLING_INTERVAL;
     setIsWaiting(true);
 
-    // ouvre le modal d’attente
-    modal.open();
+    // Ouvre le modal au prochain tick pour garantir qu'il est monté
+    setTimeout(() => modal.open(), 0);
 
-    // démarre le premier probe immédiatement
     clearTimer();
     disposeProbe();
     probeOnce();
@@ -212,16 +214,15 @@ function HomeJoona(props: HomeJoonaProps) {
       return;
     }
     setIsError(false);
-    props.setRoomName(props.roomName);
 
-    // Si user authentifié → on part direct (il obtiendra son JWT sur la page conf)
+    // User authentifié → on part direct
     if (props.authenticated) {
       stopWaitingAndProbe();
       navigate(`/${props.roomName}`);
       return;
     }
 
-    // Sinon (invité) → modal + vérification auto jusqu’à ce que la conf démarre
+    // Invité → modal + vérification auto jusqu’au démarrage
     startWaitingAndProbe();
   }
 
@@ -238,15 +239,19 @@ function HomeJoona(props: HomeJoonaProps) {
             Si vous disposez d'un compte <b>Visio By Apitech</b> vous pouvez vous authentifier,
             sinon merci de patienter. Vous serez connecté automatiquement dès le démarrage.
           </p>
-          {/* (Optionnel) Bouton pour s'authentifier tout de suite */}
+
           {!props.authenticated && (
             <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
-              <Button onClick={() => { stopWaitingAndProbe(); /* redirige vers login si tu as une route */ }}>
+              <Button
+                onClick={() => {
+                  // Ferme le modal, stoppe le polling et redirige vers l’auth si tu as une route dédiée
+                  stopWaitingAndProbe();
+                
+                }}
+              >
                 S'authentifier
               </Button>
-              <Button priority="secondary" onClick={() => { /* laisse juste le polling continuer */ }}>
-                Continuer d'attendre
-              </Button>
+              
             </div>
           )}
         </div>
