@@ -17,11 +17,12 @@ interface HeaderProps {
   readonly setAuthenticated: (e: boolean) => void;
   readonly setError: (obj: errorObj) => void;
 }
-export default function Layout(props: HeaderProps) {
+export default function Layout() {
   return (
     <div className={styles.layout}>
       <header>
-        <Header {...props} />
+        {/* <Header {...props} /> */}
+        <Header  />
       </header>
       <main>
         <Outlet />

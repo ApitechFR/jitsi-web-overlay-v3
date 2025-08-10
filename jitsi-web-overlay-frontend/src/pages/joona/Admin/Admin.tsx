@@ -1,22 +1,22 @@
-import Breadcrumb from "@codegouvfr/react-dsfr/Breadcrumb";
-import Input from '@codegouvfr/react-dsfr/Input';
-import { Select } from "@codegouvfr/react-dsfr/Select";
-import { Upload } from "@codegouvfr/react-dsfr/Upload";
-import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch";
+import Breadcrumb from "@apitechfr/react-dsapitech/Breadcrumb";
+import Input from '@apitechfr/react-dsapitech/Input';
+import { Select } from "@apitechfr/react-dsapitech/Select";
+import { Upload } from "@apitechfr/react-dsapitech/Upload";
+import { ToggleSwitch } from "@apitechfr/react-dsapitech/ToggleSwitch";
 
 import { useEffect, useMemo, useState } from 'react';
 
 import styles from './Admin.module.css'
 
-function Admin () {
+function Admin() {
 
     const [timeZones, setTimeZones] = useState<string[]>([]);
     // const [localTimeZone, setLocalTimeZone] = useState<string>('');
 
     useEffect(() => {
         if (typeof Intl === 'undefined' || !Intl.supportedValuesOf) {
-        console.warn('Intl.supportedValuesOf not supported in this environment.');
-        return;
+            console.warn('Intl.supportedValuesOf not supported in this environment.');
+            return;
         }
 
         const allTimeZones = Intl.supportedValuesOf('timeZone');
@@ -39,7 +39,7 @@ function Admin () {
             const formatter = new Intl.DateTimeFormat('en-US', options);
             const parts = formatter.formatToParts(date);
             const offset = parts.find(p => p.type === 'timeZoneName')?.value || '';
-            
+
             return offset.replace('GMT', 'UTC');
         } catch {
             return '';
@@ -49,13 +49,13 @@ function Admin () {
     const timeZonesWithOffsets = useMemo(() => {
         return timeZones.map(tz => [tz, formatOffset(tz)]);
     }, [timeZones]);
-    
+
     return (
         <div className={styles.content}>
             <Breadcrumb
                 currentPageLabel="Administration"
                 homeLinkProps={{
-                    to: '/'
+                    href: '/'
                 }}
                 segments={[]}
             />
@@ -171,7 +171,7 @@ function Admin () {
                 </div>
             </div>
         </div>
-        
+
     )
 }
 

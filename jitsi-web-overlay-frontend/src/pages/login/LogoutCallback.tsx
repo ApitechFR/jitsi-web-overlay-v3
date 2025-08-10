@@ -1,15 +1,20 @@
 import { useEffect } from 'react';
 import styles from './Login.module.css';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import CircularProgress from '@mui/material/CircularProgress';
 
 export default function LogoutCallback() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    sessionStorage.removeItem('state');
+    
+    sessionStorage.removeItem('oidc_state');
 
-    navigate('/', { replace: true });
+    const timeout = setTimeout(() => {
+      navigate('/', { replace: true });
+    }, 500);
+
+    return () => clearTimeout(timeout);
   }, [navigate]);
 
   return (

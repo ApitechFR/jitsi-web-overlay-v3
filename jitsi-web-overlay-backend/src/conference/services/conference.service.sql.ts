@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
@@ -19,6 +20,7 @@ import { ProsodyService } from '../../prosody/prosody.service';
 
 @Injectable()
 export class ConferenceServiceSQL implements IConferenceService {
+  private readonly logger = new Logger(ConferenceServiceSQL.name);
   constructor(
     @InjectRepository(Conference)
     private readonly conferenceRepo: Repository<Conference>,
@@ -27,7 +29,7 @@ export class ConferenceServiceSQL implements IConferenceService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly prosodyService: ProsodyService,
-  ) {}
+  ) { }
 
   async create(data: CreateConferenceDTO): Promise<Conference> {
 
@@ -234,4 +236,48 @@ export class ConferenceServiceSQL implements IConferenceService {
       );
     }
   }
+
+  generateJitsiJwt(user: any, moderator: boolean, roomName: string) {
+    try {
+      const aud = this.configService.get('JITSI_JITSIJWT_AUD') ?? 'jitsi';
+      const iss = this.configService.get('JITSI_JITSIJWT_ISS');
+      const sub = this.configService.get('JITSI_JITSIJWT_SUB');
+      const minutes = Number(this.configService.get('JITSI_JITSIJWT_EXPIRESAFTER') ?? 60);
+
+      const first = user?.given_name || user?.firstName || user?.prenom || '';
+      const last = user?.family_name || user?.lastName || user?.nom || '';
+      const full = [first, last].filter(Boolean).join(' ').trim();
+      const displayName = full || user?.name || user?.email || 'Invité';
+      const email = user?.email || '';
+
+      const payload = {
+        context: {
+          user: {
+            avatar: user?.avatar ?? '',
+            name: displayName,
+            email,
+            moderator: Boolean(moderator),
+          },
+        },
+        aud, iss, sub,
+        room: roomName,
+        exp: Math.floor(Date.now() / 1000) + minutes * 60,
+      };
+
+      const secret = this.configService.get('JITSI_JITSIJWT_SECRET');
+      let jwt;
+
+      if (secret) {
+        jwt = this.jwtService.sign(payload, { secret, noTimestamp: true });
+      } else {
+        jwt = this.configService.get('JITSI_JWT');
+      }
+
+      return { jwt, payload };
+    } catch (error) {
+      this.logger.error('Erreur lors de la création du jeton jitsi', error);
+      throw new UnauthorizedException('Erreur lors de la création du jeton jitsi');
+    }
+  }
 }
+
