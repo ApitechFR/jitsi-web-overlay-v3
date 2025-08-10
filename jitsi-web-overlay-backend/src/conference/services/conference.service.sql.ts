@@ -115,21 +115,24 @@ export class ConferenceServiceSQL implements IConferenceService {
       const sub = this.configService.get('JITSI_JITSIJWT_SUB');
       const minutes = Number(this.configService.get('JITSI_JITSIJWT_EXPIRESAFTER') ?? 60);
 
+      const first = user?.given_name || user?.firstName || user?.prenom || '';
+      const last = user?.family_name || user?.lastName || user?.nom || '';
+      const full = [first, last].filter(Boolean).join(' ').trim();
+      const displayName = full || user?.name || user?.email || 'Invité';
+      const email = user?.email || '';
 
       const payload = {
         context: {
           user: {
             avatar: user?.avatar ?? '',
-            name: user?.name ?? 'Moderator',
-            email: user?.email ?? 'moderator@apitech.fr',
+            name: displayName,
+            email,
             moderator: Boolean(moderator),
           },
         },
-        aud,
-        iss,
-        sub,
+        aud, iss, sub,
         room: roomName,
-        exp: moment().add(minutes, 'minutes').unix(),
+        exp: Math.floor(Date.now() / 1000) + minutes * 60,
       };
 
       const secret = this.configService.get('JITSI_JITSIJWT_SECRET');

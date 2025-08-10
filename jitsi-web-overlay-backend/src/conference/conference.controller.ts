@@ -155,6 +155,7 @@ export class ConferenceController {
 
     const user = req.user;
     const isModerator = true;
+
     return this.conferenceService.generateJitsiJwt(user, isModerator, roomName);
   }
 }

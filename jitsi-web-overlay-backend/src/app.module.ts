@@ -1,5 +1,5 @@
 import { configValidationSchema } from './config.schema';
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthenticationModule } from './authentication/authentication.module';
@@ -13,6 +13,10 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RoomNameValidator } from './common/validators/room-name.validator';
+import { JwtOidcMiddleware } from './authentication/utils/jwt-oidc.middleware';
+
+
+
 
 function getDatabaseImports() {
   const dbType = process.env.DB_TYPE;
@@ -101,4 +105,10 @@ function getDatabaseImports() {
   providers: [AppService, RoomNameValidator],
   exports: [RoomNameValidator],
 })
-export class AppModule { }
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(JwtOidcMiddleware)
+      .forRoutes({ path: 'conferences/*', method: RequestMethod.ALL });
+  }
+}
