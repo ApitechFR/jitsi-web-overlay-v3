@@ -102,18 +102,20 @@ function App() {
   };
 
   useEffect(() => {
-    api
-      .get('/stats/homePage')
-      .then(res => {
-        setConferenceNumber(res.data.conf);
-        setparticipantsNumber(res.data.part);
-      })
-      .catch(() => {
-        setError({
-          message: 'erreur: les statistiques ne sont pas récupérables',
-          error: { status: '500', stack: '' },
+    if (AppTemplate === 'webconf') {
+      api
+        .get('/stats/homePage')
+        .then(res => {
+          setConferenceNumber(res.data.conf);
+          setparticipantsNumber(res.data.part);
+        })
+        .catch(() => {
+          setError({
+            message: 'erreur: les statistiques ne sont pas récupérables',
+            error: { status: '500', stack: '' },
+          });
         });
-      });
+    }
   }, []);
 
   const joinConference = () => {
@@ -167,11 +169,11 @@ function App() {
             <Route path="/logout/callback" element={<LogoutCallback />} />
             <Route
               path="/login_callback"
-              element={<LoginCallback setError={setError} />}
+              element={<LoginCallback />}
             />
             <Route
               path="/login/callback"
-              element={<LoginCallback setError={setError} />}
+              element={<LoginCallback />}
             />
             <Route path="/" element={<LayoutJoona />}>
               <Route
@@ -224,11 +226,11 @@ function App() {
           <>
             <Route
               path="/login_callback"
-              element={<LoginCallback setError={setError} />}
+              element={<LoginCallback />}
             />
             <Route
               path="/login/callback"
-              element={<LoginCallback setError={setError} />}
+              element={<LoginCallback />}
             />
             <Route path="/logout/callback" element={<LogoutCallback />} />
 
