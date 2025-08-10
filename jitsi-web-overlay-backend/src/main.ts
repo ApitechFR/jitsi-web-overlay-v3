@@ -36,7 +36,9 @@ async function bootstrap() {
   app.use(cookieParser(process.env.COOKIE_SECRET));
 
   // Important si derrière un proxy/ingress (TLS terminé en amont)
-  //app.set('trust proxy', 1);
+  const expressApp = app.getHttpAdapter().getInstance();
+  expressApp.set('trust proxy', 1);
+
 
   // Validation globale
   app.useGlobalPipes(new ValidationPipe({

@@ -1,16 +1,15 @@
-import { createContext, useState, useEffect, useMemo, ReactNode } from 'react';
+import { createContext, useState, useEffect, useMemo, ReactNode, useCallback } from 'react';
 import { fetchUserInfos, UserInfos } from '../utils/userInfos';
 
 type AuthStatus = 'unknown' | 'authenticated' | 'unauthenticated';
 
 export interface AuthContextType {
   authenticated: boolean;
-  status: AuthStatus;              
+  status: AuthStatus;
   email: string;
   setEmail: (email: string) => void;
   login: (room?: string) => void;
   logout: () => void;
-  token: string | null;
   user: UserInfos | null;
   refresh: () => Promise<void>;
 }
@@ -24,19 +23,19 @@ function joinUrl(base: string, path: string) {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [status, setStatus] = useState<AuthStatus>('unknown'); // NEW
+  const [status, setStatus] = useState<AuthStatus>('unknown');
   const [authenticated, setAuthenticated] = useState(false);
   const [email, setEmail] = useState('');
-  const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<UserInfos | null>(null);
 
-  const baseApi = import.meta.env.VITE_API_URL as string | undefined;
 
-  const refresh = async () => {
+  const baseApi = (import.meta.env.VITE_API_URL as string | undefined) || '/api';
+
+  const refresh = useCallback(async () => {
     try {
       const info = await fetchUserInfos();
-      setUser(info);
       const ok = !!info;
+      setUser(info ?? null);
       setAuthenticated(ok);
       setStatus(ok ? 'authenticated' : 'unauthenticated');
     } catch {
@@ -44,12 +43,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAuthenticated(false);
       setStatus('unauthenticated');
     }
-  };
+  }, []);
 
   useEffect(() => {
-    // Check d'auth initial au montage
+    // Check d'auth initial
     void refresh();
-  }, []);
+
+    // Revalider quand l’onglet reprend le focus 
+    const onFocus = () => void refresh();
+    window.addEventListener('visibilitychange', onFocus);
+    window.addEventListener('focus', onFocus);
+    return () => {
+      window.removeEventListener('visibilitychange', onFocus);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [refresh]);
 
   const login = (room?: string) => {
     const state = [...crypto.getRandomValues(new Uint8Array(16))]
@@ -57,22 +65,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .join('');
     sessionStorage.setItem('oidc_state', state);
 
-    const loginPath = '/authentication/login_authorize';
-    const loginUrl = joinUrl(baseApi ?? '', loginPath);
-
+    const loginUrl = joinUrl(baseApi, '/authentication/login_authorize');
     const qs = new URLSearchParams({ state, ...(room ? { room } : {}) });
     window.location.href = `${loginUrl}?${qs.toString()}`;
   };
 
   const logout = () => {
-    const logoutPath = '/authentication/logout';
-    const logoutUrl = joinUrl(baseApi ?? '', logoutPath);
+    const logoutUrl = joinUrl(baseApi, '/authentication/logout');
     window.location.href = logoutUrl;
   };
 
   const contextValue = useMemo(
-    () => ({ authenticated, status, email, setEmail, login, logout, token, user, refresh }),
-    [authenticated, status, email, token, user]
+    () => ({ authenticated, status, email, setEmail, login, logout, user, refresh }),
+    [authenticated, status, email, user, refresh]
   );
 
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
