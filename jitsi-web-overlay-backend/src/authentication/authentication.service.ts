@@ -202,8 +202,8 @@ export class AuthenticationService {
         ...(userinfo?.resource_access?.account?.roles ?? []),
       ].map((r: any) => String(r).toLowerCase());
 
-      // adapte les noms de rôles à ton Keycloak
-      return roles.includes('admin') || roles.includes('apitech-admin');
+
+      return roles.includes('admin') || roles.includes('role');
     } catch {
       return false;
     }
@@ -214,6 +214,18 @@ export class AuthenticationService {
       given_name: userinfo?.given_name || userinfo?.firstName || userinfo?.prenom || '',
       family_name: userinfo?.family_name || userinfo?.lastName || userinfo?.nom || '',
       name: userinfo?.name || '',
+    };
+  }
+  extractUserInfos(userinfo: any) {
+    return {
+      sub: userinfo?.sub || '',
+      email_verified: Boolean(userinfo?.email_verified),
+      name: userinfo?.name || '',
+      given_name: userinfo?.given_name || userinfo?.firstName || userinfo?.prenom || '',
+      family_name: userinfo?.family_name || userinfo?.lastName || userinfo?.nom || '',
+      preferred_username: userinfo?.preferred_username || '',
+      email: userinfo?.email || '',
+      admin: userinfo?.admin === true || userinfo?.admin === 'true'
     };
   }
 }

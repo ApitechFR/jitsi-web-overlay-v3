@@ -131,28 +131,19 @@ export class AuthenticationController {
     const { userinfo, idToken } =
       await this.authenticationService.loginCallback(code, state, sendedState);
 
-    const names = this.authenticationService.extractNames(userinfo);
-    const isAdmin = this.authenticationService.isAdminFromUserinfo(userinfo);
 
-    // const tokenClaims = {
-    //   iss: this.configService.get('JITSI_JITSIJWT_ISS'),
-    //   aud: this.configService.get('JITSI_JITSIJWT_AUD'),
-    //   sub: this.configService.get('JITSI_JITSIJWT_SUB'),
-    //   email: this.authenticationService.extractEmail(userinfo),
-    //   //idToken,
-    // };
+
+    const userInfos = this.authenticationService.extractUserInfos(userinfo);
 
     const baseClaims = {
       iss: this.configService.get('JITSI_JITSIJWT_ISS'),
       aud: this.configService.get('JITSI_JITSIJWT_AUD'),
       sub: this.configService.get('JITSI_JITSIJWT_SUB'),
       email: this.authenticationService.extractEmail(userinfo),
-      ...names,
-      isAdmin,
+      ...userInfos,
     };
 
-    // const { refreshToken, accessToken } =
-    //   this.authenticationService.generateJwtPair(tokenClaims);
+
     const accessToken = this.authenticationService.generateAccessToken(baseClaims);
     const refreshToken = this.authenticationService.generateRefreshToken({
       ...baseClaims,
@@ -232,11 +223,10 @@ export class AuthenticationController {
     }
 
     try {
-      //await this.jwtService.verify(refreshToken);
+
       await this.jwtService.verify(refreshToken, { secret: this.configService.get('JWT_SECRET'), algorithms: ['HS256'] });
 
       const decoded = this.jwtService.decode(refreshToken);
-
 
       const baseClaims = {
         iss: this.configService.get('JITSI_JITSIJWT_ISS'),
@@ -246,13 +236,11 @@ export class AuthenticationController {
         given_name: decoded?.given_name || '',
         family_name: decoded?.family_name || '',
         name: decoded?.name || '',
-        isAdmin: Boolean(decoded?.isAdmin),
+        isAdmin: Boolean(decoded?.admin),
       };
 
       const accessToken = this.authenticationService.generateAccessToken(baseClaims);
 
-      // const { refreshToken: newRefreshToken, accessToken } =
-      //   this.authenticationService.generateJwtPair(tokenClaims);
 
       const newRefreshToken = this.authenticationService.generateRefreshToken({
         ...baseClaims,
