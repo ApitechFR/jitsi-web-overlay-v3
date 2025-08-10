@@ -13,16 +13,12 @@ type errorObj = {
   error: { status: string; stack: string };
 };
 
-interface headerProps {
-  authenticated: boolean | null;
-  setAuthenticated: (e: boolean) => void;
-  setError: (obj: errorObj) => void;
-}
-export default function LayoutJoona(propos: headerProps) {
+
+export default function LayoutJoona() {
   return (
     <div className={styles.layout}>
       <header>
-        <Header {...propos} />
+        <Header  />
       </header>
       <main>
         <Outlet />

@@ -2,42 +2,11 @@ import styles from './Header.module.css';
 import { Header } from '@codegouvfr/react-dsfr/Header';
 import { Gaufre } from '@gouvfr-lasuite/integration';
 import '@gouvfr-lasuite/integration/dist/css/gaufre.css';
+import { useAuth } from '../../auth/useAuth'; 
 
-type errorObj = {
-  message: string;
-  error: { status: string; stack: string };
-};
+export default function HeaderComponent() {
+  const { authenticated, login, logout } = useAuth();
 
-interface HeaderProps {
-  readonly authenticated: boolean | null;
-  readonly setError: (obj: errorObj) => void;
-}
-
-function HeaderComponent({ authenticated, setError }: HeaderProps) {
-  const logOut = () => {
-    fetch(`${import.meta.env.VITE_API_URL}/authentication/logout`, {
-      redirect: 'manual',
-      credentials: 'include',
-    })
-      .then(res => {
-        window.location.href = res.url;
-      })
-      .catch((error: unknown) => {
-        setError({
-          message: 'Erreur lors de la déconnexion',
-          error: {
-            status:
-              typeof error === 'object' && error !== null && 'status' in error
-                ? (error as { status?: string }).status ?? 'unknown'
-                : 'unknown',
-            stack:
-              typeof error === 'object' && error !== null && 'stack' in error
-                ? (error as { stack?: string }).stack ?? ''
-                : '',
-          },
-        });
-      });
-  };
   return (
     <div className={styles.parent}>
       <Header
@@ -56,61 +25,39 @@ function HeaderComponent({ authenticated, setError }: HeaderProps) {
           <Gaufre key="gaufre" />,
           {
             iconId: 'fr-icon-mail-fill',
-            linkProps: {
-              to: 'contact',
-            },
+            linkProps: { to: '/contact' },
             text: 'Contact',
           },
           authenticated
             ? {
                 iconId: 'fr-icon-user-fill',
-                buttonProps: {
-                  onClick: logOut,
-                },
+                buttonProps: { onClick: () => logout() },
                 text: 'Se déconnecter',
               }
-            : null,
+            : {
+                iconId: 'fr-icon-account-circle-fill',
+                buttonProps: { onClick: () => login() },
+                text: 'Connexion',
+              },
         ]}
         id="fr-header-header-with-quick-access-items"
         serviceTagline=""
         serviceTitle={window.location.host}
         navigation={[
           {
-            linkProps: {
-              to: '/',
-              target: '_self',
-              replace: true,
-            },
+            linkProps: { to: '/', target: '_self' },
             text: 'Accueil',
           },
           {
             menuLinks: [
-              {
-                linkProps: {
-                  to: '/apropos',
-                },
-                text: 'Présentation du service',
-              },
-              {
-                linkProps: {
-                  to: 'faq',
-                },
-                text: 'Foire aux questions',
-              },
-              {
-                linkProps: {
-                  to: 'cgu',
-                },
-                text: "Conditions générales d'utilisation",
-              },
+              { linkProps: { to: '/apropos' }, text: 'Présentation du service' },
+              { linkProps: { to: '/faq' }, text: 'Foire aux questions' },
+              { linkProps: { to: '/cgu' }, text: "Conditions générales d'utilisation" },
             ],
             text: 'À propos',
           },
           {
-            linkProps: {
-              to: 'cgu',
-              target: '_self',
-            },
+            linkProps: { to: '/cgu', target: '_self' },
             text: 'Centre de ressources',
           },
         ]}
@@ -118,5 +65,3 @@ function HeaderComponent({ authenticated, setError }: HeaderProps) {
     </div>
   );
 }
-
-export default HeaderComponent;
