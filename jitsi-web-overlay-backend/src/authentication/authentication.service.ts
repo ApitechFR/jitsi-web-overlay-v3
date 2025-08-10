@@ -135,13 +135,17 @@ export class AuthenticationService {
   }
 
   generateJwtPair(claims: Record<string, any>) {
+    const secret = this.configService.get('JWT_SECRET');
+
     const refreshToken = this.jwtService.sign(claims, {
       expiresIn: '12h',
       algorithm: 'HS256',
+      secret,
     });
     const accessToken = this.jwtService.sign(claims, {
       expiresIn: '15m',
       algorithm: 'HS256',
+      secret,
     });
     return { refreshToken, accessToken };
   }
