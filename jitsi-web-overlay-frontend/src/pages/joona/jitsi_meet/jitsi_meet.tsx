@@ -1,14 +1,27 @@
 import { JitsiMeeting } from '@jitsi/react-sdk';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import Swal from 'sweetalert2';
-import { logDebug } from '../../../utils/logDebug';
+import { checkConferenceEnd, createConference, fetchStats } from './conference_events';
+import { handleRecordingStatus } from './visio_replay';
+
 // import Feedback from '../Feedback/Feedback';
 
 // type JitsiMeetProps = { roomName: string };
 
-export default function JitsiMeet() {
-  const { roomName } = useParams();
+interface JitsiMeetProps {
+    jwt: any;
+}
+
+export default function JitsiMeet({
+    jwt,
+}: JitsiMeetProps) {
+    const [open, setOpen] = useState(false);
+    const [value, setValue] = useState(0);
+    const { roomName } = useParams();
+    const participantCountRef = useRef(0);
+    const checkVideoInterval = useRef<NodeJS.Timeout | null>(null);
+    const checkTimeout = useRef<NodeJS.Timeout | null>(null);
+    const jwt1 = jwt ? jwt : window.location.search.split('=')[1];
 
   const navigate = useNavigate();
 
@@ -20,194 +33,114 @@ export default function JitsiMeet() {
     iframeRef.style.width = '100%';
   };
 
-  const onClose = () => {
-    navigate('/');
-  };
+    console.log('jwt', jwt);
 
-    //visioreplay------------------------------------------------
-    const API_BASE_URL = import.meta.env.VITE_API_URL;
-    const checkVideoInterval = useRef<NodeJS.Timeout | null>(null);
-    const checkTimeout = useRef<NodeJS.Timeout | null>(null);
+    const onClose = () => {
+        setOpen(false);
+        navigate('/');
+    };
 
-  const showLoadingToast = (message: string) => {
-    Swal.fire({
-      title: message,
-      showCloseButton: true,
-      toast: true,
-      position: 'top-end',
-      showConfirmButton: false,
-      didOpen: () => {
-        Swal.showLoading();
-      },
-    });
-  };
 
-  const startVideo = async () => {
-    const conference_name = roomName;
+    const enableJibriApitechApi = import.meta.env.VITE_ENABLE_JIBRI_APITECH_API;
+    const jibriApitechApiDomain = import.meta.env.VITE_JIBRI_APITECH_API_DOMAIN;
+    const jitsiAPIOptions = (window as any).jitsiAPIOptions;
 
-    const status = 'started';
-    const message = "Utilisateur commence l'enregistrement";
+    const handlejibriApitechApi = () => {
+        console.log(`enableJibriApitechApi=${enableJibriApitechApi}`);
+        console.log(`jibriApitechApiDomain=${jibriApitechApiDomain}`);
 
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/visioreplay/start_recording`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ status, message, conference_name }),
-        }
-      );
+        if (
+            enableJibriApitechApi &&
+            enableJibriApitechApi !== "process.env.ENABLE_JIBRI_APITECH_API" &&
+            jibriApitechApiDomain &&
+            jibriApitechApiDomain !== "process.env.JIBRI_APITECH_API_DOMAIN"
+        ) {
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        logDebug('Erreur :', errorData);
-      }
-    } catch (error) {
-      logDebug('Erreur :', error);
-    }
-  };
+            let eventId = jitsiAPIOptions.eventId;
+            let roomName = jitsiAPIOptions.roomName;
+            let uploadCallbackJwt = jitsiAPIOptions.uploadCallbackJwt;
+            let uploadCallbackUrl = jitsiAPIOptions.uploadCallbackUrl;
+            let uploadCallbackDomainUrl = jitsiAPIOptions.uploadCallbackDomainUrl;
 
-  const checkVideo = async () => {
-    if (!roomName) return;
-    const conference_name = roomName;
-
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/visioreplay/findReplay/${encodeURIComponent(
-          conference_name
-        )}`
-      );
-      const data = await response.json();
-
-      if (data === 'terminated') {
-        Swal.fire({
-          title: 'Succès !',
-          text: `La vidéo pour "${conference_name}" a été enregistrée avec succès.`,
-          icon: 'success',
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          showCloseButton: true,
-        });
-
-        if (checkVideoInterval.current)
-          clearInterval(checkVideoInterval.current);
-        if (checkTimeout.current) clearTimeout(checkTimeout.current);
-        checkVideoInterval.current = null;
-        checkTimeout.current = null;
-      } else if (data === 'error-uploading-rsync') {
-        Swal.fire({
-          title: 'Erreur !',
-          text: `Une erreur est survenue lors de l'enregistrement de la vidéo pour "${conference_name}". Veuillez contacter le support.`,
-          icon: 'error',
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          showCloseButton: true,
-        });
-
-        if (checkVideoInterval.current)
-          clearInterval(checkVideoInterval.current);
-        if (checkTimeout.current) clearTimeout(checkTimeout.current);
-        checkVideoInterval.current = null;
-        checkTimeout.current = null;
-      }
-    } catch (error) {
-      logDebug('Erreur lors de la vérification du replay :', error);
-    }
-  };
-
-  interface RecordingStatusEvent {
-    on: boolean;
-    error?: string;
-    [key: string]: unknown;
-  }
-
-  const handleRecordingStatus = (api: unknown) => {
-    let isRecordingStarted = false;
-
-    // On vérifie que l'API a bien la méthode attendue
-    if (
-      typeof api === 'object' &&
-      api !== null &&
-      'addEventListener' in api &&
-      typeof (
-        api as {
-          addEventListener: (
-            event: string,
-            cb: (event: RecordingStatusEvent) => void
-          ) => void;
-        }
-      ).addEventListener === 'function'
-    ) {
-      (
-        api as {
-          addEventListener: (
-            event: string,
-            cb: (event: RecordingStatusEvent) => void
-          ) => void;
-        }
-      ).addEventListener(
-        'recordingStatusChanged',
-        (event: RecordingStatusEvent) => {
-          const isRecordingOn = event.on;
-          const error = event.error;
-
-          if (isRecordingOn) {
-            isRecordingStarted = true;
-            startVideo();
-          } else if (error) {
-            // rien à faire, on ignore l'erreur ici
-          } else if (isRecordingStarted) {
-            showLoadingToast("Upload de l'enregistrement en cours ...");
-
-            if (!checkVideoInterval.current) {
-              checkVideoInterval.current = setInterval(() => {
-                checkVideo();
-              }, 1000);
-
-              checkTimeout.current = setTimeout(() => {
-                clearInterval(checkVideoInterval.current as NodeJS.Timeout);
-                checkVideoInterval.current = null;
-                checkTimeout.current = null;
-                Swal.fire({
-                  title: 'Erreur !',
-                  text: `Une erreur est survenue lors de l'enregistrement de la vidéo. Veuillez contacter le support.`,
-                  icon: 'error',
-                  toast: true,
-                  position: 'top-end',
-                  showConfirmButton: false,
-                  showCloseButton: true,
-                });
-              }, 600000); // 10 min
+            if (!eventId || !roomName || !uploadCallbackJwt) {
+                console.warn("Certains paramètres pour register_eventid sont manquants.");
+                return;
             }
-          }
-        }
-      );
-    }
-  };
-  //----------------------------------------------------------
 
-  return (
-    <>
-      {/* <Feedback
+            const jibriUrl = `${jibriApitechApiDomain}/visioreplay/register_eventid/${roomName}?eventid=${eventId}&jwt=${uploadCallbackJwt}&uploadcallbackdomainurl=${uploadCallbackDomainUrl}&uploadcallbackurl=${uploadCallbackUrl}`;
+
+            // const xmlHttp = new XMLHttpRequest();
+            // xmlHttp.onreadystatechange = function () {
+            //     if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
+            //         console.log("Jibri API Response:", xmlHttp.responseText);
+            //     }
+            // };
+            // xmlHttp.open("GET", jibriUrl, true);
+            // xmlHttp.send(null);
+
+            fetch(jibriUrl)
+                .then((res) => {
+                    if (!res.ok) {
+                        throw new Error(`HTTP error! Status: ${res.status}`);
+                    }
+                    return res.text();
+                })
+                .then((text) => {
+                    console.log("Jibri API Response:", text);
+                })
+                .catch((err) => {
+                    console.error("Erreur API Jibri :", err);
+                });
+        }
+    };
+
+    return (
+        <>
+            {/* <Feedback
                 open={open}
                 onClose={onClose}
                 value={value}
                 setValue={setValue}
                 roomName={roomName}
             /> */}
-      <JitsiMeeting
-        domain={import.meta.env.VITE_JITSI_DOMAIN}
-        roomName={roomName ?? ''}
-        getIFrameRef={handleJitsiIFrameRef1}
-        onApiReady={externalApi => {
-          handleRecordingStatus(externalApi);
-        }}
-        onReadyToClose={onClose}
-      />
-    </>
-  );
+            <JitsiMeeting
+                domain={import.meta.env.VITE_JITSI_DOMAIN}
+
+                roomName={roomName ? roomName : ''}
+                jwt={jwt1 ? jwt1 : undefined}
+                getIFrameRef={handleJitsiIFrameRef1}
+                onApiReady={externalApi => {
+                    handlejibriApitechApi();
+                    handleRecordingStatus(externalApi, roomName!, checkVideoInterval.current, checkTimeout.current);
+
+                    externalApi.on('readyToClose', async () => {
+                        console.log("La réunion est terminée");
+
+                        const data = await fetchStats();
+                        participantCountRef.current = data.participants;
+                        console.log("participants from readyToClose : ", participantCountRef.current);
+                        if (participantCountRef.current === 0) {
+                            await checkConferenceEnd(roomName!);
+                        }
+                    });
+
+                    externalApi.on('videoConferenceJoined', async () => {
+                        const data = await fetchStats();
+                        participantCountRef.current = data.participants;
+                        console.log("participants from videoConferenceJoined : ", participantCountRef.current);
+                        if (participantCountRef.current === 2) {
+                            const conference = await createConference(roomName!);
+                            console.log("created_by : ", conference.created_by);
+                        }
+
+                        const participantsInfo = externalApi.getParticipantsInfo();
+                        console.log({ participantsInfo });
+                    });
+
+                    //------------------------------------------------------------------------------------
+                }}
+                onReadyToClose={onClose}
+            />
+        </>
+    );
 }

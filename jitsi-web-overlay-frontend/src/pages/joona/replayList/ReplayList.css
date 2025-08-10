@@ -1,0 +1,100 @@
+.replay-list {
+  width: 80%;
+  margin: 20px auto;
+  font-size: 1rem;
+}
+
+.replay-list h1 {
+  margin: 3rem 0rem 2rem;
+  font-size: 2.0em;
+}
+
+.replay-row {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  padding: 10px 15px;
+  margin-bottom: 1.5rem;
+  border-radius: 6px;
+  gap: 15px;
+}
+
+.filename {
+  margin-left: 1rem;
+  width: 30%;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.date {
+  width: 40%;
+  text-align: center;
+  padding: 10px 10px;
+  border-radius: 4px;
+  user-select: none;
+  margin-right: 2rem;
+}
+
+.no-replays {
+  color: #888;
+  font-style: italic;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+@media (max-width: 767px) {
+  .replay-list {
+    font-size: 0.9rem;
+  }
+
+  .fr-btn {
+    font-size: 0.5rem;
+    padding: 0.3rem 0.3rem 0.3rem 0.3rem;
+  }
+
+  .replay-row {
+    font-size: 0.5rem;
+    padding: 8px 12px;
+  }
+
+  .filename {
+    font-size: 0.6rem;
+    margin-left: 0rem;
+  }
+
+  .date {
+    margin-right: 0rem;
+  }
+
+  .replay-list h1 {
+    font-size: 1.6em;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 900px) {
+
+  .fr-btn {
+    padding: 0.5rem 0.5rem;
+  }
+
+  .replay-row {
+    flex-wrap: nowrap;
+  }
+
+  .filename {
+    flex: 1 1 30%;
+    margin-left: 0.5rem;
+  }
+
+  .date {
+    flex: 1 1 30%;
+    margin-right: 0.5rem;
+  }
+
+  .download-button {
+    flex: 1 1 40%;
+    text-align: right;
+  }
+}

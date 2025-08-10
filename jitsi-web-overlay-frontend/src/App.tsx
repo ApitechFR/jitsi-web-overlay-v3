@@ -36,6 +36,7 @@ import JitsiMeetWrapper from './JitsiMeetWrapper';
 import Admin from './pages/joona/Admin/Admin';
 
 import FeedbackJoona from './pages/joona/Feedback/FeedbackJoona';
+import ReplayList from './pages/joona/replayList/ReplayList';
 
 type errorObj = {
   message: string;
@@ -193,7 +194,7 @@ function App() {
       <Routes>
         {AppTemplate === 'joona' && (
           <>
-            <Route path=":roomName" element={<JitsiMeet />} />
+            <Route path=":roomName" element={<JitsiMeet jwt={jwt} />} />
             <Route path="/logout/callback" element={<LogoutCallback />} />
             <Route
               path="/login_callback"
@@ -243,6 +244,7 @@ function App() {
               />
               <Route path="profile" element={<Profile />} />
               <Route path="dashboard" element={<Dashboard />} />
+              <Route path="visioreplay" element={<ReplayList />} />
               <Route path="admin" element={<Admin />} />
               <Route path="feedback" element={<FeedbackJoona />} />
             </Route>

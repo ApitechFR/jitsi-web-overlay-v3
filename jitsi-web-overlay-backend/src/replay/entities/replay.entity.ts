@@ -7,28 +7,37 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { ReplayStatus } from '../enum/replay_status.enum';
 
 @Entity('replay')
 export class Replay {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Conference, (conference) => conference.replays)
-  @JoinColumn({ name: 'conference_id' })
-  conference: Conference;
+  @Column({ type: 'uuid', nullable: true })
+  uid: string;
 
-  @Column({ type: 'char' })
+  @Column({ type: 'varchar', nullable: true })
   file_path: string;
 
-  @Column({ type: 'time' })
-  duration: string;
+  @Column({ type: 'enum', enum: ReplayStatus, nullable: true})
+  status: ReplayStatus;
 
-  @CreateDateColumn()
+  @Column({ type: 'varchar', nullable: true })
+  message: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  conference_name: string;
+
+  @ManyToOne(() => Conference, (conference) => conference.replays, {
+    nullable: true,
+  })
+  @JoinColumn({ name: 'conference_uid', referencedColumnName: 'uid' })
+  conference: Conference;
+
+  @CreateDateColumn({ name: 'created_at' })
   created_at: Date;
 
-  @Column({ type: 'varchar' })
-  status: string;
-
-  @Column()
-  added_by: number;
+  @CreateDateColumn({ name: 'updated_at' })
+  updated_at: Date;
 }
