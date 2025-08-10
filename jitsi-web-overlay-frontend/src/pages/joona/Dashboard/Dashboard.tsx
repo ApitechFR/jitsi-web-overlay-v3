@@ -1,13 +1,13 @@
 import styles from './Dashboard.module.css';
-import { Breadcrumb } from '@codegouvfr/react-dsfr/Breadcrumb';
-import { RadioButtons } from '@codegouvfr/react-dsfr/RadioButtons';
-import { ToggleSwitch } from '@codegouvfr/react-dsfr/ToggleSwitch';
-import { Input } from '@codegouvfr/react-dsfr/Input';
-import { Card } from '@codegouvfr/react-dsfr/Card';
+import { Breadcrumb } from '@apitechfr/react-dsapitech/Breadcrumb';
+import { RadioButtons } from '@apitechfr/react-dsapitech/RadioButtons';
+import { ToggleSwitch } from '@apitechfr/react-dsapitech/ToggleSwitch';
+import { Input } from '@apitechfr/react-dsapitech/Input';
+import { Card } from '@apitechfr/react-dsapitech/Card';
 import { useEffect, useState } from 'react';
 
 import cardsData from '../../../data/cardConfig.json';
-import Button from '@codegouvfr/react-dsfr/Button';
+import Button from '@apitechfr/react-dsapitech/Button';
 
 type CardData = {
   key: string;
@@ -47,7 +47,7 @@ function Dashboard() {
       <Breadcrumb
         currentPageLabel="Dashboard"
         homeLinkProps={{
-          to: '/',
+          href: '/',
         }}
         segments={[]}
       />
