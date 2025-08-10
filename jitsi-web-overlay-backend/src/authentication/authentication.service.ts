@@ -168,4 +168,8 @@ export class AuthenticationService {
   getCookieOptions() {
     return this.cookieUtil.getCookieOptions();
   }
+
+  clearAuthCookie(response: Response, name: string) {
+    this.cookieUtil.clearAuthCookie(response, name);
+  }
 }

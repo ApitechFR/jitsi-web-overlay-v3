@@ -28,9 +28,34 @@ import { IConferenceService } from '../conference/interfaces/conference-service.
 
 @Controller('authentication')
 export class AuthenticationController {
+
+  constructor(
+    private readonly authenticationService: AuthenticationService,
+    @Inject(IConferenceService)
+    private readonly conferenceService: IConferenceService,
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+  ) { }
+
+  private getFrontBaseUrl(): string {
+    return (
+      this.configService.get('FRONTEND_BASE_URL') ||
+      this.configService.get('FRONTEND_LOGOUT_REDIRECT') ||
+      '/'
+    );
+  }
+
+  private getFrontRedirectTarget(req: Request, roomName?: string): string {
+    const base = this.getFrontBaseUrl().replace(/\/+$/, '');
+    const room = roomName ?? (req as any).signedCookies?.roomName;
+    return room ? `${base}/${encodeURIComponent(room)}` : base;
+  }
+
+
+
   /**
-   * Return user information from the JWT.
-   */
+    * Return user information from the JWT.
+    */
   @Get('userinfo')
   @ApiOkResponse({ description: 'Retourne les infos utilisateur du JWT' })
   @ApiUnauthorizedResponse({ description: 'Utilisateur non authentifié' })
@@ -52,13 +77,6 @@ export class AuthenticationController {
       throw new UnauthorizedException('JWT invalide');
     }
   }
-  constructor(
-    private readonly authenticationService: AuthenticationService,
-    @Inject(IConferenceService)
-    private readonly conferenceService: IConferenceService,
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
-  ) { }
 
   @Get('whereami')
   @ApiOkResponse({ description: "retoune 'RIE' ou 'INTERNET' " })
@@ -88,26 +106,26 @@ export class AuthenticationController {
     return { url: this.authenticationService.loginAuthorize(state, nonce) };
   }
   @Get('login_callback')
-  @ApiOkResponse({
-    description: 'retourne un objet {roomName, jwt, accessToken}',
-  })
-  @ApiUnauthorizedResponse({
-    description: "le paramètre state recu n'est pas le meme envoyé",
-  })
-  @ApiNotFoundResponse({
-    description:
-      "erreur lors de récupération de l'accessToken ou userinfo d'agentConnect",
-  })
+  @ApiResponse({ status: 302, description: 'Pose les cookies puis redirige vers le front' })
+  @ApiUnauthorizedResponse({ description: "state invalide ou absent" })
+  @ApiNotFoundResponse({ description: "erreur lors de l’échange code→tokens ou userinfo" })
   async loginCallback(
     @Query() query: LoginCallbackDTO,
     @Req() request: Request,
-    @Res({ passthrough: true }) response: Response,
+    @Res() response: Response,
   ) {
-    // Si déjà loggé, ne pas rééchanger le code
-    if (request.signedCookies?.accessToken) {
-      return { accessToken: request.signedCookies.accessToken };
-    }
     const { code, state } = query;
+
+    // Garde: paramètres manquants → retour front
+    if (!code || !state) {
+      return response.redirect(302, this.getFrontRedirectTarget(request));
+    }
+
+    // Double hit: déjà loggé → redirige
+    if (request.signedCookies?.accessToken) {
+      return response.redirect(302, this.getFrontRedirectTarget(request));
+    }
+
     const sendedState = request.signedCookies?.state;
     const roomName = request.signedCookies?.roomName;
 
@@ -125,16 +143,19 @@ export class AuthenticationController {
     const { refreshToken, accessToken } =
       this.authenticationService.generateJwtPair(tokenClaims);
 
-
-    this.authenticationService.clearAllCookies(response);
+    // Pose les cookies de session
     this.authenticationService.setAuthCookie(response, 'refreshToken', refreshToken);
     this.authenticationService.setAuthCookie(response, 'accessToken', accessToken);
 
-    return {
-      ...this.conferenceService.sendToken(roomName),
-      accessToken,
-    };
+    // Nettoyage ciblé des cookies temporaires
+    this.authenticationService.clearAuthCookie(response, 'state');
+    this.authenticationService.clearAuthCookie(response, 'roomName');
+
+    // Redirection finale (home ou /:roomName)
+    return response.redirect(302, this.getFrontRedirectTarget(request, roomName));
   }
+
+
 
   @Get('logout')
   @Redirect('', 302)
