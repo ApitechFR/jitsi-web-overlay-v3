@@ -7,6 +7,7 @@ import ShuffleIcon from '@mui/icons-material/Shuffle';
 import { useNavigate } from 'react-router-dom';
 import { Alert } from '@apitechfr/react-dsapitech/Alert';
 import { createModal } from '@apitechfr/react-dsapitech/Modal';
+import { useAuth } from '../../../auth/useAuth';
 
 interface HomeJoonaProps {
   readonly roomName: string;
@@ -16,8 +17,7 @@ interface HomeJoonaProps {
   readonly email: string;
   readonly setEmail: (email: string) => void;
   readonly sendEmail: (roomName: string) => void;
-  readonly joinConference: (roomName: string) => void;
-  readonly authenticated: boolean | null;
+  readonly joinConference?: (roomName: string) => void; // (facultatif/legacy)
   readonly conferenceNumber: number;
   readonly participantNumber: number;
 }
@@ -31,7 +31,10 @@ function HomeJoona(props: HomeJoonaProps) {
   const [isError, setIsError] = useState(false);
   const [isAlertVisible, setIsAlertVisible] = useState(false);
 
-  // --- Refs/états pour le polling ---
+  // Auth exclusivement via contexte
+  const { authenticated, login } = useAuth();
+
+  // Polling
   const apiRef = useRef<any>(null);
   const timerRef = useRef<number | null>(null);
   const inFlightRef = useRef(false);
@@ -39,11 +42,21 @@ function HomeJoona(props: HomeJoonaProps) {
   const backoffRef = useRef(POLLING_INTERVAL);
   const [isWaiting, setIsWaiting] = useState(false);
 
-  const domain = import.meta.env.VITE_JITSI_DOMAIN; 
+  // Jitsi host normalisé
+  const domainEnv = import.meta.env.VITE_JITSI_DOMAIN ?? '';
+  const domain = domainEnv.replace(/^https?:\/\//i, '');
 
-  const regexEnv = import.meta.env.VITE_CONFERENCE_NAME_REGEX;
-  const regexPattern = regexEnv ?? '^[A-Z0-9]{8}$';
-  const regexName = new RegExp(regexPattern);
+  // Regex nom de salle
+  const regexPattern =
+    (import.meta.env.VITE_CONFERENCE_NAME_REGEX as string | undefined) ||
+    '^[A-Z0-9]{8}$';
+  const regexName = useMemo(() => {
+    try {
+      return new RegExp(regexPattern);
+    } catch {
+      return /^[A-Z0-9]{8}$/;
+    }
+  }, [regexPattern]);
 
   useEffect(() => {
     if (isAlertVisible) {
@@ -52,22 +65,19 @@ function HomeJoona(props: HomeJoonaProps) {
     }
   }, [isAlertVisible]);
 
-  //  le modal ne doit pas être recréé à chaque render
   const modal = useMemo(
     () => createModal({ id: 'auth-modal', isOpenedByDefault: false }),
     []
   );
 
-  function isValidRoomName(name: string): boolean {
-    return regexName.test(name);
-  }
+  const isValidRoomName = (name: string) => !!name && regexName.test(name);
 
-  function onCopyLink() {
+  const onCopyLink = () => {
     const textToCopy = `${window.location.origin}/${props.roomName}`;
     if (textToCopy) {
       navigator.clipboard.writeText(textToCopy).then(() => setIsAlertVisible(true));
     }
-  }
+  };
 
   // ---------- Helpers Jitsi External API (polling invité) ----------
   const loadExternalApi = async (host: string) => {
@@ -111,13 +121,13 @@ function HomeJoona(props: HomeJoonaProps) {
 
   const scheduleNext = () => {
     if (cancelledRef.current) return;
-    backoffRef.current = Math.min(backoffRef.current + 3000, 30000); // 9s → 12s → … → 30s
+    backoffRef.current = Math.min(backoffRef.current + 3000, 30000);
     timerRef.current = window.setTimeout(probeOnce, backoffRef.current) as unknown as number;
   };
 
   const probeOnce = async () => {
     if (cancelledRef.current || inFlightRef.current) return;
-    if (!props.roomName || !isValidRoomName(props.roomName)) return;
+    if (!isValidRoomName(props.roomName)) return;
 
     inFlightRef.current = true;
     try {
@@ -125,7 +135,6 @@ function HomeJoona(props: HomeJoonaProps) {
       const parentNode = createOrGetHiddenDiv();
       const ExternalAPI = (window as any).JitsiMeetExternalAPI;
 
-      //  pas de JWT ici : si la room n’est pas encore créée par un user JWT → authfail
       const api = new ExternalAPI(domain, {
         roomName: props.roomName,
         parentNode,
@@ -143,7 +152,6 @@ function HomeJoona(props: HomeJoonaProps) {
       apiRef.current = api;
 
       const onJoined = () => {
-        // La conf existe → on y va
         disposeProbe();
         clearTimer();
         setIsWaiting(false);
@@ -152,7 +160,6 @@ function HomeJoona(props: HomeJoonaProps) {
       };
 
       const onConnFailed = () => {
-        //  pas de JWT ici : si la room n’est pas encore créée par un user JWT → authfail
         disposeProbe();
         scheduleNext();
       };
@@ -160,7 +167,6 @@ function HomeJoona(props: HomeJoonaProps) {
       api.addEventListener('videoConferenceJoined', onJoined);
       api.addEventListener('connectionFailed', onConnFailed);
 
-      // Sécurité : si aucun event en 6s → retry
       setTimeout(() => {
         if (!cancelledRef.current) {
           try { api.removeEventListener('videoConferenceJoined', onJoined); } catch {}
@@ -180,10 +186,7 @@ function HomeJoona(props: HomeJoonaProps) {
     cancelledRef.current = false;
     backoffRef.current = POLLING_INTERVAL;
     setIsWaiting(true);
-
-    // Ouvre le modal au prochain tick pour garantir qu'il est monté
     setTimeout(() => modal.open(), 0);
-
     clearTimer();
     disposeProbe();
     probeOnce();
@@ -198,7 +201,6 @@ function HomeJoona(props: HomeJoonaProps) {
   };
 
   useEffect(() => {
-    // cleanup on unmount
     return () => {
       cancelledRef.current = true;
       clearTimer();
@@ -209,26 +211,24 @@ function HomeJoona(props: HomeJoonaProps) {
   // ---------- Submit ----------
   function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!props.roomName || !isValidRoomName(props.roomName)) {
+    if (!isValidRoomName(props.roomName)) {
       setIsError(true);
       return;
     }
     setIsError(false);
 
-    // User authentifié → on part direct
-    if (props.authenticated) {
+    if (authenticated) {
       stopWaitingAndProbe();
       navigate(`/${props.roomName}`);
       return;
     }
 
-    // Invité → modal + vérification auto jusqu’au démarrage
     startWaitingAndProbe();
   }
 
-  function handleGenerateRoomName() {
+  const handleGenerateRoomName = () => {
     props.setRoomName(generateRoomName());
-  }
+  };
 
   return (
     <div className={styles.homeContainer}>
@@ -240,18 +240,16 @@ function HomeJoona(props: HomeJoonaProps) {
             sinon merci de patienter. Vous serez connecté automatiquement dès le démarrage.
           </p>
 
-          {!props.authenticated && (
+          {!authenticated && (
             <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
               <Button
                 onClick={() => {
-                  // Ferme le modal, stoppe le polling et redirige vers l’auth si tu as une route dédiée
                   stopWaitingAndProbe();
-                
+                  login();
                 }}
               >
-                S'authentifier
+                S&apos;authentifier
               </Button>
-              
             </div>
           )}
         </div>
