@@ -137,7 +137,7 @@ export class AuthenticationController {
       aud: this.configService.get('JITSI_JITSIJWT_AUD'),
       sub: this.configService.get('JITSI_JITSIJWT_SUB'),
       email: this.authenticationService.extractEmail(userinfo),
-      idToken,
+      //idToken,
     };
 
     const { refreshToken, accessToken } =
@@ -224,7 +224,7 @@ export class AuthenticationController {
         aud: this.configService.get('JITSI_JITSIJWT_AUD'),
         sub: this.configService.get('JITSI_JITSIJWT_SUB'),
         email: decoded?.email,
-        idToken: decoded?.idToken,
+        // idToken: decoded?.idToken,
       };
 
       const { refreshToken: newRefreshToken, accessToken } =
