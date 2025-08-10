@@ -1,82 +1,96 @@
+
 import { useEffect, useState } from 'react';
 import styles from './Login.module.css';
 import api from '../../axios/axios';
 import { useNavigate } from 'react-router-dom';
-import ErrorPopup from '../../components/error/ErrorPopup';
+import CircularProgress from '@mui/material/CircularProgress';
 import { useAuth } from '../../auth/useAuth';
 
 interface LoginCallbackProps {
-  setError: (obj: {
-    message: string;
-    error: { status: string; stack: string };
-  }) => void;
+  setError: (obj: { message: string; error: { status: string; stack: string } }) => void;
 }
 
 export default function LoginCallback({ setError }: LoginCallbackProps) {
   const navigate = useNavigate();
   const { refresh } = useAuth();
-  const [popupError, setPopupError] = useState<string | null>(null);
+  const [statusText, setStatusText] = useState('Connexion en cours…');
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const stateFromUrl = urlParams.get('state');
-    const stateStored = sessionStorage.getItem('oidc_state');
+    let cancelled = false;
 
-    // Erreur renvoyée par le provider
-    if (urlParams.get('error_description')) {
-      navigate(-2);
-      return;
-    }
+    const run = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      const stateFromUrl = urlParams.get('state');
+      const stateStored = sessionStorage.getItem('oidc_state');
 
-    // CSRF / state mismatch
-    if (!stateFromUrl || stateFromUrl !== stateStored) {
-      const message = "Erreur d'authentification (state mismatch)";
-      setError({ message, error: { status: '401', stack: '' } });
-      setPopupError(message);
-      return;
-    }
+      // Erreur explicite du provider
+      const providerError = urlParams.get('error_description');
+      if (providerError) {
+        setError({ message: "Erreur d'authentification", error: { status: '401', stack: '' } });
+        navigate('/', { replace: true });
+        return;
+      }
 
-    // Nettoyage du state après usage
-    sessionStorage.removeItem('oidc_state');
+      // CSRF / state mismatch
+      if (!code || !stateFromUrl || stateFromUrl !== stateStored) {
+        setError({ message: "Erreur d'authentification (state mismatch)", error: { status: '401', stack: '' } });
+        navigate('/', { replace: true });
+        return;
+      }
 
-    const apiUrl = `/authentication/login_callback?code=${encodeURIComponent(
-      urlParams.get('code') || ''
-    )}&state=${encodeURIComponent(stateFromUrl)}`;
+      // Nettoyage du state
+      sessionStorage.removeItem('oidc_state');
 
-    api
-      .get(apiUrl)
-      .then(async res => {
-        // Rafraîchir l'état global d'auth après succès
-        await refresh();
+      // Tentatives avec backoff court (écriture cookie, etc.)
+      const maxTries = 3;
+      const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+      let lastErrorStatus = '500';
 
-        if (res.data?.roomName && res.data?.jwt) {
-          navigate(`/${res.data.roomName}?jwt=${res.data.jwt}`);
+      for (let attempt = 1; attempt <= maxTries; attempt++) {
+        try {
+          setStatusText(attempt === 1 ? 'Établissement de la session…' : `Nouvelle tentative (${attempt}/${maxTries})…`);
+
+          await api.get(
+            `/authentication/login_callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(stateFromUrl)}`
+          );
+
+          // Rafraîchir l’état global d’auth
+          await refresh();
+
+          if (!cancelled) {
+            // Si le backend renvoie room/jwt via query
+            navigate('/', { replace: true });
+          }
           return;
+        } catch (e: any) {
+          lastErrorStatus = e?.response?.status?.toString?.() || '500';
+          if (attempt < maxTries) {
+            await delay(300); // petit backoff (300–500ms)
+            continue;
+          }
         }
-        if (res.data?.jwt) {
-          navigate(`/`);
-          return;
-        }
-        navigate(`/`);
-      })
-      .catch(error => {
-        let status = '500';
-        const message = "Erreur d'authentification";
+      }
 
-        if (error?.response) status = error.response.status?.toString() || '500';
-        else if (error?.request) status = '400';
+      // Après les tentatives → afficher l’erreur
+      if (!cancelled) {
+        setError({ message: "Erreur d'authentification", error: { status: lastErrorStatus, stack: '' } });
+        navigate('/error', { replace: true });
+      }
+    };
 
-        setError({ message, error: { status, stack: '' } });
-
-        const authMode = import.meta.env.VITE_AUTH_MODE ?? 'oidc';
-        if (authMode === 'oidc') setPopupError(message);
-        else navigate('/error');
-      });
+    run();
+    return () => {
+      cancelled = true;
+    };
   }, [navigate, refresh, setError]);
 
   return (
     <div className={styles.home}>
-      {popupError && <ErrorPopup message={popupError} />}
+      <div className={styles.progress}>
+        <CircularProgress style={{ height: '150px', width: '150px' }} />
+        <div style={{ marginTop: 16 }}>{statusText}</div>
+      </div>
     </div>
   );
 }

@@ -40,9 +40,9 @@ export default function HeaderJoona() {
   };
 
   const navItems = [
-    { linkProps: { href: '/', target: '_self' }, text: 'Accueil' },
     ...(authenticated
       ? [
+        { linkProps: { href: '/', target: '_self' }, text: 'Accueil' },
           { linkProps: { href: '/profile', target: '_self' }, text: 'Mon compte' },
           { linkProps: { href: '#', target: '_self' }, text: 'Conférences' },
           ...(isUserAdmin(user)
