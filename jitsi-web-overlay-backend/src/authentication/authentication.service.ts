@@ -194,4 +194,26 @@ export class AuthenticationService {
   clearAuthCookie(response: Response, name: string) {
     this.cookieUtil.clearAuthCookie(response, name);
   }
+
+  isAdminFromUserinfo(userinfo: any): boolean {
+    try {
+      const roles: string[] = [
+        ...(userinfo?.realm_access?.roles ?? []),
+        ...(userinfo?.resource_access?.account?.roles ?? []),
+      ].map((r: any) => String(r).toLowerCase());
+
+      // adapte les noms de rôles à ton Keycloak
+      return roles.includes('admin') || roles.includes('apitech-admin');
+    } catch {
+      return false;
+    }
+  }
+
+  extractNames(userinfo: any) {
+    return {
+      given_name: userinfo?.given_name || userinfo?.firstName || userinfo?.prenom || '',
+      family_name: userinfo?.family_name || userinfo?.lastName || userinfo?.nom || '',
+      name: userinfo?.name || '',
+    };
+  }
 }

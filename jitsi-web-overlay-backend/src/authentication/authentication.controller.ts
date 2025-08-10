@@ -131,6 +131,9 @@ export class AuthenticationController {
     const { userinfo, idToken } =
       await this.authenticationService.loginCallback(code, state, sendedState);
 
+    const names = this.authenticationService.extractNames(userinfo);
+    const isAdmin = this.authenticationService.isAdminFromUserinfo(userinfo);
+
     // const tokenClaims = {
     //   iss: this.configService.get('JITSI_JITSIJWT_ISS'),
     //   aud: this.configService.get('JITSI_JITSIJWT_AUD'),
@@ -138,11 +141,14 @@ export class AuthenticationController {
     //   email: this.authenticationService.extractEmail(userinfo),
     //   //idToken,
     // };
+
     const baseClaims = {
       iss: this.configService.get('JITSI_JITSIJWT_ISS'),
       aud: this.configService.get('JITSI_JITSIJWT_AUD'),
       sub: this.configService.get('JITSI_JITSIJWT_SUB'),
       email: this.authenticationService.extractEmail(userinfo),
+      ...names,
+      isAdmin,
     };
 
     // const { refreshToken, accessToken } =
@@ -230,19 +236,17 @@ export class AuthenticationController {
       await this.jwtService.verify(refreshToken, { secret: this.configService.get('JWT_SECRET'), algorithms: ['HS256'] });
 
       const decoded = this.jwtService.decode(refreshToken);
-      // const tokenClaims = {
-      //   iss: this.configService.get('JITSI_JITSIJWT_ISS'),
-      //   aud: this.configService.get('JITSI_JITSIJWT_AUD'),
-      //   sub: this.configService.get('JITSI_JITSIJWT_SUB'),
-      //   email: decoded?.email,
-      //   idToken: decoded?.idToken,
-      // };
+
 
       const baseClaims = {
         iss: this.configService.get('JITSI_JITSIJWT_ISS'),
         aud: this.configService.get('JITSI_JITSIJWT_AUD'),
         sub: this.configService.get('JITSI_JITSIJWT_SUB'),
         email: decoded?.email,
+        given_name: decoded?.given_name || '',
+        family_name: decoded?.family_name || '',
+        name: decoded?.name || '',
+        isAdmin: Boolean(decoded?.isAdmin),
       };
 
       const accessToken = this.authenticationService.generateAccessToken(baseClaims);
