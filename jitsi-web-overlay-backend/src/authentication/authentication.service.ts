@@ -150,6 +150,24 @@ export class AuthenticationService {
     return { refreshToken, accessToken };
   }
 
+  generateAccessToken(claims: Record<string, any>) {
+    const secret = this.configService.get('JWT_SECRET');
+    return this.jwtService.sign(claims, {
+      expiresIn: '15m',
+      algorithm: 'HS256',
+      secret,
+    });
+  }
+
+  generateRefreshToken(claims: Record<string, any>) {
+    const secret = this.configService.get('JWT_SECRET');
+    return this.jwtService.sign(claims, {
+      expiresIn: '12h',
+      algorithm: 'HS256',
+      secret,
+    });
+  }
+
 
   setAuthCookie(response: Response, name: string, value: string) {
     this.cookieUtil.setAuthCookie(response, name, value);

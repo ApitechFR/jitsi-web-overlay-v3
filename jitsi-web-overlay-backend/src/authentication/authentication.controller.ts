@@ -15,7 +15,6 @@ import { Request, Response } from 'express';
 import * as crypto from 'crypto';
 
 import { JwtService } from '@nestjs/jwt';
-import * as moment from 'moment';
 import { LoginCallbackDTO } from './DTOs/LoginCallbackDTO';
 import { LogoutCallbackDTO } from './DTOs/LogoutCallbackDTO';
 import {
@@ -132,16 +131,28 @@ export class AuthenticationController {
     const { userinfo, idToken } =
       await this.authenticationService.loginCallback(code, state, sendedState);
 
-    const tokenClaims = {
+    // const tokenClaims = {
+    //   iss: this.configService.get('JITSI_JITSIJWT_ISS'),
+    //   aud: this.configService.get('JITSI_JITSIJWT_AUD'),
+    //   sub: this.configService.get('JITSI_JITSIJWT_SUB'),
+    //   email: this.authenticationService.extractEmail(userinfo),
+    //   //idToken,
+    // };
+    const baseClaims = {
       iss: this.configService.get('JITSI_JITSIJWT_ISS'),
       aud: this.configService.get('JITSI_JITSIJWT_AUD'),
       sub: this.configService.get('JITSI_JITSIJWT_SUB'),
       email: this.authenticationService.extractEmail(userinfo),
-      //idToken,
     };
 
-    const { refreshToken, accessToken } =
-      this.authenticationService.generateJwtPair(tokenClaims);
+    // const { refreshToken, accessToken } =
+    //   this.authenticationService.generateJwtPair(tokenClaims);
+    const accessToken = this.authenticationService.generateAccessToken(baseClaims);
+    const refreshToken = this.authenticationService.generateRefreshToken({
+      ...baseClaims,
+      idToken,
+    });
+
 
     // Pose les cookies de session
     this.authenticationService.setAuthCookie(response, 'refreshToken', refreshToken);
@@ -219,16 +230,30 @@ export class AuthenticationController {
       await this.jwtService.verify(refreshToken, { secret: this.configService.get('JWT_SECRET'), algorithms: ['HS256'] });
 
       const decoded = this.jwtService.decode(refreshToken);
-      const tokenClaims = {
+      // const tokenClaims = {
+      //   iss: this.configService.get('JITSI_JITSIJWT_ISS'),
+      //   aud: this.configService.get('JITSI_JITSIJWT_AUD'),
+      //   sub: this.configService.get('JITSI_JITSIJWT_SUB'),
+      //   email: decoded?.email,
+      //   idToken: decoded?.idToken,
+      // };
+
+      const baseClaims = {
         iss: this.configService.get('JITSI_JITSIJWT_ISS'),
         aud: this.configService.get('JITSI_JITSIJWT_AUD'),
         sub: this.configService.get('JITSI_JITSIJWT_SUB'),
         email: decoded?.email,
-        // idToken: decoded?.idToken,
       };
 
-      const { refreshToken: newRefreshToken, accessToken } =
-        this.authenticationService.generateJwtPair(tokenClaims);
+      const accessToken = this.authenticationService.generateAccessToken(baseClaims);
+
+      // const { refreshToken: newRefreshToken, accessToken } =
+      //   this.authenticationService.generateJwtPair(tokenClaims);
+
+      const newRefreshToken = this.authenticationService.generateRefreshToken({
+        ...baseClaims,
+        idToken: decoded?.idToken,
+      });
 
       this.authenticationService.setAuthCookie(response, 'refreshToken', newRefreshToken);
 
