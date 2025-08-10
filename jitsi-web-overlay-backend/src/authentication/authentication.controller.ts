@@ -40,7 +40,10 @@ export class AuthenticationController {
       throw new UnauthorizedException('Utilisateur non authentifié');
     }
     try {
-      const decoded = this.jwtService.decode(accessToken);
+      const decoded = this.jwtService.verify(accessToken, {
+        secret: this.configService.get('JWT_SECRET'),
+        algorithms: ['HS256'],
+      });
       if (!decoded) {
         throw new UnauthorizedException('JWT invalide');
       }
@@ -100,6 +103,10 @@ export class AuthenticationController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
+    // Si déjà loggé, ne pas rééchanger le code
+    if (request.signedCookies?.accessToken) {
+      return { accessToken: request.signedCookies.accessToken };
+    }
     const { code, state } = query;
     const sendedState = request.signedCookies?.state;
     const roomName = request.signedCookies?.roomName;
@@ -187,7 +194,9 @@ export class AuthenticationController {
     }
 
     try {
-      await this.jwtService.verify(refreshToken);
+      //await this.jwtService.verify(refreshToken);
+      await this.jwtService.verify(refreshToken, { secret: this.configService.get('JWT_SECRET'), algorithms: ['HS256'] });
+
       const decoded = this.jwtService.decode(refreshToken);
       const tokenClaims = {
         iss: this.configService.get('JITSI_JITSIJWT_ISS'),

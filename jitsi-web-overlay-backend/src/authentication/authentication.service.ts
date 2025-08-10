@@ -35,7 +35,12 @@ export class AuthenticationService {
         ? this.configService.get('AGENTCONNECT_REDIRECT_URL')
         : this.configService.get('OIDC_REDIRECT_URL');
 
-    return `${this.configService.get('AUTHORIZATION_ENDPOINT')}/?response_type=code&acr_values=eidas1&scope=${this.configService.get('OIDC_SCOPE')}&client_id=${this.configService.get('OIDC_CLIENTID')}&redirect_uri=${redirectUri}&state=${state}&nonce=${nonce}`;
+    //return `${this.configService.get('AUTHORIZATION_ENDPOINT')}/?response_type=code&acr_values=eidas1&scope=${this.configService.get('OIDC_SCOPE')}&client_id=${this.configService.get('OIDC_CLIENTID')}&redirect_uri=${redirectUri}&state=${state}&nonce=${nonce}`;
+    const authz = (this.configService.get('AUTHORIZATION_ENDPOINT') || '').replace(/\/+$/, '');
+    const scope = this.configService.get('OIDC_SCOPE');
+    const clientId = this.configService.get('OIDC_CLIENTID');
+    return `${authz}?response_type=code&acr_values=eidas1&scope=${scope}&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&nonce=${nonce}`;
+
   }
 
   async loginCallback(
@@ -57,17 +62,18 @@ export class AuthenticationService {
         : this.configService.get('OIDC_REDIRECT_URL');
 
     try {
+      const tokenBody: any = {
+        grant_type: 'authorization_code',
+        code,
+        client_id,
+        redirect_uri,
+      };
+      if (client_secret) tokenBody.client_secret = client_secret;
       const {
         data: { access_token: accessToken, id_token: idToken },
       } = await this.httpService.axiosRef.post(
         this.configService.get('TOKEN_ENDPOINT'),
-        queryString.stringify({
-          grant_type: 'authorization_code',
-          code,
-          client_id,
-          client_secret,
-          redirect_uri,
-        }),
+        queryString.stringify(tokenBody),
         provider === 'agentconnect'
           ? {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

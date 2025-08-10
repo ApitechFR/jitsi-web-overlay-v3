@@ -1,7 +1,7 @@
-import { Injectable, NestMiddleware, UnauthorizedException } from '@nestjs/common';
-import { Request as ExpressRequest, Response, NextFunction } from 'express';
+import { Injectable, NestMiddleware } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { Request, Response, NextFunction } from 'express';
 
 @Injectable()
 export class JwtOidcMiddleware implements NestMiddleware {
@@ -10,24 +10,30 @@ export class JwtOidcMiddleware implements NestMiddleware {
         private readonly configService: ConfigService,
     ) { }
 
-    use(req: ExpressRequest & { user?: any }, res: Response, next: NextFunction) {
+    use(req: Request & { user?: any }, _res: Response, next: NextFunction) {
         let token: string | undefined;
-        const authHeader = req.headers['authorization'];
-        if (authHeader && authHeader.startsWith('Bearer ')) {
-            token = authHeader.split(' ')[1];
-        } else if (req.cookies && req.cookies.accessToken) {
-            token = req.cookies.accessToken;
+
+        //  Authorization: Bearer <token>
+        const auth = req.headers['authorization'];
+        if (auth && typeof auth === 'string' && auth.toLowerCase().startsWith('bearer ')) {
+            token = auth.slice(7);
         }
-        if (!token) {
-            return next(); // Pas de JWT, on laisse passer (route publique)
+        //  Cookies signés
+        else if ((req as any).signedCookies && (req as any).signedCookies.accessToken) {
+            token = (req as any).signedCookies.accessToken;
         }
-        try {
-            const publicKey = this.configService.get('OIDC_PUBLIC_KEY');
-            const payload = this.jwtService.verify(token, { publicKey });
-            req.user = payload;
-        } catch (err) {
-            throw new UnauthorizedException('JWT OIDC invalide ou expiré');
+
+        if (token) {
+            try {
+                const secret = this.configService.get<string>('JWT_SECRET');
+                const payload = this.jwtService.verify(token, { secret, algorithms: ['HS256'] });
+                req.user = payload;
+            } catch {
+                // token invalide → on n’attache rien, on laisse passer.
+                // Les routes protégées utiliseront un guard pour forcer l’auth.
+            }
         }
+
         next();
     }
 }
