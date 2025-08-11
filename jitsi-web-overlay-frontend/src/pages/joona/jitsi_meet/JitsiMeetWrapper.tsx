@@ -27,7 +27,7 @@ const JitsiMeetWrapper: React.FC = () => {
   const [jwtError, setJwtError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const domain = import.meta.env.VITE_JITSI_DOMAIN as string;
+  const domain = import.meta.env.VITE_JITSI_DOMAIN;
   const apiBase = (import.meta.env.VITE_API_URL as string | undefined) || '/api';
 
   const validRoom = !!roomName && validateRoomName(roomName);
@@ -57,7 +57,7 @@ const JitsiMeetWrapper: React.FC = () => {
       setLoading(true);
       setJwtError(null);
       try {
-        const resp = await fetchJitsiJwtWithSession(apiBase, roomName!, ctrl.signal);
+        const resp = await fetchJitsiJwtWithSession(apiBase, roomName, ctrl.signal);
         if (cancelled) return;
 
         if (resp.jwt) {
@@ -140,7 +140,7 @@ const JitsiMeetWrapper: React.FC = () => {
   return (
     <JitsiMeetingView
       domain={domain}
-      roomName={roomName!}
+      roomName={roomName}
       jwt={jwtToken}
       displayName={displayName}
     />

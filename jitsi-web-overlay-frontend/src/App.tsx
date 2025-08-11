@@ -166,7 +166,7 @@ function App() {
       <Routes>
         {AppTemplate === 'joona' && (
           <>
-            <Route path=":roomName" element={<JitsiMeet jwt={jwt} />} />
+            <Route path=":roomName" element={<JitsiMeet/>} />
             <Route path="/logout/callback" element={<LogoutCallback />} />
             <Route
               path="/login_callback"
