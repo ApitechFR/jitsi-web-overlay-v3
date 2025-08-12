@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import { handlejibriApitechApi, handleRecordingStatus } from './visio_replay';
+import { useNavigate } from 'react-router';
 
 interface Props {
   domain: string;
@@ -13,11 +14,15 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
 
   const checkVideoInterval = useRef<NodeJS.Timeout | null>(null);
   const checkTimeout = useRef<NodeJS.Timeout | null>(null);
+  const navigate = useNavigate();
 
   const enableJibriApitechApi = import.meta.env.VITE_ENABLE_JIBRI_APITECH_API;
   const jibriApitechApiDomain = import.meta.env.VITE_JIBRI_APITECH_API_DOMAIN;
   const jitsiAPIOptions = (window as any).jitsiAPIOptions;
 
+  const onClose = () => {
+    navigate('/');
+  };
 
   return (
     <JitsiMeeting
@@ -49,6 +54,7 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
         console.log({ participantsInfo });
 
       }}
+      onReadyToClose={onClose}
     />
   );
 };
