@@ -1,13 +1,15 @@
-import { generateRoomName } from '../../../utils/roomName';
+import { generateRoomName, validateRoomName } from '../../../utils/roomName';
 import { useState, useRef, FormEvent, useEffect, useMemo } from 'react';
 import styles from './HomeJoona.module.css';
 import { Button } from '@apitechfr/react-dsapitech/Button';
 import { Input } from '@apitechfr/react-dsapitech/Input';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Alert } from '@apitechfr/react-dsapitech/Alert';
 import { createModal } from '@apitechfr/react-dsapitech/Modal';
 import { useAuth } from '../../../auth/useAuth';
+import CircularProgress from '@mui/material/CircularProgress';
+
 
 interface HomeJoonaProps {
   readonly roomName: string;
@@ -17,7 +19,7 @@ interface HomeJoonaProps {
   readonly email: string;
   readonly setEmail: (email: string) => void;
   readonly sendEmail: (roomName: string) => void;
-  readonly joinConference?: (roomName: string) => void; // (facultatif/legacy)
+  readonly joinConference?: (roomName: string) => void;
   readonly conferenceNumber: number;
   readonly participantNumber: number;
 }
@@ -27,12 +29,21 @@ const HIDDEN_DIV_ID = 'jitsi-probe-container';
 
 function HomeJoona(props: HomeJoonaProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isError, setIsError] = useState(false);
   const [isAlertVisible, setIsAlertVisible] = useState(false);
+  // Phase d’attente: 'idle' | 'first-check' | 'waiting'
+  const [phase, setPhase] = useState<'idle' | 'first-check' | 'waiting'>('idle');
+  // Timer pour le délai supplémentaire de 2s avant d’ouvrir le modal
+  const extraDelayTimerRef = useRef<number | null>(null);
 
-  // Auth exclusivement via contexte
   const { authenticated, login } = useAuth();
+
+  // pour intercepter toute fermeture de modal
+  const stopRef = useRef<null | ((byModalClose?: boolean) => void)>(null);
+
+  const originalCloseRef = useRef<() => void>();
 
   // Polling
   const apiRef = useRef<any>(null);
@@ -41,22 +52,11 @@ function HomeJoona(props: HomeJoonaProps) {
   const cancelledRef = useRef(false);
   const backoffRef = useRef(POLLING_INTERVAL);
   const [isWaiting, setIsWaiting] = useState(false);
+  const currentRoomRef = useRef<string>('');
 
   // Jitsi host normalisé
   const domainEnv = import.meta.env.VITE_JITSI_DOMAIN ?? '';
   const domain = domainEnv.replace(/^https?:\/\//i, '');
-
-  // Regex nom de salle
-  const regexPattern =
-    (import.meta.env.VITE_CONFERENCE_NAME_REGEX as string | undefined) ||
-    '^[A-Z0-9]{8}$';
-  const regexName = useMemo(() => {
-    try {
-      return new RegExp(regexPattern);
-    } catch {
-      return /^[A-Z0-9]{8}$/;
-    }
-  }, [regexPattern]);
 
   useEffect(() => {
     if (isAlertVisible) {
@@ -70,16 +70,26 @@ function HomeJoona(props: HomeJoonaProps) {
     []
   );
 
-  const isValidRoomName = (name: string) => !!name && regexName.test(name);
+  // Arrêter l’attente AVANT de fermer
+  useEffect(() => {
+    const originalClose = modal.close;
+    originalCloseRef.current = originalClose;
+    (modal as any).close = () => {
+      try {
+        if (stopRef.current) stopRef.current(true);
+      } catch { }
+      originalClose();
+    };
+    return () => { (modal as any).close = originalClose; };
+  }, [modal]);
+  const isValidRoomName = (name: string) => validateRoomName(name);
 
-  const onCopyLink = () => {
-    const textToCopy = `${window.location.origin}/${props.roomName}`;
-    if (textToCopy) {
-      navigator.clipboard.writeText(textToCopy).then(() => setIsAlertVisible(true));
-    }
-  };
+  // retire l’erreur visuelle dès que le nom devient valide
+  useEffect(() => {
+    if (props.roomName && isValidRoomName(props.roomName)) setIsError(false);
+  }, [props.roomName]);
 
-  // ---------- Helpers Jitsi External API (polling invité) ----------
+  // ---------- Helpers ----------
   const loadExternalApi = async (host: string) => {
     if ((window as any).JitsiMeetExternalAPI) return;
     await new Promise<void>((resolve, reject) => {
@@ -108,7 +118,7 @@ function HomeJoona(props: HomeJoonaProps) {
   };
 
   const disposeProbe = () => {
-    try { apiRef.current?.dispose?.(); } catch {}
+    try { apiRef.current?.dispose?.(); } catch { }
     apiRef.current = null;
   };
 
@@ -121,13 +131,76 @@ function HomeJoona(props: HomeJoonaProps) {
 
   const scheduleNext = () => {
     if (cancelledRef.current) return;
+    const room = currentRoomRef.current;
+    if (!room || !isValidRoomName(room)) return;
     backoffRef.current = Math.min(backoffRef.current + 3000, 30000);
-    timerRef.current = window.setTimeout(probeOnce, backoffRef.current) as unknown as number;
+    timerRef.current = window.setTimeout(() => probeOnce(room), backoffRef.current) as unknown as number;
   };
 
-  const probeOnce = async () => {
+
+  // Premier check silencieux (2.5s max). Renvoie true si conf déjà lancée.
+  const firstCheckRoomStarted = async (room: string): Promise<boolean> => {
+    if (!isValidRoomName(room)) return false;
+    try {
+      await loadExternalApi(domain);
+      const parentNode = createOrGetHiddenDiv();
+      const ExternalAPI = (window as any).JitsiMeetExternalAPI;
+
+      return await new Promise<boolean>((resolve) => {
+        let resolved = false;
+        const api = new ExternalAPI(domain, {
+          roomName: room,
+          parentNode,
+          configOverwrite: {
+            startWithAudioMuted: true,
+            startWithVideoMuted: true,
+            prejoinConfig: { enabled: false },
+          },
+          interfaceConfigOverwrite: { TOOLBAR_BUTTONS: [] },
+          userInfo: { displayName: 'Invité' },
+        });
+
+        const cleanup = () => {
+          try { api.removeEventListener('videoConferenceJoined', onJoined); } catch { }
+          try { api.removeEventListener('connectionFailed', onConnFailed); } catch { }
+          try { api.dispose(); } catch { }
+        };
+
+        const onJoined = () => {
+          if (!resolved) {
+            resolved = true;
+            cleanup();
+            resolve(true);
+          }
+        };
+        const onConnFailed = () => {
+          if (!resolved) {
+            resolved = true;
+            cleanup();
+            resolve(false);
+          }
+        };
+
+        api.addEventListener('videoConferenceJoined', onJoined);
+        api.addEventListener('connectionFailed', onConnFailed);
+
+        setTimeout(() => {
+          if (!resolved) {
+            resolved = true;
+            cleanup();
+            resolve(false);
+          }
+        }, 2500);
+      });
+    } catch {
+      return false;
+    }
+  };
+
+  // Probe itératif (avec modale)
+  const probeOnce = async (room: string) => {
     if (cancelledRef.current || inFlightRef.current) return;
-    if (!isValidRoomName(props.roomName)) return;
+    if (!isValidRoomName(room)) return;
 
     inFlightRef.current = true;
     try {
@@ -136,16 +209,14 @@ function HomeJoona(props: HomeJoonaProps) {
       const ExternalAPI = (window as any).JitsiMeetExternalAPI;
 
       const api = new ExternalAPI(domain, {
-        roomName: props.roomName,
+        roomName: room,
         parentNode,
         configOverwrite: {
           startWithAudioMuted: true,
           startWithVideoMuted: true,
           prejoinConfig: { enabled: false },
         },
-        interfaceConfigOverwrite: {
-          TOOLBAR_BUTTONS: [],
-        },
+        interfaceConfigOverwrite: { TOOLBAR_BUTTONS: [] },
         userInfo: { displayName: 'Invité' },
       });
 
@@ -155,8 +226,14 @@ function HomeJoona(props: HomeJoonaProps) {
         disposeProbe();
         clearTimer();
         setIsWaiting(false);
-        try { modal.close(); } catch {}
-        navigate(`/${props.roomName}`);
+
+        if (authenticated) {
+          try { modal.close(); } catch { }
+          navigate(`/${room}`);
+        } else {
+          try { modal.close(); } catch { }
+          navigate(`/${room}`, { replace: true, state: { allowGuest: true } });
+        }
       };
 
       const onConnFailed = () => {
@@ -169,12 +246,12 @@ function HomeJoona(props: HomeJoonaProps) {
 
       setTimeout(() => {
         if (!cancelledRef.current) {
-          try { api.removeEventListener('videoConferenceJoined', onJoined); } catch {}
-          try { api.removeEventListener('connectionFailed', onConnFailed); } catch {}
+          try { api.removeEventListener('videoConferenceJoined', onJoined); } catch { }
+          try { api.removeEventListener('connectionFailed', onConnFailed); } catch { }
           disposeProbe();
           scheduleNext();
         }
-      }, 6000);
+      }, 4000);
     } catch {
       scheduleNext();
     } finally {
@@ -182,33 +259,147 @@ function HomeJoona(props: HomeJoonaProps) {
     }
   };
 
-  const startWaitingAndProbe = () => {
+  // Démarre par un check silencieux, puis (si non lancé) ouvre la modale et lance le probe
+  const runFirstCheckThenMaybeWait = async (room?: string) => {
+    if (phase !== 'idle') return;
+
+    const rn = (room ?? props.roomName) || '';
+    if (!isValidRoomName(rn)) {
+      setIsError(true);
+      setTimeout(() => inputRef.current?.focus(), 0);
+      return;
+    }
+
+    //  reset toute attente/probe en cours
+    cancelledRef.current = true;
+    clearTimer();
+    disposeProbe();
+    setIsWaiting(false);
+    if (extraDelayTimerRef.current) {
+      clearTimeout(extraDelayTimerRef.current);
+      extraDelayTimerRef.current = null;
+    }
+
+    // nouveau cycle: on réactive
+    cancelledRef.current = false;
+
+    //  Premier check silencieux + overlay
+    setPhase('first-check');
+    const started = await firstCheckRoomStarted(rn);
+
+    if (started) {
+      // conf déjà lancée -> route directe (pas de modal)
+      setPhase('idle');
+      if (authenticated) {
+        navigate(`/${rn}`, { replace: true });
+      } else {
+        navigate(`/${rn}`, { replace: true, state: { allowGuest: true } });
+      }
+      return;
+    }
+
+    // Attendre 4s AVANT d’ouvrir la modale + lancer le probe
+    extraDelayTimerRef.current = window.setTimeout(() => {
+      if (cancelledRef.current) return;
+      setPhase('waiting');
+      startWaitingAndProbe(rn);
+    }, 4000) as unknown as number;
+  };
+
+
+
+  const startWaitingAndProbe = (room?: string) => {
+    const rn = (room ?? props.roomName) || '';
+    if (!isValidRoomName(rn)) {
+      setIsError(true);
+      setTimeout(() => inputRef.current?.focus(), 0);
+      return;
+    }
+
+    currentRoomRef.current = rn;
     cancelledRef.current = false;
     backoffRef.current = POLLING_INTERVAL;
     setIsWaiting(true);
     setTimeout(() => modal.open(), 0);
     clearTimer();
     disposeProbe();
-    probeOnce();
+    probeOnce(rn);
   };
 
-  const stopWaitingAndProbe = () => {
+  const stopWaitingAndProbe = (byModalClose?: boolean) => {
     cancelledRef.current = true;
     clearTimer();
     disposeProbe();
     setIsWaiting(false);
-    try { modal.close(); } catch {}
+    setPhase('idle');
+    if (extraDelayTimerRef.current) {
+      clearTimeout(extraDelayTimerRef.current);
+      extraDelayTimerRef.current = null;
+    }
+
+    if (!byModalClose) {
+      try { originalCloseRef.current?.(); } catch { }
+    }
   };
+  stopRef.current = stopWaitingAndProbe;
 
   useEffect(() => {
     return () => {
       cancelledRef.current = true;
       clearTimer();
       disposeProbe();
+      if (extraDelayTimerRef.current) {
+        clearTimeout(extraDelayTimerRef.current);
+        extraDelayTimerRef.current = null;
+      }
     };
   }, []);
 
-  // ---------- Submit ----------
+
+  // ---------- Navigation state ----------
+  useEffect(() => {
+    const st = (location.state || {}) as {
+      prefillRoomName?: string;
+      waitForRoom?: string;
+      openAuthModal?: boolean;
+    };
+
+    // Préremplir + marquer l’erreur si invalide
+    if (st.prefillRoomName) {
+      const nm = st.prefillRoomName.trim();
+      props.setRoomName(nm);
+      setIsError(!validateRoomName(nm));
+      setTimeout(() => inputRef.current?.focus(), 0);
+      navigate('.', { replace: true, state: {} });
+      return;
+    }
+
+    //  Arrivée depuis /:roomName valide -> premier check silencieux
+    if (st.waitForRoom) {
+      const target = st.waitForRoom;
+      if (props.roomName !== target) props.setRoomName(target);
+      runFirstCheckThenMaybeWait(target);
+      navigate('.', { replace: true, state: {} });
+      return;
+    }
+
+    // ouvrir l’auth + attendre -> on fait d’abord le check
+    if (st.openAuthModal && !authenticated) {
+      const target = st.waitForRoom ?? props.roomName;
+      if (target && target !== props.roomName) props.setRoomName(target);
+      runFirstCheckThenMaybeWait(target);
+      navigate('.', { replace: true, state: {} });
+      return;
+    }
+  }, [location.state, authenticated, navigate, props.roomName, props.setRoomName]);
+
+  // ---------- Actions UI ----------
+  const onCopyLink = () => {
+    if (!props.roomName || !isValidRoomName(props.roomName)) return;
+    const textToCopy = `${window.location.origin}/${props.roomName}`;
+    navigator.clipboard.writeText(textToCopy).then(() => setIsAlertVisible(true));
+  };
+
   function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (!isValidRoomName(props.roomName)) {
@@ -223,7 +414,8 @@ function HomeJoona(props: HomeJoonaProps) {
       return;
     }
 
-    startWaitingAndProbe();
+    // invité : premier check, puis éventuel waiting+probe
+    runFirstCheckThenMaybeWait();
   }
 
   const handleGenerateRoomName = () => {
@@ -232,7 +424,38 @@ function HomeJoona(props: HomeJoonaProps) {
 
   return (
     <div className={styles.homeContainer}>
-      <modal.Component title="">
+      {phase === 'first-check' && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(255,255,255,0.75)',
+            zIndex: 9999
+          }}
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+            <CircularProgress />
+            <div style={{ color: '#444', fontSize: 14 }}>Vérification de la conférence…</div>
+          </div>
+        </div>
+      )}
+
+      <modal.Component
+        title=""
+        buttons={[
+          {
+            children: 'Annuler l’attente',
+            priority: 'secondary',
+            onClick: () => stopWaitingAndProbe(),
+            doClosesModal: false, // ← important
+          },
+        ]}
+      >
         <div className={styles.contentModal}>
           <h1>La conférence n'a pas encore démarré</h1>
           <p>
@@ -245,7 +468,7 @@ function HomeJoona(props: HomeJoonaProps) {
               <Button
                 onClick={() => {
                   stopWaitingAndProbe();
-                  login();
+                  login(validateRoomName(props.roomName) ? props.roomName : undefined);
                 }}
               >
                 S&apos;authentifier
@@ -312,5 +535,4 @@ function HomeJoona(props: HomeJoonaProps) {
     </div>
   );
 }
-
 export default HomeJoona;

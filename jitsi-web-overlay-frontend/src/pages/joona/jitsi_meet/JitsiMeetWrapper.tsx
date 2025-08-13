@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../auth/useAuth';
 import JitsiMeetingView from './JitsiMeetingView';
 import { validateRoomName } from '../../../utils/roomName';
@@ -7,7 +7,11 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 type JwtResponse = { jwt?: string; error?: string };
 
-async function fetchJitsiJwtWithSession(apiBase: string, roomName: string, signal?: AbortSignal): Promise<JwtResponse> {
+async function fetchJitsiJwtWithSession(
+  apiBase: string,
+  roomName: string,
+  signal?: AbortSignal
+): Promise<JwtResponse> {
   const res = await fetch(`${apiBase}/conferences/jitsi-jwt`, {
     method: 'POST',
     credentials: 'include',
@@ -21,48 +25,51 @@ async function fetchJitsiJwtWithSession(apiBase: string, roomName: string, signa
 
 const JitsiMeetWrapper: React.FC = () => {
   const { roomName } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation() as { state?: any };
   const { authenticated, status, user } = useAuth();
 
   const [jwtToken, setJwtToken] = useState<string | undefined>(undefined);
   const [jwtError, setJwtError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const domain = import.meta.env.VITE_JITSI_DOMAIN;
+  const domain = import.meta.env.VITE_JITSI_DOMAIN as string;
   const apiBase = (import.meta.env.VITE_API_URL as string | undefined) || '/api';
 
   const validRoom = !!roomName && validateRoomName(roomName);
 
   useEffect(() => {
     if (!validRoom) return;
+    if (status === 'unknown') return;
+    if (!authenticated) {
+      const allowGuest = Boolean(location.state?.allowGuest);
+      if (!allowGuest) {
+        navigate('/', {
+          replace: true,
+          state: { waitForRoom: roomName, openAuthModal: true },
+        });
+      }
+    }
+  }, [validRoom, status, authenticated, roomName, navigate, location.state]);
+
+  // Récup JWT uniquement si connecté
+  useEffect(() => {
+    if (!validRoom) return;
+    if (status === 'unknown') return;
+    if (!authenticated) return;
 
     let cancelled = false;
     const ctrl = new AbortController();
-    const to = setTimeout(() => ctrl.abort(), 10000); // 10s
+    const to = setTimeout(() => ctrl.abort(), 10000);
 
-    const run = async () => {
-      // on attend d’abord de savoir si l’utilisateur est connecté ou non
-      if (status === 'unknown') return;
-
-      // utilisateur non connecté → pas de JWT (Jitsi en mode invité)
-      if (!authenticated) {
-        if (!cancelled) {
-          setJwtToken(undefined);
-          setJwtError(null);
-          setLoading(false);
-        }
-        return;
-      }
-
-      // utilisateur connecté → on récupère le JWT via la session (cookies)
+    (async () => {
       setLoading(true);
       setJwtError(null);
       try {
-        const resp = await fetchJitsiJwtWithSession(apiBase, roomName, ctrl.signal);
+        const resp = await fetchJitsiJwtWithSession(apiBase, roomName!, ctrl.signal);
         if (cancelled) return;
-
         if (resp.jwt) {
           setJwtToken(resp.jwt);
-          setJwtError(null);
         } else {
           setJwtToken(undefined);
           setJwtError(resp.error || 'Impossible de récupérer le JWT pour cette conférence.');
@@ -75,9 +82,8 @@ const JitsiMeetWrapper: React.FC = () => {
       } finally {
         if (!cancelled) setLoading(false);
       }
-    };
+    })();
 
-    run();
     return () => {
       cancelled = true;
       clearTimeout(to);
@@ -85,7 +91,7 @@ const JitsiMeetWrapper: React.FC = () => {
     };
   }, [authenticated, status, roomName, apiBase, validRoom]);
 
-  // displayName : on privilégie les champs prénom/nom/email si présents
+  // displayName : on privilégie prénom/nom/email si présents
   const displayName = useMemo<string>(() => {
     if (authenticated) {
       const first =
@@ -107,20 +113,23 @@ const JitsiMeetWrapper: React.FC = () => {
     return 'Invité';
   }, [authenticated, user, jwtToken]);
 
+  // GARDES
   if (!validRoom) return null;
-
-  // pendant qu’on ne sait pas encore si on est auth ou non
   if (status === 'unknown') {
     return (
-      <div >
+      <div>
         <CircularProgress style={{ height: '150px', width: '150px' }} />
       </div>
     );
   }
 
+  // Si non-auth SANS allowGuest, l’effet ci-dessus a renvoyé vers la Home.
+  // Si non-auth AVEC allowGuest, on rend Jitsi sans JWT (invité).
+  // Si auth, on rend Jitsi avec ou sans JWT (selon fetch en cours).
+
   if (authenticated && loading && !jwtToken) {
     return (
-      <div >
+      <div>
         <CircularProgress style={{ height: '150px', width: '150px' }} />
       </div>
     );
@@ -140,8 +149,8 @@ const JitsiMeetWrapper: React.FC = () => {
   return (
     <JitsiMeetingView
       domain={domain}
-      roomName={roomName}
-      jwt={jwtToken}
+      roomName={roomName!}
+      jwt={jwtToken}          // undefined => invité
       displayName={displayName}
     />
   );
