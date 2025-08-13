@@ -488,31 +488,33 @@ function HomeJoona(props: HomeJoonaProps) {
       </modal.Component>
 
       <div className={styles.firstContainer}>
-        <h1 className={styles.homeTitle}>Rejoindre une visio conférence</h1>
-        <div className={styles.inputsRoom}>
-          <div className={styles.joinPart}>
-            <Input
-              label=""
-              id="conferenceName"
-              state={isError ? 'error' : 'default'}
-              nativeInputProps={{
-                placeholder: 'Saisissez votre nom de conférence',
-                value: props.roomName,
-                onChange: e => {
-                  const value = e.currentTarget.value;
-                  props.setRoomName(value);
-                  setIsError(!isValidRoomName(value));
-                },
-                ref: inputRef,
-              }}
-              stateRelatedMessage={
-                isError && import.meta.env.VITE_CONFERENCE_NAME_REGEX_MESSAGE
-              }
-              style={{ width: '100%' }}
-            />
-            <Button className={styles.plusButton} onClick={handleGenerateRoomName} type="button">
-              <ShuffleIcon />
-            </Button>
+        <div className={styles.homeContent}>
+          <h1 className={styles.homeTitle}>Rejoindre une visio conférence</h1>
+          <div className={styles.inputsRoom}>
+            <div className={styles.joinPart}>
+              <Input
+                label=""
+                id="conferenceName"
+                state={isError ? 'error' : 'default'}
+                nativeInputProps={{
+                  placeholder: 'Saisissez votre nom de conférence',
+                  value: props.roomName,
+                  onChange: e => {
+                    const value = e.currentTarget.value;
+                    props.setRoomName(value);
+                    setIsError(!isValidRoomName(value));
+                  },
+                  ref: inputRef,
+                }}
+                stateRelatedMessage={
+                  isError && import.meta.env.VITE_CONFERENCE_NAME_REGEX_MESSAGE
+                }
+                style={{ width: '100%' }}
+              />
+              <Button className={styles.plusButton} onClick={handleGenerateRoomName} type="button">
+                <ShuffleIcon />
+              </Button>
+            </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

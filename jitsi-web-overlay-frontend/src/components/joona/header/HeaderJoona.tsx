@@ -6,6 +6,7 @@ import JitsiFrame from '../iframePopup/JitsiFrame';
 import WeboverlayFrame from '../iframePopup/WeboverlayFrame';
 import VoxifyFrame from '../iframePopup/VoxifyFrame';
 import docUtilisateur from '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf';
+import visioLogo from '../../../../public/assets/visiobyapitech-creme.png'
 
 import { Header } from '@apitechfr/react-dsapitech/Header';
 import { createModal } from '@apitechfr/react-dsapitech/Modal';
@@ -95,6 +96,9 @@ export default function HeaderJoona() {
     <>
       <div className={styles.parent}>
         <Header
+          mainLogoURL={visioLogo}
+          serviceTitle="Visio"
+          serviceTagline="by Apitech"
           brandTop={
             <>
               INTITULE
@@ -110,7 +114,6 @@ export default function HeaderJoona() {
           id="fr-header-header-with-quick-access-items"
           quickAccessItems={quickAccessItems as any}
           navigation={navItems as any}
-          serviceTitle="Joona.fr"
         />
       </div>
 
