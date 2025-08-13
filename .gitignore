@@ -71,6 +71,3 @@ coverage/
 
 # Compressed files
 *.tar.gz
-
-# migrations TypeORM
-**/db/migrations/
