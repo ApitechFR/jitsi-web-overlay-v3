@@ -3,8 +3,8 @@ import Swal from "sweetalert2";
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-const envValue  = import.meta.env.VITE_REPLAY_CHECK_TIMEOUT_MS;
-const parsed = Number(envValue );
+const envValue = import.meta.env.VITE_REPLAY_CHECK_TIMEOUT_MS;
+const parsed = Number(envValue);
 export const REPLAY_CHECK_TIMEOUT_MS = Number.isFinite(parsed) ? parsed : 600000;
 
 export const showLoadingToast = (message: string) => {
@@ -143,4 +143,52 @@ export const handleRecordingStatus = (api: any, roomName: string, checkVideoInte
             }
         }
     });
+};
+
+export const handlejibriApitechApi = (jitsiAPIOptions: any, enableJibriApitechApi: string, jibriApitechApiDomain: string) => {
+    console.log(`enableJibriApitechApi=${enableJibriApitechApi}`);
+    console.log(`jibriApitechApiDomain=${jibriApitechApiDomain}`);
+
+    if (
+        enableJibriApitechApi &&
+        enableJibriApitechApi === "true" &&
+        jibriApitechApiDomain
+    ) {
+
+        let eventId = jitsiAPIOptions.eventId;
+        let roomName = jitsiAPIOptions.roomName;
+        let uploadCallbackJwt = jitsiAPIOptions.uploadCallbackJwt;
+        let uploadCallbackUrl = jitsiAPIOptions.uploadCallbackUrl;
+        let uploadCallbackDomainUrl = jitsiAPIOptions.uploadCallbackDomainUrl;
+
+        if (!eventId || !roomName || !uploadCallbackJwt) {
+            console.warn("Certains paramètres pour register_eventid sont manquants.");
+            return;
+        }
+
+        const jibriUrl = `${jibriApitechApiDomain}/visioreplay/register_eventid/${roomName}?eventid=${eventId}&jwt=${uploadCallbackJwt}&uploadcallbackdomainurl=${uploadCallbackDomainUrl}&uploadcallbackurl=${uploadCallbackUrl}`;
+
+        // const xmlHttp = new XMLHttpRequest();
+        // xmlHttp.onreadystatechange = function () {
+        //     if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
+        //         console.log("Jibri API Response:", xmlHttp.responseText);
+        //     }
+        // };
+        // xmlHttp.open("GET", jibriUrl, true);
+        // xmlHttp.send(null);
+
+        fetch(jibriUrl)
+            .then((res) => {
+                if (!res.ok) {
+                    throw new Error(`HTTP error! Status: ${res.status}`);
+                }
+                return res.text();
+            })
+            .then((text) => {
+                console.log("Jibri API Response:", text);
+            })
+            .catch((err) => {
+                console.error("Erreur API Jibri :", err);
+            });
+    }
 };

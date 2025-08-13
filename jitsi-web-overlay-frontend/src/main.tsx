@@ -18,6 +18,17 @@ declare module '@codegouvfr/react-dsfr/spa' {
   }
 }
 
+// Add dynamic script for gaufre.js
+const apptemplate = import.meta.env.VITE_APP_TEMPLATE;
+if (apptemplate === 'webconf') {
+  const script = document.createElement('script');
+  script.id = 'lasuite-gaufre-script';
+  script.async = true;
+  script.defer = true;
+  script.src = 'https://integration.lasuite.numerique.gouv.fr/api/v1/gaufre.js';
+  document.body.appendChild(script);
+}
+
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <BrowserRouter>
     <AuthProvider>
