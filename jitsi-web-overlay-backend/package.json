@@ -6,6 +6,13 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "--------------------------Migrate--------------------------": "",
+    "typeorm": "typeorm-ts-node-commonjs -d db/datasource.ts",
+    "migration:generate": "npm run build && npm run typeorm -- migration:generate",
+    "migration:run": "npm run typeorm -- migration:run",
+    "migration:revert": "npm run typeorm -- migration:revert",
+    "migration:show": "npm run typeorm -- migration:show",
+    "--------------------------RUN--------------------------": "",
     "build": "cross-env NODE_ENV=production nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "cross-env NODE_ENV=development nest start",

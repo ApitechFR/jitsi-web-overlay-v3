@@ -19,41 +19,8 @@ import { JwtOidcMiddleware } from './authentication/utils/jwt-oidc.middleware';
 
 import { ReplayModule } from './replay/replay.module';
 import { RoomModule } from './room/room.module';
+import { dataSourceOptions } from '../db/datasource';
 
-function getDatabaseImports() {
-  const dbType = process.env.DB_TYPE;
-  if (dbType === 'mongodb') {
-    return [
-      MongooseModule.forRootAsync({
-        imports: [ConfigModule],
-        inject: [ConfigService],
-        useFactory: async (configService: ConfigService) => ({
-          uri:
-            configService.get<string>('MONGODB_URI') ||
-            'mongodb://localhost/wce',
-        }),
-      }),
-    ];
-  } else if (dbType === 'mariadb' || dbType === 'mysql') {
-    return [
-      TypeOrmModule.forRootAsync({
-        imports: [ConfigModule],
-        inject: [ConfigService],
-        useFactory: async (configService: ConfigService) => ({
-          type: 'mariadb',
-          host: configService.get('DB_HOST'),
-          port: parseInt(configService.get('DB_PORT'), 10) || 3306,
-          username: configService.get('DB_USERNAME'),
-          password: configService.get('DB_PASSWORD'),
-          database: configService.get('DB_NAME'),
-          autoLoadEntities: true,
-          synchronize: configService.get<string>('NODE_ENV') !== 'production',
-        }),
-      }),
-    ];
-  }
-  return [];
-}
 
 @Module({
   imports: [
@@ -83,7 +50,20 @@ function getDatabaseImports() {
         };
       },
     }),
-    ...getDatabaseImports(),
+    ...(process.env.MONGODB_URI
+      ? [
+        MongooseModule.forRootAsync({
+          imports: [ConfigModule],
+          inject: [ConfigService],
+          useFactory: async (configService: ConfigService) => ({
+            uri:
+              configService.get<string>('MONGODB_URI') ||
+              'mongodb://localhost/wce',
+          }),
+        }),
+      ]
+      : []),
+    TypeOrmModule.forRoot(dataSourceOptions),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
