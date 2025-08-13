@@ -2,15 +2,11 @@ import { Input } from '@apitechfr/react-dsapitech/Input';
 import { Breadcrumb } from '@apitechfr/react-dsapitech/Breadcrumb';
 import { Tag } from '@apitechfr/react-dsapitech/Tag';
 import styles from './Profile.module.css';
-import { useState, useEffect } from 'react';
-import { fetchUserInfos, getUserFullName, getUserEmail, isUserAdmin, UserInfos } from '../../../utils/userInfos';
+import { useAuth } from '../../../auth/useAuth';
+import { getUserFullName, getUserEmail, isUserAdmin } from '../../../utils/userInfos';
 
 function Profile() {
-  const [userInfos, setUserInfos] = useState<UserInfos | null>(null);
-
-  useEffect(() => {
-    fetchUserInfos().then(data => setUserInfos(data));
-  }, []);
+  const { user } = useAuth();
 
   return (
     <div className={styles.content}>
@@ -23,7 +19,7 @@ function Profile() {
       />
       <div className={styles.titleBlock}>
         <h1>Mon compte</h1>
-        {isUserAdmin(userInfos) && (
+        {isUserAdmin(user) && (
           <div>
             <Tag dismissible className={styles.adminTag}>
               Administrateur
@@ -32,8 +28,8 @@ function Profile() {
         )}
       </div>
       <div className={styles.inputSection}>
-        <Input disabled label="Nom complet" nativeInputProps={{ value: getUserFullName(userInfos) }} />
-        <Input disabled label="Email" nativeInputProps={{ value: getUserEmail(userInfos) }} />
+        <Input disabled label="Nom complet" nativeInputProps={{ value: getUserFullName(user) }} />
+        <Input disabled label="Email" nativeInputProps={{ value: getUserEmail(user) }} />
       </div>
     </div>
   );

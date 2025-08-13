@@ -8,6 +8,7 @@ import {
   Post,
   Put,
   Headers,
+  Req,
   BadRequestException,
   Query,
 } from '@nestjs/common';
@@ -28,6 +29,10 @@ import { JwtDTO } from './DTOs/jwt.dto';
 import { RoomNameDto } from './DTOs/room-name.dto';
 import { ConferenceFilter } from './enum/conference_filter.enum';
 import { ParseConferenceFilterPipe } from '../../utils/ParseConferenceFilterPipe';
+
+interface AuthenticatedRequest extends Request {
+  user?: any;
+}
 
 @ApiTags('Conferences')
 @Controller('')
@@ -166,5 +171,18 @@ export class ConferenceController {
       webconfUserRegion,
       accessToken,
     );
+  }
+
+
+  @Post('conferences/jitsi-jwt')
+  async generateJitsiJwt(
+    @Req() req: AuthenticatedRequest,
+    @Body('roomName') roomName: string,
+  ) {
+
+    const user = req.user;
+    const isModerator = true;
+
+    return this.conferenceService.generateJitsiJwt(user, isModerator, roomName);
   }
 }

@@ -1,10 +1,11 @@
-import Button from '@codegouvfr/react-dsfr/Button';
+import Button from '@apitechfr/react-dsapitech/Button';
+
 import styles from './Frame.module.css'
 // import { useNavigate } from 'react-router-dom';
 
-function JitsiFrame () {
+function JitsiFrame() {
     // const navigate = useNavigate()
-    
+
     return (
         <div className={styles.popupBoxContent}>
             <div className={styles.boxFrame}>
@@ -12,10 +13,10 @@ function JitsiFrame () {
             </div>
             <div className={styles.frameContainerButton}>
                 <Button
-                className={styles.buttonMoreInfo}
-                onClick={() => window.location.href = '/WhatsNew/test.html'}
+                    className={styles.buttonMoreInfo}
+                    onClick={() => window.location.href = '/WhatsNew/test.html'}
                 >
-                <span>Voir plus</span>
+                    <span>Voir plus</span>
                 </Button>
             </div>
         </div>
