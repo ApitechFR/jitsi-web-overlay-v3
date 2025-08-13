@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { JitsiMeeting } from '@jitsi/react-sdk';
+import { handlejibriApitechApi, handleRecordingStatus } from './visio_replay';
+import { useNavigate } from 'react-router';
 
 interface Props {
   domain: string;
@@ -9,6 +11,19 @@ interface Props {
 }
 
 const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName }) => {
+
+  const checkVideoInterval = useRef<NodeJS.Timeout | null>(null);
+  const checkTimeout = useRef<NodeJS.Timeout | null>(null);
+  const navigate = useNavigate();
+
+  const enableJibriApitechApi = import.meta.env.VITE_ENABLE_JIBRI_APITECH_API;
+  const jibriApitechApiDomain = import.meta.env.VITE_JIBRI_APITECH_API_DOMAIN;
+  const jitsiAPIOptions = (window as any).jitsiAPIOptions;
+
+  const onClose = () => {
+    navigate('/');
+  };
+
   return (
     <JitsiMeeting
       domain={domain}
@@ -16,7 +31,7 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
       jwt={jwt}
       userInfo={{
         displayName: displayName ?? "Display Name",
-        email: '', 
+        email: '',
       }}
       configOverwrite={{
         startWithAudioMuted: true,
@@ -32,8 +47,14 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
       }}
       onApiReady={(api) => {
         console.log('[Jitsi] API prête');
-        
+        handleRecordingStatus(api, roomName, checkVideoInterval.current, checkTimeout.current);
+        if (enableJibriApitechApi === "true") { handlejibriApitechApi(jitsiAPIOptions, enableJibriApitechApi, jibriApitechApiDomain); }
+
+        const participantsInfo = api.getParticipantsInfo();
+        console.log({ participantsInfo });
+
       }}
+      onReadyToClose={onClose}
     />
   );
 };

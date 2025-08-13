@@ -143,7 +143,7 @@ export class AuthenticationService {
       secret,
     });
     const accessToken = this.jwtService.sign(claims, {
-      expiresIn: '15m',
+      expiresIn: '2h',
       algorithm: 'HS256',
       secret,
     });
@@ -153,7 +153,7 @@ export class AuthenticationService {
   generateAccessToken(claims: Record<string, any>) {
     const secret = this.configService.get('JWT_SECRET');
     return this.jwtService.sign(claims, {
-      expiresIn: '15m',
+      expiresIn: '2h',
       algorithm: 'HS256',
       secret,
     });
@@ -169,10 +169,12 @@ export class AuthenticationService {
   }
 
 
-  setAuthCookie(response: Response, name: string, value: string) {
-    this.cookieUtil.setAuthCookie(response, name, value);
+  // setAuthCookie(response: Response, name: string, value: string) {
+  //   this.cookieUtil.setAuthCookie(response, name, value);
+  // }
+  setAuthCookie(response: Response, name: string, value: string, opts?: Record<string, any>) {
+    response.cookie(name, value, { ...this.cookieUtil.getCookieOptions(), ...(opts || {}) });
   }
-
 
   clearAllCookies(response: Response) {
     this.cookieUtil.clearAllAuthCookies(response);

@@ -12,10 +12,10 @@ async function bootstrap() {
 
   // Swagger
   const config = new DocumentBuilder()
-    .setTitle("webconf de l'Etat")
-    .setDescription("la spécification openApi de la webconf de l'Etat")
+    .setTitle("Visio By Apitech")
+    .setDescription("la spécification openApi de  Visio By Apitech")
     .setVersion('1.0')
-    .addTag("webconf de l'Etat")
+    .addTag("Visio By Apitech")
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);

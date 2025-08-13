@@ -120,10 +120,20 @@ export class AuthenticationController {
       return response.redirect(302, this.getFrontRedirectTarget(request));
     }
 
-    // Double hit: déjà loggé → redirige
-    if (request.signedCookies?.accessToken) {
-      return response.redirect(302, this.getFrontRedirectTarget(request));
+    const existing = request.signedCookies?.accessToken;
+    if (existing) {
+      try {
+        this.jwtService.verify(existing, {
+          secret: this.configService.get('JWT_SECRET'),
+          algorithms: ['HS256'],
+        });
+        // Token encore valide → ok, déjà loggé
+        return response.redirect(302, this.getFrontRedirectTarget(request));
+      } catch {
+        //console.log('Token présent mais expiré/invalide');
+      }
     }
+
 
     const sendedState = request.signedCookies?.state;
     const roomName = request.signedCookies?.roomName;
@@ -152,8 +162,14 @@ export class AuthenticationController {
 
 
     // Pose les cookies de session
-    this.authenticationService.setAuthCookie(response, 'refreshToken', refreshToken);
-    this.authenticationService.setAuthCookie(response, 'accessToken', accessToken);
+    // this.authenticationService.setAuthCookie(response, 'refreshToken', refreshToken);
+    // this.authenticationService.setAuthCookie(response, 'accessToken', accessToken);
+    this.authenticationService.setAuthCookie(response, 'accessToken', accessToken, {
+      maxAge: 2 * 60 * 60 * 1000, // 2h
+    });
+    this.authenticationService.setAuthCookie(response, 'refreshToken', refreshToken, {
+      maxAge: 12 * 60 * 60 * 1000, // 12h
+    });
 
     // Nettoyage ciblé des cookies temporaires
     this.authenticationService.clearAuthCookie(response, 'state');
@@ -247,10 +263,17 @@ export class AuthenticationController {
         idToken: decoded?.idToken,
       });
 
-      this.authenticationService.setAuthCookie(response, 'refreshToken', newRefreshToken);
+      // this.authenticationService.setAuthCookie(response, 'refreshToken', newRefreshToken);
+      this.authenticationService.setAuthCookie(response, 'accessToken', accessToken, {
+        maxAge: 2 * 60 * 60 * 1000, // 2h
+      });
+      this.authenticationService.setAuthCookie(response, 'refreshToken', newRefreshToken, {
+        maxAge: 12 * 60 * 60 * 1000, // 12h
+      });
 
       return { accessToken };
     } catch (error) {
+      this.authenticationService.clearAllCookies(response);
       throw new UnauthorizedException('Veuillez vous authentifier');
     }
   }
