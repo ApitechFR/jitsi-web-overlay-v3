@@ -448,13 +448,22 @@ function HomeJoona(props: HomeJoonaProps) {
       <modal.Component
         title=""
         buttons={[
+          !authenticated && {
+            children: "S'authentifier",
+            priority: 'primary',
+            onClick: () => {
+              stopWaitingAndProbe();
+              login(validateRoomName(props.roomName) ? props.roomName : undefined);
+            },
+            doClosesModal: false,
+          },
           {
-            children: 'Annuler l’attente',
+            children: "Annuler l’attente",
             priority: 'secondary',
             onClick: () => stopWaitingAndProbe(),
-            doClosesModal: false, // ← important
+            doClosesModal: false,
           },
-        ]}
+        ].filter(Boolean) as any}
       >
         <div className={styles.contentModal}>
           <h1>La conférence n'a pas encore démarré</h1>
@@ -463,7 +472,7 @@ function HomeJoona(props: HomeJoonaProps) {
             sinon merci de patienter. Vous serez connecté automatiquement dès le démarrage.
           </p>
 
-          {!authenticated && (
+          {/* {!authenticated && (
             <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
               <Button
                 onClick={() => {
@@ -474,7 +483,7 @@ function HomeJoona(props: HomeJoonaProps) {
                 S&apos;authentifier
               </Button>
             </div>
-          )}
+          )} */}
         </div>
       </modal.Component>
 
