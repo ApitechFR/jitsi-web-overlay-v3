@@ -16,9 +16,6 @@ function FooterJoona({ headerFooterDisplayItem }: props) {
       termsLinkProps={{
         href: '#',
       }}
-      // websiteMapLinkProps={{
-      //   href: '#',
-      // }}
       bottomItems={[headerFooterDisplayItem]}
     />
   );

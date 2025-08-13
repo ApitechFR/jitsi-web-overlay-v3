@@ -6,7 +6,7 @@ import JitsiFrame from '../iframePopup/JitsiFrame';
 import WeboverlayFrame from '../iframePopup/WeboverlayFrame';
 import VoxifyFrame from '../iframePopup/VoxifyFrame';
 import docUtilisateur from '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf';
-import visioLogo from '../../../../public/assets/visiobyapitech-creme.png'
+import visioLogo from '/assets/visiobyapitech-creme.png'
 
 import { Header } from '@apitechfr/react-dsapitech/Header';
 import { createModal } from '@apitechfr/react-dsapitech/Modal';
