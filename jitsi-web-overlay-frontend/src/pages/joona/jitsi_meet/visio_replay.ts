@@ -99,8 +99,54 @@ export const checkVideo = async (roomName: string, checkVideoInterval: NodeJS.Ti
     }
 };
 
-export const handleRecordingStatus = (api: any, roomName: string, checkVideoInterval: NodeJS.Timeout | null, checkTimeout: NodeJS.Timeout | null) => {
+export const handleRecordingStatus = (iframe: any, api: any, roomName: string, checkVideoInterval: NodeJS.Timeout | null, checkTimeout: NodeJS.Timeout | null) => {
     let isRecordingStarted = false;
+    let isLocalStopClicked = false;
+
+    setInterval(() => {
+        const iframeDocument = iframe?.contentDocument || iframe?.contentWindow?.document;
+        if (!iframeDocument) return;
+
+        const startRecordingButton = iframeDocument.getElementById("modal-dialog-ok-button");
+        const startRecordingDiv = iframeDocument.getElementById("dialog-title");
+
+        if (
+            startRecordingButton &&
+            startRecordingDiv &&
+            startRecordingDiv.textContent.includes("Commencer l'enregistrement")
+        ) {
+            if (!startRecordingButton.dataset.listenerAdded) {
+                startRecordingButton.dataset.listenerAdded = "true";
+                startRecordingButton.addEventListener("click", () => {
+                    console.log("[Local] Démarrage de l'enregistrement détecté");
+                    startVideo(roomName);
+                });
+            }
+        }
+    }, 500);
+
+    // ✅ Écoute le clic sur "Arrêter l'enregistrement"
+    setInterval(() => {
+        const iframeDocument = iframe?.contentDocument || iframe?.contentWindow?.document;
+        if (!iframeDocument) return;
+
+        const stopRecordingButton = iframeDocument.getElementById("modal-dialog-ok-button");
+        const stopRecordingDiv = iframeDocument.getElementById("dialog-title");
+
+        if (
+            stopRecordingButton &&
+            stopRecordingDiv &&
+            stopRecordingDiv.textContent.includes("Enregistrement")
+        ) {
+            if (!stopRecordingButton.dataset.listenerAdded) {
+                stopRecordingButton.dataset.listenerAdded = "true";
+                stopRecordingButton.addEventListener("click", () => {
+                    console.log("[Local] Arrêt de l'enregistrement détecté");
+                    isLocalStopClicked = true;
+                });
+            }
+        }
+    }, 500);
 
     api.on('recordingStatusChanged', (event: any) => {
         const isRecordingOn = event.on;
@@ -111,14 +157,16 @@ export const handleRecordingStatus = (api: any, roomName: string, checkVideoInte
         if (isRecordingOn) {
             console.info("Enregistrement démarré");
             isRecordingStarted = true;
-            startVideo(roomName);
 
         } else if (error) {
             console.error(`Erreur d'enregistrement : ${error}`);
 
         } else if (isRecordingStarted) {
             console.info("Enregistrement arrêté");
-            showLoadingToast("Upload de l'enregistrement en cours ...");
+            if (isLocalStopClicked) {
+                showLoadingToast("Upload de l'enregistrement en cours ...");
+                isLocalStopClicked = false;
+            }
 
             if (!checkVideoInterval) {
                 checkVideoInterval = setInterval(() => {

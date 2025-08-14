@@ -47,7 +47,28 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
       }}
       onApiReady={(api) => {
         console.log('[Jitsi] API prête');
-        handleRecordingStatus(api, roomName, checkVideoInterval.current, checkTimeout.current);
+
+        const checkInterval = setInterval(() => {
+          const iframeContainer = document.getElementById("jitsiMeeting-1");
+
+          if (iframeContainer?.children[0]) {
+            const iframe = iframeContainer.children[0];
+
+            const iframeEl = iframe as HTMLIFrameElement;
+            if (iframeEl?.contentWindow?.document) {
+              clearInterval(checkInterval);
+              console.log("Iframe chargée !");
+              handleRecordingStatus(iframeEl, api, roomName, checkVideoInterval.current, checkTimeout.current);
+            }
+
+            // if (iframe.contentWindow && iframe.contentWindow.document) {
+            //   clearInterval(checkInterval);
+            //   console.log("Iframe chargée !");
+            //   handleIframeLoaded(iframe);
+            // }
+          }
+        }, 500);
+        // handleRecordingStatus(api, roomName, checkVideoInterval.current, checkTimeout.current);
         if (enableJibriApitechApi === "true") { handlejibriApitechApi(jitsiAPIOptions, enableJibriApitechApi, jibriApitechApiDomain); }
 
         const participantsInfo = api.getParticipantsInfo();
