@@ -52,20 +52,13 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
           const iframeContainer = document.getElementById("jitsiMeeting-1");
 
           if (iframeContainer?.children[0]) {
-            const iframe = iframeContainer.children[0];
+            const iframe : any = iframeContainer.children[0];
 
-            const iframeEl = iframe as HTMLIFrameElement;
-            if (iframeEl?.contentWindow?.document) {
+            if (iframe.contentWindow.document) {
               clearInterval(checkInterval);
               console.log("Iframe chargée !");
-              handleRecordingStatus(iframeEl, api, roomName, checkVideoInterval.current, checkTimeout.current);
+              handleRecordingStatus(iframe, api, roomName, checkVideoInterval.current, checkTimeout.current);
             }
-
-            // if (iframe.contentWindow && iframe.contentWindow.document) {
-            //   clearInterval(checkInterval);
-            //   console.log("Iframe chargée !");
-            //   handleIframeLoaded(iframe);
-            // }
           }
         }, 500);
         // handleRecordingStatus(api, roomName, checkVideoInterval.current, checkTimeout.current);

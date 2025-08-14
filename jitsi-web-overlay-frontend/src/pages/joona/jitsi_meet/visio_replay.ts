@@ -103,6 +103,7 @@ export const handleRecordingStatus = (iframe: any, api: any, roomName: string, c
     let isRecordingStarted = false;
     let isLocalStopClicked = false;
 
+    //Commencer l'enregistrement
     setInterval(() => {
         const iframeDocument = iframe?.contentDocument || iframe?.contentWindow?.document;
         if (!iframeDocument) return;
@@ -112,20 +113,19 @@ export const handleRecordingStatus = (iframe: any, api: any, roomName: string, c
 
         if (
             startRecordingButton &&
-            startRecordingDiv &&
             startRecordingDiv.textContent.includes("Commencer l'enregistrement")
         ) {
             if (!startRecordingButton.dataset.listenerAdded) {
                 startRecordingButton.dataset.listenerAdded = "true";
                 startRecordingButton.addEventListener("click", () => {
-                    console.log("[Local] Démarrage de l'enregistrement détecté");
+                    console.log("Démarrage de l'enregistrement détecté");
                     startVideo(roomName);
                 });
             }
         }
     }, 500);
 
-    // ✅ Écoute le clic sur "Arrêter l'enregistrement"
+    //Arrêter l'enregistrement
     setInterval(() => {
         const iframeDocument = iframe?.contentDocument || iframe?.contentWindow?.document;
         if (!iframeDocument) return;
@@ -135,7 +135,6 @@ export const handleRecordingStatus = (iframe: any, api: any, roomName: string, c
 
         if (
             stopRecordingButton &&
-            stopRecordingDiv &&
             stopRecordingDiv.textContent.includes("Enregistrement")
         ) {
             if (!stopRecordingButton.dataset.listenerAdded) {
