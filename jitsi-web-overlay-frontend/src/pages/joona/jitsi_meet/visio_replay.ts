@@ -160,12 +160,9 @@ export const handleRecordingStatus = (iframe: any, api: any, roomName: string, c
         } else if (error) {
             console.error(`Erreur d'enregistrement : ${error}`);
 
-        } else if (isRecordingStarted) {
+        } else if (isRecordingStarted && isLocalStopClicked) {
             console.info("Enregistrement arrêté");
-            if (isLocalStopClicked) {
-                showLoadingToast("Upload de l'enregistrement en cours ...");
-                isLocalStopClicked = false;
-            }
+            showLoadingToast("Upload de l'enregistrement en cours ...");
 
             if (!checkVideoInterval) {
                 checkVideoInterval = setInterval(() => {
