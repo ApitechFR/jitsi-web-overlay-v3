@@ -52,6 +52,7 @@ const ReplayList: React.FC = () => {
                         <div className="filename">{replay.conference_name}</div>
                         <div className="date">{formatDate(replay.updated_at)}</div>
                         <Button
+                            className='download-button'
                             priority="primary"
                             onClick={() => {
                                 window.open(
