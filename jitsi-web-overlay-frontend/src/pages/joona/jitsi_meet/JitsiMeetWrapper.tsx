@@ -4,6 +4,8 @@ import { useAuth } from '../../../auth/useAuth';
 import JitsiMeetingView from './JitsiMeetingView';
 import { validateRoomName } from '../../../utils/roomName';
 import CircularProgress from '@mui/material/CircularProgress';
+import Header from '../../../components/joona/header/HeaderVisio';
+import styles from './JitsiMeetWrapper.module.css'
 
 type JwtResponse = { jwt?: string; error?: string };
 
@@ -32,6 +34,8 @@ const JitsiMeetWrapper: React.FC = () => {
   const [jwtToken, setJwtToken] = useState<string | undefined>(undefined);
   const [jwtError, setJwtError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const [isHeaderOpen, setIsHeaderOpen] = useState(false);
 
   const domain = import.meta.env.VITE_JITSI_DOMAIN as string;
   const apiBase = (import.meta.env.VITE_API_URL as string | undefined) || '/api';
@@ -91,6 +95,11 @@ const JitsiMeetWrapper: React.FC = () => {
     };
   }, [authenticated, status, roomName, apiBase, validRoom]);
 
+  useEffect(() => {
+    console.log("coucou")
+    setTheme("dark");
+  }, []);
+
   // displayName : on privilégie prénom/nom/email si présents
   const displayName = useMemo<string>(() => {
     if (authenticated) {
@@ -146,13 +155,33 @@ const JitsiMeetWrapper: React.FC = () => {
     );
   }
 
+  function setTheme(theme: "light" | "dark") {
+    const root = document.documentElement;
+    root.setAttribute("data-theme", theme);
+    root.setAttribute("data-fr-theme", theme);
+    root.setAttribute("data-fr-scheme", theme);
+  }
+
   return (
-    <JitsiMeetingView
-      domain={domain}
-      roomName={roomName!}
-      jwt={jwtToken}          // undefined => invité
-      displayName={displayName}
-    />
+    <>
+      <div className={`${styles.headerContainer} ${isHeaderOpen ? styles.open : ""}`}>
+        <Header />
+      </div>
+      <div className={`${styles.iconButtonContainer} ${isHeaderOpen ? styles.openBtn : ""}`}>
+        <button
+            className={styles.iconButton}
+            onClick={() => setIsHeaderOpen((previous) => !previous)}
+          >
+            {isHeaderOpen ? <span aria-hidden="true" className="fr-icon-arrow-up-s-line"></span> : <span aria-hidden="true" className="fr-icon-arrow-down-s-line"></span>}
+          </button>
+      </div>
+      <JitsiMeetingView
+        domain={domain}
+        roomName={roomName!}
+        jwt={jwtToken}          // undefined => invité
+        displayName={displayName}
+      />
+    </>
   );
 };
 
