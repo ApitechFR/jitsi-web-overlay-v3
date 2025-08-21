@@ -510,10 +510,12 @@ function HomeJoona(props: HomeJoonaProps) {
                   isError && import.meta.env.VITE_CONFERENCE_NAME_REGEX_MESSAGE
                 }
                 style={{ width: '100%' }}
+                addon={
+                  <Button className={styles.plusButton} onClick={handleGenerateRoomName} type="button">
+                    <ShuffleIcon />
+                  </Button>
+                }
               />
-              <Button className={styles.plusButton} onClick={handleGenerateRoomName} type="button">
-                <ShuffleIcon />
-              </Button>
             </div>
           </div>
 
