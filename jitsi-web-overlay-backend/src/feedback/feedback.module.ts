@@ -12,6 +12,10 @@ import { FeedbackServiceMongo } from './services/feedback.service.mongo';
 import { FeedbackServiceSQL } from './services/feedback.service.sql';
 import { IFeedbackService } from './interfaces/feedback-service.interface';
 import { MongooseModule } from '@nestjs/mongoose';
+import { FeedbackTemplate } from './entities/feedback_template.entity';
+import { FeedbackType } from './entities/feedback_type.entity';
+import { FeedbackTemplateService } from './services/feedback_template.service';
+import { FeedbackTypeService } from './services/feedback_type.service';
 
 @Module({
   imports: [
@@ -23,7 +27,7 @@ import { MongooseModule } from '@nestjs/mongoose';
             { name: FeedbackMongo.name, schema: FeedbackSchema },
           ]),
         ]
-      : [TypeOrmModule.forFeature([FeedbackEntity])]),
+      : [TypeOrmModule.forFeature([FeedbackEntity, FeedbackTemplate, FeedbackType])]),
   ],
   controllers: [FeedbackController],
   providers: [
@@ -38,6 +42,8 @@ import { MongooseModule } from '@nestjs/mongoose';
         ]
       : [
           FeedbackServiceSQL,
+          FeedbackTemplateService,
+          FeedbackTypeService,
           {
             provide: IFeedbackService,
             inject: [FeedbackServiceSQL, ConfigService],

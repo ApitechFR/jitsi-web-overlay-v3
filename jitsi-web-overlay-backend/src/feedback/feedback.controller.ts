@@ -9,9 +9,10 @@ import {
   Param,
   Get,
   Delete,
+  Put,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { FeedbackDTO } from './DTOs/feedback.dto';
+import { CreateFeedbackDto, FeedbackDTO } from './DTOs/feedback.dto';
 import { IFeedbackService } from './interfaces/feedback-service.interface';
 import {
   ApiBadRequestResponse,
@@ -19,13 +20,19 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
 } from '@nestjs/swagger';
+import { FeedbackTypeService } from './services/feedback_type.service';
+import { CreateFeedbackTypeDto, UpdateFeedbackTypeDto } from './DTOs/feedback_type.dto';
+import { FeedbackTemplateService } from './services/feedback_template.service';
+import { CreateFeedbackTemplateDto, UpdateFeedbackTemplateDto } from './DTOs/feedback_template.dto';
 
 @Controller('feedback')
 export class FeedbackController {
   constructor(
     @Inject(IFeedbackService)
     private readonly feedbackService: IFeedbackService,
-  ) {}
+    private readonly feedbackTypeService: FeedbackTypeService,
+    private readonly templateService: FeedbackTemplateService
+  ) { }
 
   @Post()
   @ApiOkResponse({ description: '' })
@@ -67,18 +74,93 @@ export class FeedbackController {
     );
   }
 
-  @Get()
-  async getAll() {
-    return this.feedbackService.getAllFeedback();
+  @Post('internal')
+  createFeedbackInternal(@Body() dto: CreateFeedbackDto) {
+    return this.feedbackService.createFeedback(dto);
   }
 
-  @Get(':id')
-  async getOne(@Param('id') id: string) {
-    return this.feedbackService.getFeedbackById(id);
+  // @Get()
+  // async getAll() {
+  //   return this.feedbackService.getAllFeedback();
+  // }
+
+  // @Get(':id')
+  // async getOne(@Param('id') id: string) {
+  //   return this.feedbackService.getFeedbackById(id);
+  // }
+
+  // @Delete(':id')
+  // async remove(@Param('id') id: string) {
+  //   return this.feedbackService.deleteFeedback(id);
+  // }
+
+  // === Feedback par conférence ===
+  @Get('conference/:uuid')
+  getFeedbackByConference(@Param('uuid') uuid: string) {
+    return this.feedbackService.findByConference(uuid);
   }
 
-  @Delete(':id')
-  async remove(@Param('id') id: string) {
-    return this.feedbackService.deleteFeedback(id);
+  @Get('conference/:uuid/stats')
+  getFeedbackStats(@Param('uuid') uuid: string) {
+    return this.feedbackService.getStats(uuid);
+  }
+
+  // === FeedbackType Endpoints ===
+
+  @Post('types')
+  createType(@Body() dto: CreateFeedbackTypeDto) {
+    return this.feedbackTypeService.create(dto);
+  }
+
+  @Get('types')
+  getAllTypes() {
+    return this.feedbackTypeService.findAll();
+  }
+
+  @Get('types/:id')
+  getTypeById(@Param('id') id: number) {
+    return this.feedbackTypeService.findOne(id);
+  }
+
+  @Put('types/:id')
+  updateType(@Param('id') id: number, @Body() dto: UpdateFeedbackTypeDto) {
+    return this.feedbackTypeService.update(id, dto);
+  }
+
+  @Delete('types/:id')
+  deleteType(@Param('id') id: number) {
+    return this.feedbackTypeService.remove(id);
+  }
+
+  // === FeedbackTemplate Endpoints ===
+
+  @Post('templates')
+  createTemplate(@Body() dto: CreateFeedbackTemplateDto) {
+    return this.templateService.create(dto);
+  }
+
+  @Get('templates')
+  getAllTemplates() {
+    return this.templateService.findAll();
+  }
+
+  @Get('templates/organization/:organization')
+  findByOrganization(@Param('organization') organization: string) {
+    return this.templateService.findByOrganization(organization);
+  }
+
+  @Get('templates/:id')
+  getTemplateById(@Param('id') id: number) {
+    return this.templateService.findOne(id);
+  }
+
+  @Put('templates/:id')
+  updateTemplate(@Param('id') id: number, @Body() dto: UpdateFeedbackTemplateDto) {
+    return this.templateService.update(id, dto);
+  }
+
+  @Delete('templates/:id')
+  deleteTemplate(@Param('id') id: number) {
+    return this.templateService.softDelete(id);
   }
 }
