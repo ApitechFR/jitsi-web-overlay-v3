@@ -96,7 +96,6 @@ const JitsiMeetWrapper: React.FC = () => {
   }, [authenticated, status, roomName, apiBase, validRoom]);
 
   useEffect(() => {
-    console.log("coucou")
     setTheme("dark");
   }, []);
 
