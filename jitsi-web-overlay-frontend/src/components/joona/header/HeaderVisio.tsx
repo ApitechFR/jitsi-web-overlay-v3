@@ -1,16 +1,14 @@
 
-import styles from './HeaderJoona.module.css';
 import { useState } from 'react';
-import { useAuth } from '../../../auth/useAuth';
 import JitsiFrame from '../iframePopup/JitsiFrame';
 import WeboverlayFrame from '../iframePopup/WeboverlayFrame';
 import VoxifyFrame from '../iframePopup/VoxifyFrame';
 import docUtilisateur from '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf';
 import visioLogo from '/assets/visiobyapitech-creme.png'
 
+import styles from './HeaderJoona.module.css';
 import { Header } from '@apitechfr/react-dsapitech/Header';
 import { createModal } from '@apitechfr/react-dsapitech/Modal';
-import { isUserAdmin } from '../../../utils/userInfos';
 
 const modal = createModal({
   id: 'foo-modal',
@@ -21,7 +19,6 @@ type ModalTab = 'jitsi' | 'weboverlay' | 'voxify';
 
 export default function HeaderJoona() {
   const [modalContent, setModalContent] = useState<ModalTab>('jitsi');
-  const { user, authenticated, login, logout } = useAuth();
 
   const openPdf = () => {
     window.open(docUtilisateur, '_blank', 'noopener,noreferrer');
@@ -40,23 +37,17 @@ export default function HeaderJoona() {
     }
   };
 
-  const navItems = [
-    ...(authenticated
-      ? [
-        { linkProps: { href: '/', target: '_self' }, text: 'Accueil' },
-          { linkProps: { href: '/profile', target: '_self' }, text: 'Mon compte' },
-          { linkProps: { href: '#', target: '_self' }, text: 'Conférences' },
-          ...(isUserAdmin(user)
-            ? [
-                { linkProps: { href: '/admin', target: '_self' }, text: 'Administration' },
-                { linkProps: { href: '/dashboard', target: '_self' }, text: 'Dashboard' },
-              ]
-            : []),
-        ]
-      : []),
-  ];
-
   const quickAccessItems = [
+    {
+       buttonProps: {
+        onClick: () => {
+          window.open('/feedback', '_blank', 'noopener,noreferrer');
+        },
+        className: 'fr-btn--icon-right',
+      },
+      iconId: 'fr-icon-search-line',
+      text: 'Sondage qualité', 
+    },
     {
       buttonProps: {
         onClick: openPdf,
@@ -73,28 +64,18 @@ export default function HeaderJoona() {
       iconId: 'fr-icon-information-line',
       text: 'Informations',
     },
-    authenticated
-      ? {
-          buttonProps: {
-            onClick: () => logout(),
-            className: 'fr-btn--icon-right',
-          },
-          iconId: 'fr-icon-account-circle-fill',
-          text: 'Se déconnecter',
-        }
-      : {
-          buttonProps: {
-            onClick: () => login(),
-            className: 'fr-btn fr-btn--icon-right',
-          },
-          iconId: 'fr-icon-account-circle-fill',
-          text: 'Connexion',
-        },
+    {
+       buttonProps: {
+        onClick: function(){},
+        className: 'fr-btn--icon-right',
+      },
+      iconId: 'fr-icon-settings-5-line',
+      text: 'Paramétrage de la conférence', 
+    }
   ];
 
   return (
     <>
-      <div className={styles.parent}>
         <Header
           mainLogoURL={visioLogo}
           serviceTitle="Visio"
@@ -113,9 +94,7 @@ export default function HeaderJoona() {
           }}
           id="fr-header-header-with-quick-access-items"
           quickAccessItems={quickAccessItems as any}
-          navigation={navItems as any}
         />
-      </div>
 
       <modal.Component title="Version des services" size="large">
         <div className={styles.modalContainer}>
