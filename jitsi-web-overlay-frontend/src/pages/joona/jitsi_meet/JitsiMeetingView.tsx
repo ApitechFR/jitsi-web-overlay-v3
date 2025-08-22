@@ -49,10 +49,10 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
         console.log('[Jitsi] API prête');
 
         const checkInterval = setInterval(() => {
-          const iframeContainer = document.getElementById("jitsiMeeting-1");
+          const iframeContainer = document.getElementById("root");
 
           if (iframeContainer?.children[0]) {
-            const iframe : any = iframeContainer.children[0];
+            const iframe : any = iframeContainer.children[0].children[0];
 
             if (iframe.contentWindow.document) {
               clearInterval(checkInterval);
