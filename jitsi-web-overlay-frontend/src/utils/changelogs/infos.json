@@ -1,0 +1,114 @@
+{
+  "modalId": "services-versions",
+  "submenu": {
+    "title": "Version des services",
+    "items": [
+      {
+        "id": "jitsi",
+        "label": "Version Jitsi",
+        "content": {
+          "title": "Nouvelles fonctionnalités du 17/06/2022",
+          "releaseDate": "2022-06-17",
+          "version": "v2.0.7439",
+          "blocks": [
+            {
+              "description": "La dernière version stable du 17 juin 2022 apporte de nombreuses améliorations de l'UI.Cette nouvelle version permet notamment :",
+              "features": {
+                "ameliorations": [
+                  "Amélioration de l'interface.",
+                  "Amélioration des tailles des vignettes en fonction de la rotation de l'écran.",
+                  "Plusieurs corrections de bug et mise à jour de sécurité."
+                ]
+              },
+              "link": {
+                "label": "Voir plus",
+                "href": null
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "web-overlay",
+        "label": "Version Web Overlay",
+        "content": {
+          "title": "Nouvelles fonctionnalités du 17/06/2022",
+          "version": "v2.0.7439",
+          "releaseDate": "2022-06-17",
+          "blocks": [
+            {
+              "description": "La dernière version stable du 17 juin 2022 apporte de nombreuses améliorations de l'UI.Cette nouvelle version permet notamment :",
+              "features": {
+                "ameliorations": [
+                  "Amélioration de l'interface.",
+                  "Amélioration des tailles des vignettes en fonction de la rotation de l'écran.",
+                  "Plusieurs corrections de bug et mise à jour de sécurité."
+                ]
+              },
+              "fix": {
+                "bugs": [
+                  "Correction d'un bug d'affichage sur la page d'accueil.",
+                  "Correction d'un problème de chargement des vignettes."
+                ]
+              },
+              "link": {
+                "label": "Voir plus",
+                "href": null
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "plugin-outlook",
+        "label": "Version Plugin Outlook",
+        "content": {
+          "title": "Nouvelles fonctionnalités ",
+          "version": "v1.0.0",
+          "releaseDate": "2025-06-11",
+          "blocks": [
+            {
+              "description": "La dernière version stable du 17 juin 2022 apporte de nombreuses améliorations de l'UI.Cette nouvelle version permet notamment :",
+              "features": {
+                "ameliorations": [
+                  "Amélioration de l'interface.",
+                  "Amélioration des tailles des vignettes en fonction de la rotation de l'écran.",
+                  "Plusieurs corrections de bug et mise à jour de sécurité."
+                ]
+              },
+              "link": {
+                "label": "Voir plus",
+                "href": null
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "voxify",
+        "label": "Version Voxify",
+        "content": {
+          "title": "Nouvelles fonctionnalités du 17/06/2022",
+          "version": "v1.0.7439",
+          "releaseDate": "2022-06-17",
+          "blocks": [
+            {
+              "description": "La dernière version stable du 17 juin 2022 apporte de nombreuses améliorations de l'UI.Cette nouvelle version permet notamment :",
+              "features": {
+                "ameliorations": [
+                  "Amélioration de l'interface.",
+                  "Amélioration des tailles des vignettes en fonction de la rotation de l'écran.",
+                  "Plusieurs corrections de bug et mise à jour de sécurité."
+                ]
+              },
+              "link": {
+                "label": "Voir plus",
+                "href": null
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

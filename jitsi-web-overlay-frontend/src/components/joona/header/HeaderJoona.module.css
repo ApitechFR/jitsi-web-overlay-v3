@@ -42,6 +42,7 @@
 .secondFlexBox {
     width: 65%;
     padding-left: 20px;
+    overflow: auto;
 }
 
 .separator {
