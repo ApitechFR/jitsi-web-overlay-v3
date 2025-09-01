@@ -20,10 +20,16 @@
                   "Plusieurs corrections de bug et mise à jour de sécurité."
                 ]
               },
-              "link": {
-                "label": "Voir plus",
-                "href": null
-              }
+              "link": [
+                {
+                  "label": "Voir plus",
+                  "href": null
+                },
+                {
+                  "label": "Télécharger XML complement Outlook",
+                  "link": "lien vers le fichier pour téléchargement /public/fichier_html_a_telecharger par exemple"
+                }
+              ]
             }
           ]
         }
@@ -51,10 +57,16 @@
                   "Correction d'un problème de chargement des vignettes."
                 ]
               },
-              "link": {
-                "label": "Voir plus",
-                "href": null
-              }
+              "link": [
+                {
+                  "label": "Voir plus",
+                  "href": null
+                },
+                {
+                  "label": "Télécharger XML complement Outlook",
+                  "link": "lien vers le fichier pour téléchargement /public/fichier_html_a_telecharger par exemple"
+                }
+              ]
             }
           ]
         }
@@ -76,10 +88,16 @@
                   "Plusieurs corrections de bug et mise à jour de sécurité."
                 ]
               },
-              "link": {
-                "label": "Voir plus",
-                "href": null
-              }
+              "link": [
+                {
+                  "label": "Voir plus",
+                  "href": null
+                },
+                {
+                  "label": "Télécharger XML complement Outlook",
+                  "link": "lien vers le fichier pour téléchargement /public/fichier_html_a_telecharger par exemple"
+                }
+              ]
             }
           ]
         }
@@ -101,10 +119,16 @@
                   "Plusieurs corrections de bug et mise à jour de sécurité."
                 ]
               },
-              "link": {
-                "label": "Voir plus",
-                "href": null
-              }
+              "link": [
+                {
+                  "label": "Voir plus",
+                  "href": null
+                },
+                {
+                  "label": "Télécharger XML complement Outlook",
+                  "link": "/src/documents/test.txt"
+                }
+              ]
             }
           ]
         }

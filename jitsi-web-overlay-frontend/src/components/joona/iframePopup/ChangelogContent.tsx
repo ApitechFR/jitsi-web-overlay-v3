@@ -16,17 +16,28 @@ function ChangelogContent({ content }: any) {
                     ))}
                 </ul>
                 <p>{content.version}</p>
+                {content.blocks[0].link.href && (
+                    <div className={styles.frameContainerButton}>
+                        <Button
+                            className={styles.buttonMoreInfo}
+                            onClick={() => window.location.href = content.blocks[0].link.href}
+                        >
+                            <span>{content.blocks[0].link.label}</span>
+                        </Button>
+                    </div>
+                )}
+                {content.blocks.map((block: any, blockIndex: number) => (
+                    block.link[1]?.link && (
+                        <div className={styles.frameContainerButtonUpload} key={blockIndex}>
+                        <Button
+                            className={styles.buttonMoreInfo}
+                        >
+                            <a href={block.link[1].link} download>{block.link[1].label}</a>
+                        </Button>
+                        </div>
+                    )
+                ))}
             </div>
-            {content.blocks[0].link.href && (
-                <div className={styles.frameContainerButton}>
-                    <Button
-                        className={styles.buttonMoreInfo}
-                        onClick={() => window.location.href = content.blocks[0].link.href}
-                    >
-                        <span>{content.blocks[0].link.label}</span>
-                    </Button>
-                </div>
-            )}
         </div>
     )
 };
