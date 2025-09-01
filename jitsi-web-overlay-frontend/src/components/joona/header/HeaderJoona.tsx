@@ -2,9 +2,6 @@
 import styles from './HeaderJoona.module.css';
 import { useState } from 'react';
 import { useAuth } from '../../../auth/useAuth';
-import JitsiFrame from '../iframePopup/JitsiFrame';
-import WeboverlayFrame from '../iframePopup/WeboverlayFrame';
-import VoxifyFrame from '../iframePopup/VoxifyFrame';
 import docUtilisateur from '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf';
 import visioLogo from '/assets/visiobyapitech-creme.png'
 
@@ -12,15 +9,21 @@ import { Header } from '@apitechfr/react-dsapitech/Header';
 import { createModal } from '@apitechfr/react-dsapitech/Modal';
 import { isUserAdmin } from '../../../utils/userInfos';
 
+import dataChangelog from '../../../utils/changelogs/infos.json'
+import { Item } from '../../../utils/changelogs/Item'
+import ChangelogContent from '../iframePopup/ChangelogContent';
+
 const modal = createModal({
   id: 'foo-modal',
   isOpenedByDefault: false,
 });
 
-type ModalTab = 'jitsi' | 'weboverlay' | 'voxify';
-
 export default function HeaderJoona() {
-  const [modalContent, setModalContent] = useState<ModalTab>('jitsi');
+  const [modalContent, setModalContent] = useState<string | null>(
+    dataChangelog.submenu.items.length > 0
+      ? dataChangelog.submenu.items[0].id
+      : null
+  );
   const { user, authenticated, login, logout } = useAuth();
 
   const openPdf = () => {
@@ -28,15 +31,12 @@ export default function HeaderJoona() {
   };
 
   const renderModalContent = () => {
-    switch (modalContent) {
-      case 'jitsi':
-        return <JitsiFrame />;
-      case 'weboverlay':
-        return <WeboverlayFrame />;
-      case 'voxify':
-        return <VoxifyFrame />;
-      default:
-        return null;
+    const currentItem = dataChangelog.submenu.items.find(
+      (item: Item) => item.id === modalContent
+    );
+
+    if(currentItem) {
+      return <ChangelogContent content={currentItem.content} />
     }
   };
 
@@ -117,12 +117,17 @@ export default function HeaderJoona() {
         />
       </div>
 
-      <modal.Component title="Version des services" size="large">
+      <modal.Component title={dataChangelog.submenu.title} size="large">
         <div className={styles.modalContainer}>
           <div className={`${styles.flexBox} ${styles.firstFlexBox} ${styles.firstFlexBoxGap}`}>
-            <button onClick={() => setModalContent('jitsi')}>Version Jitsi</button>
-            <button onClick={() => setModalContent('weboverlay')}>Version Web Overlay</button>
-            <button onClick={() => setModalContent('voxify')}>Version Voxify</button>
+            {dataChangelog.submenu.items.map((item : Item) => (
+              <button
+                key={item.id}
+                onClick={() => setModalContent(item.id)}
+              >
+                {item.label}
+              </button>
+            ))}
           </div>
           <div className={styles.separator} />
           <div className={styles.secondFlexBox}>{renderModalContent()}</div>
