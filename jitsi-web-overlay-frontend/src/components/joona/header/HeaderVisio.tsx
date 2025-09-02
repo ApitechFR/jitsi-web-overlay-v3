@@ -16,8 +16,6 @@ const modal = createModal({
   isOpenedByDefault: false,
 });
 
-type ModalTab = 'jitsi' | 'weboverlay' | 'voxify';
-
 export default function HeaderJoona() {
   const [modalContent, setModalContent] = useState<string | null>(
     dataChangelog.submenu.items.length > 0
@@ -31,7 +29,7 @@ export default function HeaderJoona() {
 
   const renderModalContent = () => {
     const currentItem = dataChangelog.submenu.items.find(
-      (item) => item.id === modalContent
+      (item: Item) => item.id === modalContent
     );
 
     if (currentItem) {
@@ -101,7 +99,7 @@ export default function HeaderJoona() {
       <modal.Component title={dataChangelog.submenu.title} size="large">
         <div className={styles.modalContainer}>
           <div className={`${styles.flexBox} ${styles.firstFlexBox} ${styles.firstFlexBoxGap}`}>
-            {dataChangelog.submenu.items.map(item => (
+            {dataChangelog.submenu.items.map((item: Item) => (
               <button
                 key={item.id}
                 onClick={() => setModalContent(item.id)}

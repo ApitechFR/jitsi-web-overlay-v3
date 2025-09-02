@@ -1,6 +1,7 @@
 export interface ChangelogLink {
   label: string;
-  href: string | null;
+  href?: string | null;
+  link?: string;
 }
 
 export interface ChangelogFeatures {
@@ -15,7 +16,7 @@ export interface ChangelogBlock {
   description?: string;
   features?: ChangelogFeatures;
   fix?: ChangelogFix;
-  link?: ChangelogLink;
+  link?: ChangelogLink[];
 }
 
 export interface ChangelogContent {
