@@ -31,24 +31,24 @@ export default function HeaderJoona() {
 
   const renderModalContent = () => {
     const currentItem = dataChangelog.submenu.items.find(
-      (item: Item) => item.id === modalContent
+      (item) => item.id === modalContent
     );
 
-    if(currentItem) {
+    if (currentItem) {
       return <ChangelogContent content={currentItem.content} />
     }
   };
 
   const quickAccessItems = [
     {
-       buttonProps: {
+      buttonProps: {
         onClick: () => {
           window.open('/feedback', '_blank', 'noopener,noreferrer');
         },
         className: 'fr-btn--icon-right',
       },
       iconId: 'fr-icon-search-line',
-      text: 'Sondage qualité', 
+      text: 'Sondage qualité',
     },
     {
       buttonProps: {
@@ -67,41 +67,41 @@ export default function HeaderJoona() {
       text: 'Informations',
     },
     {
-       buttonProps: {
-        onClick: function(){},
+      buttonProps: {
+        onClick: function () { },
         className: 'fr-btn--icon-right',
       },
       iconId: 'fr-icon-settings-5-line',
-      text: 'Paramétrage de la conférence', 
+      text: 'Paramétrage de la conférence',
     }
   ];
 
   return (
     <>
-        <Header
-          mainLogoURL={visioLogo}
-          serviceTitle="Visio"
-          serviceTagline="by Apitech"
-          brandTop={
-            <>
-              INTITULE
-              <br />
-              OFFICIEL
-            </>
-          }
-          homeLinkProps={{
-            href: '/',
-            title:
-              "Accueil - Nom de l’entité (ministère, secrétariat d‘état, gouvernement)",
-          }}
-          id="fr-header-header-with-quick-access-items"
-          quickAccessItems={quickAccessItems as any}
-        />
+      <Header
+        mainLogoURL={visioLogo}
+        serviceTitle="Visio"
+        serviceTagline="by Apitech"
+        brandTop={
+          <>
+            INTITULE
+            <br />
+            OFFICIEL
+          </>
+        }
+        homeLinkProps={{
+          href: '/',
+          title:
+            "Accueil - Nom de l’entité (ministère, secrétariat d‘état, gouvernement)",
+        }}
+        id="fr-header-header-with-quick-access-items"
+        quickAccessItems={quickAccessItems as any}
+      />
 
       <modal.Component title={dataChangelog.submenu.title} size="large">
         <div className={styles.modalContainer}>
           <div className={`${styles.flexBox} ${styles.firstFlexBox} ${styles.firstFlexBoxGap}`}>
-            {dataChangelog.submenu.items.map((item : Item) => (
+            {dataChangelog.submenu.items.map(item => (
               <button
                 key={item.id}
                 onClick={() => setModalContent(item.id)}
