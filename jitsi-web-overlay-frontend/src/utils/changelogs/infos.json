@@ -4,21 +4,20 @@
     "title": "Version des services",
     "items": [
       {
-        "id": "jitsi",
-        "label": "Version Jitsi",
+        "id": "web-overlay",
+        "label": "Version Web Overlay",
         "content": {
-          "title": "Nouvelles fonctionnalités du 17/06/2022",
-          "releaseDate": "2022-06-17",
-          "version": "v2.0.7439",
+          "title": "Nouvelles version 25/09/2025",
+          "version": "v3.0.²",
+          "releaseDate": "2025-09-25",
           "blocks": [
             {
-              "description": "La dernière version stable du 17 juin 2022 apporte de nombreuses améliorations de l'UI.Cette nouvelle version permet notamment :",
+              "description": "La dernière version 1.6.3 du 15 avril 2025 apporte des correctifs. Cette nouvelle version apporte notamment :",
               "features": {
-                "ameliorations": [
-                  "Amélioration de l'interface.",
-                  "Amélioration des tailles des vignettes en fonction de la rotation de l'écran.",
-                  "Plusieurs corrections de bug et mise à jour de sécurité."
-                ]
+                "ameliorations": []
+              },
+              "fix": {
+                "bugs": []
               },
               "link": [
                 {
@@ -35,36 +34,41 @@
         }
       },
       {
-        "id": "web-overlay",
-        "label": "Version Web Overlay",
+        "id": "jitsi",
+        "label": "Version Jitsi",
         "content": {
-          "title": "Nouvelles fonctionnalités du 17/06/2022",
-          "version": "v2.0.7439",
-          "releaseDate": "2022-06-17",
+          "title": "Nouvelles fonctionnalités du 10/04/2025",
+          "releaseDate": "2025-04-10",
+          "version": "v2.0.10184",
           "blocks": [
             {
-              "description": "La dernière version stable du 17 juin 2022 apporte de nombreuses améliorations de l'UI.Cette nouvelle version permet notamment :",
+              "description": "La dernière version stable du 10 avril 2025 apporte des nouvelles améliorations. Cette nouvelle version apporte notamment :",
               "features": {
                 "ameliorations": [
-                  "Amélioration de l'interface.",
-                  "Amélioration des tailles des vignettes en fonction de la rotation de l'écran.",
-                  "Plusieurs corrections de bug et mise à jour de sécurité."
+                  "L'état 'startMuted' est désormais converti en métadonnées pour une meilleure gestion des participants qui démarrent leur session en mode muet.",
+                  "Ajout de nouveaux tests, notamment pour vérifier la présence des participants et leur identification via l'ID utilisateur et le client",
+                  "Le support des WebSockets est désormais activé par défaut pour une meilleure gestion de la communication en temps réel.",
+                  "Ajout d'une vérification des occupants sur la configuration Disco-Info dans le protocole Prosody.",
+                  "Ajout de tests pour vérifier le bon fonctionnement des transcriptions."
                 ]
               },
               "fix": {
                 "bugs": [
-                  "Correction d'un bug d'affichage sur la page d'accueil.",
-                  "Correction d'un problème de chargement des vignettes."
+                  "Suppression d'une configuration de websocket par défaut, afin d'assurer une meilleure compatibilité.",
+                  "Ajout de vérifications pour éviter des erreurs nil et améliorer la stabilité de Prosody.",
+                  "Correction d'un problème où les fonctionnalités étaient vérifiées sans JWT, garantissant ainsi un fonctionnement même en l'absence de ce token.",
+                  "Correction des problèmes d'initialisation des périphériques multimédias, empêchant des événements inutiles.",
+                  "Mise à jour de l'ordre de préférence des codecs pour améliorer la qualité des appels et des transmissions.",
+                  "Permet une reconfiguration de la résolution de l'écran partagé, mais uniquement lorsqu'un mode de test est activé.",
+                  "Amélioration de la gestion de la qualité de la connexion en traitant les statistiques de bande passante sur le canal de pont.",
+                  "Mise à jour des cibles TypeScript pour améliorer la compatibilité et la performance du système.",
+                  "Ajout d'un rôle d'accessibilité sur le bouton de téléchargement d'images pour rendre l'interface plus inclusive."
                 ]
               },
               "link": [
                 {
                   "label": "Voir plus",
-                  "href": null
-                },
-                {
-                  "label": "Télécharger XML complement Outlook",
-                  "link": "lien vers le fichier pour téléchargement /public/fichier_html_a_telecharger par exemple"
+                  "href": "https://version.joona.fr/changelogs/jitsi/WhatsNew.html"
                 }
               ]
             }
@@ -77,21 +81,20 @@
         "content": {
           "title": "Nouvelles fonctionnalités ",
           "version": "v1.0.0",
-          "releaseDate": "2025-06-11",
+          "releaseDate": "2025-02-20",
           "blocks": [
             {
-              "description": "La dernière version stable du 17 juin 2022 apporte de nombreuses améliorations de l'UI.Cette nouvelle version permet notamment :",
+              "description": "Joona Meet est un Add-in pour Outlook qui facilite l'organisation de réunions sur notre plateforme (https://joona.fr). Lors de la planification d'un événement via l'Outlook Planner, il génère automatiquement des liens de visioconférence Joona Lorsque vous créez un nouvel événement dans votre calendrier Outlook. Plus besoin de copier-coller des liens manuellement, l'add-in s'occupe de tout pour vous.",
               "features": {
                 "ameliorations": [
-                  "Amélioration de l'interface.",
-                  "Amélioration des tailles des vignettes en fonction de la rotation de l'écran.",
-                  "Plusieurs corrections de bug et mise à jour de sécurité."
+                  "Génération automatique des liens Joona et insertion dans le champ « Lieu » d'Outlook et dans le contenu de l'événement.",
+                  "Génération automatique des coordonnées téléphoniques directement dans l'événement planifié."
                 ]
               },
               "link": [
                 {
                   "label": "Voir plus",
-                  "href": null
+                  "href": "https://joona.fr/WhatsNew_plugin_outlook/WhatsNew.html"
                 },
                 {
                   "label": "Télécharger XML complement Outlook",
@@ -106,23 +109,23 @@
         "id": "voxify",
         "label": "Version Voxify",
         "content": {
-          "title": "Nouvelles fonctionnalités du 17/06/2022",
-          "version": "v1.0.7439",
-          "releaseDate": "2022-06-17",
+          "title": "Nouvelles fonctionnalités du 25/09/2024",
+          "version": "v1.1.0",
+          "releaseDate": "2024-09-25",
           "blocks": [
             {
-              "description": "La dernière version stable du 17 juin 2022 apporte de nombreuses améliorations de l'UI.Cette nouvelle version permet notamment :",
+              "description": "La dernière version 1.1.0 du 25 septembre 2024 apporte des nouvelles améliorations. Cette nouvelle version apporte notamment :",
               "features": {
                 "ameliorations": [
-                  "Amélioration de l'interface.",
-                  "Amélioration des tailles des vignettes en fonction de la rotation de l'écran.",
-                  "Plusieurs corrections de bug et mise à jour de sécurité."
+                  "Des nouveaux messages audio vous aident à mieux suivre les étapes lors de la saisie du code de conférence",
+                  "Le système réagit plus rapidement après vos actions",
+                  "Si une conférence est introuvable, un message vocal spécifique vous en informe"
                 ]
               },
               "link": [
                 {
                   "label": "Voir plus",
-                  "href": null
+                  "href": "https://joona.fr/WhatsNew_voxify/WhatsNew.html"
                 },
                 {
                   "label": "Télécharger XML complement Outlook",
