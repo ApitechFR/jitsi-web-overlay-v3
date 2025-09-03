@@ -25,20 +25,6 @@
     flex-direction: column;
 }
 
-.firstFlexBox {
-    width: 25%;
-}
-
-.firstFlexBox button {
-    text-align: left;
-    font-weight: bold;
-    font-size: 1.0em;
-}
-
-.firstFlexBoxGap {
-    gap: 10px;
-}
-
 .secondFlexBox {
     width: 75%;
     padding: 0px 20px;
@@ -49,5 +35,16 @@
     background-color: grey;
     width: 1px;
     border-radius: 50%;
+}
+
+@media (max-width: 768px) {
+    .modalContainer {
+        display: block;
+    }
+
+    .secondFlexBox {
+        width: 100%;
+        margin-top: 30px;
+    }
 }
 
