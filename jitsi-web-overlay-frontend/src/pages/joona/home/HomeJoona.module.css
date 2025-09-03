@@ -4,12 +4,16 @@
   padding: 8% 40px;
 }
 
+.homeContent {
+  width: 70%;
+  margin: auto;
+}
+
 .firstContainer {
   width: 55%;
 }
 
 .homeTitle {
-  text-align: center;
   margin-bottom: 80px;
   font-size: 2.5em;
 }
@@ -28,13 +32,9 @@
   object-fit: contain;
 }
 
-.inputsRoom {
-  width: 70%;
-  margin: auto;
-}
-
 .joinPart {
   display: flex;
+  margin-bottom: 12px;
   width: 100%;
 }
 
@@ -111,7 +111,4 @@
     font-size: 2.2em;
   }
 
-  .inputsRoom {
-    width: 90%;
-  }
 }

@@ -2,11 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  IsDateString,
+  IsInt,
+  IsNotEmpty,
   IsNotEmptyObject,
   IsNumber,
   IsObject,
   IsOptional,
   IsString,
+  IsUUID,
   Max,
   Min,
   ValidateNested,
@@ -52,4 +56,25 @@ export class FeedbackDTO {
   @IsString({ message: 'com doit etre une chaine de caractères' })
   @ApiProperty({ type: String })
   com: string;
+}
+
+export class CreateFeedbackDto {
+  @IsInt()
+  @IsNotEmpty()
+  feedbackTemplateId: number;
+
+  @IsUUID()
+  @IsNotEmpty()
+  conferenceUuid: string;
+
+  @IsDateString()
+  @IsNotEmpty()
+  date: string;
+
+  @IsString()
+  userAgent: string;
+
+  @IsString()
+  @IsNotEmpty()
+  reponse: string;
 }

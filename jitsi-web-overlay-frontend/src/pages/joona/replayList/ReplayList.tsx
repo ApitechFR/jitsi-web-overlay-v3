@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../jitsi_meet/visio_replay';
-import './ReplayList.css';
+import './ReplayList.module.css';
 import { useSearchParams } from 'react-router-dom';
 import Button from '@codegouvfr/react-dsfr/Button';
 
@@ -52,6 +52,7 @@ const ReplayList: React.FC = () => {
                         <div className="filename">{replay.conference_name}</div>
                         <div className="date">{formatDate(replay.updated_at)}</div>
                         <Button
+                            className='download-button'
                             priority="primary"
                             onClick={() => {
                                 window.open(
