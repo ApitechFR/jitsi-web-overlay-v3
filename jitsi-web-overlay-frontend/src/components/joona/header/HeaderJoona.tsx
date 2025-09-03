@@ -25,7 +25,11 @@ export default function HeaderJoona() {
       ? dataChangelog.submenu.items[0].id
       : null
   );
-  const [currentModalId, setCurrentModalId] = useState<string | null>(null)
+  const [currentModalId, setCurrentModalId] = useState<string | null>(
+    dataChangelog.submenu.items.length > 0
+      ? dataChangelog.submenu.items[0].id
+      : null
+  );
 
   const { user, authenticated, login, logout } = useAuth();
 
