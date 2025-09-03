@@ -7,6 +7,7 @@ import visioLogo from '/assets/visiobyapitech-creme.png'
 
 import { Header } from '@apitechfr/react-dsapitech/Header';
 import { createModal } from '@apitechfr/react-dsapitech/Modal';
+import { SideMenu } from "@apitechfr/react-dsapitech/SideMenu";
 import { isUserAdmin } from '../../../utils/userInfos';
 
 import dataChangelog from '../../../utils/changelogs/infos.json'
@@ -24,6 +25,12 @@ export default function HeaderJoona() {
       ? dataChangelog.submenu.items[0].id
       : null
   );
+  const [currentModalId, setCurrentModalId] = useState<string | null>(
+    dataChangelog.submenu.items.length > 0
+      ? dataChangelog.submenu.items[0].id
+      : null
+  );
+
   const { user, authenticated, login, logout } = useAuth();
 
   const openPdf = () => {
@@ -119,17 +126,23 @@ export default function HeaderJoona() {
 
       <modal.Component title={dataChangelog.submenu.title} size="large">
         <div className={styles.modalContainer}>
-          <div className={`${styles.flexBox} ${styles.firstFlexBox} ${styles.firstFlexBoxGap}`}>
-            {dataChangelog.submenu.items.map((item : Item) => (
-              <button
-                key={item.id}
-                onClick={() => setModalContent(item.id)}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-          <div className={styles.separator} />
+          <SideMenu
+            align="left"
+            burgerMenuButtonText=""
+            title=""
+            items={dataChangelog.submenu.items.map((item: Item) => ({
+              isActive: item.id === currentModalId,
+              linkProps: {
+                href: '#',
+                onClick: (e: React.MouseEvent) => {
+                  e.preventDefault()
+                  setCurrentModalId(item.id)
+                  setModalContent(item.id)
+                },
+              },
+              text: item.label,
+            }))}
+          />
           <div className={styles.secondFlexBox}>{renderModalContent()}</div>
         </div>
       </modal.Component>

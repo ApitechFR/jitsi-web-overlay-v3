@@ -46,6 +46,12 @@
     mask-image: url("../../icons/system/settings-5-line.svg");
 }
 
+.fr-icon-clipboard-line::before,
+.fr-icon-clipboard-line::after {
+    -webkit-mask-image: url("../../icons/document/clipboard-line.svg");
+    mask-image: url("../../icons/document/clipboard-line.svg");
+}
+
 .fr-icon-arrow-down-s-line::before,
 .fr-icon-arrow-down-s-line::after {
     -webkit-mask-image: url("../../icons/system/arrow-down-s-line.svg");
@@ -56,12 +62,6 @@
 .fr-icon-arrow-up-s-line::after {
     -webkit-mask-image: url("../../icons/system/arrow-up-s-line.svg");
     mask-image: url("../../icons/system/arrow-up-s-line.svg");
-}
-
-.fr-icon-clipboard-line::before,
-.fr-icon-clipboard-line::after {
-    -webkit-mask-image: url("../../icons/document/clipboard-line.svg");
-    mask-image: url("../../icons/document/clipboard-line.svg");
 }
 
 .fr-icon-theme-fill::before,
@@ -111,6 +111,11 @@
         background-image: url("../../icons/system/settings-5-line.svg");
     }
     
+    .fr-icon-clipboard-line::before,
+    .fr-icon-clipboard-line::after {
+        background-image: url("../../icons/document/clipboard-line.svg");
+    }
+    
     .fr-icon-arrow-down-s-line::before,
     .fr-icon-arrow-down-s-line::after {
         background-image: url("../../icons/system/arrow-down-s-line.svg");
@@ -119,11 +124,6 @@
     .fr-icon-arrow-up-s-line::before,
     .fr-icon-arrow-up-s-line::after {
         background-image: url("../../icons/system/arrow-up-s-line.svg");
-    }
-    
-    .fr-icon-clipboard-line::before,
-    .fr-icon-clipboard-line::after {
-        background-image: url("../../icons/document/clipboard-line.svg");
     }
     
     .fr-icon-theme-fill::before,
