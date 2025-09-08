@@ -31,6 +31,23 @@ export class FeedbackServiceSQL implements IFeedbackService {
 
     return this.feedbackRepo.save(feedback);
   }
+  // Créer plusieurs feedbacks en bulk
+  async createFeedbackBulk(dtos: CreateFeedbackDto[]): Promise<Feedback[]> {
+    const feedbacks: Feedback[] = [];
+    for (const dto of dtos) {
+      const template = await this.templateRepo.findOne({ where: { id: dto.feedbackTemplateId } });
+      if (!template) throw new NotFoundException(`Feedback template with id ${dto.feedbackTemplateId} not found`);
+      const feedback = this.feedbackRepo.create({
+        feedbackTemplate: template,
+        conferenceUuid: dto.conferenceUuid,
+        date: new Date(dto.date),
+        userAgent: dto.userAgent,
+        reponse: dto.reponse,
+      });
+      feedbacks.push(feedback);
+    }
+    return this.feedbackRepo.save(feedbacks);
+  }
 
   // Récupérer tous les feedbacks pour une conférence
   async findByConference(uuid: string): Promise<Feedback[]> {
