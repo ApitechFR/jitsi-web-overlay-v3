@@ -78,6 +78,10 @@ export class FeedbackController {
   createFeedbackInternal(@Body() dto: CreateFeedbackDto) {
     return this.feedbackService.createFeedback(dto);
   }
+  @Post('internal/bulk')
+  async createFeedbackBulk(@Body() dtos: CreateFeedbackDto[]) {
+    return this.feedbackService.createFeedbackBulk(dtos);
+  }
 
   // @Get()
   // async getAll() {
