@@ -8,7 +8,7 @@
         "label": "Version Web Overlay",
         "content": {
           "title": "Nouvelles version 25/09/2025",
-          "version": "v3.0.²",
+          "version": "v3.0.0",
           "releaseDate": "2025-09-25",
           "blocks": [
             {
@@ -23,10 +23,6 @@
                 {
                   "label": "Voir plus",
                   "href": null
-                },
-                {
-                  "label": "Télécharger XML complement Outlook",
-                  "link": "lien vers le fichier pour téléchargement /public/fichier_html_a_telecharger par exemple"
                 }
               ]
             }
@@ -126,10 +122,6 @@
                 {
                   "label": "Voir plus",
                   "href": "https://joona.fr/WhatsNew_voxify/WhatsNew.html"
-                },
-                {
-                  "label": "Télécharger XML complement Outlook",
-                  "link": "/src/documents/test.txt"
                 }
               ]
             }
