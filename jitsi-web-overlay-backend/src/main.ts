@@ -3,12 +3,16 @@ dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { useContainer } from 'class-validator';
 import * as cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  // Permet à class-validator d'utiliser l'injection de dépendances NestJS
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
   // Swagger
   const config = new DocumentBuilder()
