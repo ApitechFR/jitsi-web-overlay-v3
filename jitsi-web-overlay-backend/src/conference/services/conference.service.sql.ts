@@ -177,7 +177,10 @@ export class ConferenceServiceSQL implements IConferenceService {
   }
 
   async roomExists(roomName: string) {
-    const exists = await this.prosodyRuntimeService.roomExistsV2(roomName);
+    //generate a service token
+    const { jwt, payload } = this.generateJitsiJwt({ role: 'service' }, true, '*');
+
+    const exists = await this.prosodyRuntimeService.roomExistsV2(roomName, jwt);
     if (exists) {
       return { roomName, exists: true };
     }

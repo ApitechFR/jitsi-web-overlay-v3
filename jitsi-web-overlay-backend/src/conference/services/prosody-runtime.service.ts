@@ -61,12 +61,12 @@ export class ProsodyRuntimeService {
     }
 
     /** True si ≥ 1 participant (hors focus). */
-    async roomExistsV2(roomName: string): Promise<boolean> {
-        return (await this.getRoomSizeV2(roomName)) > 0;
+    async roomExistsV2(roomName: string, token: string): Promise<boolean> {
+        return (await this.getRoomSizeV2(roomName, token)) > 0;
     }
 
     /** Compte les participants (hors focus). Tolère JSON ou entier brut. */
-    async getRoomSizeV2(roomName: string): Promise<number> {
+    async getRoomSizeV2(roomName: string, token: string): Promise<number> {
         const room = (roomName ?? '').trim().toLowerCase();
         this.logger.debug(`getRoomSizeV2(${room})`);
         if (!room) return 0;
@@ -76,13 +76,14 @@ export class ProsodyRuntimeService {
             path,
             { [ProsodyQueryKey.Room]: room, [ProsodyQueryKey.Domain]: this.mucDomain },
             d => parseParticipantsNumber(d),
+            token,
         );
 
         return res ?? 0;
     }
 
     /** Liste les occupants (hors focus). */
-    async getRoomOccupantsV2(roomName: string): Promise<Occupant[]> {
+    async getRoomOccupantsV2(roomName: string, token: string): Promise<Occupant[]> {
         const room = (roomName ?? '').trim().toLowerCase();
         if (!room) return [];
 
@@ -91,6 +92,7 @@ export class ProsodyRuntimeService {
             path,
             { [ProsodyQueryKey.Room]: room, [ProsodyQueryKey.Domain]: this.mucDomain },
             d => parseOccupantsList(d),
+            token,
         );
 
         return res ?? [];
@@ -116,13 +118,15 @@ export class ProsodyRuntimeService {
         path: string,
         query: Record<string, string>,
         parser: (data: unknown) => T,
+        token?: string,
     ): Promise<T | null> {
         if (!this.prosodyInstances.length) {
             throw new ServiceUnavailableException('No Prosody instances configured');
         }
 
+        //const tokenToUse = token || this.staticToken;
         const urls = this.prosodyInstances.map(b =>
-            makeUrl(b, path, query, { token: this.staticToken, tokenKey: ProsodyQueryKey.Token }),
+            makeUrl(b, path, query, { token, tokenKey: ProsodyQueryKey.Token }),
         );
 
         const settled = await Promise.allSettled(
