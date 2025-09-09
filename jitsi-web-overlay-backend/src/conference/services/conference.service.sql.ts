@@ -17,6 +17,7 @@ import * as moment from 'moment';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ProsodyService } from '../../prosody/prosody.service';
+import { ProsodyRuntimeService } from './prosody-runtime.service';
 
 @Injectable()
 export class ConferenceServiceSQL implements IConferenceService {
@@ -29,6 +30,7 @@ export class ConferenceServiceSQL implements IConferenceService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly prosodyService: ProsodyService,
+    private readonly prosodyRuntimeService: ProsodyRuntimeService
   ) { }
 
   async create(data: CreateConferenceDTO): Promise<Conference> {
@@ -174,22 +176,22 @@ export class ConferenceServiceSQL implements IConferenceService {
     await this.conferenceRepo.delete(+id);
   }
 
-  // async roomExists(roomName: string) {
-  //   const exists = await this.conferenceRepo.findOne({
-  //     where: { name: roomName },
-  //   });
-  //   if (!exists) throw new Error("La conférence n'existe pas");
-  //   return { roomName };
-  // }
-
   async roomExists(roomName: string) {
-    const exists = await this.prosodyService.roomExists(roomName);
-    if (exists && exists.length > 0) {
-      return { roomName };
+    const exists = await this.prosodyRuntimeService.roomExistsV2(roomName);
+    if (exists) {
+      return { roomName, exists: true };
     }
-    console.error("La conférence n'existe pas");
-    throw new NotFoundException("La conférence n'existe pas");
+    throw new NotFoundException("La conférence n'existe pas !");
   }
+
+  // async roomExists(roomName: string) {
+  //   const exists = await this.prosodyService.roomExists(roomName);
+  //   if (exists && exists.length > 0) {
+  //     return { roomName };
+  //   }
+  //   console.error("La conférence n'existe pas");
+  //   throw new NotFoundException("La conférence n'existe pas");
+  // }
 
   async getRoomAccessToken(roomName: string, region: string, token: string) {
     const exists = await this.prosodyService.roomExists(roomName);

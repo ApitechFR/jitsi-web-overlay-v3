@@ -19,6 +19,7 @@ import { Replay } from '../replay/entities/replay.entity';
 import { User } from '../users/entities/users.entity';
 import { RoomModule } from '../room/room.module';
 import { Room } from '../room/entities/room.entity';
+import { ProsodyRuntimeService } from './services/prosody-runtime.service';
 
 @Module({
   imports: [
@@ -27,32 +28,33 @@ import { Room } from '../room/entities/room.entity';
     RoomModule,
     ...(process.env.DB_TYPE === 'mongodb'
       ? [
-          MongooseModule.forFeature([
-            { name: WhiteListedDomains.name, schema: WhiteListedDomainsSchema },
-          ]),
-        ]
+        MongooseModule.forFeature([
+          { name: WhiteListedDomains.name, schema: WhiteListedDomainsSchema },
+        ]),
+      ]
       : [TypeOrmModule.forFeature([Conference, Participant, Replay, User, Room])]),
   ],
   controllers: [ConferenceController],
   providers: [
     RoomNameValidator,
+    ProsodyRuntimeService,
     ...(process.env.DB_TYPE === 'mongodb'
       ? [
-          ConferenceServiceMongo,
-          {
-            provide: IConferenceService,
-            inject: [ConferenceServiceMongo, ConfigService],
-            useFactory: (mongo: ConferenceServiceMongo) => mongo,
-          },
-        ]
+        ConferenceServiceMongo,
+        {
+          provide: IConferenceService,
+          inject: [ConferenceServiceMongo, ConfigService],
+          useFactory: (mongo: ConferenceServiceMongo) => mongo,
+        },
+      ]
       : [
-          ConferenceServiceSQL,
-          {
-            provide: IConferenceService,
-            useExisting: ConferenceServiceSQL,
-          },
-        ]),
+        ConferenceServiceSQL,
+        {
+          provide: IConferenceService,
+          useExisting: ConferenceServiceSQL,
+        },
+      ]),
   ],
-  exports: [IConferenceService],
+  exports: [IConferenceService, ProsodyRuntimeService],
 })
 export class ConferenceModule { }
