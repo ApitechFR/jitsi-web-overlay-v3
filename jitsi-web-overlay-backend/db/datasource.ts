@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const production = process.env.NODE_ENV === 'production';
+const isProduction = process.env.NODE_ENV === 'production';
 
 export const dataSourceOptions: DataSourceOptions = {
     type: 'mariadb',
@@ -12,15 +12,14 @@ export const dataSourceOptions: DataSourceOptions = {
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    entities: production ? ['dist/**/*.entity.js'] : ['src/**/*.entity.ts'],
+    //entities: isProduction ? ['dist/**/*.entity.js'] : ['src/**/*.entity.ts'],
+    entities: isProduction ? ['dist/**/*.entity.js'] : ['src/**/*.entity.ts'],
     // Migrations seulement en prod
-    migrations: production ? ['dist/db/migrations/*.js'] : [],
+    migrations: isProduction ? ['dist/db/migrations/*.js'] : [],
     migrationsTableName: 'migrations',
-    migrationsRun: production,
-    synchronize: !production,
-    logging: !production,
+    migrationsRun: isProduction,
+    synchronize: !isProduction,
+    logging: !isProduction,
 };
 
-const dataSource = new DataSource(dataSourceOptions);
-
-export default dataSource;
+export default new DataSource(dataSourceOptions);
