@@ -520,7 +520,7 @@ function HomeJoona(props: HomeJoonaProps) {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <Button onClick={onSubmit} className={styles.joinButton}>
+            <Button onClick={onSubmit} className={styles.joinButton} style={{ width: '100%'}}>
               <span>Rejoindre ou créer</span>
             </Button>
 
