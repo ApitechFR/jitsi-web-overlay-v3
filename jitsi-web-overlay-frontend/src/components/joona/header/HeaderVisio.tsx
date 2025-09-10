@@ -64,20 +64,20 @@ export default function HeaderJoona() {
       iconId: 'fr-icon-information-line',
       text: 'Informations',
     },
-    {
-      buttonProps: {
-        onClick: function () { },
-        className: 'fr-btn--icon-right',
-      },
-      iconId: 'fr-icon-settings-5-line',
-      text: 'Paramétrage de la conférence',
-    }
+    // {
+    //   buttonProps: {
+    //     onClick: function () { },
+    //     className: 'fr-btn--icon-right',
+    //   },
+    //   iconId: 'fr-icon-settings-5-line',
+    //   text: 'Paramétrage de la conférence',
+    // }
   ];
 
   return (
     <>
       <Header
-        mainLogoURL={visioLogo}
+        mainLogoURLDark={visioLogo}
         serviceTitle="Visio"
         serviceTagline="by Apitech"
         brandTop={

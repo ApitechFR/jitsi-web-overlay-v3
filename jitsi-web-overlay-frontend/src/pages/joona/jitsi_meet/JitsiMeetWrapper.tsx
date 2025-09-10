@@ -35,7 +35,7 @@ const JitsiMeetWrapper: React.FC = () => {
   const [jwtError, setJwtError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const [isHeaderOpen, setIsHeaderOpen] = useState(false);
+  const [isHeaderOpen, setIsHeaderOpen] = useState(true);
 
   const domain = import.meta.env.VITE_JITSI_DOMAIN as string;
   const apiBase = (import.meta.env.VITE_API_URL as string | undefined) || '/api';

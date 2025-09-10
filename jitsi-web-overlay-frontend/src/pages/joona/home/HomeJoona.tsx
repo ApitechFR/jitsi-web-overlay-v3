@@ -489,7 +489,7 @@ function HomeJoona(props: HomeJoonaProps) {
 
       <div className={styles.firstContainer}>
         <div className={styles.homeContent}>
-          <h1 className={styles.homeTitle}>Rejoindre une visio conférence</h1>
+          <h1 className={styles.homeTitle}>Rejoindre une visioconférence</h1>
           <div className={styles.inputsRoom}>
             <div className={styles.joinPart}>
               <Input
