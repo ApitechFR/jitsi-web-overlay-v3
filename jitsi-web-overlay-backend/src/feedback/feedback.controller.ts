@@ -83,15 +83,15 @@ export class FeedbackController {
     return this.feedbackService.createFeedbackBulk(dtos);
   }
 
-  // @Get()
-  // async getAll() {
-  //   return this.feedbackService.getAllFeedback();
-  // }
+  @Get('all')
+  async getAll() {
+    return this.feedbackService.findAll();
+  }
 
-  // @Get(':id')
-  // async getOne(@Param('id') id: string) {
-  //   return this.feedbackService.getFeedbackById(id);
-  // }
+  @Get(':id')
+  async getOne(@Param('id') id: number) {
+    return this.feedbackService.findOne(id);
+  }
 
   // @Delete(':id')
   // async remove(@Param('id') id: string) {

@@ -49,6 +49,24 @@ export class FeedbackServiceSQL implements IFeedbackService {
     return this.feedbackRepo.save(feedbacks);
   }
 
+  async findAll(): Promise<Feedback[]> {
+    return this.feedbackRepo.find({
+      relations: ['feedbackTemplate'],
+      order: { date: 'DESC' },
+    });
+  }
+
+  async findOne(id: number): Promise<Feedback> {
+    const feedback = await this.feedbackRepo.findOne({
+      where: { id },
+      relations: ['feedbackTemplate'],
+    });
+
+    if (!feedback) throw new NotFoundException(`Feedback with ID ${id} not found`);
+
+    return feedback;
+  }
+
   // Récupérer tous les feedbacks pour une conférence
   async findByConference(uuid: string): Promise<Feedback[]> {
     return this.feedbackRepo.find({
