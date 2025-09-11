@@ -10,4 +10,6 @@ export interface IFeedbackService<T = any> {
     findByConference?(uuid: string): Promise<T>;
     getStats?(uuid: string): Promise<T>;
     createFeedbackBulk?(dtos: T[]): Promise<T[]>;
+    findAll?(): Promise<T[]>;
+    findOne?(id: number): Promise<T>;
 }
