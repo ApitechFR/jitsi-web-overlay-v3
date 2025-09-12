@@ -25,8 +25,7 @@ interface HomeJoonaProps {
   readonly participantNumber: number;
 }
 
-const POLLING_INTERVAL = 9000; // 9s
-const HIDDEN_DIV_ID = 'jitsi-probe-container';
+const POLLING_INTERVAL = 2000; // 2s
 const API_BASE = import.meta.env.VITE_API_URL ?? '/api';
 
 function HomeJoona(props: HomeJoonaProps) {
@@ -131,7 +130,7 @@ function HomeJoona(props: HomeJoonaProps) {
   const scheduleNext = (room: string) => {
     if (cancelledRef.current) return;
     if (!room || !isValidRoomName(room)) return;
-    backoffRef.current = Math.min(backoffRef.current + 3000, 30000);
+    backoffRef.current = Math.min(backoffRef.current + 2000, 30000);
     timerRef.current = window.setTimeout(() => pollRoomUntilStarted(room), backoffRef.current) as unknown as number;
   };
 
