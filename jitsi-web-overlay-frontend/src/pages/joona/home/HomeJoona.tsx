@@ -305,7 +305,7 @@ function HomeJoona(props: HomeJoonaProps) {
 
   return (
     <div className={styles.homeContainer}>
-      {phase === 'first-check' && (
+      {/* {phase === 'first-check' && (
         <div
           style={{
             position: 'fixed',
@@ -324,7 +324,7 @@ function HomeJoona(props: HomeJoonaProps) {
             <div style={{ color: '#444', fontSize: 14 }}>Vérification de la conférence…</div>
           </div>
         </div>
-      )}
+      )} */}
 
       <modal.Component
         title=""
