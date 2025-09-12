@@ -1,15 +1,15 @@
-.replay-list {
+.replayList {
   width: 80%;
   margin: 20px auto;
   font-size: 1rem;
 }
 
-.replay-list h1 {
+.replayList h1 {
   margin: 3rem 0rem 2rem;
   font-size: 2.0em;
 }
 
-.replay-row {
+.replayRow {
   display: flex;
   align-items: center;
   border: 1px solid #ddd;
@@ -37,7 +37,7 @@
   margin-right: 2rem;
 }
 
-.no-replays {
+.noReplays {
   color: #888;
   font-style: italic;
   text-align: center;
@@ -45,16 +45,16 @@
 }
 
 @media (max-width: 767px) {
-  .replay-list {
+  .replayList {
     font-size: 0.9rem;
   }
 
-  .download-button {
+  .downloadButton {
     font-size: 0.5rem;
     padding: 0.3rem 0.3rem 0.3rem 0.3rem;
   }
 
-  .replay-row {
+  .replayRow {
     font-size: 0.5rem;
     padding: 8px 12px;
   }
@@ -68,13 +68,13 @@
     margin-right: 0rem;
   }
 
-  .replay-list h1 {
+  .replayList h1 {
     font-size: 1.6em;
   }
 }
 
 @media (min-width: 768px) and (max-width: 900px) {
-  .replay-row {
+  .replayRow {
     flex-wrap: nowrap;
   }
 
@@ -88,7 +88,7 @@
     margin-right: 0.5rem;
   }
 
-  .download-button {
+  .downloadButton {
     padding: 0.5rem 0.5rem;
     flex: 1 1 40%;
     text-align: right;
