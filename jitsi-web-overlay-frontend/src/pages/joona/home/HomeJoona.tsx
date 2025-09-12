@@ -188,12 +188,9 @@ function HomeJoona(props: HomeJoonaProps) {
       return;
     }
 
-    // Attendre 4s avant d’ouvrir la modale + lancer le polling
-    extraDelayTimerRef.current = window.setTimeout(() => {
-      if (cancelledRef.current) return;
-      setPhase('waiting');
-      startWaitingAndPoll(rn);
-    }, 4000) as unknown as number;
+    // Afficher la modale et lancer le polling immédiatement si la conf n'est pas démarrée
+    setPhase('waiting');
+    startWaitingAndPoll(rn);
   };
 
   const startWaitingAndPoll = (room?: string) => {
