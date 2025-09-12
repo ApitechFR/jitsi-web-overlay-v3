@@ -1,36 +1,23 @@
-import {
-    Entity,
-    Column,
-    PrimaryGeneratedColumn,
-    CreateDateColumn,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { FeedbackTemplate } from './feedback_template.entity';
 
-@Entity()
+@Entity('feedback')
 export class Feedback {
-    @PrimaryGeneratedColumn()
-    id: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column({ nullable: true })
-    clientID: number;
+  @ManyToOne(() => FeedbackTemplate, (template) => template.feedbacks, { eager: true })
+  feedbackTemplate: FeedbackTemplate;
 
-    @Column({ nullable: true })
-    room: string;
+  @Column({ type: 'char', length: 36 })
+  conferenceUuid: string;
 
-    @Column('int')
-    evaluation: number;
+  @Column({ type: 'datetime' })
+  date: Date;
 
-    @Column('text', { nullable: true })
-    comment: string;
+  @Column({ type: 'varchar', length: 255 })
+  userAgent: string;
 
-    @Column({ nullable: true })
-    userAgent: string;
-
-    @Column({ nullable: true })
-    jmmc_id: string;
-
-    @Column('int', { nullable: true })
-    ip: number;
-
-    @CreateDateColumn()
-    date: Date;
+  @Column({ type: 'text' })
+  reponse: string;
 }

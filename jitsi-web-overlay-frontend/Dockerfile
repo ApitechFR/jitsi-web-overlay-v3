@@ -37,6 +37,9 @@ COPY . .
 # Build
 RUN npm run build
 
+RUN cp -r node_modules/@apitechfr/react-dsapitech/dsfr dist/ 2>/dev/null || true
+
+
 # ----------- Serveur Nginx ----------- #
 FROM nginx:alpine
 

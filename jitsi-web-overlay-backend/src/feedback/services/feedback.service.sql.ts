@@ -1,42 +1,68 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Feedback } from '../entities/feedback.entity';
+import { FeedbackTemplate } from '../entities/feedback_template.entity';
+import { CreateFeedbackDto, FeedbackDTO } from '../DTOs/feedback.dto';
 import { IFeedbackService } from '../interfaces/feedback-service.interface';
-import { FeedbackDTO } from '../DTOs/feedback.dto';
-import { mapDtoToFeedbackEntity } from '../utils/feedback.mapper';
 
 @Injectable()
-export class FeedbackServiceSQL implements IFeedbackService<Feedback> {
+export class FeedbackServiceSQL implements IFeedbackService {
   constructor(
     @InjectRepository(Feedback)
-    private readonly feedbackRepository: Repository<Feedback>,
-  ) {}
+    private readonly feedbackRepo: Repository<Feedback>,
 
-  async createFeedback(
-    dto: FeedbackDTO,
-    jmmcId: string,
-    ip: string,
-  ): Promise<Feedback> {
-    try {
-      const feedbackData = mapDtoToFeedbackEntity(dto, ip, jmmcId);
-      const entity = this.feedbackRepository.create(feedbackData);
-      return await this.feedbackRepository.save(entity);
-    } catch (error) {
-      console.error('Error creating feedback:', error);
-      throw new InternalServerErrorException('Impossible de créer le feedback');
+    @InjectRepository(FeedbackTemplate)
+    private readonly templateRepo: Repository<FeedbackTemplate>,
+  ) { }
+
+  // Créer un feedback
+  async createFeedback(dto: CreateFeedbackDto): Promise<Feedback> {
+    const template = await this.templateRepo.findOne({ where: { id: dto.feedbackTemplateId } });
+    if (!template) throw new NotFoundException(`Feedback template with id ${dto.feedbackTemplateId} not found`);
+
+    const feedback = this.feedbackRepo.create({
+      feedbackTemplate: template,
+      conferenceUuid: dto.conferenceUuid,
+      date: new Date(dto.date),
+      userAgent: dto.userAgent,
+      reponse: dto.reponse,
+    });
+
+    return this.feedbackRepo.save(feedback);
+  }
+
+  // Récupérer tous les feedbacks pour une conférence
+  async findByConference(uuid: string): Promise<Feedback[]> {
+    return this.feedbackRepo.find({
+      where: { conferenceUuid: uuid },
+      relations: ['feedbackTemplate'],
+      order: { date: 'DESC' },
+    });
+  }
+
+  // Obtenir des statistiques simples pour une conférence
+  async getStats(uuid: string): Promise<any> {
+    const feedbacks = await this.findByConference(uuid);
+
+    if (feedbacks.length === 0) {
+      return { total: 0, byTemplate: {} };
     }
+
+    const stats = feedbacks.reduce((acc, f) => {
+      const templateLabel = f.feedbackTemplate.label;
+
+      if (!acc.byTemplate[templateLabel]) {
+        acc.byTemplate[templateLabel] = { count: 0, responses: [] };
+      }
+
+      acc.byTemplate[templateLabel].count++;
+      acc.byTemplate[templateLabel].responses.push(f.reponse);
+
+      return acc;
+    }, { total: feedbacks.length, byTemplate: {} });
+
+    return stats;
   }
 
-  async getAllFeedback() {
-    return this.feedbackRepository.find();
-  }
-
-  async getFeedbackById(id: string) {
-    return this.feedbackRepository.findOne({ where: { id: +id } });
-  }
-
-  async deleteFeedback(id: string) {
-    await this.feedbackRepository.delete(+id);
-  }
 }

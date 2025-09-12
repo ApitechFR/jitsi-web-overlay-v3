@@ -10,8 +10,9 @@ services:
     restart: always
     depends_on:
       - mariadb
-    volumes :
+    volumes:
       - visioreplay_data:/data/visioreplay
+
   jitsi-web-overlay-frontend:
     build:
       context: ./jitsi-web-overlay-frontend
