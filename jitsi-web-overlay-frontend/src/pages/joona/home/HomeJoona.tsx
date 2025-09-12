@@ -324,6 +324,7 @@ function HomeJoona(props: HomeJoonaProps) {
 
       <modal.Component
         title=""
+        concealingBackdrop={false}
         buttons={[
           !authenticated && {
             children: "S'authentifier",
