@@ -7,6 +7,7 @@ import ShuffleIcon from '@mui/icons-material/Shuffle';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Alert } from '@apitechfr/react-dsapitech/Alert';
 import { createModal } from '@apitechfr/react-dsapitech/Modal';
+import { useIsModalOpen } from '@apitechfr/react-dsapitech/Modal/useIsModalOpen';
 import { useAuth } from '../../../auth/useAuth';
 import CircularProgress from '@mui/material/CircularProgress';
 
@@ -67,6 +68,9 @@ function HomeJoona(props: HomeJoonaProps) {
     []
   );
 
+  useIsModalOpen(modal, {
+    onConceal: () => stopWaitingAndPoll(true),
+  });
   // Arrêter l’attente AVANT de fermer
   useEffect(() => {
     const originalClose = modal.close;
