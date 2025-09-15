@@ -166,7 +166,7 @@ export class ReplayController {
         return this.replayService.findAll();
     }
 
-    @Get('conference/:uid')
+    @Get('conference/:conference_uid')
     @ApiOperation({ summary: 'Obtenir un replay par UID de conférence' })
     async getByLatestConfUID(@Param('conference_uid') conference_uid: string) {
         return this.replayService.findByLatestConferenceUID(conference_uid);
