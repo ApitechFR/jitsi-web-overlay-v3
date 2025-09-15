@@ -1,16 +1,51 @@
-import Input from '@apitechfr/react-dsapitech/Input';
 import Button from '@apitechfr/react-dsapitech/Button';
-import RadioButtons from '@apitechfr/react-dsapitech/RadioButtons';
 
 import styles from './FeedbackJoona.module.css'
-import StarRating from '../../../components/joona/stars/StarRating';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { FieldComponent } from '../../../components/joona/feedbacks/FieldComponent';
+
+export interface FeedbackType {
+  id: number;
+  name: string;
+  description: string;
+}
+
+export interface Feedback {
+  id: number;
+}
+
+export interface FeedbackTemplate {
+  id: number;
+  label: string;
+  organization: string;
+  choices: string[];
+  deletedAt: string | null;
+  feedbacks: Feedback[];
+  type: FeedbackType;
+}
+
+const organizationFilter = import.meta.env.VITE_APP_ORGANIZATION;
 
 function FeedbackJoona() {
 
-    const [rating, setRating] = useState(0);
-    const [comment, setComment] = useState("");
-    const [opinion, setOpinion] = useState("");
+    const [templates, setTemplates] = useState<FeedbackTemplate[]>([]);
+    const [responses, setResponses] = useState<Record<number, string>>({});
+
+    useEffect(() => {
+        fetch("http://localhost:3030/feedback/templates")
+        .then((res) => res.json())
+        .then((data: FeedbackTemplate[]) => {
+            const filtered = data.filter(
+                (template) => template.deletedAt === null && template.organization === organizationFilter
+            );
+            setTemplates(filtered);
+        });
+    }, []);
+
+
+    const handleChange = (templateId: number, value: string) => {
+        setResponses((previousData) => ({ ...previousData, [templateId]: value }));
+    };
 
     const handleSubmit = async (e : React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -21,38 +56,30 @@ function FeedbackJoona() {
             userAgent: navigator.userAgent,
         };
 
-        // POST pour rating stars
-        await fetch("http://localhost:3030/feedback/internal", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+        const feedbacks = templates.map((template) => ({
             ...baseData,
-            feedbackTemplateId: 1,
-            reponse: String(rating),
-            }),
-        });
+            feedbackTemplateId: template.id,
+            reponse: responses[template.id] ?? "",
+        }));
 
-        // POST pour commentaire
-        await fetch("http://localhost:3030/feedback/internal", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-            ...baseData,
-            feedbackTemplateId: 2,
-            reponse: comment,
-            }),
-        });
+        try {
+            const response = await fetch(
+                "http://localhost:3030/feedback/internal/bulk",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(feedbacks),
+                }
+            );
 
-        // POST pour radio buttons
-        await fetch("http://localhost:3030/feedback/internal", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-            ...baseData,
-            feedbackTemplateId: 3,
-            reponse: opinion,
-            }),
-        });
+            if (response.ok) {
+                alert("Feedback envoyé avec succès !");
+            } else {
+                console.error("Erreur :", await response.text());
+            }
+        } catch (err) {
+            console.error("Erreur réseau :", err);
+        }
 
         alert("Votre avis à été soumis, merci");
     }
@@ -62,37 +89,15 @@ function FeedbackJoona() {
             <h1 className={styles.title}>Mesurez la qualité du service</h1>
             <div className={styles.contentFeedback}>
                 <form action="" onSubmit={e => handleSubmit(e)}>
-                    <StarRating rating={rating} changeRating={setRating} />
-                    <Input
-                        label="Laissez un commentaire."
-                        textArea
-                        nativeTextAreaProps={{
-                            value: comment,
-                            onChange: (e) => setComment(e.currentTarget.value)
-                        }}
-                    />
-                    <RadioButtons
-                        legend="Vous en pensez quoi ?"
-                        name="radio"
-                        options={[
-                            {
-                                label: 'Parfait',
-                                nativeInputProps: {
-                                    value: 'Parfait',
-                                    checked: opinion === "Parfait",
-                                    onChange: () => setOpinion("Parfait")
-                                }
-                            },
-                            {
-                                label: 'Moyen',
-                                nativeInputProps: {
-                                    value: 'Moyen',
-                                    checked: opinion === "Moyen",
-                                    onChange: () => setOpinion("Moyen")
-                                }
-                            },
-                        ]}
-                    />
+                    {templates.map((template) => {
+                        const Component = FieldComponent[template.type.id];
+                        if (!Component) return null;
+                        return (
+                            <div key={template.id}>
+                                <Component template={template} value={responses[template.id]} onChange={handleChange} />
+                            </div>
+                        );
+                    })}
                     <div className={styles.validButtonFeedback}>
                         <Button>
                             <span>Envoyer</span>

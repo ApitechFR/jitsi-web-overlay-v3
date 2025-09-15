@@ -10,6 +10,12 @@
     mask-image: url("../../icons/business/mail-fill.svg");
 }
 
+.fr-icon-account-circle-fill::before,
+.fr-icon-account-circle-fill::after {
+    -webkit-mask-image: url("../../icons/user/account-circle-fill.svg");
+    mask-image: url("../../icons/user/account-circle-fill.svg");
+}
+
 .fr-icon-user-fill::before,
 .fr-icon-user-fill::after {
     -webkit-mask-image: url("../../icons/user/user-fill.svg");
@@ -28,22 +34,10 @@
     mask-image: url("../../icons/system/information-line.svg");
 }
 
-.fr-icon-account-circle-fill::before,
-.fr-icon-account-circle-fill::after {
-    -webkit-mask-image: url("../../icons/user/account-circle-fill.svg");
-    mask-image: url("../../icons/user/account-circle-fill.svg");
-}
-
 .fr-icon-clipboard-line::before,
 .fr-icon-clipboard-line::after {
     -webkit-mask-image: url("../../icons/document/clipboard-line.svg");
     mask-image: url("../../icons/document/clipboard-line.svg");
-}
-
-.fr-icon-settings-5-line::before,
-.fr-icon-settings-5-line::after {
-    -webkit-mask-image: url("../../icons/system/settings-5-line.svg");
-    mask-image: url("../../icons/system/settings-5-line.svg");
 }
 
 .fr-icon-theme-fill::before,
@@ -63,6 +57,11 @@
         background-image: url("../../icons/business/mail-fill.svg");
     }
     
+    .fr-icon-account-circle-fill::before,
+    .fr-icon-account-circle-fill::after {
+        background-image: url("../../icons/user/account-circle-fill.svg");
+    }
+    
     .fr-icon-user-fill::before,
     .fr-icon-user-fill::after {
         background-image: url("../../icons/user/user-fill.svg");
@@ -78,19 +77,9 @@
         background-image: url("../../icons/system/information-line.svg");
     }
     
-    .fr-icon-account-circle-fill::before,
-    .fr-icon-account-circle-fill::after {
-        background-image: url("../../icons/user/account-circle-fill.svg");
-    }
-    
     .fr-icon-clipboard-line::before,
     .fr-icon-clipboard-line::after {
         background-image: url("../../icons/document/clipboard-line.svg");
-    }
-    
-    .fr-icon-settings-5-line::before,
-    .fr-icon-settings-5-line::after {
-        background-image: url("../../icons/system/settings-5-line.svg");
     }
     
     .fr-icon-theme-fill::before,
