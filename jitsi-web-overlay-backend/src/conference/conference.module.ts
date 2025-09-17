@@ -19,7 +19,6 @@ import { Replay } from '../replay/entities/replay.entity';
 import { User } from '../users/entities/users.entity';
 import { RoomModule } from '../room/room.module';
 import { Room } from '../room/entities/room.entity';
-import { ProsodyRuntimeService } from './services/prosody-runtime.service';
 
 @Module({
   imports: [
@@ -37,7 +36,6 @@ import { ProsodyRuntimeService } from './services/prosody-runtime.service';
   controllers: [ConferenceController],
   providers: [
     RoomNameValidator,
-    ProsodyRuntimeService,
     ...(process.env.DB_TYPE === 'mongodb'
       ? [
         ConferenceServiceMongo,
@@ -55,6 +53,6 @@ import { ProsodyRuntimeService } from './services/prosody-runtime.service';
         },
       ]),
   ],
-  exports: [IConferenceService, ProsodyRuntimeService],
+  exports: [IConferenceService],
 })
 export class ConferenceModule { }
