@@ -9,4 +9,5 @@ export interface IFeedbackService<T = any> {
     deleteFeedback?(id: string): Promise<void>;
     findByConference?(uuid: string): Promise<T>;
     getStats?(uuid: string): Promise<T>;
+    createFeedbackBulk?(dtos: T[]): Promise<T[]>;
 }

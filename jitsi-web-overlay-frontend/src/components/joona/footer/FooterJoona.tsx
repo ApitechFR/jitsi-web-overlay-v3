@@ -14,7 +14,7 @@ function FooterJoona({ headerFooterDisplayItem }: props) {
         Apitech, Éditeur Open Solutions  - L’esprit du Libre au service de la productivité.
         "
       termsLinkProps={{
-        href: '#',
+        href: '/mentionslegales',
       }}
       bottomItems={[headerFooterDisplayItem]}
     />

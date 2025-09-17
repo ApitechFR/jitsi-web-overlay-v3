@@ -104,6 +104,7 @@ export default function HeaderJoona() {
       <div className={styles.parent}>
         <Header
           mainLogoURL={visioLogo}
+          mainLogoURLDark={visioLogo}
           serviceTitle="Visio"
           serviceTagline="by Apitech"
           brandTop={
