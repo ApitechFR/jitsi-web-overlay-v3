@@ -9,8 +9,8 @@ import {
   Put,
   Headers,
   Req,
-  BadRequestException,
   Query,
+  Header,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -65,7 +65,7 @@ export class ConferenceController {
   }
 
   @Get('conferences/:uid/duration')
-  async getDuration(@Param('uid') uid: string): Promise<{ duration: number }> {
+  async getDuration(@Param('uid') uid: string): Promise<{ duration: string }> {
     const duration = await this.conferenceService.getDuration(uid);
     return { duration };
   }
@@ -103,12 +103,22 @@ export class ConferenceController {
     return this.conferenceService.updateEndTimeConferenceByName(confName, dto.end_time);
   }
 
-  @Get('roomExists/:roomName')
+  //TODO : to remove Old name /roomExists/:roomName
+  @Get('/roomExists/:roomName')
   @ApiOkResponse({ description: 'retourne roomName si la conférence existe' })
   @ApiNotFoundResponse({
     description: "retourne 404 si la conférence n'existe pas",
   })
   async roomExists(@Param() params: RoomNameDto) {
+    return this.conferenceService.roomExists(params.roomName);
+  }
+
+  @Get('/conferences/:roomName/state')
+  @ApiOkResponse({ description: 'retourne l\'état de la conférence' })
+  @ApiNotFoundResponse({
+    description: "retourne 404 si la conférence n'existe pas",
+  })
+  async getConferenceState(@Param() params: RoomNameDto) {
     return this.conferenceService.roomExists(params.roomName);
   }
 
@@ -144,7 +154,8 @@ export class ConferenceController {
     return this.conferenceService.verifyToken(dto.jwt);
   }
 
-  @Get('/:roomName')
+  //TODO update new name :old name /:roomName
+  @Get('conferences/access/:roomName')
   @ApiOkResponse({
     description: 'retourne roomName si la conférence est déja ouverte',
   })
@@ -174,15 +185,18 @@ export class ConferenceController {
   }
 
 
-  @Post('conferences/jitsi-jwt')
-  async generateJitsiJwt(
-    @Req() req: AuthenticatedRequest,
-    @Body('roomName') roomName: string,
+  @Post('conferences/:roomName/tokens/jitsi')
+  @Header('Cache-Control', 'no-store')
+  async createJitsiToken(
+    @Param('roomName') roomName: RoomNameDto['roomName'],
+    @Req() req: AuthenticatedRequest
   ) {
 
     const user = req.user;
-    const isModerator = true;
+    const isModerator = this.conferenceService.isUserModerator(user, roomName);
 
-    return this.conferenceService.generateJitsiJwt(user, isModerator, roomName);
+    const { token, exp } = await this.conferenceService.generateJitsiJwt(user, isModerator, roomName);
+
+    return { token, exp, moderator: isModerator };
   }
 }
