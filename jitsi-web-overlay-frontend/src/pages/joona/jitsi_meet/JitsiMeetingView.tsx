@@ -21,7 +21,9 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
   const jitsiAPIOptions = (window as any).jitsiAPIOptions;
 
   const onClose = () => {
-    navigate('/feedback');
+
+    navigate('/');
+    window.open('/feedback', '_blank');
   };
 
   return (

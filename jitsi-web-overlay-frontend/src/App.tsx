@@ -17,6 +17,7 @@ import Cgu from './pages/Cgu/Cgu.md';
 import Apropos from './pages/Apropos/Apropos.md';
 import Accessibilite from './pages/Accessibilite/Accessibilite.md';
 import Mentionslegales from './pages/MentionsLegales/MentionsLegales.md';
+import MentionslegalesVisioByApitech from './pages/MentionsLegales/MentionsLegalesVisioByApitech.md';
 import StaticPagesBuilder from './pages/staticPagesBuilder/StaticPagesBuilder';
 import Feedback from './pages/feedback/Feedback';
 import BrowserTest from './pages/browserTest/BrowserTest';
@@ -227,6 +228,15 @@ function App() {
                 }
               />
               <Route path="feedback" element={<FeedbackJoona />} />
+              <Route
+                path="mentionslegales"
+                element={
+                  <StaticPagesBuilder
+                    markDown={MentionslegalesVisioByApitech}
+                    contentTable={false}
+                  />
+                }
+              />
             </Route>
           </>
         )}
