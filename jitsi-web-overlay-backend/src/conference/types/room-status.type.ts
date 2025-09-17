@@ -1,4 +1,4 @@
-import type { Occupant } from './occupant.type';
+import type { Occupant } from '../../prosody/types/occupant.type';
 
 export type RoomStatus = {
     room: string;

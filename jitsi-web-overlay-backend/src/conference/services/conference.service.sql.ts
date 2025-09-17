@@ -17,7 +17,7 @@ import * as moment from 'moment';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ProsodyService } from '../../prosody/prosody.service';
-import { ProsodyRuntimeService } from './prosody-runtime.service';
+import { ProsodyRuntimeService } from '../../prosody/prosody-runtime.service';
 import { InternalServerErrorException } from '@nestjs/common';
 
 @Injectable()
