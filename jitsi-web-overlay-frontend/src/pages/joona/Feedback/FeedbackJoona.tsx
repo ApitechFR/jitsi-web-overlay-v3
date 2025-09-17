@@ -25,6 +25,7 @@ export interface FeedbackTemplate {
 }
 
 const organizationFilter = import.meta.env.VITE_APP_ORGANIZATION;
+const baseUrl = import.meta.env.VITE_API_URL;
 
 function FeedbackJoona() {
 
@@ -32,7 +33,7 @@ function FeedbackJoona() {
     const [responses, setResponses] = useState<Record<number, string>>({});
 
     useEffect(() => {
-        fetch("http://localhost:3030/feedback/templates")
+        fetch(`${baseUrl}/feedback/templates`)
         .then((res) => res.json())
         .then((data: FeedbackTemplate[]) => {
             const filtered = data.filter(
@@ -64,7 +65,7 @@ function FeedbackJoona() {
 
         try {
             const response = await fetch(
-                "http://localhost:3030/feedback/internal/bulk",
+                `${baseUrl}/feedback/internal/bulk`,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
