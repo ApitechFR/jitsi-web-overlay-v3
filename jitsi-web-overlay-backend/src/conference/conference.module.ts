@@ -27,10 +27,10 @@ import { Room } from '../room/entities/room.entity';
     RoomModule,
     ...(process.env.DB_TYPE === 'mongodb'
       ? [
-          MongooseModule.forFeature([
-            { name: WhiteListedDomains.name, schema: WhiteListedDomainsSchema },
-          ]),
-        ]
+        MongooseModule.forFeature([
+          { name: WhiteListedDomains.name, schema: WhiteListedDomainsSchema },
+        ]),
+      ]
       : [TypeOrmModule.forFeature([Conference, Participant, Replay, User, Room])]),
   ],
   controllers: [ConferenceController],
@@ -38,20 +38,20 @@ import { Room } from '../room/entities/room.entity';
     RoomNameValidator,
     ...(process.env.DB_TYPE === 'mongodb'
       ? [
-          ConferenceServiceMongo,
-          {
-            provide: IConferenceService,
-            inject: [ConferenceServiceMongo, ConfigService],
-            useFactory: (mongo: ConferenceServiceMongo) => mongo,
-          },
-        ]
+        ConferenceServiceMongo,
+        {
+          provide: IConferenceService,
+          inject: [ConferenceServiceMongo, ConfigService],
+          useFactory: (mongo: ConferenceServiceMongo) => mongo,
+        },
+      ]
       : [
-          ConferenceServiceSQL,
-          {
-            provide: IConferenceService,
-            useExisting: ConferenceServiceSQL,
-          },
-        ]),
+        ConferenceServiceSQL,
+        {
+          provide: IConferenceService,
+          useExisting: ConferenceServiceSQL,
+        },
+      ]),
   ],
   exports: [IConferenceService],
 })

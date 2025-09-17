@@ -7,22 +7,37 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Header from '../../../components/joona/header/HeaderVisio';
 import styles from './JitsiMeetWrapper.module.css'
 
-type JwtResponse = { jwt?: string; error?: string };
+type JwtResponse = | { token: string; exp?: number; moderator: boolean } | { error: string };
 
 async function fetchJitsiJwtWithSession(
   apiBase: string,
   roomName: string,
   signal?: AbortSignal
 ): Promise<JwtResponse> {
-  const res = await fetch(`${apiBase}/conferences/jitsi-jwt`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify({ roomName }),
-    signal,
-  });
-  if (!res.ok) return { error: `Session fetch failed: ${res.status}` };
-  return res.json();
+  const url = `${apiBase}/conferences/${encodeURIComponent(roomName)}/tokens/jitsi`;
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      },
+      body: JSON.stringify({ /* rien: le serveur décide du rôle/TTL */ }),
+      signal,
+    });
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      return { error: `HTTP ${res.status}${text ? ` – ${text}` : ''}` };
+    }
+
+    return res.json();
+  } catch (e: any) {
+    if (e?.name === 'AbortError') return { error: 'Request aborted' };
+    return { error: e?.message ?? 'Network error' };
+  }
 }
 
 const JitsiMeetWrapper: React.FC = () => {
@@ -72,8 +87,9 @@ const JitsiMeetWrapper: React.FC = () => {
       try {
         const resp = await fetchJitsiJwtWithSession(apiBase, roomName!, ctrl.signal);
         if (cancelled) return;
-        if (resp.jwt) {
-          setJwtToken(resp.jwt);
+
+        if ('token' in resp) {
+          setJwtToken(resp.token);
         } else {
           setJwtToken(undefined);
           setJwtError(resp.error || 'Impossible de récupérer le JWT pour cette conférence.');
@@ -168,11 +184,11 @@ const JitsiMeetWrapper: React.FC = () => {
       </div>
       <div className={`${styles.iconButtonContainer} ${isHeaderOpen ? styles.openBtn : ""}`}>
         <button
-            className={styles.iconButton}
-            onClick={() => setIsHeaderOpen((previous) => !previous)}
-          >
-            {isHeaderOpen ? <span aria-hidden="true" className="fr-icon-arrow-up-s-line"></span> : <span aria-hidden="true" className="fr-icon-arrow-down-s-line"></span>}
-          </button>
+          className={styles.iconButton}
+          onClick={() => setIsHeaderOpen((previous) => !previous)}
+        >
+          {isHeaderOpen ? <span aria-hidden="true" className="fr-icon-arrow-up-s-line"></span> : <span aria-hidden="true" className="fr-icon-arrow-down-s-line"></span>}
+        </button>
       </div>
       <JitsiMeetingView
         domain={domain}
