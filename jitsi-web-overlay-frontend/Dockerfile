@@ -28,7 +28,7 @@ COPY package*.json ./
 
 RUN mkdir -p public/@gouvfr-lasuite/integration
 # Installer les dépendances avec devDependencies (vite inclus)
-RUN npm install --legacy-peer-deps
+RUN npm install 
 
 # Copier le reste du code
 COPY . .
