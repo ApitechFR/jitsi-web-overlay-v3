@@ -14,7 +14,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RoomNameValidator } from './common/validators/room-name.validator';
 import { JwtOidcMiddleware } from './authentication/utils/jwt-oidc.middleware';
-
+import { ScheduleModule } from '@nestjs/schedule';
 
 
 import { ReplayModule } from './replay/replay.module';
@@ -24,6 +24,7 @@ import { dataSourceOptions } from '../db/datasource';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

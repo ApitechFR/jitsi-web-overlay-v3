@@ -8,10 +8,10 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { lastValueFrom } from 'rxjs';
 
-import { ENV, DEFAULTS } from '../ constants/prosody.constants';
-import { ProsodyEndpoint } from '../enum/prosody-endpoint.enum';
-import { ProsodyQueryKey } from '../enum/prosody-query-key.enum';
-import type { Occupant } from '../types/occupant.type';
+import { ENV, DEFAULTS } from '../conference/ constants/prosody.constants';
+import { ProsodyEndpoint } from '../conference/enum/prosody-endpoint.enum';
+import { ProsodyQueryKey } from '../conference/enum/prosody-query-key.enum';
+import type { Occupant } from '../conference/types/occupant.type';
 import {
     splitList,
     buildPath,
@@ -19,7 +19,7 @@ import {
     parseNumberLike,
     parseParticipantsNumber,
     parseOccupantsList,
-} from '../utils/prosody-runtime.utils';
+} from '../conference/utils/prosody-runtime.utils';
 
 @Injectable()
 export class ProsodyRuntimeService {

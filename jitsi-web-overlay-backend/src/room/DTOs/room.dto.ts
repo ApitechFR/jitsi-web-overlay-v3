@@ -8,6 +8,7 @@ export class CreateRoomDTO {
     name: string;
 
     @ApiProperty()
+    @IsOptional()
     @IsUUID()
     created_by: string;
 }
