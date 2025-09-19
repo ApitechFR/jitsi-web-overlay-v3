@@ -36,9 +36,9 @@ COPY . .
 # Build
 RUN npm run build
 
-#RUN cp -r node_modules/@apitechfr/react-dsapitech/dsfr dist/ 2>/dev/null || true
-RUN mkdir -p dist/dsfr \
-    && cp -r node_modules/@apitechfr/react-dsapitech/dsfr/* dist/dsfr/
+RUN cp -r node_modules/@apitechfr/react-dsapitech/dsfr dist/ 2>/dev/null || true
+# RUN mkdir -p dist/dsfr \
+#     && cp -r node_modules/@apitechfr/react-dsapitech/dsfr/* dist/dsfr/
 
 
 
