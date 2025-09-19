@@ -1,5 +1,8 @@
-.buttonMoreInfo {
-
+.buttonsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: end;
 }
 
 .frameContainerButton {
