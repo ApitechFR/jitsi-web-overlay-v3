@@ -1,26 +1,20 @@
-# Ignorer node_modules local
-.*/node_modules
-.*/npm-debug.log
-.*/yarn-error.log
-.*/pnpm-lock.yaml
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-lock.yaml
 
-# Build output
-.*/dist
+dist
 
-# Env files (à injecter via Docker ENV ou secrets)
-.*/.env
-.*/.env.*
+.env
+.env.*
 
-# IDE / système
-.*/.vscode
-.*/.idea
-.*/.DS_Store
-.*/Thumbs.db
+.vscode
+.idea
+.DS_Store
+Thumbs.db
 
-# Tests / coverage
-.*/coverage
-.*/test-results
+coverage
+test-results
 
-# Docker / CI
-.*/Dockerfile*
-.*/docker-compose*.yml
+Dockerfile*
+docker-compose*.yml

@@ -24,7 +24,7 @@ ENV VITE_API_URL=$VITE_API_URL \
     VITE_REPLAY_CHECK_TIMEOUT_MS=$VITE_REPLAY_CHECK_TIMEOUT_MS 
 
 # Copier uniquement les fichiers nécessaires pour installer
-COPY package*.json ./
+COPY package.json package-lock.json ./
 
 RUN mkdir -p public/@gouvfr-lasuite/integration
 # Installer les dépendances avec devDependencies (vite inclus)
