@@ -28,7 +28,7 @@ COPY package*.json ./
 
 RUN mkdir -p public/@gouvfr-lasuite/integration
 # Installer les dépendances avec devDependencies (vite inclus)
-RUN npm install 
+RUN npm ci --no-audit --no-fund
 
 # Copier le reste du code
 COPY . .
@@ -37,11 +37,10 @@ COPY . .
 RUN npm run build
 
 #RUN cp -r node_modules/@apitechfr/react-dsapitech/dsfr dist/ 2>/dev/null || true
-# RUN mkdir -p dist/dsfr \
-#     && cp -r node_modules/@apitechfr/react-dsapitech/dsfr/* dist/dsfr/
-
 RUN mkdir -p dist/dsfr \
-    && cp -r node_modules/@apitechfr/dsapitech/src/dsfr/* dist/dsfr/
+    && cp -r node_modules/@apitechfr/react-dsapitech/dsfr/* dist/dsfr/
+
+
 
 # RUN cp -r node_modules/@gouvfr/dsfr/dist/* dist/dsfr/
 
