@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Replay } from './entities/replay.entity';
 import { CreateReplayDto, UpdateReplayDto } from './DTOs/replay.dto';
 import { join } from 'path';
@@ -20,6 +20,7 @@ export class ReplayService {
         private readonly registerEventRepository: Repository<RegisterEvent>,
         @InjectRepository(Conference)
         private readonly conferenceRepository: Repository<Conference>,
+        private readonly dataSource: DataSource,
     ) { }
 
     async findAll(): Promise<Replay[]> {
@@ -54,19 +55,39 @@ export class ReplayService {
 
     async createReplay(data: CreateReplayDto): Promise<Replay> {
         try {
-            const conference = await this.conferenceRepository.findOne({
-                where: { name: data.conference_name },
-                order: { created_at: 'DESC' },
-            });
+            return await this.dataSource.transaction(async (manager) => {
+                const conference = await manager.findOne(Conference, {
+                    where: { name: data.conference_name },
+                    order: { created_at: 'DESC' },
+                    lock: { mode: 'pessimistic_write' },
+                });
 
-            const replay = this.replayRepository.create({
-                status: data.status,
-                message: data.message,
-                conference_name: data.conference_name,
-                conference: conference,
-            });
+                if (!conference) {
+                    throw new Error(`Conference ${data.conference_name} not found`);
+                }
 
-            return await this.replayRepository.save(replay);
+                const existingReplay = await manager.findOne(Replay, {
+                    where: {
+                        conference_name: data.conference_name,
+                        status: data.status,
+                        uid: null,
+                    },
+                    order: { created_at: 'DESC' },
+                });
+
+                if (existingReplay) {
+                    return existingReplay;
+                }
+
+                const replay = manager.create(Replay, {
+                    status: ReplayStatus.STARTED,
+                    message: data.message,
+                    conference_name: data.conference_name,
+                    conference: conference,
+                });
+
+                return await manager.save(replay);
+            });
         } catch (error) {
             console.error('Error inserting replay:', error);
             throw error;

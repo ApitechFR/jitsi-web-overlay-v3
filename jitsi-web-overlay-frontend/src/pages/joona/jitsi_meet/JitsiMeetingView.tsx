@@ -15,6 +15,7 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
   const checkVideoInterval = useRef<NodeJS.Timeout | null>(null);
   const checkTimeout = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
+  const myRole = useRef("");
 
   const enableJibriApitechApi = import.meta.env.VITE_ENABLE_JIBRI_APITECH_API;
   const jibriApitechApiDomain = import.meta.env.VITE_JIBRI_APITECH_API_DOMAIN;
@@ -48,24 +49,27 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
       onApiReady={(api) => {
         console.log('[Jitsi] API prête');
 
-        const checkInterval = setInterval(() => {
-          const iframeContainer = document.getElementById("jitsiMeeting-1");
 
-          if (iframeContainer?.children[0]) {
-            const iframe : any = iframeContainer.children[0];
+        api.on('videoConferenceJoined', (event) => {
+          const myId = event.id;
+          console.log('participant id', myId);
 
-            if (iframe.contentWindow.document) {
-              clearInterval(checkInterval);
-              console.log("Iframe chargée !");
-              handleRecordingStatus(iframe, api, roomName, checkVideoInterval.current, checkTimeout.current);
+          api.on('participantRoleChanged', (event) => {
+            console.log('participantRoleChanged:', event);
+            if (event.id === myId) {
+              myRole.current = event.role;
+              console.log('Mon nouveau rôle:', myRole);
+              handleRecordingStatus(api, roomName, myRole.current, checkVideoInterval.current, checkTimeout.current);
             }
-          }
-        }, 500);
-        // handleRecordingStatus(api, roomName, checkVideoInterval.current, checkTimeout.current);
-        if (enableJibriApitechApi === "true") { handlejibriApitechApi(jitsiAPIOptions, enableJibriApitechApi, jibriApitechApiDomain); }
+          })
 
-        const participantsInfo = api.getParticipantsInfo();
-        console.log({ participantsInfo });
+          const participantsInfo = api.getParticipantsInfo();
+          console.log({ participantsInfo });
+
+        });
+
+        
+        if (enableJibriApitechApi === "true") { handlejibriApitechApi(jitsiAPIOptions, enableJibriApitechApi, jibriApitechApiDomain); }
 
       }}
       onReadyToClose={onClose}
