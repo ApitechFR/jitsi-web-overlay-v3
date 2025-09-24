@@ -99,7 +99,7 @@ export const checkVideo = async (roomName: string, checkVideoInterval: NodeJS.Ti
     }
 };
 
-export const handleRecordingStatus = (api: any, roomName: string, checkVideoInterval: NodeJS.Timeout | null, checkTimeout: NodeJS.Timeout | null) => {
+export const handleRecordingStatus = (api: any, roomName: string, myRole: string, checkVideoInterval: NodeJS.Timeout | null, checkTimeout: NodeJS.Timeout | null) => {
     let isRecordingStarted = false;
 
     api.on('recordingStatusChanged', (event: any) => {
@@ -108,7 +108,9 @@ export const handleRecordingStatus = (api: any, roomName: string, checkVideoInte
 
         console.info("Changement de statut d'enregistrement :", event);
 
-        if (isRecordingOn) {
+        console.log({ myRole });
+
+        if (isRecordingOn && myRole === "moderator") {
             console.info("Enregistrement démarré");
             isRecordingStarted = true;
             startVideo(roomName);
