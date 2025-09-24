@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import { handlejibriApitechApi, handleRecordingStatus } from './visio_replay';
 import { useNavigate } from 'react-router';
+import { checkConferenceEnd, createConference, fetchStats } from './conference_events';
 
 interface Props {
   domain: string;
@@ -12,6 +13,8 @@ interface Props {
 
 const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName }) => {
 
+  const participantCountRef = useRef(0);
+  const conferenceRef = useRef(null);
   const checkVideoInterval = useRef<NodeJS.Timeout | null>(null);
   const checkTimeout = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
@@ -69,9 +72,32 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
           console.log({ participantsInfo });
 
         });
-
         
         if (enableJibriApitechApi === "true") { handlejibriApitechApi(jitsiAPIOptions, enableJibriApitechApi, jibriApitechApiDomain); }
+        
+        api.on('readyToClose', async () => {
+          console.log("La réunion est terminée");
+          const data = await fetchStats(roomName);
+          participantCountRef.current = data;
+          console.log("participants from readyToClose : ", participantCountRef.current);
+          if (participantCountRef.current === 0) {
+            await checkConferenceEnd(roomName);
+          }
+        });
+
+        api.on('videoConferenceJoined', async () => {
+          const data = await fetchStats(roomName);
+          console.log({ data });
+          participantCountRef.current = data;
+          console.log("participants from videoConferenceJoined : ", participantCountRef.current);
+          if (participantCountRef.current === 2 && !conferenceRef.current) {
+            const conference = await createConference(roomName);
+            conferenceRef.current = conference;
+            console.log("Conférence active : ", conference);
+            console.log("created_by : ", conference.created_by);
+          }
+        });
+
 
       }}
       onReadyToClose={onClose}

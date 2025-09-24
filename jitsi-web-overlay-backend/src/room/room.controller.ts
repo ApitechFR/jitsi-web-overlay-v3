@@ -25,6 +25,11 @@ export class RoomController {
         return this.roomService.findOne(uid);
     }
 
+    @Get('name/:roomName')
+    async findByRoomName(@Param('roomName') roomName: string) {
+        return this.roomService.findByRoomName(roomName);
+    }
+
     @Patch(':uid')
     async updateRoom(
         @Param('uid') uid: string,
