@@ -19,12 +19,16 @@ export class RoomNameValidator implements ValidatorConstraintInterface {
     const length = this.configService.get<number>(
       'FRONTCONF_ROOMNAMECONSTRAINT_LENGTH',
     );
+    const regexString = this.configService.get<string>(
+      'CONFERENCE_NAME_REGEX',
+    );
 
     if (!minDigits || !length) return false;
 
     const regex = new RegExp(
-      `^(?=(?:[a-zA-Z0-9]*[a-zA-Z]))(?=(?:[a-zA-Z0-9]*[0-9]){${minDigits}})[a-zA-Z0-9]{${length},}$`,
+      `${regexString}{${minDigits},${length}}$`,
     );
+    console.log('regex:', regex);
     return regex.test(roomName);
   }
 
