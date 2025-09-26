@@ -332,10 +332,10 @@ export class ConferenceServiceSQL implements IConferenceService {
     }
   }
 
-   /**
-   * Cron job : toutes les minutes, on vérifie les conférences actives.
-   * Si participants = 0, on met end_time et on termine la conférence.
-   */
+  /**
+  * Cron job : toutes les minutes, on vérifie les conférences actives.
+  * Si participants = 0, on met end_time et on termine la conférence.
+  */
   @Cron(CronExpression.EVERY_MINUTE)
   async closeEmptyConferences() {
     const activeConfs = await this.conferenceRepo.find({
@@ -345,18 +345,32 @@ export class ConferenceServiceSQL implements IConferenceService {
       },
     });
 
-    for (const conf of activeConfs) {
-      const participants = await this.getRoomSize(conf.name);
-
-      if (participants === 0) {
-        this.logger.log(
-          `Clôture auto de la conférence ${conf.uid} (${conf.name}) car 0 participants.`,
-        );
-        conf.end_time = new Date();
-        conf.status = ConferenceStatus.COMPLETED;
-        await this.conferenceRepo.save(conf);
-      }
+    if (activeConfs.length === 0) {
+      return;
     }
+
+    await Promise.all(
+      activeConfs.map(async (conf) => {
+        try {
+          const participants = await this.getRoomSize(conf.name);
+
+          if (participants === 0) {
+            this.logger.log(
+              `Clôture auto de la conférence ${conf.uid} (${conf.name}) car 0 participants.`,
+            );
+
+            conf.end_time = new Date();
+            conf.status = ConferenceStatus.COMPLETED;
+            await this.conferenceRepo.save(conf);
+          }
+        } catch (err) {
+          this.logger.error(
+            `Erreur lors du check de la conférence ${conf.uid} (${conf.name})`,
+            err instanceof Error ? err.stack : String(err),
+          );
+        }
+      }),
+    );
   }
 }
 

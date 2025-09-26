@@ -33,7 +33,7 @@ export class Replay {
     nullable: true,
   })
   @JoinColumn({ name: 'conference_uid', referencedColumnName: 'uid' })
-  conference: Conference;
+  conference: Conference | null;
 
   @CreateDateColumn({ name: 'created_at' })
   created_at: Date;

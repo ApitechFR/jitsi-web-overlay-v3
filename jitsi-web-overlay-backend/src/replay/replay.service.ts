@@ -62,10 +62,6 @@ export class ReplayService {
                     lock: { mode: 'pessimistic_write' },
                 });
 
-                if (!conference) {
-                    throw new Error(`Conference ${data.conference_name} not found`);
-                }
-
                 const existingReplay = await manager.findOne(Replay, {
                     where: {
                         conference_name: data.conference_name,
@@ -83,7 +79,7 @@ export class ReplayService {
                     status: ReplayStatus.STARTED,
                     message: data.message,
                     conference_name: data.conference_name,
-                    conference: conference,
+                    conference: conference ?? null,
                 });
 
                 return await manager.save(replay);

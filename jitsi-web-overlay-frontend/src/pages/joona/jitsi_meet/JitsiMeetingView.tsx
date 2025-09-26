@@ -74,7 +74,7 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
         });
         
         if (enableJibriApitechApi === "true") { handlejibriApitechApi(jitsiAPIOptions, enableJibriApitechApi, jibriApitechApiDomain); }
-        
+
         api.on('readyToClose', async () => {
           console.log("La réunion est terminée");
           const data = await fetchStats(roomName);
@@ -90,7 +90,7 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
           console.log({ data });
           participantCountRef.current = data;
           console.log("participants from videoConferenceJoined : ", participantCountRef.current);
-          if (participantCountRef.current === 2 && !conferenceRef.current) {
+          if (participantCountRef.current === 1 && !conferenceRef.current) {
             const conference = await createConference(roomName);
             conferenceRef.current = conference;
             console.log("Conférence active : ", conference);
