@@ -36,7 +36,8 @@ COPY . .
 # Build
 RUN npm run build
 
-RUN cp -r node_modules/@apitechfr/react-dsapitech/dsfr dist/ 2>/dev/null || true
+# Copie explicite des icônes DSFR pour la prod
+RUN mkdir -p dist/dsfr/icons && cp -r node_modules/@apitechfr/react-dsapitech/dsfr/icons dist/dsfr/
 # RUN mkdir -p dist/dsfr \
 #     && cp -r node_modules/@apitechfr/react-dsapitech/dsfr/* dist/dsfr/
 
