@@ -50,10 +50,6 @@ export class RoomService {
     }
 
     async findByRoomName(name: string): Promise<Room> {
-        const room = await this.roomRepo.findOne({ where: { name }, relations: ['conferences'] });
-        if (!room) {
-            throw new NotFoundException(`Room with room name ${name} not found`);
-        }
-        return room;
+        return await this.roomRepo.findOne({ where: { name }, relations: ['conferences'] }) ?? null;
     }
 }
