@@ -85,7 +85,10 @@ export const checkVideo = async (roomName: string, checkVideoInterval: NodeJS.Ti
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = `/visioreplay?room=${encodeURIComponent(data.conference.uid)}`;
+                    window.open(
+                        `/visioreplay?room=${encodeURIComponent(data.conference.uid)}`,
+                        '_blank'
+                    );
                 }
             });
 
