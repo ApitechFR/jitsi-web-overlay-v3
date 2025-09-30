@@ -156,6 +156,7 @@ export class ReplayService {
         return await this.replayRepository.findOne({
             where: { conference_name },
             order: { created_at: 'DESC' },
+            relations: ['conference'],
         });
     }
 
