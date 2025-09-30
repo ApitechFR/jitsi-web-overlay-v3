@@ -52,9 +52,26 @@ export const checkVideo = async (roomName: string, checkVideoInterval: NodeJS.Ti
 
     try {
         const response = await fetch(`${API_BASE_URL}/replays/${encodeURIComponent(conference_name)}`);
+
+        if (response.status === 404) {
+            console.warn("Aucun replay trouvé pour", conference_name);
+
+            if (checkVideoInterval) clearInterval(checkVideoInterval);
+            if (checkTimeout) clearTimeout(checkTimeout);
+            localStorage.removeItem("isRecordingStarted");
+
+            return "error";
+        }
+
+        if (!response.ok) {
+            console.error("Erreur HTTP :", response.status);
+            return "error";
+        }
+
         const data = await response.json();
 
         if (data.status === "terminated") {
+            console.log("data from terminated : ", data);
             Swal.fire({
                 title: 'Succès !',
                 text: `La vidéo pour "${conference_name}" a été enregistrée avec succès.`,
@@ -77,6 +94,8 @@ export const checkVideo = async (roomName: string, checkVideoInterval: NodeJS.Ti
             checkVideoInterval = null;
             checkTimeout = null;
 
+            localStorage.removeItem("isRecordingStarted");
+
         } else if (data.status === "error-uploading-rsync") {
             Swal.fire({
                 title: 'Erreur !',
@@ -92,15 +111,23 @@ export const checkVideo = async (roomName: string, checkVideoInterval: NodeJS.Ti
             if (checkTimeout) clearTimeout(checkTimeout);
             checkVideoInterval = null;
             checkTimeout = null;
+
+            localStorage.removeItem("isRecordingStarted");
         }
 
     } catch (error) {
         console.error('Erreur lors de la vérification du replay :', error);
+        return "error";
     }
 };
 
 export const handleRecordingStatus = (api: any, roomName: string, myRole: string, checkVideoInterval: NodeJS.Timeout | null, checkTimeout: NodeJS.Timeout | null) => {
-    let isRecordingStarted = false;
+    let isRecordingStarted = localStorage.getItem("isRecordingStarted");
+
+    if (isRecordingStarted === "false" && myRole === "moderator") {
+        console.info("Reprise après refresh : replay en cours d'upload...");
+        retryVerification(roomName, checkVideoInterval, checkTimeout);
+    }
 
     api.on('recordingStatusChanged', (event: any) => {
         const isRecordingOn = event.on;
@@ -112,7 +139,8 @@ export const handleRecordingStatus = (api: any, roomName: string, myRole: string
 
         if (isRecordingOn && myRole === "moderator") {
             console.info("Enregistrement démarré");
-            isRecordingStarted = true;
+            isRecordingStarted = "true";
+            localStorage.setItem("isRecordingStarted", "true");
             startVideo(roomName);
 
         } else if (error) {
@@ -120,32 +148,47 @@ export const handleRecordingStatus = (api: any, roomName: string, myRole: string
 
         } else if (isRecordingStarted) {
             console.info("Enregistrement arrêté");
+            isRecordingStarted = "false";
+            localStorage.setItem("isRecordingStarted", "false");
             showLoadingToast("Upload de l'enregistrement en cours ...");
 
-            if (!checkVideoInterval) {
-                checkVideoInterval = setInterval(() => {
-                    console.log("Vérification en cours du statut du replay...");
-                    checkVideo(roomName, checkVideoInterval, checkTimeout);
-                }, 1000);
-
-                checkTimeout = setTimeout(() => {
-                    clearInterval(checkVideoInterval as NodeJS.Timeout);
-                    checkVideoInterval = null;
-                    checkTimeout = null;
-                    Swal.fire({
-                        title: 'Erreur !',
-                        text: `Une erreur est survenue lors de l'enregistrement de la vidéo. Veuillez contacter le support.`,
-                        icon: 'error',
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        showCloseButton: true
-                    });
-                }, REPLAY_CHECK_TIMEOUT_MS); // 10 min
-            }
+            retryVerification(roomName, checkVideoInterval, checkTimeout);
         }
     });
 };
+
+function retryVerification(roomName: string, checkVideoInterval: NodeJS.Timeout | null, checkTimeout: NodeJS.Timeout | null) {
+    if (!checkVideoInterval) {
+        checkVideoInterval = setInterval(async () => {
+            console.log("Vérification en cours du statut du replay...");
+            const result = await checkVideo(roomName, checkVideoInterval, checkTimeout);
+
+            if (result === "error") {
+                console.warn("Arrêt de la vérification car erreur détectée");
+                clearInterval(checkVideoInterval as NodeJS.Timeout);
+                if (checkTimeout) clearTimeout(checkTimeout);
+                checkVideoInterval = null;
+                checkTimeout = null;
+            }
+        }, 1000);
+
+        checkTimeout = setTimeout(() => {
+            clearInterval(checkVideoInterval as NodeJS.Timeout);
+            checkVideoInterval = null;
+            checkTimeout = null;
+            localStorage.setItem("isRecordingStarted", "false"); // on reset l'état
+            Swal.fire({
+                title: 'Erreur !',
+                text: `Une erreur est survenue lors de l'enregistrement de la vidéo. Veuillez contacter le support.`,
+                icon: 'error',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                showCloseButton: true
+            });
+        }, REPLAY_CHECK_TIMEOUT_MS); // 10 min
+    }
+}
 
 export const handlejibriApitechApi = (jitsiAPIOptions: any, enableJibriApitechApi: string, jibriApitechApiDomain: string) => {
     console.log(`enableJibriApitechApi=${enableJibriApitechApi}`);

@@ -216,6 +216,10 @@ export class ReplayController {
             return replay;
         } catch (error) {
             console.error("Erreur lors de la récupération du replay :", error.message);
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            
             throw new InternalServerErrorException(error.message);
         }
     }

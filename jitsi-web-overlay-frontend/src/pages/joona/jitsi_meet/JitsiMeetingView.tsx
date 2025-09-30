@@ -25,9 +25,7 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
   const jitsiAPIOptions = (window as any).jitsiAPIOptions;
 
   const onClose = () => {
-
-    navigate('/');
-    window.open('/feedback', '_blank');
+    navigate('/feedback');
   };
 
   return (
@@ -64,9 +62,14 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
             if (event.id === myId) {
               myRole.current = event.role;
               console.log('Mon nouveau rôle:', myRole);
-              handleRecordingStatus(api, roomName, myRole.current, checkVideoInterval.current, checkTimeout.current);
             }
+
+            handleRecordingStatus(api, roomName, myRole.current, checkVideoInterval.current, checkTimeout.current);
           })
+
+          // api.getRoomsInfo().then((rooms : any) => {
+          //   console.log('Rooms info:', rooms);
+          // })
 
           const participantsInfo = api.getParticipantsInfo();
           console.log({ participantsInfo });

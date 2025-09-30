@@ -2,7 +2,7 @@
 export const roomNameConfig = {
   regex: new RegExp(
     import.meta.env.VITE_CONFERENCE_NAME_REGEX ||
-      '^(?=(?:[a-zA-Z0-9]*[a-zA-Z]))(?=(?:[a-zA-Z0-9]*\\d){3})[a-zA-Z0-9]{10}$'
+      '^[a-zA-Z0-9_-]'
   ),
 };
 

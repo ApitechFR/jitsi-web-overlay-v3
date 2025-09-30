@@ -37,7 +37,7 @@ export class ReplayService {
 
     async findByLatestConferenceUID(conference_uid: string): Promise<Replay[]> {
         try {
-            return this.replayRepository.find({
+            return await this.replayRepository.find({
                 where: {
                     status: ReplayStatus.TERMINATED,
                     conference: { uid: conference_uid },
