@@ -41,7 +41,7 @@ export default function HeaderJoona() {
     {
       buttonProps: {
         onClick: () => {
-          window.open('/feedback', '_blank', 'noopener,noreferrer');
+          window.open('/feedback?src=visio', '_blank', 'noopener,noreferrer');
         },
         className: 'fr-btn--icon-right',
       },

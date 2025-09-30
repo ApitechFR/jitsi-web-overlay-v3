@@ -19,6 +19,14 @@
     justify-content: flex-end;
 }
 
+.alertContainer {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 1000;
+  animation: slideUpFade 0.8s ease-out;
+}
+
 @media (max-width: 850px) {
     .contentFeedback {
         width: 100%;
