@@ -172,6 +172,7 @@ function retryVerification(roomName: string, checkVideoInterval: NodeJS.Timeout 
                 if (checkTimeout) clearTimeout(checkTimeout);
                 checkVideoInterval = null;
                 checkTimeout = null;
+                localStorage.removeItem("isRecordingStarted");
             }
         }, 1000);
 
@@ -179,7 +180,7 @@ function retryVerification(roomName: string, checkVideoInterval: NodeJS.Timeout 
             clearInterval(checkVideoInterval as NodeJS.Timeout);
             checkVideoInterval = null;
             checkTimeout = null;
-            localStorage.setItem("isRecordingStarted", "false"); // on reset l'état
+            localStorage.removeItem("isRecordingStarted"); // on reset l'état
             Swal.fire({
                 title: 'Erreur !',
                 text: `Une erreur est survenue lors de l'enregistrement de la vidéo. Veuillez contacter le support.`,
