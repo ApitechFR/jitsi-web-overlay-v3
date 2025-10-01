@@ -52,8 +52,31 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
       onApiReady={(api) => {
         console.log('[Jitsi] API prête');
 
+        if (enableJibriApitechApi === "true") { handlejibriApitechApi(jitsiAPIOptions, enableJibriApitechApi, jibriApitechApiDomain); }
 
-        api.on('videoConferenceJoined', (event) => {
+        api.on('readyToClose', async () => {
+          console.log("La réunion est terminée");
+          const data = await fetchStats(roomName);
+          participantCountRef.current = data;
+          console.log("participants from readyToClose : ", participantCountRef.current);
+          if (participantCountRef.current === 0) {
+            await checkConferenceEnd(roomName);
+          }
+        });
+
+        api.on('videoConferenceJoined', async (event) => {
+          const data = await fetchStats(roomName);
+          console.log({ data });
+          participantCountRef.current = data;
+          console.log("participants from videoConferenceJoined : ", participantCountRef.current);
+          if (participantCountRef.current === 1 && !conferenceRef.current) {
+            const conference = await createConference(roomName);
+            conferenceRef.current = conference;
+            console.log("Conférence active : ", conference);
+            console.log("created_by : ", conference.created_by);
+          }
+
+          // Récupérer et stocker l'ID du participant local
           const myId = event.id;
           console.log('participant id', myId);
 
@@ -71,34 +94,6 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
           //   console.log('Rooms info:', rooms);
           // })
 
-          const participantsInfo = api.getParticipantsInfo();
-          console.log({ participantsInfo });
-
-        });
-        
-        if (enableJibriApitechApi === "true") { handlejibriApitechApi(jitsiAPIOptions, enableJibriApitechApi, jibriApitechApiDomain); }
-
-        api.on('readyToClose', async () => {
-          console.log("La réunion est terminée");
-          const data = await fetchStats(roomName);
-          participantCountRef.current = data;
-          console.log("participants from readyToClose : ", participantCountRef.current);
-          if (participantCountRef.current === 0) {
-            await checkConferenceEnd(roomName);
-          }
-        });
-
-        api.on('videoConferenceJoined', async () => {
-          const data = await fetchStats(roomName);
-          console.log({ data });
-          participantCountRef.current = data;
-          console.log("participants from videoConferenceJoined : ", participantCountRef.current);
-          if (participantCountRef.current === 1 && !conferenceRef.current) {
-            const conference = await createConference(roomName);
-            conferenceRef.current = conference;
-            console.log("Conférence active : ", conference);
-            console.log("created_by : ", conference.created_by);
-          }
         });
 
 
