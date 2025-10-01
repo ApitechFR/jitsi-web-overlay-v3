@@ -1,8 +1,10 @@
 import Button from '@apitechfr/react-dsapitech/Button';
+import { Alert } from '@apitechfr/react-dsapitech/Alert';
 
 import styles from './FeedbackJoona.module.css'
 import { useEffect, useState } from 'react';
 import { FieldComponent } from '../../../components/joona/feedbacks/FieldComponent';
+import { useNavigate } from 'react-router';
 
 export interface FeedbackType {
   id: number;
@@ -29,9 +31,16 @@ const baseUrl = import.meta.env.VITE_API_URL;
 
 function FeedbackJoona() {
 
+    const navigate = useNavigate();
+
     const [templates, setTemplates] = useState<FeedbackTemplate[]>([]);
     const [responses, setResponses] = useState<Record<number, string>>({});
+    const [isBlankNewPage, setIsBlankNewPage] = useState(false);
+    const [isSubmitted, setIsSubmitted] = useState(false);
+    const [isAlertVisible, setIsAlertVisible] = useState(false);
 
+    const params = new URLSearchParams(window.location.search);
+    
     useEffect(() => {
         fetch(`${baseUrl}/feedback/templates`)
         .then((res) => res.json())
@@ -43,6 +52,27 @@ function FeedbackJoona() {
         });
     }, []);
 
+    useEffect(() => {
+        if (isSubmitted) {
+            if (isAlertVisible) {
+                const timeout = setTimeout(() => setIsAlertVisible(false), 3000);
+                return () => clearTimeout(timeout);
+            }
+            if (isBlankNewPage) {
+                const timer = setTimeout(() => {
+                    window.close();
+                }, 4500);
+                
+                return () => clearTimeout(timer);
+            } else {
+                const timer = setTimeout(() => {
+                    navigate('/');
+                }, 4500);
+
+                return () => clearTimeout(timer);
+            }
+        }
+    }, [isSubmitted, isAlertVisible]);
 
     const handleChange = (templateId: number, value: string) => {
         setResponses((previousData) => ({ ...previousData, [templateId]: value }));
@@ -72,40 +102,70 @@ function FeedbackJoona() {
                     body: JSON.stringify(feedbacks),
                 }
             );
-
+            
+            if (params.get("src") === "visio") {
+                setIsBlankNewPage(true);
+            }
             if (response.ok) {
-                alert("Feedback envoyé avec succès !");
+                setIsSubmitted(true);
+                setIsAlertVisible(true);
             } else {
                 console.error("Erreur :", await response.text());
             }
         } catch (err) {
             console.error("Erreur réseau :", err);
         }
-
-        alert("Votre avis à été soumis, merci");
     }
 
     return (
         <div className={styles.content}>
             <h1 className={styles.title}>Mesurez la qualité du service</h1>
-            <div className={styles.contentFeedback}>
-                <form action="" onSubmit={e => handleSubmit(e)}>
-                    {templates.map((template) => {
-                        const Component = FieldComponent[template.type.id];
-                        if (!Component) return null;
-                        return (
-                            <div key={template.id}>
-                                <Component template={template} value={responses[template.id]} onChange={handleChange} />
+            {!isSubmitted ? 
+                (templates.length > 0 ? (
+                    <div className={styles.contentFeedback}>
+                        <form action="" onSubmit={e => handleSubmit(e)}>
+                            {templates.map((template) => {
+                                const Component = FieldComponent[template.type.id];
+                                if (!Component) return null;
+                                return (
+                                    <div key={template.id}>
+                                        <Component template={template} value={responses[template.id]} onChange={handleChange} />
+                                    </div>
+                                );
+                            })}
+                            <div className={styles.validButtonFeedback}>
+                                <Button>
+                                    <span>Envoyer</span>
+                                </Button>
                             </div>
-                        );
-                    })}
-                    <div className={styles.validButtonFeedback}>
-                        <Button>
-                            <span>Envoyer</span>
-                        </Button>
+                        </form>
                     </div>
-                </form>
-            </div>
+                ) : (
+                    <>
+                        <span>Il n'y a actuellement pas de feedback à afficher pour cette organisation</span>
+                        <p>Retour à la page d'accueil ici : <a href="/">Accueil</a></p>
+                    </>
+                )) : isBlankNewPage ? (
+                    <>
+                        <span>Merci pour votre retour !</span>
+                        <p>Vous pouvez désormais retourner à votre visioconférence et fermer cette fenêtre, celle-ci sera automatiquement fermer d'ici quelques secondes</p>
+                        {isAlertVisible && (
+                            <div className={styles.alertContainer}>
+                                <Alert severity="success" title="Votre avis à été soumis, Merci !" description="" small />
+                            </div>
+                        )}
+                    </>
+                ) : (
+                    <>
+                        <span>Merci pour votre retour ! Vous allez être redirigé automatiquement vers la page d'accueil</span>
+                        <p>Si ce n'est pas le cas au bout de quelques secondes, vous pouvez cliquer ici pour y être redirigé : <a href="/">Accueil</a></p>
+                        {isAlertVisible && (
+                            <div className={styles.alertContainer}>
+                                <Alert severity="success" title="Votre avis à été soumis, Merci !" description="" small />
+                            </div>
+                        )}
+                    </>
+            )}
         </div>
     )
 };

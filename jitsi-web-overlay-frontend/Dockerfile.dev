@@ -11,7 +11,9 @@ COPY package*.json ./
 COPY . .
 
 
+
 RUN npm install --force
+RUN cp -r node_modules/@apitechfr/react-dsapitech/dsfr public/dsfr/ 2>/dev/null || true
 
 
 
