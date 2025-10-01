@@ -91,7 +91,9 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
           }
 
           // api.getRoomsInfo().then((rooms : any) => {
-          //   console.log('Rooms info:', rooms);
+          //   const roomsArray: any = Object.values(rooms);
+          //   console.log('Rooms info:', roomsArray[0].participants);
+            
           // })
 
         });
