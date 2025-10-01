@@ -86,7 +86,7 @@ export const checkVideo = async (roomName: string, checkVideoInterval: NodeJS.Ti
             }).then((result) => {
                 if (result.isConfirmed) {
                     window.open(
-                        `/visioreplay?room=${encodeURIComponent(data.conference.uid)}`,
+                        `/visioreplay/${encodeURIComponent(data.conference.uid)}`,
                         '_blank'
                     );
                 }

@@ -218,7 +218,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
-              <Route path="visioreplay" element={<ReplayList />} />
+              <Route path="visioreplay/:conference_uid" element={<ReplayList />} />
               <Route
                 path="admin"
                 element={

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../jitsi_meet/visio_replay';
 import styles from './ReplayList.module.css';
-import { useSearchParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import Button from '@codegouvfr/react-dsfr/Button';
 
 interface Replay {
@@ -26,8 +26,7 @@ const formatDate = (isoString: string): string => {
 
 const ReplayList: React.FC = () => {
     const [replays, setReplays] = useState<Replay[]>([]);
-    const [searchParams] = useSearchParams();
-    const conference_uid = searchParams.get('room');
+     const { conference_uid } = useParams<{ conference_uid: string }>();
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
