@@ -1,16 +1,12 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { validateRoomName } from "./utils/roomName";
+import { RESERVED_SEGMENTS } from "./constant/routes";
 
 type Scheme = "system" | "light" | "dark";
 
-// Routes qui NE sont PAS des salles
-const RESERVED = new Set([
-    "", "profile", "dashboard", "admin", "feedback", "mentionslegales",
-    "visioreplay", "plan-du-site", "login", "login_callback", "logout",
-    "logout_callback", "browser_test", "faq", "donneespersonnelles",
-    "contact", "apropos", "cgu", "accessibilite", "wce-api", "error",
-]);
+
+
 
 const BASELINE_KEY = "app:scheme:baseline-before-jitsi";
 
@@ -56,7 +52,7 @@ export default function RouteThemeController() {
     // /:roomName exact, pas réservé, et nom valide
     const firstSeg = path.split("/")[1] ?? "";
     const isSingleSeg = path === `/${firstSeg}` && firstSeg.length > 0;
-    const isJitsi = isSingleSeg && !RESERVED.has(firstSeg) && validateRoomName(firstSeg);
+    const isJitsi = isSingleSeg && !RESERVED_SEGMENTS.has(firstSeg) && validateRoomName(firstSeg);
 
     useEffect(() => {
         if (isJitsi) {
