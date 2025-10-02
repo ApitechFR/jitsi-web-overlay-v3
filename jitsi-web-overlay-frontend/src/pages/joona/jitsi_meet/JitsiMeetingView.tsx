@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import { handlejibriApitechApi, handleRecordingStatus } from './visio_replay';
 import { useNavigate } from 'react-router';
-import { checkConferenceEnd, createConference, fetchStats } from './conference_events';
+import { checkConferenceEnd, createConference, getParicipantsNumber } from './conference_events';
 
 interface Props {
   domain: string;
@@ -56,7 +56,7 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
 
         api.on('readyToClose', async () => {
           console.log("La réunion est terminée");
-          const data = await fetchStats(roomName);
+          const data = await getParicipantsNumber(roomName);
           participantCountRef.current = data;
           console.log("participants from readyToClose : ", participantCountRef.current);
           if (participantCountRef.current === 0) {
@@ -74,12 +74,13 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
             if (event.id === myId) {
               myRole.current = event.role;
               console.log('Mon nouveau rôle:', myRole);
+              handleRecordingStatus(api, roomName, myRole.current, checkVideoInterval.current, checkTimeout.current);
             }
 
-            handleRecordingStatus(api, roomName, myRole.current, checkVideoInterval.current, checkTimeout.current);
+            
           });
           
-          const data = await fetchStats(roomName);
+          const data = await getParicipantsNumber(roomName);
           console.log({ data });
           participantCountRef.current = data;
           console.log("participants from videoConferenceJoined : ", participantCountRef.current);

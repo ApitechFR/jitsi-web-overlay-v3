@@ -1,6 +1,6 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-export const fetchStats = async (roomName: string) => {
+export const getParicipantsNumber = async (roomName: string) => {
     try {
         const response = await fetch(`${API_BASE_URL}/conferences/${roomName}/room-size`);
         return await response.json();
