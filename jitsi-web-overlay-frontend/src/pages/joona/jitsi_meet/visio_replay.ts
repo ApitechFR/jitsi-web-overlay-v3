@@ -153,7 +153,7 @@ export const handleRecordingStatus = (api: any, roomName: string, myRole: string
             console.info("Enregistrement arrêté");
             isRecordingStarted = "false";
             localStorage.setItem("isRecordingStarted", "false");
-            showLoadingToast("Upload de l'enregistrement en cours ...");
+            showLoadingToast("Chargement de l'enregistrement en cours ...");
 
             retryVerification(roomName, checkVideoInterval, checkTimeout);
         }
