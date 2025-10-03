@@ -104,7 +104,7 @@ function Admin() {
                                     labelPosition="right"
                                     showCheckedHint
                                 />
-                                <hr />
+                                <hr className={styles.hr} />
                                 <ToggleSwitch
                                     inputTitle="the-title"
                                     label="Uniquement le propriétaire peut télécharger"
@@ -122,7 +122,7 @@ function Admin() {
                                     labelPosition="right"
                                     showCheckedHint
                                 />
-                                <hr />
+                                <hr className={styles.hr} />
                                 <ToggleSwitch
                                     inputTitle="the-title"
                                     label="Label action interrupteur"
@@ -140,7 +140,7 @@ function Admin() {
                                     labelPosition="right"
                                     showCheckedHint
                                 />
-                                <hr />
+                                <hr className={styles.hr} />
                                 <ToggleSwitch
                                     inputTitle="the-title"
                                     label="Label action interrupteur"
@@ -158,7 +158,7 @@ function Admin() {
                                     labelPosition="right"
                                     showCheckedHint
                                 />
-                                <hr />
+                                <hr className={styles.hr} />
                                 <ToggleSwitch
                                     inputTitle="the-title"
                                     label="Label action interrupteur"
