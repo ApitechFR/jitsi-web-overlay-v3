@@ -161,9 +161,17 @@ export class ReplayController {
     }
 
     @Get('')
-    @ApiOperation({ summary: 'Lister tous les replays' })
-    async findAll(): Promise<Replay[]> {
-        return this.replayService.findAll();
+    @ApiOperation({ summary: 'Lister tous les replays groupés par conférence' })
+    async findAllGroupedByConference() {
+        const replays = await this.replayService.findAll();
+        // Grouper par nom de conférence (conference_name ou 'no_conference' si absent)
+        const grouped = {};
+        for (const replay of replays) {
+            const key = replay.conference_name || 'no_conference';
+            if (!grouped[key]) grouped[key] = [];
+            grouped[key].push(replay);
+        }
+        return grouped;
     }
 
     @Get('conference/:conference_uid')
@@ -219,7 +227,7 @@ export class ReplayController {
             if (error instanceof HttpException) {
                 throw error;
             }
-            
+
             throw new InternalServerErrorException(error.message);
         }
     }

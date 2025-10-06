@@ -35,11 +35,12 @@ import HomeJoona from './pages/joona/home/HomeJoona';
 import JitsiMeet from './pages/joona/jitsi_meet/jitsi_meet';
 import Admin from './pages/joona/Admin/Admin';
 import FeedbackJoona from './pages/joona/Feedback/FeedbackJoona';
+import ReplayList from './pages/joona/replayList/ReplayList';
+import ReplayListGrouped from './pages/joona/replayList/ReplayListGrouped';
 
 import PrivateRoute from './auth/PrivateRoute';
 import AdminRoute from './auth/AdminRoute';
 import { useAuth } from './auth/useAuth';
-import ReplayList from './pages/joona/replayList/ReplayList';
 
 type errorObj = {
   message: string;
@@ -213,12 +214,13 @@ function App() {
               <Route
                 path="dashboard"
                 element={
-                  <PrivateRoute>
+                  <AdminRoute>
                     <Dashboard />
-                  </PrivateRoute>
+                  </AdminRoute>
                 }
               />
               <Route path="visioreplay/:conference_uid" element={<ReplayList />} />
+              <Route path="replays" element={<AdminRoute><ReplayListGrouped /></AdminRoute>} />
               <Route
                 path="admin"
                 element={
