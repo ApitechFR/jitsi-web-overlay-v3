@@ -6,6 +6,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { ReplayStatus } from '../enum/replay_status.enum';
 
@@ -38,6 +39,6 @@ export class Replay {
   @CreateDateColumn({ name: 'created_at' })
   created_at: Date;
 
-  @CreateDateColumn({ name: 'updated_at' })
+  @UpdateDateColumn({ name: 'updated_at' })
   updated_at: Date;
 }

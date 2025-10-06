@@ -50,15 +50,14 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
         iframeRef.style.width = '100%';
       }}
       onApiReady={(api) => {
-        console.log('[Jitsi] API prête');
+        console.info('[Jitsi] API prête');
 
         if (enableJibriApitechApi === "true") { handlejibriApitechApi(jitsiAPIOptions, enableJibriApitechApi, jibriApitechApiDomain); }
 
         api.on('readyToClose', async () => {
-          console.log("La réunion est terminée");
+          console.info("La réunion est terminée");
           const data = await getParicipantsNumber(roomName);
           participantCountRef.current = data;
-          console.log("participants from readyToClose : ", participantCountRef.current);
           if (participantCountRef.current === 0) {
             await checkConferenceEnd(roomName);
           }
@@ -67,13 +66,10 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
         api.on('videoConferenceJoined', async (event) => {
           // Récupérer et stocker l'ID du participant local
           const myId = event.id;
-          console.log('participant id', myId);
 
           api.on('participantRoleChanged', (event) => {
-            console.log('participantRoleChanged:', event);
             if (event.id === myId) {
               myRole.current = event.role;
-              console.log('Mon nouveau rôle:', myRole);
               handleRecordingStatus(api, roomName, myRole.current, checkVideoInterval.current, checkTimeout.current);
             }
 
@@ -81,14 +77,10 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
           });
           
           const data = await getParicipantsNumber(roomName);
-          console.log({ data });
           participantCountRef.current = data;
-          console.log("participants from videoConferenceJoined : ", participantCountRef.current);
           if (participantCountRef.current === 1 && !conferenceRef.current) {
             const conference = await createConference(roomName);
             conferenceRef.current = conference;
-            console.log("Conférence active : ", conference);
-            console.log("created_by : ", conference.created_by);
           }
 
           // api.getRoomsInfo().then((rooms : any) => {

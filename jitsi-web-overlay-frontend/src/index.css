@@ -12,3 +12,7 @@ body:has(iframe) {
   border: none;
   overflow: hidden;
 }
+
+.swal2-container {
+  width: 500px !important;
+}

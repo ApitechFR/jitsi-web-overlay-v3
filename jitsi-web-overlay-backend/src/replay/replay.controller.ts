@@ -141,13 +141,17 @@ export class ReplayController {
         }
     }
 
-    @Get('download')
+    @Get('download/:uid')
     @ApiOperation({ summary: 'Télécharger la vidéo' })
-    downloadVideo(
-        @Query('path') rawPath: string,
+    async downloadVideo(
+        @Param('uid') uid: string,
         @Res() res: Response,
     ) {
-        const { path: filePath, stat, safeFilename } = this.replayService.downloadVideoFile(rawPath);
+        const replay = await this.replayService.findReplayByUID(uid);
+        if (!replay) {
+            throw new HttpException('Replay introuvable', HttpStatus.NOT_FOUND);
+        }
+        const { path: filePath, stat, safeFilename } = this.replayService.downloadVideoFile(replay.file_path);
 
         const stream = fs.createReadStream(filePath);
 
@@ -180,15 +184,20 @@ export class ReplayController {
         return this.replayService.findByLatestConferenceUID(conference_uid);
     }
 
-    @Get(':confname/register_eventid')
+    @Post(':confname/register_eventid')
     @ApiOperation({ summary: 'Enregistrer un event ID pour une conférence' })
     async register_eventid(
         @Param('confname') confname: string,
-        @Query('eventid') eventid: string,
-        @Query('jwt') jwt: string,
-        @Query('uploadcallbackurl') uploadCallbackUrl: string,
-        @Query('uploadcallbackdomainurl') uploadCallbackDomainUrl: string,
+        @Body()
+        body: {
+            eventid: string;
+            jwt: string;
+            uploadCallbackUrl: string;
+            uploadCallbackDomainUrl: string;
+        },
     ) {
+        const { eventid, jwt, uploadCallbackUrl, uploadCallbackDomainUrl } = body;
+        
         if (!eventid || !jwt || !uploadCallbackUrl || !uploadCallbackDomainUrl) {
             throw new HttpException(
                 { message: 'Certains paramètres sont manquants.' },
@@ -203,8 +212,6 @@ export class ReplayController {
             uploadCallbackUrl,
             uploadCallbackDomainUrl,
         });
-
-        console.log({ confname, eventid, jwt, uploadCallbackUrl, uploadCallbackDomainUrl });
 
         return {
             message: `L'eventid '${eventid}' est enregistré pour la conf '${confname}'`,

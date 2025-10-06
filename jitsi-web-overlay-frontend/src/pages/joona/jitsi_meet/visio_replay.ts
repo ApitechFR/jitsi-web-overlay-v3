@@ -37,7 +37,7 @@ export const startVideo = async (roomName: string) => {
 
         if (response.ok) {
             const result = await response.json();
-            console.log("Replay créé avec status:", result);
+            console.info("Nouveau replay créé avec status:", result.status);
         } else {
             const errorData = await response.json();
             console.error("Erreur :", errorData);
@@ -71,7 +71,6 @@ export const checkVideo = async (roomName: string, checkVideoInterval: NodeJS.Ti
         const data = await response.json();
 
         if (data.status === "terminated") {
-            console.log("data from terminated : ", data);
             Swal.fire({
                 title: 'Succès !',
                 text: `La vidéo pour "${conference_name}" a été enregistrée avec succès.`,
@@ -138,8 +137,6 @@ export const handleRecordingStatus = (api: any, roomName: string, myRole: string
 
         console.info("Changement de statut d'enregistrement :", event);
 
-        console.log({ myRole });
-
         if (isRecordingOn && myRole === "moderator") {
             console.info("Enregistrement démarré");
             isRecordingStarted = "true";
@@ -163,7 +160,6 @@ export const handleRecordingStatus = (api: any, roomName: string, myRole: string
 function retryVerification(roomName: string, checkVideoInterval: NodeJS.Timeout | null, checkTimeout: NodeJS.Timeout | null) {
     if (!checkVideoInterval) {
         checkVideoInterval = setInterval(async () => {
-            console.log("Vérification en cours du statut du replay...");
             const result = await checkVideo(roomName, checkVideoInterval, checkTimeout);
 
             if (result === "error") {
@@ -195,8 +191,6 @@ function retryVerification(roomName: string, checkVideoInterval: NodeJS.Timeout 
 }
 
 export const handlejibriApitechApi = (jitsiAPIOptions: any, enableJibriApitechApi: string, jibriApitechApiDomain: string) => {
-    console.log(`enableJibriApitechApi=${enableJibriApitechApi}`);
-    console.log(`jibriApitechApiDomain=${jibriApitechApiDomain}`);
 
     if (
         enableJibriApitechApi &&
@@ -215,7 +209,14 @@ export const handlejibriApitechApi = (jitsiAPIOptions: any, enableJibriApitechAp
             return;
         }
 
-        const jibriUrl = `${jibriApitechApiDomain}/visioreplay/register_eventid/${roomName}?eventid=${eventId}&jwt=${uploadCallbackJwt}&uploadcallbackdomainurl=${uploadCallbackDomainUrl}&uploadcallbackurl=${uploadCallbackUrl}`;
+        const jibriUrl = `${jibriApitechApiDomain}/visioreplay/${roomName}/register_eventid`;
+
+        const payload = {
+            eventid: eventId,
+            jwt: uploadCallbackJwt,
+            uploadCallbackUrl,
+            uploadCallbackDomainUrl,
+        };
 
         // const xmlHttp = new XMLHttpRequest();
         // xmlHttp.onreadystatechange = function () {
@@ -226,7 +227,13 @@ export const handlejibriApitechApi = (jitsiAPIOptions: any, enableJibriApitechAp
         // xmlHttp.open("GET", jibriUrl, true);
         // xmlHttp.send(null);
 
-        fetch(jibriUrl)
+        fetch(jibriUrl, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+        })
             .then((res) => {
                 if (!res.ok) {
                     throw new Error(`HTTP error! Status: ${res.status}`);

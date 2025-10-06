@@ -55,7 +55,7 @@ const ReplayListGrouped: React.FC = () => {
                                     priority="primary"
                                     onClick={() => {
                                         window.open(
-                                            `${API_BASE_URL}/replays/download?path=${encodeURIComponent(replay.file_path)}`,
+                                            `${API_BASE_URL}/replays/download/${encodeURIComponent(replay.uid)}`,
                                             '_blank',
                                             'noopener,noreferrer'
                                         );

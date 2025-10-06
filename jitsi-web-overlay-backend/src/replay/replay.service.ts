@@ -35,6 +35,10 @@ export class ReplayService {
         });
     }
 
+    async findReplayByUID(uid: string) {
+        return this.replayRepository.findOne({ where: { uid } });
+    }
+
     async findByLatestConferenceUID(conference_uid: string): Promise<Replay[]> {
         try {
             return await this.replayRepository.find({
@@ -129,17 +133,14 @@ export class ReplayService {
 
             let replay_status = data.status;
             const filePath = join('..', data.file_path || '');
-            console.log({ filePath });
 
             const isEnabled = process.env.ENABLE_JIBRI_APITECH_API === 'true';
 
-            if (replay_status === ReplayStatus.UPLOADED_RSYNC && fs.existsSync(filePath)) {
+            if (replay_status === ReplayStatus.UPLOADED_RSYNC && filePath && fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
                 if (!isEnabled) {
-                    console.log({ isEnabled });
                     replay_status = ReplayStatus.TERMINATED;
                 }
             }
-
             replay.status = replay_status;
             replay.message = data.message;
             replay.file_path = data.file_path;

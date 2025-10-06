@@ -11,18 +11,13 @@ export const getParicipantsNumber = async (roomName: string) => {
 
 export const checkConferenceEnd = async (roomName: string) => {
     const endTime = new Date();
-    console.log({ endTime });
 
     try {
-        console.log("before update")
-        console.log("end time string : ", endTime.toISOString())
-        console.log({ roomName })
         await fetch(`${API_BASE_URL}/conferences/confname/${roomName}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ end_time: endTime.toISOString() }),
         });
-        console.log("after update")
     } catch (error) {
         console.error('Erreur lors du mise a jour de la conference :', error);
     }
@@ -31,7 +26,7 @@ export const checkConferenceEnd = async (roomName: string) => {
 export const createRoom = async (roomName: string) => {
     const roomExists = await getRoomByName(roomName);
     if (roomExists) {
-        console.log("Room trouvée :", roomExists);
+        console.info("La room existe déjà");
         return roomExists;
     }
     
@@ -48,7 +43,7 @@ export const createRoom = async (roomName: string) => {
     }
 
     const newRoom = await roomResponse.json();
-    console.log("Nouvelle room créée :", newRoom);
+    console.info("Nouvelle room créée :");
     return newRoom;
 }
 
@@ -60,9 +55,7 @@ export const createConference = async (roomName: string) => {
         room_uid: room.uid,
         name: roomName,
     };
-    console.log({ payload })
 
-    console.log("before fetch")
     const conferenceResponse = await fetch(`${API_BASE_URL}/conferences`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -73,8 +66,6 @@ export const createConference = async (roomName: string) => {
         throw new Error(`Erreur HTTP ! statut : ${conferenceResponse.status}`);
     }
 
-    console.log("after fetch");
-    console.log({ conferenceResponse });
     return await conferenceResponse.json();;
 }
 
@@ -97,8 +88,7 @@ export const checkConferenceExists = async (roomName: string) => {
         const response = await fetch(`${API_BASE_URL}/conferences/${encodeURIComponent(roomName)}/state`);
 
         if (response.ok) {
-            const data = await response.json();
-            console.log("La salle existe :", data);
+            console.info("La conférence existe déjà.");
             return true;
         } else {
             console.error("Erreur inattendue :", response.status);

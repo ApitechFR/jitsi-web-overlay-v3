@@ -49,13 +49,13 @@ const ReplayList: React.FC = () => {
                 replays.map((replay) => (
                     <div className={styles.replayRow} key={replay.id}>
                         <div className={styles.filename}>{replay.conference_name}</div>
-                        <div className={styles.date}>{formatDate(replay.updated_at)}</div>
+                        <div className={styles.date}>{formatDate(replay.created_at)}</div>
                         <Button
                             className={styles.downloadButton}
                             priority="primary"
                             onClick={() => {
                                 window.open(
-                                    `${API_BASE_URL}/replays/download?path=${encodeURIComponent(replay.file_path)}`,
+                                    `${API_BASE_URL}/replays/download/${encodeURIComponent(replay.uid)}`,
                                     '_blank',
                                     'noopener,noreferrer'
                                 );
