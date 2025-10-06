@@ -26,7 +26,7 @@ const formatDate = (isoString: string): string => {
 
 const ReplayList: React.FC = () => {
     const [replays, setReplays] = useState<Replay[]>([]);
-     const { conference_uid } = useParams<{ conference_uid: string }>();
+    const { conference_uid } = useParams<{ conference_uid: string }>();
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {

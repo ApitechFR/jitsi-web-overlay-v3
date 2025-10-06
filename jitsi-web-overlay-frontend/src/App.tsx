@@ -1,4 +1,3 @@
-// src/App.tsx
 import Home from './pages/home/Home';
 import Layout from './components/layout/Layout';
 import { useState, useEffect } from 'react';
