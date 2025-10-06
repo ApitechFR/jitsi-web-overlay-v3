@@ -26,7 +26,6 @@ import LogoutCallback from './pages/login/LogoutCallback';
 import Error from './pages/Error/Error';
 import MuiDsfrThemeProvider from '@codegouvfr/react-dsfr/mui';
 import PlanDuSite from './pages/PlanDuSite/PlanDuSite';
-
 import Profile from './pages/joona/Profile/Profile';
 import Dashboard from './pages/joona/Dashboard/Dashboard';
 import LayoutJoona from './components/joona/layout/LayoutJoona';
@@ -36,10 +35,10 @@ import Admin from './pages/joona/Admin/Admin';
 import FeedbackJoona from './pages/joona/Feedback/FeedbackJoona';
 import ReplayList from './pages/joona/replayList/ReplayList';
 import ReplayListGrouped from './pages/joona/replayList/ReplayListGrouped';
-
 import PrivateRoute from './auth/PrivateRoute';
 import AdminRoute from './auth/AdminRoute';
 import { useAuth } from './auth/useAuth';
+import RouteThemeController from './RouteThemeController';
 
 type errorObj = {
   message: string;
@@ -164,6 +163,7 @@ function App() {
 
   return (
     <MuiDsfrThemeProvider>
+      <RouteThemeController />
       <Routes>
         {AppTemplate === 'joona' && (
           <>

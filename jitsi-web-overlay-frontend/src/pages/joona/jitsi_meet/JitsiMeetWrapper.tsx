@@ -111,10 +111,6 @@ const JitsiMeetWrapper: React.FC = () => {
     };
   }, [authenticated, status, roomName, apiBase, validRoom]);
 
-  useEffect(() => {
-    setTheme("dark");
-  }, []);
-
   // displayName : on privilégie prénom/nom/email si présents
   const displayName = useMemo<string>(() => {
     if (authenticated) {
@@ -168,13 +164,6 @@ const JitsiMeetWrapper: React.FC = () => {
         </div>
       </div>
     );
-  }
-
-  function setTheme(theme: "light" | "dark") {
-    const root = document.documentElement;
-    root.setAttribute("data-theme", theme);
-    root.setAttribute("data-fr-theme", theme);
-    root.setAttribute("data-fr-scheme", theme);
   }
 
   return (
