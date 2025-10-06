@@ -72,11 +72,11 @@ export class ConferenceController {
     return { duration };
   }
 
-  @Get('conferences/:id')
+  @Get('conferences/:uid')
   @ApiOkResponse({ description: 'Conférence trouvée' })
   @ApiNotFoundResponse({ description: 'Conférence non trouvée' })
-  async findOne(@Param('id') id: string) {
-    return this.conferenceService.findOne(id);
+  async findOne(@Param('uid') uid: string) {
+    return this.conferenceService.findOne(uid);
   }
 
   @Delete('conferences/:id')

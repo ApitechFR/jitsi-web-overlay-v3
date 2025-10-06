@@ -49,7 +49,7 @@ const ReplayList: React.FC = () => {
                 replays.map((replay) => (
                     <div className={styles.replayRow} key={replay.id}>
                         <div className={styles.filename}>{replay.conference_name}</div>
-                        <div className={styles.date}>{formatDate(replay.created_at)}</div>
+                        <div className={styles.date}>{formatDate(replay.updated_at)}</div>
                         <Button
                             className={styles.downloadButton}
                             priority="primary"
