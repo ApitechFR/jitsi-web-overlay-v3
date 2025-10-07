@@ -12,6 +12,7 @@ export class CreateConferenceDTO {
   name: string;
 
   @ApiProperty()
+  @IsOptional()
   @IsDateString()
   start_time: Date;
 

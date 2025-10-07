@@ -37,7 +37,7 @@ export const startVideo = async (roomName: string) => {
 
         if (response.ok) {
             const result = await response.json();
-            console.log("Replay créé avec status:", result);
+            console.info("Nouveau replay créé avec status:", result.status);
         } else {
             const errorData = await response.json();
             console.error("Erreur :", errorData);
@@ -52,6 +52,22 @@ export const checkVideo = async (roomName: string, checkVideoInterval: NodeJS.Ti
 
     try {
         const response = await fetch(`${API_BASE_URL}/replays/${encodeURIComponent(conference_name)}`);
+
+        if (response.status === 404) {
+            console.warn("Aucun replay trouvé pour", conference_name);
+
+            if (checkVideoInterval) clearInterval(checkVideoInterval);
+            if (checkTimeout) clearTimeout(checkTimeout);
+            localStorage.removeItem("isRecordingStarted");
+
+            return "error";
+        }
+
+        if (!response.ok) {
+            console.error("Erreur HTTP :", response.status);
+            return "error";
+        }
+
         const data = await response.json();
 
         if (data.status === "terminated") {
@@ -68,7 +84,10 @@ export const checkVideo = async (roomName: string, checkVideoInterval: NodeJS.Ti
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = `/visioreplay?room=${encodeURIComponent(data.conference_uid)}`;
+                    window.open(
+                        `/visioreplay/${encodeURIComponent(data.conference.uid)}`,
+                        '_blank'
+                    );
                 }
             });
 
@@ -76,6 +95,8 @@ export const checkVideo = async (roomName: string, checkVideoInterval: NodeJS.Ti
             if (checkTimeout) clearTimeout(checkTimeout);
             checkVideoInterval = null;
             checkTimeout = null;
+
+            localStorage.removeItem("isRecordingStarted");
 
         } else if (data.status === "error-uploading-rsync") {
             Swal.fire({
@@ -92,15 +113,23 @@ export const checkVideo = async (roomName: string, checkVideoInterval: NodeJS.Ti
             if (checkTimeout) clearTimeout(checkTimeout);
             checkVideoInterval = null;
             checkTimeout = null;
+
+            localStorage.removeItem("isRecordingStarted");
         }
 
     } catch (error) {
         console.error('Erreur lors de la vérification du replay :', error);
+        return "error";
     }
 };
 
-export const handleRecordingStatus = (api: any, roomName: string, checkVideoInterval: NodeJS.Timeout | null, checkTimeout: NodeJS.Timeout | null) => {
-    let isRecordingStarted = false;
+export const handleRecordingStatus = (api: any, roomName: string, myRole: string, checkVideoInterval: NodeJS.Timeout | null, checkTimeout: NodeJS.Timeout | null) => {
+    let isRecordingStarted = localStorage.getItem("isRecordingStarted");
+
+    if (isRecordingStarted === "false" && myRole === "moderator") {
+        console.info("Reprise après refresh : replay en cours d'upload...");
+        retryVerification(roomName, checkVideoInterval, checkTimeout);
+    }
 
     api.on('recordingStatusChanged', (event: any) => {
         const isRecordingOn = event.on;
@@ -108,9 +137,10 @@ export const handleRecordingStatus = (api: any, roomName: string, checkVideoInte
 
         console.info("Changement de statut d'enregistrement :", event);
 
-        if (isRecordingOn) {
+        if (isRecordingOn && myRole === "moderator") {
             console.info("Enregistrement démarré");
-            isRecordingStarted = true;
+            isRecordingStarted = "true";
+            localStorage.setItem("isRecordingStarted", "true");
             startVideo(roomName);
 
         } else if (error) {
@@ -118,36 +148,49 @@ export const handleRecordingStatus = (api: any, roomName: string, checkVideoInte
 
         } else if (isRecordingStarted) {
             console.info("Enregistrement arrêté");
-            showLoadingToast("Upload de l'enregistrement en cours ...");
+            isRecordingStarted = "false";
+            localStorage.setItem("isRecordingStarted", "false");
+            showLoadingToast("Chargement de l'enregistrement en cours ...");
 
-            if (!checkVideoInterval) {
-                checkVideoInterval = setInterval(() => {
-                    console.log("Vérification en cours du statut du replay...");
-                    checkVideo(roomName, checkVideoInterval, checkTimeout);
-                }, 1000);
-
-                checkTimeout = setTimeout(() => {
-                    clearInterval(checkVideoInterval as NodeJS.Timeout);
-                    checkVideoInterval = null;
-                    checkTimeout = null;
-                    Swal.fire({
-                        title: 'Erreur !',
-                        text: `Une erreur est survenue lors de l'enregistrement de la vidéo. Veuillez contacter le support.`,
-                        icon: 'error',
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        showCloseButton: true
-                    });
-                }, REPLAY_CHECK_TIMEOUT_MS); // 10 min
-            }
+            retryVerification(roomName, checkVideoInterval, checkTimeout);
         }
     });
 };
 
+function retryVerification(roomName: string, checkVideoInterval: NodeJS.Timeout | null, checkTimeout: NodeJS.Timeout | null) {
+    if (!checkVideoInterval) {
+        checkVideoInterval = setInterval(async () => {
+            const result = await checkVideo(roomName, checkVideoInterval, checkTimeout);
+
+            if (result === "error") {
+                console.warn("Arrêt de la vérification car erreur détectée");
+                clearInterval(checkVideoInterval as NodeJS.Timeout);
+                if (checkTimeout) clearTimeout(checkTimeout);
+                checkVideoInterval = null;
+                checkTimeout = null;
+                localStorage.removeItem("isRecordingStarted");
+            }
+        }, 1000);
+
+        checkTimeout = setTimeout(() => {
+            clearInterval(checkVideoInterval as NodeJS.Timeout);
+            checkVideoInterval = null;
+            checkTimeout = null;
+            localStorage.removeItem("isRecordingStarted"); // on reset l'état
+            Swal.fire({
+                title: 'Erreur !',
+                text: `Une erreur est survenue lors de l'enregistrement de la vidéo. Veuillez contacter le support.`,
+                icon: 'error',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                showCloseButton: true
+            });
+        }, REPLAY_CHECK_TIMEOUT_MS); // 10 min
+    }
+}
+
 export const handlejibriApitechApi = (jitsiAPIOptions: any, enableJibriApitechApi: string, jibriApitechApiDomain: string) => {
-    console.log(`enableJibriApitechApi=${enableJibriApitechApi}`);
-    console.log(`jibriApitechApiDomain=${jibriApitechApiDomain}`);
 
     if (
         enableJibriApitechApi &&
@@ -166,7 +209,14 @@ export const handlejibriApitechApi = (jitsiAPIOptions: any, enableJibriApitechAp
             return;
         }
 
-        const jibriUrl = `${jibriApitechApiDomain}/visioreplay/register_eventid/${roomName}?eventid=${eventId}&jwt=${uploadCallbackJwt}&uploadcallbackdomainurl=${uploadCallbackDomainUrl}&uploadcallbackurl=${uploadCallbackUrl}`;
+        const jibriUrl = `${jibriApitechApiDomain}/visioreplay/${roomName}/register_eventid`;
+
+        const payload = {
+            eventid: eventId,
+            jwt: uploadCallbackJwt,
+            uploadCallbackUrl,
+            uploadCallbackDomainUrl,
+        };
 
         // const xmlHttp = new XMLHttpRequest();
         // xmlHttp.onreadystatechange = function () {
@@ -177,7 +227,13 @@ export const handlejibriApitechApi = (jitsiAPIOptions: any, enableJibriApitechAp
         // xmlHttp.open("GET", jibriUrl, true);
         // xmlHttp.send(null);
 
-        fetch(jibriUrl)
+        fetch(jibriUrl, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+        })
             .then((res) => {
                 if (!res.ok) {
                     throw new Error(`HTTP error! Status: ${res.status}`);

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../jitsi_meet/visio_replay';
-import './ReplayList.module.css';
-import { useSearchParams } from 'react-router-dom';
+import styles from './ReplayList.module.css';
+import { useParams } from 'react-router-dom';
 import Button from '@codegouvfr/react-dsfr/Button';
 
 interface Replay {
@@ -26,8 +26,7 @@ const formatDate = (isoString: string): string => {
 
 const ReplayList: React.FC = () => {
     const [replays, setReplays] = useState<Replay[]>([]);
-    const [searchParams] = useSearchParams();
-    const conference_uid = searchParams.get('room');
+    const { conference_uid } = useParams<{ conference_uid: string }>();
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -41,22 +40,22 @@ const ReplayList: React.FC = () => {
 
     return (
 
-        <div className="replay-list">
+        <div className={styles.replayList}>
             <h1>Enregistrements Vidéo</h1>
 
             {replays.length === 0 ? (
-                <p className="no-replays">Aucun replay disponible pour cette conférence</p>
+                <p className={styles.noReplays}>Aucun replay disponible pour cette conférence</p>
             ) : (
                 replays.map((replay) => (
-                    <div className="replay-row" key={replay.id}>
-                        <div className="filename">{replay.conference_name}</div>
-                        <div className="date">{formatDate(replay.updated_at)}</div>
+                    <div className={styles.replayRow} key={replay.id}>
+                        <div className={styles.filename}>{replay.conference_name}</div>
+                        <div className={styles.date}>{formatDate(replay.updated_at)}</div>
                         <Button
-                            className='download-button'
+                            className={styles.downloadButton}
                             priority="primary"
                             onClick={() => {
                                 window.open(
-                                    `${API_BASE_URL}/replays/download?path=${encodeURIComponent(replay.file_path)}`,
+                                    `${API_BASE_URL}/replays/download/${encodeURIComponent(replay.uid)}`,
                                     '_blank',
                                     'noopener,noreferrer'
                                 );

@@ -3,6 +3,7 @@ import {
   NotFoundException,
   UnauthorizedException,
   Logger,
+  InternalServerErrorException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
@@ -18,7 +19,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ProsodyService } from '../../prosody/prosody.service';
 import { ProsodyRuntimeService } from '../../prosody/prosody-runtime.service';
-import { InternalServerErrorException } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class ConferenceServiceSQL implements IConferenceService {
@@ -46,11 +47,29 @@ export class ConferenceServiceSQL implements IConferenceService {
       await this.roomRepo.save(room);
     }
 
+    // Vérifier s'il existe déjà une conférence active pour cette room
+    const existingConference = await this.conferenceRepo.findOne({
+      where: {
+        room: { uid: room.uid },
+        status: ConferenceStatus.STARTED,
+        end_time: null,
+      },
+      relations: ['room'],
+      order: {
+        start_time: 'DESC',
+      },
+    });
+
+    if (existingConference) {
+      return existingConference;
+    }
+
     const conf = this.conferenceRepo.create({
       ...data,
       uid: uuidv4(),
       room: room,
       status: ConferenceStatus.STARTED,
+      start_time: new Date(),
     });
     return this.conferenceRepo.save(conf);
   }
@@ -186,6 +205,10 @@ export class ConferenceServiceSQL implements IConferenceService {
     throw new NotFoundException("La conférence n'existe pas !");
   }
 
+  async getRoomSize(roomName: string) {
+    return this.prosodyRuntimeService.getRoomSizeV2(roomName);
+  }
+
   // async roomExists(roomName: string) {
   //   const exists = await this.prosodyService.roomExists(roomName);
   //   if (exists && exists.length > 0) {
@@ -307,6 +330,47 @@ export class ConferenceServiceSQL implements IConferenceService {
       this.logger.error('Erreur lors de la création du token Jitsi', error);
       throw new UnauthorizedException('Impossible de générer le token');
     }
+  }
+
+  /**
+  * Cron job : toutes les minutes, on vérifie les conférences actives.
+  * Si participants = 0, on met end_time et on termine la conférence.
+  */
+  @Cron(CronExpression.EVERY_MINUTE)
+  async closeEmptyConferences() {
+    const activeConfs = await this.conferenceRepo.find({
+      where: {
+        status: ConferenceStatus.STARTED,
+        end_time: null,
+      },
+    });
+
+    if (activeConfs.length === 0) {
+      return;
+    }
+
+    await Promise.all(
+      activeConfs.map(async (conf) => {
+        try {
+          const participants = await this.getRoomSize(conf.name);
+
+          if (participants === 0) {
+            this.logger.log(
+              `Clôture auto de la conférence ${conf.uid} (${conf.name}) car 0 participants.`,
+            );
+
+            conf.end_time = new Date();
+            conf.status = ConferenceStatus.COMPLETED;
+            await this.conferenceRepo.save(conf);
+          }
+        } catch (err) {
+          this.logger.error(
+            `Erreur lors du check de la conférence ${conf.uid} (${conf.name})`,
+            err instanceof Error ? err.stack : String(err),
+          );
+        }
+      }),
+    );
   }
 }
 

@@ -1,8 +1,10 @@
+const minDigits = import.meta.env.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS || 3;
+const length = import.meta.env.VITE_FRONTCONF_ROOMNAMECONSTRAINT_LENGTH || 10;
+const regexString = import.meta.env.VITE_CONFERENCE_NAME_REGEX || "^[a-zA-Z0-9_-]";
 
 export const roomNameConfig = {
   regex: new RegExp(
-    import.meta.env.VITE_CONFERENCE_NAME_REGEX ||
-      '^(?=(?:[a-zA-Z0-9]*[a-zA-Z]))(?=(?:[a-zA-Z0-9]*\\d){3})[a-zA-Z0-9]{10}$'
+    `${regexString}{${minDigits},${length}}$`
   ),
 };
 

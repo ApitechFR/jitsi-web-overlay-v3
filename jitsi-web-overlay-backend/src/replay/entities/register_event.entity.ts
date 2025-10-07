@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('register_event')
 export class RegisterEvent {
@@ -23,6 +23,6 @@ export class RegisterEvent {
   @CreateDateColumn({ name: 'created_at' })
   created_at: Date;
 
-  @CreateDateColumn({ name: 'updated_at' })
+  @UpdateDateColumn({ name: 'updated_at' })
   updated_at: Date;
 }

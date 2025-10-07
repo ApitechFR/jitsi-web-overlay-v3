@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import { handlejibriApitechApi, handleRecordingStatus } from './visio_replay';
 import { useNavigate } from 'react-router';
+import { checkConferenceEnd, createConference, getParicipantsNumber } from './conference_events';
 
 interface Props {
   domain: string;
@@ -12,16 +13,18 @@ interface Props {
 
 const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName }) => {
 
+  const participantCountRef = useRef(0);
+  const conferenceRef = useRef(null);
   const checkVideoInterval = useRef<NodeJS.Timeout | null>(null);
   const checkTimeout = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
+  const myRole = useRef("");
 
   const enableJibriApitechApi = import.meta.env.VITE_ENABLE_JIBRI_APITECH_API;
   const jibriApitechApiDomain = import.meta.env.VITE_JIBRI_APITECH_API_DOMAIN;
   const jitsiAPIOptions = (window as any).jitsiAPIOptions;
 
   const onClose = () => {
-
     navigate('/feedback');
   };
 
@@ -47,12 +50,47 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
         iframeRef.style.width = '100%';
       }}
       onApiReady={(api) => {
-        console.log('[Jitsi] API prête');
-        handleRecordingStatus(api, roomName, checkVideoInterval.current, checkTimeout.current);
+        console.info('[Jitsi] API prête');
+
         if (enableJibriApitechApi === "true") { handlejibriApitechApi(jitsiAPIOptions, enableJibriApitechApi, jibriApitechApiDomain); }
 
-        const participantsInfo = api.getParticipantsInfo();
-        console.log({ participantsInfo });
+        api.on('readyToClose', async () => {
+          console.info("La réunion est terminée");
+          const data = await getParicipantsNumber(roomName);
+          participantCountRef.current = data;
+          if (participantCountRef.current === 0) {
+            await checkConferenceEnd(roomName);
+          }
+        });
+
+        api.on('videoConferenceJoined', async (event) => {
+          // Récupérer et stocker l'ID du participant local
+          const myId = event.id;
+
+          api.on('participantRoleChanged', (event) => {
+            if (event.id === myId) {
+              myRole.current = event.role;
+              handleRecordingStatus(api, roomName, myRole.current, checkVideoInterval.current, checkTimeout.current);
+            }
+
+            
+          });
+          
+          const data = await getParicipantsNumber(roomName);
+          participantCountRef.current = data;
+          if (participantCountRef.current === 1 && !conferenceRef.current) {
+            const conference = await createConference(roomName);
+            conferenceRef.current = conference;
+          }
+
+          // api.getRoomsInfo().then((rooms : any) => {
+          //   const roomsArray: any = Object.values(rooms);
+          //   console.log('Rooms info:', roomsArray[0].participants);
+            
+          // })
+
+        });
+
 
       }}
       onReadyToClose={onClose}

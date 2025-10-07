@@ -42,7 +42,7 @@ export default function HeaderJoona() {
       (item: Item) => item.id === modalContent
     );
 
-    if(currentItem) {
+    if (currentItem) {
       return <ChangelogContent content={currentItem.content} />
     }
   };
@@ -51,15 +51,17 @@ export default function HeaderJoona() {
     ...(authenticated
       ? [
         { linkProps: { href: '/', target: '_self' }, text: 'Accueil' },
-          { linkProps: { href: '/profile', target: '_self' }, text: 'Mon compte' },
-          { linkProps: { href: '#', target: '_self' }, text: 'Conférences' },
-          ...(isUserAdmin(user)
-            ? [
-                { linkProps: { href: '/admin', target: '_self' }, text: 'Administration' },
-                { linkProps: { href: '/dashboard', target: '_self' }, text: 'Dashboard' },
-              ]
-            : []),
-        ]
+        { linkProps: { href: '/profile', target: '_self' }, text: 'Mon compte' },
+        // { linkProps: { href: '#', target: '_self' }, text: 'Conférences' },
+        ...(isUserAdmin(user)
+          ? [
+
+            { linkProps: { href: '/admin', target: '_self' }, text: 'Administration' },
+            { linkProps: { href: '/replays', target: '_self' }, text: 'Conférences' },
+            { linkProps: { href: '/dashboard', target: '_self' }, text: 'Dashboard' },
+          ]
+          : []),
+      ]
       : []),
   ];
 
@@ -82,21 +84,21 @@ export default function HeaderJoona() {
     },
     authenticated
       ? {
-          buttonProps: {
-            onClick: () => logout(),
-            className: 'fr-btn--icon-right',
-          },
-          iconId: 'fr-icon-account-circle-fill',
-          text: 'Se déconnecter',
-        }
-      : {
-          buttonProps: {
-            onClick: () => login(),
-            className: 'fr-btn fr-btn--icon-right',
-          },
-          iconId: 'fr-icon-account-circle-fill',
-          text: 'Connexion',
+        buttonProps: {
+          onClick: () => logout(),
+          className: 'fr-btn--icon-right',
         },
+        iconId: 'fr-icon-account-circle-fill',
+        text: 'Se déconnecter',
+      }
+      : {
+        buttonProps: {
+          onClick: () => login(),
+          className: 'fr-btn fr-btn--icon-right',
+        },
+        iconId: 'fr-icon-account-circle-fill',
+        text: 'Connexion',
+      },
   ];
 
   return (

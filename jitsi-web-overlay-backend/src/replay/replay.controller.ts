@@ -54,7 +54,7 @@ export class ReplayController {
 
             const isEnabled = process.env.ENABLE_JIBRI_APITECH_API === 'true';
 
-            if (isEnabled && replay.status === 'uploaded-rsync') {
+            if (isEnabled && replay.status === ReplayStatus.UPLOADED_RSYNC) {
                 const confname = replay.conference_name;
                 const file = replay.file_path;
 
@@ -141,13 +141,17 @@ export class ReplayController {
         }
     }
 
-    @Get('download')
+    @Get('download/:uid')
     @ApiOperation({ summary: 'Télécharger la vidéo' })
-    downloadVideo(
-        @Query('path') rawPath: string,
+    async downloadVideo(
+        @Param('uid') uid: string,
         @Res() res: Response,
     ) {
-        const { path: filePath, stat, safeFilename } = this.replayService.downloadVideoFile(rawPath);
+        const replay = await this.replayService.findReplayByUID(uid);
+        if (!replay) {
+            throw new HttpException('Replay introuvable', HttpStatus.NOT_FOUND);
+        }
+        const { path: filePath, stat, safeFilename } = this.replayService.downloadVideoFile(replay.file_path);
 
         const stream = fs.createReadStream(filePath);
 
@@ -161,26 +165,39 @@ export class ReplayController {
     }
 
     @Get('')
-    @ApiOperation({ summary: 'Lister tous les replays' })
-    async findAll(): Promise<Replay[]> {
-        return this.replayService.findAll();
+    @ApiOperation({ summary: 'Lister tous les replays groupés par conférence' })
+    async findAllGroupedByConference() {
+        const replays = await this.replayService.findAll();
+        // Grouper par nom de conférence (conference_name ou 'no_conference' si absent)
+        const grouped = {};
+        for (const replay of replays) {
+            const key = replay.conference_name || 'no_conference';
+            if (!grouped[key]) grouped[key] = [];
+            grouped[key].push(replay);
+        }
+        return grouped;
     }
 
-    @Get('conference/:uid')
+    @Get('conference/:conference_uid')
     @ApiOperation({ summary: 'Obtenir un replay par UID de conférence' })
     async getByLatestConfUID(@Param('conference_uid') conference_uid: string) {
         return this.replayService.findByLatestConferenceUID(conference_uid);
     }
 
-    @Get(':confname/register_eventid')
+    @Post(':confname/register_eventid')
     @ApiOperation({ summary: 'Enregistrer un event ID pour une conférence' })
     async register_eventid(
         @Param('confname') confname: string,
-        @Query('eventid') eventid: string,
-        @Query('jwt') jwt: string,
-        @Query('uploadcallbackurl') uploadCallbackUrl: string,
-        @Query('uploadcallbackdomainurl') uploadCallbackDomainUrl: string,
+        @Body()
+        body: {
+            eventid: string;
+            jwt: string;
+            uploadCallbackUrl: string;
+            uploadCallbackDomainUrl: string;
+        },
     ) {
+        const { eventid, jwt, uploadCallbackUrl, uploadCallbackDomainUrl } = body;
+        
         if (!eventid || !jwt || !uploadCallbackUrl || !uploadCallbackDomainUrl) {
             throw new HttpException(
                 { message: 'Certains paramètres sont manquants.' },
@@ -195,8 +212,6 @@ export class ReplayController {
             uploadCallbackUrl,
             uploadCallbackDomainUrl,
         });
-
-        console.log({ confname, eventid, jwt, uploadCallbackUrl, uploadCallbackDomainUrl });
 
         return {
             message: `L'eventid '${eventid}' est enregistré pour la conf '${confname}'`,
@@ -216,6 +231,10 @@ export class ReplayController {
             return replay;
         } catch (error) {
             console.error("Erreur lors de la récupération du replay :", error.message);
+            if (error instanceof HttpException) {
+                throw error;
+            }
+
             throw new InternalServerErrorException(error.message);
         }
     }

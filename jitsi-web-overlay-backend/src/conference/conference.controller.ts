@@ -29,6 +29,7 @@ import { JwtDTO } from './DTOs/jwt.dto';
 import { RoomNameDto } from './DTOs/room-name.dto';
 import { ConferenceFilter } from './enum/conference_filter.enum';
 import { ParseConferenceFilterPipe } from '../../utils/ParseConferenceFilterPipe';
+import { ProsodyRuntimeService } from '../prosody/prosody-runtime.service';
 
 interface AuthenticatedRequest extends Request {
   user?: any;
@@ -40,6 +41,7 @@ export class ConferenceController {
   constructor(
     @Inject(IConferenceService)
     private readonly conferenceService: IConferenceService,
+    private readonly prosodyRuntimeService: ProsodyRuntimeService
   ) { }
 
   @Post('conferences')
@@ -70,11 +72,11 @@ export class ConferenceController {
     return { duration };
   }
 
-  @Get('conferences/:id')
+  @Get('conferences/:uid')
   @ApiOkResponse({ description: 'Conférence trouvée' })
   @ApiNotFoundResponse({ description: 'Conférence non trouvée' })
-  async findOne(@Param('id') id: string) {
-    return this.conferenceService.findOne(id);
+  async findOne(@Param('uid') uid: string) {
+    return this.conferenceService.findOne(uid);
   }
 
   @Delete('conferences/:id')
@@ -120,6 +122,11 @@ export class ConferenceController {
   })
   async getConferenceState(@Param() params: RoomNameDto) {
     return this.conferenceService.roomExists(params.roomName);
+  }
+
+  @Get('/conferences/:roomName/room-size')
+  async getRoomSize(@Param() params: RoomNameDto) {
+    return this.conferenceService.getRoomSize(params.roomName);
   }
 
   //send token by email

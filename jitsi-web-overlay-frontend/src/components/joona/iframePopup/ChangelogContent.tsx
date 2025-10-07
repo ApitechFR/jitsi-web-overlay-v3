@@ -3,7 +3,6 @@ import styles from './ChangelogContent.module.css'
 import Button from '@apitechfr/react-dsapitech/Button';
 
 function ChangelogContent({ content }: any) {
-    console.log(content.blocks[0])
 
     return (
         <div className={styles.popupBoxContent}>

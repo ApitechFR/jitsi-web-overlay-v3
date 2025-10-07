@@ -21,6 +21,7 @@ export class RoomService {
         const room = this.roomRepo.create({
             ...data,
             uid: uuidv4(),
+            created_by: uuidv4(), // temporaire, à remplacer par l'UID de l'utilisateur connecté
         });
         return this.roomRepo.save(room);
     }
@@ -46,5 +47,9 @@ export class RoomService {
 
         Object.assign(room, updateDto); // merge les données du DTO dans la room existante
         return this.roomRepo.save(room);
+    }
+
+    async findByRoomName(name: string): Promise<Room> {
+        return await this.roomRepo.findOne({ where: { name }, relations: ['conferences'] }) ?? null;
     }
 }

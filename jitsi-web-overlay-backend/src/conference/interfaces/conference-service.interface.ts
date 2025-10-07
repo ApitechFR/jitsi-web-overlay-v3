@@ -23,6 +23,7 @@ export interface IConferenceService<T = any> {
     roomName: string,
   ): Promise<{ roomName: string; jwt?: string } | undefined>;
   roomExists?(roomName: string): Promise<{ roomName: string }>;
+  getRoomSize?(roomName: string): Promise<number>;
   getRoomAccessTokenByEmail?(params: {
     room: string;
     email: string;
