@@ -219,7 +219,8 @@ function App() {
                 }
               />
               <Route path="visioreplay/:conference_uid" element={<ReplayList />} />
-              <Route path="replays" element={<AdminRoute><ReplayListGrouped /></AdminRoute>} />
+              <Route path="replays/:conference_uid" element={<ReplayList />} />
+              {/* <Route path="replays" element={<AdminRoute><ReplayListGrouped /></AdminRoute>} />
               <Route
                 path="admin"
                 element={
@@ -227,7 +228,7 @@ function App() {
                     <Admin />
                   </AdminRoute>
                 }
-              />
+              /> */}
               <Route path="feedback" element={<FeedbackJoona />} />
               <Route
                 path="mentionslegales"
