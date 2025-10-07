@@ -28,7 +28,6 @@ export class RoomNameValidator implements ValidatorConstraintInterface {
     const regex = new RegExp(
       `${regexString}{${minDigits},${length}}$`,
     );
-    console.log('regex:', regex);
     return regex.test(roomName);
   }
 
