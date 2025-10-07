@@ -210,18 +210,17 @@ function App() {
                   </PrivateRoute>
                 }
               />
-              <Route
+              {/* <Route
                 path="dashboard"
                 element={
                   <AdminRoute>
                     <Dashboard />
                   </AdminRoute>
                 }
-              />
+              /> */}
               <Route path="visioreplay/:conference_uid" element={<ReplayList />} />
-              <Route path="replays" element={<ReplayList />} />
-              {/* <Route path="replays" element={<AdminRoute><ReplayListGrouped /></AdminRoute>} />
-              <Route
+              <Route path="replays" element={<AdminRoute><ReplayListGrouped /></AdminRoute>} />
+              {/* <Route
                 path="admin"
                 element={
                   <AdminRoute>

@@ -39,9 +39,9 @@ const ReplayListGrouped: React.FC = () => {
 
     return (
         <div className={styles.replayList}>
-            <h1>Enregistrements Vidéo par conférence</h1>
+            <h1>Enregistrements vidéo par conférence</h1>
             {Object.keys(groupedReplays).length === 0 ? (
-                <p className={styles.noReplays}>Aucun replay disponible</p>
+                <p className={styles.noReplays}>Aucun enregistrement disponible</p>
             ) : (
                 Object.entries(groupedReplays).map(([confName, replays]) => (
                     <div key={confName} className={styles.conferenceGroup}>
