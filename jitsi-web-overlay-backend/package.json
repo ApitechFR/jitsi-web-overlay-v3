@@ -1,7 +1,6 @@
 {
-  "name": "jitsi-web-overlay-v3",
-  "version": "3.0.1",
-  "description": "",
+  "name": "jitsi-web-overlay-v3-backend",
+  "version": "3.0.0",
   "author": "APITECH",
   "private": true,
   "license": "UNLICENSED",
