@@ -132,7 +132,11 @@ export class ReplayService {
             }
 
             let replay_status = data.status;
-            const filePath = join('..', data.file_path || '');
+            let filePath: string | null = null;
+
+            if (data.file_path && typeof data.file_path === 'string') {
+                filePath = join('..', data.file_path);
+            }
 
             const isEnabled = process.env.ENABLE_JIBRI_APITECH_API === 'true';
 
@@ -144,7 +148,6 @@ export class ReplayService {
             replay.status = replay_status;
             replay.message = data.message;
             replay.file_path = data.file_path;
-
 
             return await this.replayRepository.save(replay);
         } catch (error) {

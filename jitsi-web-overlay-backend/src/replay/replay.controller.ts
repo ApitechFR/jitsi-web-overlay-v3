@@ -54,7 +54,7 @@ export class ReplayController {
 
             const isEnabled = process.env.ENABLE_JIBRI_APITECH_API === 'true';
 
-            if (isEnabled && replay.status === 'uploaded-rsync') {
+            if (isEnabled && replay.status === ReplayStatus.UPLOADED_RSYNC) {
                 const confname = replay.conference_name;
                 const file = replay.file_path;
 
