@@ -4,7 +4,7 @@ import { Alert } from '@apitechfr/react-dsapitech/Alert';
 import styles from './FeedbackJoona.module.css'
 import { useEffect, useState } from 'react';
 import { FieldComponent } from '../../../components/joona/feedbacks/FieldComponent';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 
 export interface FeedbackType {
   id: number;
@@ -38,6 +38,10 @@ function FeedbackJoona() {
     const [isBlankNewPage, setIsBlankNewPage] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(false);
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const { room } = location.state || (queryParams.get('room') || {});
+    console.log("Room from location state: ", room);
 
     const params = new URLSearchParams(window.location.search);
     
@@ -82,7 +86,7 @@ function FeedbackJoona() {
         e.preventDefault();
 
         const baseData = {
-            conferenceUuid: "123e4567-e89b-12d3-a456-426614174000", // à remplacer par le nom de la conf plus tard
+            conferenceUuid: room, // à remplacer par le nom de la conf plus tard
             date: new Date().toISOString(),
             userAgent: navigator.userAgent,
         };
