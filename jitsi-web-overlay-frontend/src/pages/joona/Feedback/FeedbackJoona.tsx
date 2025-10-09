@@ -39,11 +39,10 @@ function FeedbackJoona() {
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(false);
     const location = useLocation();
-    const queryParams = new URLSearchParams(location.search);
-    const { room } = location.state || (queryParams.get('room') || {});
+    const params = new URLSearchParams(window.location.search);
+    const room = location.state?.room || params.get('room');
     console.log("Room from location state: ", room);
 
-    const params = new URLSearchParams(window.location.search);
     
     useEffect(() => {
         fetch(`${baseUrl}/feedback/templates`)
