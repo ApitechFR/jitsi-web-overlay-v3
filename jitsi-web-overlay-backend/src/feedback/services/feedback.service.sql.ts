@@ -3,17 +3,19 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Feedback } from '../entities/feedback.entity';
 import { FeedbackTemplate } from '../entities/feedback_template.entity';
-import { CreateFeedbackDto, FeedbackDTO } from '../DTOs/feedback.dto';
+import { CreateFeedbackDto } from '../DTOs/feedback.dto';
 import { IFeedbackService } from '../interfaces/feedback-service.interface';
+import { Conference } from '../../conference/entities/conference.entity';
 
 @Injectable()
 export class FeedbackServiceSQL implements IFeedbackService {
   constructor(
     @InjectRepository(Feedback)
     private readonly feedbackRepo: Repository<Feedback>,
-
     @InjectRepository(FeedbackTemplate)
     private readonly templateRepo: Repository<FeedbackTemplate>,
+    @InjectRepository(Conference)
+    private readonly conferanceRepo: Repository<Conference>,
   ) { }
 
   // Créer un feedback
@@ -21,9 +23,12 @@ export class FeedbackServiceSQL implements IFeedbackService {
     const template = await this.templateRepo.findOne({ where: { id: dto.feedbackTemplateId } });
     if (!template) throw new NotFoundException(`Feedback template with id ${dto.feedbackTemplateId} not found`);
 
+    const conference = await this.conferanceRepo.findOne({ where: { name: dto.conference_name }, order: { created_at: 'DESC' }, });
+    if (!conference) throw new NotFoundException(`Conference with uid ${dto.conference_name} not found`);
+
     const feedback = this.feedbackRepo.create({
       feedbackTemplate: template,
-      conferenceUuid: dto.conferenceUuid,
+      conferenceUuid: conference.uid,
       date: new Date(dto.date),
       userAgent: dto.userAgent,
       reponse: dto.reponse,
@@ -37,9 +42,13 @@ export class FeedbackServiceSQL implements IFeedbackService {
     for (const dto of dtos) {
       const template = await this.templateRepo.findOne({ where: { id: dto.feedbackTemplateId } });
       if (!template) throw new NotFoundException(`Feedback template with id ${dto.feedbackTemplateId} not found`);
+
+      const conference = await this.conferanceRepo.findOne({ where: { name: dto.conference_name }, order: { created_at: 'DESC' }, });
+      if (!conference) throw new NotFoundException(`Conference with uid ${dto.conference_name} not found`);
+
       const feedback = this.feedbackRepo.create({
         feedbackTemplate: template,
-        conferenceUuid: dto.conferenceUuid,
+        conferenceUuid: conference.uid,
         date: new Date(dto.date),
         userAgent: dto.userAgent,
         reponse: dto.reponse,
