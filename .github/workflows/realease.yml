@@ -3,8 +3,8 @@ name: Release
 on:
   push:
     branches:
-      - "preprod"
-      - "main"
+      - main
+      - release
 
 jobs:
   release:
@@ -14,13 +14,16 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
         with:
-          node-version: 20
-      - run: npm ci --force
-      - run: npm run build
-      - run: tar -czvf wce-api.tar.gz dist package.json package-lock.json
+          fetch-depth: 0   # indispensable pour les tags
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: npm ci
+
       - run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
