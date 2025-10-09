@@ -1,0 +1,27 @@
+# Ignorer node_modules local
+!package-lock.json
+.*/node_modules
+.*/npm-debug.log
+.*/yarn-error.log
+.*/pnpm-lock.yaml
+
+# Build output
+.*/dist
+
+# Env files (à injecter via Docker ENV ou secrets)
+.*/.env
+.*/.env.*
+
+# IDE / système
+.*/.vscode
+.*/.idea
+.*/.DS_Store
+.*/Thumbs.db
+
+# Tests / coverage
+.*/coverage
+.*/test-results
+
+# Docker / CI
+.*/Dockerfile*
+.*/docker-compose*.yml

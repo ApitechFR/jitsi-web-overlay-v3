@@ -1,7 +1,8 @@
 {
-  "name": "vite-project",
+  "name": "jitsi-web-overlay-frontend",
+  "author": "APITECH",
+  "version": "3.0.0",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
@@ -15,6 +16,7 @@
     "copy-lasuite-assets": "cp -r node_modules/@gouvfr-lasuite/integration/dist/ public/@gouvfr-lasuite/integration"
   },
   "dependencies": {
+    "@apitechfr/react-dsapitech": "^1.23.14",
     "@codegouvfr/react-dsfr": "^0.76.3",
     "@emotion/react": "^11.11.1",
     "@emotion/style": "^0.8.0",
@@ -36,6 +38,7 @@
     "env-cmd": "^10.1.0",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^3.1.2",
+    "randexp": "^0.5.3",
     "react": "^18.2.0",
     "react-datepicker": "^4.14.0",
     "react-datetime-picker": "^5.2.0",
@@ -53,11 +56,10 @@
     "remark-slug": "^7.0.1",
     "serve": "^14.2.3",
     "sitemap": "^7.1.1",
-    "sweetalert2": "^11.22.0"
+    "sweetalert2": "^11.22.0",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@semantic-release/git": "^10.0.1",
-    "@semantic-release/github": "^9.2.6",
     "@types/node": "^20.1.5",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
@@ -68,7 +70,6 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.3.4",
     "prettier": "^2.8.8",
-    "semantic-release": "^23.0.2",
     "typescript": "^5.0.2",
     "vite": "^4.3.2",
     "vite-plugin-pwa": "^0.16.7",

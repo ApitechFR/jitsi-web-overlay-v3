@@ -1,5 +1,5 @@
 import { configValidationSchema } from './config.schema';
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthenticationModule } from './authentication/authentication.module';
@@ -12,42 +12,19 @@ import { JwtModule } from '@nestjs/jwt';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { RoomNameValidator } from './common/validators/room-name.validator';
+import { JwtOidcMiddleware } from './authentication/utils/jwt-oidc.middleware';
+import { ScheduleModule } from '@nestjs/schedule';
 
-function getDatabaseImports() {
-  const dbType = process.env.DB_TYPE;
-  if (dbType === 'mongodb') {
-    return [
-      MongooseModule.forRootAsync({
-        imports: [ConfigModule],
-        inject: [ConfigService],
-        useFactory: async (configService: ConfigService) => ({
-          uri: configService.get<string>('MONGODB_URI') || 'mongodb://localhost/wce',
-        }),
-      }),
-    ];
-  } else if (dbType === 'mariaDB' || dbType === 'mysql') {
-    return [
-      TypeOrmModule.forRootAsync({
-        imports: [ConfigModule],
-        inject: [ConfigService],
-        useFactory: async (configService: ConfigService) => ({
-          type: 'mariadb',
-          host: configService.get('DB_HOST'),
-          port: parseInt(configService.get('DB_PORT'), 10) || 3306,
-          username: configService.get('DB_USERNAME'),
-          password: configService.get('DB_PASSWORD'),
-          database: configService.get('DB_DATABASE'),
-          autoLoadEntities: true,
-          synchronize: configService.get<string>('NODE_ENV') !== 'production',
-        }),
-      }),
-    ];
-  }
-  return [];
-}
+
+import { ReplayModule } from './replay/replay.module';
+import { RoomModule } from './room/room.module';
+import { dataSourceOptions } from '../db/datasource';
+
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -74,7 +51,20 @@ function getDatabaseImports() {
         };
       },
     }),
-    ...getDatabaseImports(),
+    ...(process.env.MONGODB_URI
+      ? [
+        MongooseModule.forRootAsync({
+          imports: [ConfigModule],
+          inject: [ConfigService],
+          useFactory: async (configService: ConfigService) => ({
+            uri:
+              configService.get<string>('MONGODB_URI') ||
+              'mongodb://localhost/wce',
+          }),
+        }),
+      ]
+      : []),
+    TypeOrmModule.forRoot(dataSourceOptions),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -93,8 +83,17 @@ function getDatabaseImports() {
     StatsModule,
     FeedbackModule,
     ProsodyModule,
+    ReplayModule,
+    RoomModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, RoomNameValidator],
+  exports: [RoomNameValidator],
 })
-export class AppModule { }
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(JwtOidcMiddleware)
+      .forRoutes({ path: 'conferences/*', method: RequestMethod.ALL });
+  }
+}

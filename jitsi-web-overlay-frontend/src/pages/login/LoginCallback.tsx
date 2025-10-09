@@ -1,75 +1,38 @@
 import { useEffect } from 'react';
-import styles from './Login.module.css';
-import api from '../../axios/axios';
-import { useNavigate } from 'react-router';
-import CircularProgress from '@mui/material/CircularProgress';
+import { useNavigate } from 'react-router-dom';
 
-interface LoginCallbackProps {
-  setAuthenticated: (bool: boolean) => void;
-  setError: (obj: {
-    message: string;
-    error: { status: string; stack: string };
-  }) => void;
-}
-
-export default function LoginCallback({
-  setAuthenticated,
-  setError,
-}: LoginCallbackProps) {
+export default function LoginCallback() {
   const navigate = useNavigate();
-  const queryString = window.location.search;
-  const urlParams = new URLSearchParams(queryString);
 
   useEffect(() => {
-    if (urlParams.get('error_description')) {
-      navigate(-2);
-    }
-    api
-      .get(
-        `/authentication/login_callback?code=${urlParams.get(
-          'code'
-        )}&state=${urlParams.get('state')}`
-      )
-      .then(res => {
-        if (res.data.roomName && res.data.jwt) {
-          navigate(`/${res.data.roomName}?jwt=${res.data.jwt}`);
-          localStorage.setItem('auth', res.data.accessToken);
-          setAuthenticated(true);
-        } else {
-          navigate(`/`);
-        }
-      })
-      .catch(error => {
-        localStorage.setItem('auth', 'false');
-        if (error.response) {
-          setError({
-            message: "erreur d'authentification",
-            error: { status: '', stack: '' },
-          });
-          navigate('/error');
-        } else {
-          if (error.request) {
-            setError({
-              message: "erreur d'authentification",
-              error: { status: '400', stack: '' },
-            });
-            navigate('/error');
-          } else {
-            setError({
-              message: "erreur d'authentification",
-              error: { status: '500', stack: '' },
-            });
-            navigate('/error');
-          }
-        }
-      });
-  }, []);
+    const p = new URLSearchParams(window.location.search);
+    const code = p.get('code');
+    const state = p.get('state');
+    const providerError = p.get('error_description');
 
-  return (
-    <div className={styles.home}>
-      <div className={styles.progress}>
-        <CircularProgress style={{ height: '300px', width: '300px' }} />
-      </div>
-    </div>
-  );
+    // Erreur côté IdP
+    if (providerError) {
+      navigate('/error', { replace: true });
+      return;
+    }
+
+    // CSRF/state check côté front (optionnel mais recommandé)
+    const stored = sessionStorage.getItem('oidc_state');
+    if (!code || !state || !stored || stored !== state) {
+      // on nettoie et on retourne à l'accueil
+      sessionStorage.removeItem('oidc_state');
+      navigate('/', { replace: true });
+      return;
+    }
+
+    // Consommer le code via navigation (pas de XHR, pas de retry)
+    sessionStorage.removeItem('oidc_state');
+    const apiBase = import.meta.env.VITE_API_URL || '/api';
+    const url = `${apiBase}/authentication/login_callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`;
+
+
+    window.location.replace(url);
+  }, [navigate]);
+
+  return null; // on ne reste pas sur cette page
 }

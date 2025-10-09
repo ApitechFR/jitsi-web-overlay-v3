@@ -15,7 +15,6 @@ import { Request, Response } from 'express';
 import * as crypto from 'crypto';
 
 import { JwtService } from '@nestjs/jwt';
-import * as moment from 'moment';
 import { LoginCallbackDTO } from './DTOs/LoginCallbackDTO';
 import { LogoutCallbackDTO } from './DTOs/LogoutCallbackDTO';
 import {
@@ -28,6 +27,7 @@ import { IConferenceService } from '../conference/interfaces/conference-service.
 
 @Controller('authentication')
 export class AuthenticationController {
+
   constructor(
     private readonly authenticationService: AuthenticationService,
     @Inject(IConferenceService)
@@ -35,6 +35,47 @@ export class AuthenticationController {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) { }
+
+  private getFrontBaseUrl(): string {
+    return (
+      this.configService.get('FRONTEND_BASE_URL') ||
+      this.configService.get('FRONTEND_LOGOUT_REDIRECT') ||
+      '/'
+    );
+  }
+
+  private getFrontRedirectTarget(req: Request, roomName?: string): string {
+    const base = this.getFrontBaseUrl().replace(/\/+$/, '');
+    const room = roomName ?? (req as any).signedCookies?.roomName;
+    return room ? `${base}/${encodeURIComponent(room)}` : base;
+  }
+
+
+
+  /**
+    * Return user information from the JWT.
+    */
+  @Get('userinfo')
+  @ApiOkResponse({ description: 'Retourne les infos utilisateur du JWT' })
+  @ApiUnauthorizedResponse({ description: 'Utilisateur non authentifié' })
+  userinfo(@Req() request: Request) {
+    const accessToken = request.signedCookies?.accessToken;
+    if (!accessToken) {
+      throw new UnauthorizedException('Utilisateur non authentifié');
+    }
+    try {
+      const decoded = this.jwtService.verify(accessToken, {
+        secret: this.configService.get('JWT_SECRET'),
+        algorithms: ['HS256'],
+      });
+      if (!decoded) {
+        throw new UnauthorizedException('JWT invalide');
+      }
+      return decoded;
+    } catch {
+      throw new UnauthorizedException('JWT invalide');
+    }
+  }
 
   @Get('whereami')
   @ApiOkResponse({ description: "retoune 'RIE' ou 'INTERNET' " })
@@ -50,73 +91,95 @@ export class AuthenticationController {
   loginAuthorize(
     @Res({ passthrough: true }) response: Response,
     @Query('room') room: string,
+    @Query('state') stateFromFrontend?: string,
   ) {
-    const state = crypto.randomBytes(32).toString('hex');
+    const state = stateFromFrontend || crypto.randomBytes(32).toString('hex');
     const nonce = crypto.randomBytes(32).toString('hex');
-    response.cookie('state', state, {
-      httpOnly: true,
-      secure: true,
-      signed: true,
-    });
-    response.cookie('roomName', room, {
-      httpOnly: true,
-      secure: true,
-      signed: true,
-    });
+
+    this.authenticationService.setAuthCookie(response, 'state', state);
+
+    if (room) {
+      this.authenticationService.setAuthCookie(response, 'roomName', room);
+    }
+
     return { url: this.authenticationService.loginAuthorize(state, nonce) };
   }
-
   @Get('login_callback')
-  @ApiOkResponse({
-    description: 'retourne un objet {roomName, jwt, accessToken}',
-  })
-  @ApiUnauthorizedResponse({
-    description: "le paramètre state recu n'est pas le meme envoyé",
-  })
-  @ApiNotFoundResponse({
-    description:
-      "erreur lors de récupération de l'accessToken ou userinfo d'agentConnect",
-  })
+  @ApiResponse({ status: 302, description: 'Pose les cookies puis redirige vers le front' })
+  @ApiUnauthorizedResponse({ description: "state invalide ou absent" })
+  @ApiNotFoundResponse({ description: "erreur lors de l’échange code→tokens ou userinfo" })
   async loginCallback(
     @Query() query: LoginCallbackDTO,
     @Req() request: Request,
-    @Res({ passthrough: true }) response: Response,
+    @Res() response: Response,
   ) {
     const { code, state } = query;
+
+    // Garde: paramètres manquants → retour front
+    if (!code || !state) {
+      return response.redirect(302, this.getFrontRedirectTarget(request));
+    }
+
+    const existing = request.signedCookies?.accessToken;
+    if (existing) {
+      try {
+        this.jwtService.verify(existing, {
+          secret: this.configService.get('JWT_SECRET'),
+          algorithms: ['HS256'],
+        });
+        // Token encore valide → ok, déjà loggé
+        return response.redirect(302, this.getFrontRedirectTarget(request));
+      } catch {
+        //console.log('Token présent mais expiré/invalide');
+      }
+    }
+
+
     const sendedState = request.signedCookies?.state;
     const roomName = request.signedCookies?.roomName;
+
     const { userinfo, idToken } =
       await this.authenticationService.loginCallback(code, state, sendedState);
 
-    const tokenClaims = {
+
+
+    const userInfos = this.authenticationService.extractUserInfos(userinfo);
+
+    const baseClaims = {
       iss: this.configService.get('JITSI_JITSIJWT_ISS'),
       aud: this.configService.get('JITSI_JITSIJWT_AUD'),
       sub: this.configService.get('JITSI_JITSIJWT_SUB'),
-      email: this.jwtService.decode(userinfo)?.email,
-      idToken,
+      email: this.authenticationService.extractEmail(userinfo),
+      ...userInfos,
     };
 
-    const refreshToken = this.jwtService.sign({
-      exp: moment().add(12, 'hours').unix(),
-      ...tokenClaims,
+
+    const accessToken = this.authenticationService.generateAccessToken(baseClaims);
+    const refreshToken = this.authenticationService.generateRefreshToken({
+      ...baseClaims,
+      idToken,
     });
 
-    const accessToken = this.jwtService.sign({
-      exp: moment().add(15, 'minutes').unix(),
-      ...tokenClaims,
+
+    // Pose les cookies de session
+    // this.authenticationService.setAuthCookie(response, 'refreshToken', refreshToken);
+    // this.authenticationService.setAuthCookie(response, 'accessToken', accessToken);
+    this.authenticationService.setAuthCookie(response, 'accessToken', accessToken, {
+      maxAge: 2 * 60 * 60 * 1000, // 2h
+    });
+    this.authenticationService.setAuthCookie(response, 'refreshToken', refreshToken, {
+      maxAge: 12 * 60 * 60 * 1000, // 12h
     });
 
-    response.clearCookie('state');
-    response.clearCookie('roomName');
+    // Nettoyage ciblé des cookies temporaires
+    this.authenticationService.clearAuthCookie(response, 'state');
+    this.authenticationService.clearAuthCookie(response, 'roomName');
 
-    response.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      signed: true,
-    });
-
-    return { ...this.conferenceService.sendToken(roomName), accessToken };
+    // Redirection finale (home ou /:roomName)
+    return response.redirect(302, this.getFrontRedirectTarget(request, roomName));
   }
+
+
 
   @Get('logout')
   @Redirect('', 302)
@@ -125,15 +188,15 @@ export class AuthenticationController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const { idToken } =
-      request?.signedCookies?.refreshToken &&
-      this.jwtService.decode(request?.signedCookies?.refreshToken);
+    const decoded = request?.signedCookies?.refreshToken
+      ? this.jwtService.decode(request.signedCookies.refreshToken)
+      : undefined;
+
+    const idToken = decoded?.idToken;
     const state = crypto.randomBytes(32).toString('hex');
-    response.cookie('state', state, {
-      httpOnly: true,
-      secure: true,
-      signed: true,
-    });
+
+    this.authenticationService.setAuthCookie(response, 'state', state);
+
     return { url: this.authenticationService.logout(state, idToken) };
   }
 
@@ -153,14 +216,15 @@ export class AuthenticationController {
 
     if (state !== sendedState) {
       throw new UnauthorizedException(
-        "le state de retour n'est pas la meme que celle qui a été envoyé",
+        "Le state de retour n'est pas le même que celui envoyé",
       );
     }
 
-    response.clearCookie('refreshToken');
-    response.clearCookie('state');
-    return { url: '/' };
+    this.authenticationService.clearAllCookies(response);
+
+    return response.redirect(this.configService.get('FRONTEND_LOGOUT_REDIRECT') || '/');
   }
+
 
   @Get('refreshToken')
   @ApiOkResponse({ description: 'retourne { accessToken }' })
@@ -169,37 +233,48 @@ export class AuthenticationController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    let refreshToken = request.signedCookies?.refreshToken;
-    try {
-      await this.jwtService.verify(refreshToken);
+    const refreshToken = request.signedCookies?.refreshToken;
+    if (!refreshToken) {
+      throw new UnauthorizedException('Veuillez vous authentifier');
+    }
 
-      const tokenClaims = {
+    try {
+
+      await this.jwtService.verify(refreshToken, { secret: this.configService.get('JWT_SECRET'), algorithms: ['HS256'] });
+
+      const decoded = this.jwtService.decode(refreshToken);
+
+      const baseClaims = {
         iss: this.configService.get('JITSI_JITSIJWT_ISS'),
         aud: this.configService.get('JITSI_JITSIJWT_AUD'),
         sub: this.configService.get('JITSI_JITSIJWT_SUB'),
-        email: this.jwtService.decode(refreshToken)?.email,
-        idToken: this.jwtService.decode(refreshToken)?.idToken,
+        email: decoded?.email,
+        given_name: decoded?.given_name || '',
+        family_name: decoded?.family_name || '',
+        name: decoded?.name || '',
+        isAdmin: Boolean(decoded?.admin),
       };
 
-      refreshToken = this.jwtService.sign({
-        exp: moment().add(12, 'hours').unix(),
-        ...tokenClaims,
+      const accessToken = this.authenticationService.generateAccessToken(baseClaims);
+
+
+      const newRefreshToken = this.authenticationService.generateRefreshToken({
+        ...baseClaims,
+        idToken: decoded?.idToken,
       });
 
-      const accessToken = this.jwtService.sign({
-        exp: moment().add(15, 'minutes').unix(),
-        ...tokenClaims,
+      // this.authenticationService.setAuthCookie(response, 'refreshToken', newRefreshToken);
+      this.authenticationService.setAuthCookie(response, 'accessToken', accessToken, {
+        maxAge: 2 * 60 * 60 * 1000, // 2h
       });
-
-      response.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: true,
-        signed: true,
+      this.authenticationService.setAuthCookie(response, 'refreshToken', newRefreshToken, {
+        maxAge: 12 * 60 * 60 * 1000, // 12h
       });
 
       return { accessToken };
     } catch (error) {
-      throw new UnauthorizedException('veuillez vous authentifier');
+      this.authenticationService.clearAllCookies(response);
+      throw new UnauthorizedException('Veuillez vous authentifier');
     }
   }
 }

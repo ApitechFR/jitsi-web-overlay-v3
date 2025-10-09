@@ -1,29 +1,64 @@
-# Use the official Node.js runtime as the base image
-FROM node:bookworm as build
+FROM node:20-bookworm-slim AS build
 
-# Set the working directory in the container
-WORKDIR .
+WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
-COPY package*.json ./
+# Arguments pour Vite
+ARG VITE_API_URL
+ARG VITE_APP_TEMPLATE
+ARG VITE_JITSI_DOMAIN
+ARG VITE_VOXAPI_URL
+ARG VITE_CONFERENCE_NAME_REGEX
+ARG VITE_CONFERENCE_NAME_REGEX_MESSAGE
+ARG VITE_ENABLE_JIBRI_APITECH_API
+ARG VITE_JIBRI_APITECH_API_DOMAIN
+ARG VITE_REPLAY_CHECK_TIMEOUT_MS
+ARG VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS
+ARG VITE_FRONTCONF_ROOMNAMECONSTRAINT_LENGTH
+ARG VITE_APP_ORGANIZATION
 
-# Copy the entire application code to the container
+ENV VITE_API_URL=$VITE_API_URL \
+    VITE_APP_ORGANIZATION=$VITE_APP_ORGANIZATION \
+    VITE_APP_TEMPLATE=$VITE_APP_TEMPLATE \
+    VITE_JITSI_DOMAIN=$VITE_JITSI_DOMAIN \
+    VITE_VOXAPI_URL=$VITE_VOXAPI_URL \
+    VITE_CONFERENCE_NAME_REGEX=$VITE_CONFERENCE_NAME_REGEX \
+    VITE_CONFERENCE_NAME_REGEX_MESSAGE=$VITE_CONFERENCE_NAME_REGEX_MESSAGE \
+    VITE_ENABLE_JIBRI_APITECH_API=$VITE_ENABLE_JIBRI_APITECH_API \
+    VITE_JIBRI_APITECH_API_DOMAIN=$VITE_JIBRI_APITECH_API_DOMAIN \
+    VITE_REPLAY_CHECK_TIMEOUT_MS=$VITE_REPLAY_CHECK_TIMEOUT_MS \
+    VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS=$VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS \
+    VITE_FRONTCONF_ROOMNAMECONSTRAINT_LENGTH=$VITE_FRONTCONF_ROOMNAMECONSTRAINT_LENGTH
+
+# Copier uniquement les fichiers nécessaires pour installer
+COPY package.json package-lock.json ./
+
+RUN mkdir -p public/@gouvfr-lasuite/integration
+# Installer les dépendances avec devDependencies (vite inclus)
+RUN npm ci --no-audit --no-fund
+
+# Copier le reste du code
 COPY . .
 
-# Install dependencies
-RUN npm install --force
-
-# Build the React app for production
+# Build
 RUN npm run build
 
-# Use Nginx as the production server
+#RUN cp -r node_modules/@apitechfr/react-dsapitech/dsfr dist/ 2>/dev/null || true
+RUN mkdir -p dist/dsfr/icons && cp -r node_modules/@apitechfr/react-dsapitech/dsfr/icons dist/dsfr/
+# RUN mkdir -p dist/dsfr \
+#     && cp -r node_modules/@apitechfr/react-dsapitech/dsfr/* dist/dsfr/
+
+
+
+# RUN cp -r node_modules/@gouvfr/dsfr/dist/* dist/dsfr/
+
+# ----------- Serveur Nginx ----------- #
 FROM nginx:alpine
 
-# Copy the built React app to Nginx's web server directory
-COPY --from=build ./dist /usr/share/nginx/html
+RUN rm /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port 80 for the Nginx server
+COPY --from=build /app/dist /usr/share/nginx/html
+
 EXPOSE 80
 
-# Start Nginx when the container runs
 CMD ["nginx", "-g", "daemon off;"]

@@ -1,4 +1,3 @@
-
 import styles from './Layout.module.css';
 import Header from '../header/Header';
 import Footer from '../footer/Footer';
@@ -13,16 +12,17 @@ type errorObj = {
   error: { status: string; stack: string };
 };
 
-interface headerProps {
-  authenticated: boolean | null;
-  setAuthenticated: (e: boolean) => void;
-  setError: (obj: errorObj) => void;
+interface HeaderProps {
+  readonly authenticated: boolean | null;
+  readonly setAuthenticated: (e: boolean) => void;
+  readonly setError: (obj: errorObj) => void;
 }
-export default function Layout(propos: headerProps) {
+export default function Layout() {
   return (
     <div className={styles.layout}>
       <header>
-        <Header {...propos} />
+        {/* <Header {...props} /> */}
+        <Header  />
       </header>
       <main>
         <Outlet />

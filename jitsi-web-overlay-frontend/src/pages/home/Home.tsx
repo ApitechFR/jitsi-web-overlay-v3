@@ -11,7 +11,7 @@ interface AuthModalProps {
   sendEmail: (mail: string) => void;
   setIsWhitelisted: (e: any) => void;
   setRoomName: (e: any) => void;
-  joinConference: (e: any) => void;
+  joinConference: () => void;
   authenticated: boolean | null;
   conferenceNumber: number;
   participantNumber: number;

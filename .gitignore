@@ -1,0 +1,73 @@
+# Compiled output
+dist/
+dist-ssr/
+**/dist/
+**/dist-ssr/
+
+# Node modules
+node_modules/
+**/node_modules/
+
+# Logs
+logs/
+*.log
+**/logs/
+**/*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS
+.DS_Store
+**/.DS_Store
+
+# Tests
+coverage/
+.nyc_output/
+**/coverage/
+**/.nyc_output/
+
+# IDEs and editors
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+**/.idea/
+**/.project
+**/.classpath
+**/.c9/
+**/*.launch
+**/.settings/
+**/*.sublime-workspace
+**/*.suo
+**/*.ntvs*
+**/*.njsproj
+**/*.sln
+**/*.sw?
+
+# IDE - VSCode
+.vscode/
+**/.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Env variables
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Compressed files
+*.tar.gz

@@ -1,0 +1,23 @@
+.buttonsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: end;
+}
+
+.frameContainerButton {
+    display: flex;
+    justify-content: end;
+}
+
+.popupBoxContent {
+    height: 100%;
+}
+
+.boxFrame, .iframeContent {
+    height: 100%;
+}
+
+.iframeContent {
+    width: 100%;
+}

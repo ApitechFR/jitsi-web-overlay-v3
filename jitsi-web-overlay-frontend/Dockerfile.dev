@@ -1,14 +1,23 @@
-# Étape 1 : Image de base Node.js
+
+
 FROM node:bookworm
+
 
 WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
 
 COPY . .
 
-EXPOSE 5173
+
+
+RUN npm install --force
+RUN cp -r node_modules/@apitechfr/react-dsapitech/dsfr public/dsfr/ 2>/dev/null || true
+
+
+
+EXPOSE 3000
+
 
 CMD ["npm", "run", "dev"]

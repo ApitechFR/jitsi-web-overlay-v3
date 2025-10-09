@@ -1,18 +1,23 @@
-FROM node:bookworm
 
-WORKDIR .
+FROM node:bookworm-slim AS builder
 
+WORKDIR /app
 
 COPY package*.json ./
-
-
-RUN npm install
-
+RUN npm install --production=false
 
 COPY . .
+RUN npm run build
 
 
-EXPOSE 3000
+FROM node:bookworm-slim
 
+WORKDIR /app
 
-CMD ["nest", "start"]
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
+
+EXPOSE 3030
+
+CMD ["node", "dist/src/main.js"]
