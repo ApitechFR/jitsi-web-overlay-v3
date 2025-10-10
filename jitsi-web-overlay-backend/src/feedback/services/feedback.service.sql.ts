@@ -24,7 +24,11 @@ export class FeedbackServiceSQL implements IFeedbackService {
     if (!template) throw new NotFoundException(`Feedback template with id ${dto.feedbackTemplateId} not found`);
 
     const conference = await this.conferanceRepo.findOne({ where: { name: dto.conference_name }, order: { created_at: 'DESC' }, });
-    if (!conference) throw new NotFoundException(`Conference with uid ${dto.conference_name} not found`);
+    if (!conference) throw new NotFoundException(`Conference with name ${dto.conference_name} not found`);
+
+    if (!dto.reponse || Object.keys(dto.reponse).length === 0) {
+      return null;
+    }
 
     const feedback = this.feedbackRepo.create({
       feedbackTemplate: template,
@@ -44,7 +48,11 @@ export class FeedbackServiceSQL implements IFeedbackService {
       if (!template) throw new NotFoundException(`Feedback template with id ${dto.feedbackTemplateId} not found`);
 
       const conference = await this.conferanceRepo.findOne({ where: { name: dto.conference_name }, order: { created_at: 'DESC' }, });
-      if (!conference) throw new NotFoundException(`Conference with uid ${dto.conference_name} not found`);
+      if (!conference) throw new NotFoundException(`Conference with name ${dto.conference_name} not found`);
+
+      if (!dto.reponse || Object.keys(dto.reponse).length === 0) {
+        continue;
+      }
 
       const feedback = this.feedbackRepo.create({
         feedbackTemplate: template,

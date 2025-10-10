@@ -128,7 +128,7 @@ function FeedbackJoona() {
                     <div className={styles.contentFeedback}>
                         <form action="" onSubmit={e => handleSubmit(e)}>
                             {templates.map((template) => {
-                                const Component = FieldComponent[template.type.id];
+                                const Component = FieldComponent[template.type.name];
                                 if (!Component) return null;
                                 return (
                                     <div key={template.id}>
