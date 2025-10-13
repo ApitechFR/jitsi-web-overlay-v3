@@ -1,5 +1,6 @@
 import { http } from '../../http';
 import { toApiError } from '@/api/errors';
+import type { JitsiJwtResponse } from './conference.types';
 
 export const ConferenceService = {
 
@@ -36,5 +37,30 @@ export const ConferenceService = {
         } catch (error) {
             throw toApiError(error, 'Erreur lors de la récupération de l’état de la conférence');
         }
+    },
+
+    async jitsiJwt(conference_name: string): Promise<JitsiJwtResponse> {
+        try {
+            const { data } = await http.post(
+                `/conferences/${encodeURIComponent(conference_name)}/tokens/jitsi`,
+                {},
+                { withCredentials: true }
+            );
+
+
+            const token = data?.token ?? data?.jwt;
+            if (!token) {
+                throw new Error('Réponse JWT invalide (champ "token" ou "jwt" manquant)');
+            }
+
+            return {
+                token,
+                exp: data?.exp,
+                moderator: Boolean(data?.moderator),
+            };
+        } catch (e) {
+            throw toApiError(e, "Échec de récupération du JWT Jitsi");
+        }
     }
+
 }

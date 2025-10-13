@@ -7,6 +7,10 @@ export * from './services/conference/conference.service';
 export * from './services/conference/conference.types';
 export * from './services/room/room.service';
 export * from './services/room/room.types';
+export * from './services/jitsi/jitsi.types';
+
+// export * from './services/participants/participants.service';
+// export * from './services/participants/participants.types';
 // export * from './services/participants/participants.service';
 // export * from './services/participants/participants.types';
 

@@ -16,6 +16,12 @@ export const RoomService = {
 
     async create(roomName: string): Promise<Room> {
         try {
+
+            const existingRoom = await this.getByName(roomName);
+            if (existingRoom) {
+                return existingRoom;
+            }
+
             const { data } = await http.post('/rooms', { name: roomName });
             return data;
         } catch (error) {
