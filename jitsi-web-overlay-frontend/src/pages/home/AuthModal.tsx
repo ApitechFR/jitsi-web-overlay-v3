@@ -1,4 +1,4 @@
-import { validateRoomName } from '../../utils/roomName';
+import { validateconferenceName } from '../../utils/conferenceName';
 import { createModal } from '@codegouvfr/react-dsfr/Modal';
 import { Button } from '@codegouvfr/react-dsfr/Button';
 import { Input } from '@codegouvfr/react-dsfr/Input';
@@ -50,7 +50,7 @@ export default function AuthModal(props: AuthModalProps) {
 
   useEffect(() => {
     props.setIsWhitelisted(null);
-    
+
     setEmail('');
     setIsChecked(false);
     setMsg(null);
@@ -162,7 +162,7 @@ export default function AuthModal(props: AuthModalProps) {
           // onClick={handle}
           type="submit"
           className={styles.button}
-          disabled={!validateRoomName(props.roomName)}
+          disabled={!validateconferenceName(props.roomName)}
         >
           Rejoindre ou créer
         </Button>

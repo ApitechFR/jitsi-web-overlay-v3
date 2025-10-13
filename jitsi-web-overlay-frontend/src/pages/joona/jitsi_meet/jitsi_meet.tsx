@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { validateRoomName } from '../../../utils/roomName';
+import { validateconferenceName } from '../../../utils/conferenceName';
 import JitsiMeetWrapper from './JitsiMeetWrapper';
 
 export default function JitsiMeet() {
@@ -10,7 +10,7 @@ export default function JitsiMeet() {
     useEffect(() => {
         if (!roomName) return;
 
-        if (!validateRoomName(roomName)) {
+        if (!validateconferenceName(roomName)) {
             navigate('/', {
                 replace: true,
                 state: { prefillRoomName: roomName, invalidRoom: true },
@@ -19,7 +19,7 @@ export default function JitsiMeet() {
         }
     }, [roomName, navigate]);
 
-    if (!roomName || !validateRoomName(roomName)) return null;
+    if (!roomName || !validateconferenceName(roomName)) return null;
 
     return <JitsiMeetWrapper />;
 }

@@ -1,4 +1,4 @@
-import { validateRoomName } from '../../utils/roomName';
+import { validateconferenceName } from '../../utils/conferenceName';
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useEffect } from 'react';
@@ -68,7 +68,7 @@ const Jitsi_meet = ({
 
   useEffect(() => {
     if (roomName && jwt) {
-      if (!validateRoomName(roomName)) {
+      if (!validateconferenceName(roomName)) {
         setError({
           message: `Le nom de la conférence ${roomName} n'est pas valide. Merci de respecter la convention de nommage indiquée dans le formulaire.`,
           error: { status: '404', stack: '' },
@@ -105,7 +105,7 @@ const Jitsi_meet = ({
       navigate('/error');
       return;
     }
-    if (roomName && !validateRoomName(roomName)) {
+    if (roomName && !validateconferenceName(roomName)) {
       setRoomName(roomName);
       setError({
         message: `Le nom de la conférence ${roomName} n'est pas valide. Merci de respecter la convention de nommage indiquée dans le formulaire.`,

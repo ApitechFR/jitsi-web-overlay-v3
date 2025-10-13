@@ -10,7 +10,7 @@ import MuiAlert from '@mui/material/Alert';
 import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import api from '../../axios/axios';
-import { validateRoomName } from '../../utils/roomName';
+import { validateconferenceName } from '../../utils/conferenceName';
 import { useNavigate } from 'react-router-dom';
 import { fr } from '@codegouvfr/react-dsfr';
 
@@ -91,7 +91,7 @@ function HomeForm(props: AuthModalProps) {
   const verifyAndSetVAlue = React.useCallback(
     (value: string) => {
       if (value) {
-        if (validateRoomName(value)) {
+        if (validateconferenceName(value)) {
           props.setRoomName(value);
           setMessage(
             <div className={styles.message}>

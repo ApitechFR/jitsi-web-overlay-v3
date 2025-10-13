@@ -168,7 +168,7 @@ function App() {
         {AppTemplate === 'joona' && (
           <>
             <Route
-              path=":roomName"
+              path=":conferenceName"
               element={
                 <PrivateRoute>
                   <JitsiMeet />
@@ -189,8 +189,8 @@ function App() {
                 index
                 element={
                   <HomeJoona
-                    roomName={roomName}
-                    setRoomName={setRoomName}
+                    conferenceName={roomName}
+                    setconferenceName={setRoomName}
                     setIsWhitelisted={setIsWhitelisted}
                     isWhitelisted={isWhitelisted}
                     email={email}

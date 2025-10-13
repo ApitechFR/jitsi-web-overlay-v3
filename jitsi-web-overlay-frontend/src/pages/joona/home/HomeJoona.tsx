@@ -1,4 +1,4 @@
-import { generateRoomName, validateRoomName } from '../../../utils/roomName';
+import { generateconferenceName, validateconferenceName } from '../../../utils/conferenceName';
 import { useState, useRef, FormEvent, useEffect, useMemo } from 'react';
 import styles from './HomeJoona.module.css';
 import { Button } from '@apitechfr/react-dsapitech/Button';
@@ -13,14 +13,14 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 
 interface HomeJoonaProps {
-  readonly roomName: string;
-  readonly setRoomName: (roomName: string) => void;
+  readonly conferenceName: string;
+  readonly setconferenceName: (conferenceName: string) => void;
   readonly setIsWhitelisted: (value: boolean | null) => void;
   readonly isWhitelisted: boolean | null;
   readonly email: string;
   readonly setEmail: (email: string) => void;
-  readonly sendEmail: (roomName: string) => void;
-  readonly joinConference?: (roomName: string) => void;
+  readonly sendEmail: (conferenceName: string) => void;
+  readonly joinConference?: (conferenceName: string) => void;
   readonly conferenceNumber: number;
   readonly participantNumber: number;
 }
@@ -83,12 +83,12 @@ function HomeJoona(props: HomeJoonaProps) {
     return () => { (modal as any).close = originalClose; };
   }, [modal]);
 
-  const isValidRoomName = (name: string) => validateRoomName(name);
+  const isValidconferenceName = (name: string) => validateconferenceName(name);
 
   // retire l’erreur visuelle dès que le nom devient valide
   useEffect(() => {
-    if (props.roomName && isValidRoomName(props.roomName)) setIsError(false);
-  }, [props.roomName]);
+    if (props.conferenceName && isValidconferenceName(props.conferenceName)) setIsError(false);
+  }, [props.conferenceName]);
 
   // ---------- Helpers ----------
   /**
@@ -116,7 +116,7 @@ function HomeJoona(props: HomeJoonaProps) {
 
   /** Premier check silencieux via backend (2.5s) */
   const firstCheckRoomStarted = async (room: string): Promise<boolean> => {
-    if (!isValidRoomName(room)) return false;
+    if (!isValidconferenceName(room)) return false;
     return await getRoomStateFromBackend(room, 2500);
   };
 
@@ -129,7 +129,7 @@ function HomeJoona(props: HomeJoonaProps) {
 
   const scheduleNext = (room: string) => {
     if (cancelledRef.current) return;
-    if (!room || !isValidRoomName(room)) return;
+    if (!room || !isValidconferenceName(room)) return;
     backoffRef.current = Math.min(backoffRef.current + 2000, 30000);
     timerRef.current = window.setTimeout(() => pollRoomUntilStarted(room), backoffRef.current) as unknown as number;
   };
@@ -160,8 +160,8 @@ function HomeJoona(props: HomeJoonaProps) {
   const runFirstCheckThenMaybeWait = async (room?: string) => {
     if (phase !== 'idle') return;
 
-    const rn = (room ?? props.roomName) || '';
-    if (!isValidRoomName(rn)) {
+    const rn = (room ?? props.conferenceName) || '';
+    if (!isValidconferenceName(rn)) {
       setIsError(true);
       setTimeout(() => inputRef.current?.focus(), 0);
       return;
@@ -197,8 +197,8 @@ function HomeJoona(props: HomeJoonaProps) {
   };
 
   const startWaitingAndPoll = (room?: string) => {
-    const rn = (room ?? props.roomName) || '';
-    if (!isValidRoomName(rn)) {
+    const rn = (room ?? props.conferenceName) || '';
+    if (!isValidconferenceName(rn)) {
       setIsError(true);
       setTimeout(() => inputRef.current?.focus(), 0);
       return;
@@ -242,15 +242,15 @@ function HomeJoona(props: HomeJoonaProps) {
   // ---------- Navigation state ----------
   useEffect(() => {
     const st = (location.state || {}) as {
-      prefillRoomName?: string;
+      prefillconferenceName?: string;
       waitForRoom?: string;
       openAuthModal?: boolean;
     };
 
-    if (st.prefillRoomName) {
-      const nm = st.prefillRoomName.trim();
-      props.setRoomName(nm);
-      setIsError(!validateRoomName(nm));
+    if (st.prefillconferenceName) {
+      const nm = st.prefillconferenceName.trim();
+      props.setconferenceName(nm);
+      setIsError(!validateconferenceName(nm));
       setTimeout(() => inputRef.current?.focus(), 0);
       navigate('.', { replace: true, state: {} });
       return;
@@ -258,31 +258,31 @@ function HomeJoona(props: HomeJoonaProps) {
 
     if (st.waitForRoom) {
       const target = st.waitForRoom;
-      if (props.roomName !== target) props.setRoomName(target);
+      if (props.conferenceName !== target) props.setconferenceName(target);
       runFirstCheckThenMaybeWait(target);
       navigate('.', { replace: true, state: {} });
       return;
     }
 
     if (st.openAuthModal && !authenticated) {
-      const target = st.waitForRoom ?? props.roomName;
-      if (target && target !== props.roomName) props.setRoomName(target);
+      const target = st.waitForRoom ?? props.conferenceName;
+      if (target && target !== props.conferenceName) props.setconferenceName(target);
       runFirstCheckThenMaybeWait(target);
       navigate('.', { replace: true, state: {} });
       return;
     }
-  }, [location.state, authenticated, navigate, props.roomName, props.setRoomName]);
+  }, [location.state, authenticated, navigate, props.conferenceName, props.setconferenceName]);
 
   // ---------- Actions UI ----------
   const onCopyLink = () => {
-    if (!props.roomName || !isValidRoomName(props.roomName)) return;
-    const textToCopy = `${window.location.origin}/${props.roomName}`;
+    if (!props.conferenceName || !isValidconferenceName(props.conferenceName)) return;
+    const textToCopy = `${window.location.origin}/${props.conferenceName}`;
     navigator.clipboard.writeText(textToCopy).then(() => setIsAlertVisible(true));
   };
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!isValidRoomName(props.roomName)) {
+    if (!isValidconferenceName(props.conferenceName)) {
       setIsError(true);
       return;
     }
@@ -290,7 +290,7 @@ function HomeJoona(props: HomeJoonaProps) {
 
     if (authenticated) {
       stopWaitingAndPoll();
-      navigate(`/${props.roomName}`);
+      navigate(`/${props.conferenceName}`);
       return;
     }
 
@@ -298,8 +298,8 @@ function HomeJoona(props: HomeJoonaProps) {
     runFirstCheckThenMaybeWait();
   }
 
-  const handleGenerateRoomName = () => {
-    props.setRoomName(generateRoomName());
+  const handleGenerateconferenceName = () => {
+    props.setconferenceName(generateconferenceName());
   };
 
   return (
@@ -334,7 +334,7 @@ function HomeJoona(props: HomeJoonaProps) {
             priority: 'primary',
             onClick: () => {
               stopWaitingAndPoll();
-              login(validateRoomName(props.roomName) ? props.roomName : undefined);
+              login(validateconferenceName(props.conferenceName) ? props.conferenceName : undefined);
             },
             doClosesModal: false,
           },
@@ -358,7 +358,7 @@ function HomeJoona(props: HomeJoonaProps) {
               <Button
                 onClick={() => {
                   stopWaitingAndProbe();
-                  login(validateRoomName(props.roomName) ? props.roomName : undefined);
+                  login(validateconferenceName(props.conferenceName) ? props.conferenceName : undefined);
                 }}
               >
                 S&apos;authentifier
@@ -379,11 +379,11 @@ function HomeJoona(props: HomeJoonaProps) {
                 state={isError ? 'error' : 'default'}
                 nativeInputProps={{
                   placeholder: 'Saisissez votre nom de conférence',
-                  value: props.roomName,
+                  value: props.conferenceName,
                   onChange: e => {
                     const value = e.currentTarget.value;
-                    props.setRoomName(value);
-                    setIsError(!isValidRoomName(value));
+                    props.setconferenceName(value);
+                    setIsError(!isValidconferenceName(value));
                   },
                   ref: inputRef,
                 }}
@@ -392,7 +392,7 @@ function HomeJoona(props: HomeJoonaProps) {
                 }
                 style={{ width: '100%' }}
                 addon={
-                  <Button className={styles.plusButton} onClick={handleGenerateRoomName} type="button">
+                  <Button className={styles.plusButton} onClick={handleGenerateconferenceName} type="button">
                     <ShuffleIcon />
                   </Button>
                 }
@@ -401,7 +401,7 @@ function HomeJoona(props: HomeJoonaProps) {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <Button onClick={onSubmit} className={styles.joinButton} style={{ width: '100%'}}>
+            <Button onClick={onSubmit} className={styles.joinButton} style={{ width: '100%' }}>
               <span>Rejoindre ou créer</span>
             </Button>
 

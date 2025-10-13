@@ -1,50 +1,45 @@
 import React, { useRef } from 'react';
 import { JitsiMeeting } from '@jitsi/react-sdk';
-import { handlejibriApitechApi, handleRecordingStatus } from './visio_replay';
 import { useNavigate } from 'react-router';
-import { checkConferenceEnd, createConference, getParicipantsNumber } from './conference_events';
 
-interface Props {
-  domain: string;
-  roomName: string;
-  jwt?: string;
-  displayName?: string;
-}
+import { handleRecordingStatus } from '@/api/services/jitsi/jitsi-recording.service';
+import { handleJibriApitechApi } from '@/api/services/jitsi/jibri.service';
+import { ConferenceService, RoomService, useApi } from '@/api';
+import type { Props } from '@/api';
 
-const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName }) => {
-
+const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displayName }) => {
   const participantCountRef = useRef(0);
-  const conferenceRef = useRef(null);
-  const checkVideoInterval = useRef<NodeJS.Timeout | null>(null);
-  const checkTimeout = useRef<NodeJS.Timeout | null>(null);
+  const conferenceRef = useRef<any>(null);
+  const checkVideoInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  const checkTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const myRole = useRef('');
   const navigate = useNavigate();
-  const myRole = useRef("");
+
+  // wrap des appels API avec useApi (gestion erreur/chargement centralisée)
+  const { run: getConfSize } = useApi(ConferenceService.getConfSize);
+  const { run: setEnd } = useApi(ConferenceService.setEnd);
+  const { run: getRoomByName } = useApi(RoomService.getByName);
+  const { run: createRoom } = useApi(RoomService.create);
+  const { run: createConf } = useApi(ConferenceService.create);
 
   const enableJibriApitechApi = import.meta.env.VITE_ENABLE_JIBRI_APITECH_API;
   const jibriApitechApiDomain = import.meta.env.VITE_JIBRI_APITECH_API_DOMAIN;
   const jitsiAPIOptions = (window as any).jitsiAPIOptions;
 
-  const onClose = () => {
-    navigate('/feedback');
-  };
+  const onClose = () => navigate('/feedback');
 
   return (
     <JitsiMeeting
       domain={domain}
-      roomName={roomName}
+      roomName={conferenceName}
       jwt={jwt}
-      userInfo={{
-        displayName: displayName ?? "Display Name",
-        email: '',
-      }}
+      userInfo={{ displayName: displayName ?? 'Display Name', email: '' }}
       configOverwrite={{
         startWithAudioMuted: true,
         startWithVideoMuted: true,
         prejoinConfig: { enabled: true },
       }}
-      interfaceConfigOverwrite={{
-        //  customiser ici l'interface 
-      }}
+      interfaceConfigOverwrite={{}}
       getIFrameRef={(iframeRef) => {
         iframeRef.style.height = '100vh';
         iframeRef.style.width = '100%';
@@ -52,46 +47,56 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
       onApiReady={(api) => {
         console.info('[Jitsi] API prête');
 
-        if (enableJibriApitechApi === "true") { handlejibriApitechApi(jitsiAPIOptions, enableJibriApitechApi, jibriApitechApiDomain); }
+        if (enableJibriApitechApi === 'true') {
+          handleJibriApitechApi(jitsiAPIOptions, enableJibriApitechApi, jibriApitechApiDomain);
+        }
 
+        // fin de réunion
         api.on('readyToClose', async () => {
-          console.info("La réunion est terminée");
-          const data = await getParicipantsNumber(roomName);
-          participantCountRef.current = data;
-          if (participantCountRef.current === 0) {
-            await checkConferenceEnd(roomName);
-          }
-        });
-
-        api.on('videoConferenceJoined', async (event) => {
-          // Récupérer et stocker l'ID du participant local
-          const myId = event.id;
-
-          api.on('participantRoleChanged', (event) => {
-            if (event.id === myId) {
-              myRole.current = event.role;
-              handleRecordingStatus(api, roomName, myRole.current, checkVideoInterval.current, checkTimeout.current);
+          try {
+            const count = await getConfSize(conferenceName);
+            participantCountRef.current = count ?? 0;
+            if (participantCountRef.current === 0) {
+              await setEnd(conferenceName, new Date().toISOString());
             }
-
-            
-          });
-          
-          const data = await getParicipantsNumber(roomName);
-          participantCountRef.current = data;
-          if (participantCountRef.current === 1 && !conferenceRef.current) {
-            const conference = await createConference(roomName);
-            conferenceRef.current = conference;
+          } catch (e) {
+            console.error('[Jitsi] readyToClose error:', e);
           }
-
-          // api.getRoomsInfo().then((rooms : any) => {
-          //   const roomsArray: any = Object.values(rooms);
-          //   console.log('Rooms info:', roomsArray[0].participants);
-            
-          // })
-
         });
 
+        // rejoint la conf
+        api.on('videoConferenceJoined', async (evt: any) => {
+          const myId = evt.id;
 
+          // rôle du participant local
+          api.on('participantRoleChanged', (e: any) => {
+            if (e.id === myId) {
+              myRole.current = e.role;
+              handleRecordingStatus(
+                api,
+                conferenceName,
+                myRole.current,
+                checkVideoInterval.current,
+                checkTimeout.current
+              );
+            }
+          });
+
+          try {
+            // si premier participant → créer la conf
+            const count = await getConfSize(conferenceName);
+            participantCountRef.current = count ?? 0;
+
+            if (participantCountRef.current === 1 && !conferenceRef.current) {
+              const existingRoom = await getRoomByName(conferenceName).catch(() => null);
+              const room = existingRoom ?? (await createRoom(conferenceName));
+              const conf = await createConf({ room_uid: room.uid, name: conferenceName });
+              conferenceRef.current = conf;
+            }
+          } catch (e) {
+            console.error('[Jitsi] join flow error:', e);
+          }
+        });
       }}
       onReadyToClose={onClose}
     />

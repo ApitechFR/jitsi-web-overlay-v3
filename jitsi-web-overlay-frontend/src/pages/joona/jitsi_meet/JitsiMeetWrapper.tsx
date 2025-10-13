@@ -2,60 +2,32 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../auth/useAuth';
 import JitsiMeetingView from './JitsiMeetingView';
-import { validateRoomName } from '../../../utils/roomName';
+import { validateconferenceName } from '../../../utils/conferenceName';
 import CircularProgress from '@mui/material/CircularProgress';
 import Header from '../../../components/joona/header/HeaderVisio';
-import styles from './JitsiMeetWrapper.module.css'
+import styles from './JitsiMeetWrapper.module.css';
+import { useApi } from '@/api';
+import { ConferenceService } from '@/api';
 
-type JwtResponse = | { token: string; exp?: number; moderator: boolean } | { error: string };
-
-async function fetchJitsiJwtWithSession(
-  apiBase: string,
-  roomName: string,
-  signal?: AbortSignal
-): Promise<JwtResponse> {
-  const url = `${apiBase}/conferences/${encodeURIComponent(roomName)}/tokens/jitsi`;
-
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json'
-      },
-      body: JSON.stringify({ /* rien: le serveur décide du rôle/TTL */ }),
-      signal,
-    });
-
-    if (!res.ok) {
-      const text = await res.text().catch(() => '');
-      return { error: `HTTP ${res.status}${text ? ` – ${text}` : ''}` };
-    }
-
-    return res.json();
-  } catch (e: any) {
-    if (e?.name === 'AbortError') return { error: 'Request aborted' };
-    return { error: e?.message ?? 'Network error' };
-  }
-}
+type JwtResponse =
+  | { token: string; exp?: number; moderator: boolean }
+  | { error: string };
 
 const JitsiMeetWrapper: React.FC = () => {
-  const { roomName } = useParams();
+  const { conference_name } = useParams<{ conference_name: string }>();
   const navigate = useNavigate();
   const location = useLocation() as { state?: any };
   const { authenticated, status, user } = useAuth();
 
   const [jwtToken, setJwtToken] = useState<string | undefined>(undefined);
   const [jwtError, setJwtError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { run: fetchJitsiJwt, loading: loadingJitsiJwt, error: errorJitsiJwt } = useApi(ConferenceService.jitsiJwt);
 
   const [isHeaderOpen, setIsHeaderOpen] = useState(true);
 
   const domain = import.meta.env.VITE_JITSI_DOMAIN as string;
-  const apiBase = (import.meta.env.VITE_API_URL as string | undefined) || '/api';
 
-  const validRoom = !!roomName && validateRoomName(roomName);
+  const validRoom = !!conference_name && validateconferenceName(conference_name);
 
   useEffect(() => {
     if (!validRoom) return;
@@ -65,11 +37,11 @@ const JitsiMeetWrapper: React.FC = () => {
       if (!allowGuest) {
         navigate('/', {
           replace: true,
-          state: { waitForRoom: roomName, openAuthModal: true },
+          state: { waitForRoom: conference_name, openAuthModal: true },
         });
       }
     }
-  }, [validRoom, status, authenticated, roomName, navigate, location.state]);
+  }, [validRoom, status, authenticated, conference_name, navigate, location.state]);
 
   // Récup JWT uniquement si connecté
   useEffect(() => {
@@ -77,39 +49,16 @@ const JitsiMeetWrapper: React.FC = () => {
     if (status === 'unknown') return;
     if (!authenticated) return;
 
-    let cancelled = false;
-    const ctrl = new AbortController();
-    const to = setTimeout(() => ctrl.abort(), 10000);
-
-    (async () => {
-      setLoading(true);
-      setJwtError(null);
-      try {
-        const resp = await fetchJitsiJwtWithSession(apiBase, roomName!, ctrl.signal);
-        if (cancelled) return;
-
-        if ('token' in resp) {
-          setJwtToken(resp.token);
-        } else {
-          setJwtToken(undefined);
-          setJwtError(resp.error || 'Impossible de récupérer le JWT pour cette conférence.');
-        }
-      } catch (e: any) {
-        if (!cancelled) {
-          setJwtToken(undefined);
-          setJwtError(`Session exception: ${e?.message ?? 'unknown error'}`);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-      clearTimeout(to);
-      ctrl.abort();
-    };
-  }, [authenticated, status, roomName, apiBase, validRoom]);
+    setJwtError(null);
+    fetchJitsiJwt(conference_name!)
+      .then(resp => {
+        setJwtToken(resp.token);
+      })
+      .catch(e => {
+        setJwtToken(undefined);
+        setJwtError(e?.message || 'Impossible de récupérer le JWT pour cette conférence.');
+      });
+  }, [authenticated, status, conference_name, validRoom, fetchJitsiJwt]);
 
   // displayName : on privilégie prénom/nom/email si présents
   const displayName = useMemo<string>(() => {
@@ -147,7 +96,7 @@ const JitsiMeetWrapper: React.FC = () => {
   // Si non-auth AVEC allowGuest, on rend Jitsi sans JWT (invité).
   // Si auth, on rend Jitsi avec ou sans JWT (selon fetch en cours).
 
-  if (authenticated && loading && !jwtToken) {
+  if (authenticated && loadingJitsiJwt && !jwtToken) {
     return (
       <div>
         <CircularProgress style={{ height: '150px', width: '150px' }} />
@@ -155,10 +104,10 @@ const JitsiMeetWrapper: React.FC = () => {
     );
   }
 
-  if (authenticated && jwtError && !jwtToken) {
+  if (authenticated && (jwtError || errorJitsiJwt) && !jwtToken) {
     return (
       <div style={{ color: 'red', padding: '2rem', textAlign: 'center' }}>
-        {jwtError}
+        {jwtError || errorJitsiJwt?.message}
         <div style={{ marginTop: 8, color: '#666' }}>
           Si le problème persiste, contactez l’administrateur de la conférence.
         </div>
@@ -181,7 +130,7 @@ const JitsiMeetWrapper: React.FC = () => {
       </div>
       <JitsiMeetingView
         domain={domain}
-        roomName={roomName!}
+        conferenceName={conference_name!}
         jwt={jwtToken}          // undefined => invité
         displayName={displayName}
       />
