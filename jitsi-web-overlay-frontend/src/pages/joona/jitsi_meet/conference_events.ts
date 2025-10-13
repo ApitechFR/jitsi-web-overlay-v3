@@ -13,7 +13,8 @@ export const checkConferenceEnd = async (roomName: string) => {
     const endTime = new Date();
 
     try {
-        await fetch(`${API_BASE_URL}/conferences/confname/${roomName}`, {
+        await fetch(`${API_BASE_URL}/conferences/${roomName}/end`, {
+
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ end_time: endTime.toISOString() }),
@@ -29,7 +30,7 @@ export const createRoom = async (roomName: string) => {
         console.info("La room existe déjà");
         return roomExists;
     }
-    
+
     const roomPayload = { name: roomName };
 
     const roomResponse = await fetch(`${API_BASE_URL}/room`, {
@@ -43,7 +44,7 @@ export const createRoom = async (roomName: string) => {
     }
 
     const newRoom = await roomResponse.json();
-    console.info("Nouvelle room créée :");
+    console.info("Nouvelle room créée ");
     return newRoom;
 }
 
