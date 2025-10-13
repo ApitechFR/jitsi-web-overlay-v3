@@ -14,3 +14,4 @@ export * from './services/room/room.types';
 
 export * from './errors';
 export { http } from './http';
+export * from './hooks/useApi';

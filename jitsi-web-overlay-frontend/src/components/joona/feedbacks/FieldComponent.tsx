@@ -1,7 +1,7 @@
 import { RadioField } from "./RadioField";
 import { InputField } from "./InputField";
 import { StarRatingField } from "./StarRatingField";
-import { FeedbackTemplate } from "../../../pages/joona/Feedback/FeedbackJoona";
+import type { FeedbackTemplate } from '@/api';
 
 export interface FieldProps {
   template: FeedbackTemplate;

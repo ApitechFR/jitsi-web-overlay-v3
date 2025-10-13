@@ -1,33 +1,14 @@
 import Button from '@apitechfr/react-dsapitech/Button';
 import { Alert } from '@apitechfr/react-dsapitech/Alert';
 
-import styles from './FeedbackJoona.module.css'
-import { useEffect, useState } from 'react';
-import { FieldComponent } from '../../../components/joona/feedbacks/FieldComponent';
+import styles from './FeedbackJoona.module.css';
+import { useEffect, useMemo, useState } from 'react';
+import { FieldComponent } from '@/components/joona/feedbacks/FieldComponent';
 import { useNavigate } from 'react-router';
-
-export interface FeedbackType {
-  id: number;
-  name: string;
-  description: string;
-}
-
-export interface Feedback {
-  id: number;
-}
-
-export interface FeedbackTemplate {
-  id: number;
-  label: string;
-  organization: string;
-  choices: string[];
-  deletedAt: string | null;
-  feedbacks: Feedback[];
-  type: FeedbackType;
-}
+import { FeedbackService, useApi } from '@/api';
+import type { FeedbackTemplate } from '@/api';
 
 const organizationFilter = import.meta.env.VITE_APP_ORGANIZATION;
-const baseUrl = import.meta.env.VITE_API_URL;
 
 function FeedbackJoona() {
 
@@ -40,45 +21,45 @@ function FeedbackJoona() {
     const [isAlertVisible, setIsAlertVisible] = useState(false);
 
     const params = new URLSearchParams(window.location.search);
-    
-    useEffect(() => {
-        fetch(`${baseUrl}/feedback/templates`)
-        .then((res) => res.json())
-        .then((data: FeedbackTemplate[]) => {
-            const filtered = data.filter(
-                (template) => template.deletedAt === null && template.organization === organizationFilter
-            );
-            setTemplates(filtered);
-        });
-    }, []);
+
+    // useApi hooks
+    const { run: fetchTemplates, loading, error } = useApi(FeedbackService.listTemplates);
+    const { run: sendFeedbacks, loading: sending, error: sendError } = useApi(FeedbackService.bulkCreate);
 
     useEffect(() => {
-        if (isSubmitted) {
-            if (isAlertVisible) {
-                const timeout = setTimeout(() => setIsAlertVisible(false), 3000);
-                return () => clearTimeout(timeout);
-            }
-            if (isBlankNewPage) {
-                const timer = setTimeout(() => {
-                    window.close();
-                }, 4500);
-                
-                return () => clearTimeout(timer);
-            } else {
-                const timer = setTimeout(() => {
-                    navigate('/');
-                }, 4500);
+        fetchTemplates()
+            .then((allTemplates) => {
+                const filtered = allTemplates.filter(
+                    (template: FeedbackTemplate) => template.deletedAt === null && template.organization === organizationFilter
+                );
+                setTemplates(filtered);
+            })
+            .catch(() => {
+                /* l'erreur est déjà exposée via error */
+            });
+    }, [fetchTemplates]);
 
-                return () => clearTimeout(timer);
-            }
+    useEffect(() => {
+        if (!isSubmitted) return;
+
+        if (isAlertVisible) {
+            const timeout = setTimeout(() => setIsAlertVisible(false), 3000);
+            return () => clearTimeout(timeout);
         }
-    }, [isSubmitted, isAlertVisible]);
+
+        const timer = setTimeout(() => {
+            if (isBlankNewPage) window.close();
+            else navigate('/');
+        }, 4500);
+
+        return () => clearTimeout(timer);
+    }, [isSubmitted, isAlertVisible, isBlankNewPage, navigate]);
 
     const handleChange = (templateId: number, value: string) => {
-        setResponses((previousData) => ({ ...previousData, [templateId]: value }));
+        setResponses((previous) => ({ ...previous, [templateId]: value }));
     };
 
-    const handleSubmit = async (e : React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         const baseData = {
@@ -87,87 +68,121 @@ function FeedbackJoona() {
             userAgent: navigator.userAgent,
         };
 
-        const feedbacks = templates.map((template) => ({
+        const payload = templates.map((template) => ({
             ...baseData,
             feedbackTemplateId: template.id,
-            reponse: responses[template.id] ?? "",
+            reponse: responses[template.id] ?? '',
         }));
 
         try {
-            const response = await fetch(
-                `${baseUrl}/feedback/internal/bulk`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(feedbacks),
-                }
-            );
-            
-            if (params.get("src") === "visio") {
-                setIsBlankNewPage(true);
-            }
-            if (response.ok) {
-                setIsSubmitted(true);
-                setIsAlertVisible(true);
-            } else {
-                console.error("Erreur :", await response.text());
-            }
-        } catch (err) {
-            console.error("Erreur réseau :", err);
+            await sendFeedbacks(payload);
+            if (params.get('src') === 'visio') setIsBlankNewPage(true);
+            setIsSubmitted(true);
+            setIsAlertVisible(true);
+        } catch {
+            /* déjà géré via sendError */
         }
-    }
+    };
+
+    const isBusy = useMemo(() => loading || sending, [loading, sending]);
 
     return (
         <div className={styles.content}>
             <h1 className={styles.title}>Mesurez la qualité du service</h1>
-            {!isSubmitted ? 
-                (templates.length > 0 ? (
+
+            {!isSubmitted ? (
+                loading ? (
+                    <span>Chargement des feedbacks…</span>
+                ) : error ? (
+                    <span>Erreur lors du chargement des feedbacks : {error.message}</span>
+                ) : templates.length > 0 ? (
                     <div className={styles.contentFeedback}>
-                        <form action="" onSubmit={e => handleSubmit(e)}>
+                        <form onSubmit={handleSubmit}>
                             {templates.map((template) => {
                                 const Component = FieldComponent[template.type.id];
                                 if (!Component) return null;
                                 return (
                                     <div key={template.id}>
-                                        <Component template={template} value={responses[template.id]} onChange={handleChange} />
+                                        <Component
+                                            template={template}
+                                            value={responses[template.id]}
+                                            onChange={handleChange}
+                                        />
                                     </div>
                                 );
                             })}
+
                             <div className={styles.validButtonFeedback}>
-                                <Button>
-                                    <span>Envoyer</span>
+                                <Button disabled={isBusy}>
+                                    <span>{isBusy ? 'Envoi en cours…' : 'Envoyer'}</span>
                                 </Button>
+                                {sendError && (
+                                    <div className={styles.alertContainer}>
+                                        <Alert
+                                            severity="error"
+                                            title="Erreur lors de l'envoi"
+                                            description={sendError.message}
+                                            small
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </form>
                     </div>
                 ) : (
                     <>
-                        <span>Il n'y a actuellement pas de feedback à afficher pour cette organisation</span>
-                        <p>Retour à la page d'accueil ici : <a href="/">Accueil</a></p>
+                        <span>
+                            Il n&apos;y a actuellement pas de feedback à afficher pour cette
+                            organisation
+                        </span>
+                        <p>
+                            Retour à la page d&apos;accueil ici : <a href="/">Accueil</a>
+                        </p>
                     </>
-                )) : isBlankNewPage ? (
-                    <>
-                        <span>Merci pour votre retour !</span>
-                        <p>Vous pouvez désormais retourner à votre visioconférence et fermer cette fenêtre, celle-ci sera automatiquement fermer d'ici quelques secondes</p>
-                        {isAlertVisible && (
-                            <div className={styles.alertContainer}>
-                                <Alert severity="success" title="Votre avis à été soumis, Merci !" description="" small />
-                            </div>
-                        )}
-                    </>
-                ) : (
-                    <>
-                        <span>Merci pour votre retour ! Vous allez être redirigé automatiquement vers la page d'accueil</span>
-                        <p>Si ce n'est pas le cas au bout de quelques secondes, vous pouvez cliquer ici pour y être redirigé : <a href="/">Accueil</a></p>
-                        {isAlertVisible && (
-                            <div className={styles.alertContainer}>
-                                <Alert severity="success" title="Votre avis à été soumis, Merci !" description="" small />
-                            </div>
-                        )}
-                    </>
+                )
+            ) : isBlankNewPage ? (
+                <>
+                    <span>Merci pour votre retour !</span>
+                    <p>
+                        Vous pouvez désormais retourner à votre visioconférence et fermer
+                        cette fenêtre, celle-ci sera automatiquement fermée d&apos;ici
+                        quelques secondes
+                    </p>
+                    {isAlertVisible && (
+                        <div className={styles.alertContainer}>
+                            <Alert
+                                severity="success"
+                                title="Votre avis a été soumis, Merci !"
+                                description=""
+                                small
+                            />
+                        </div>
+                    )}
+                </>
+            ) : (
+                <>
+                    <span>
+                        Merci pour votre retour ! Vous allez être redirigé automatiquement
+                        vers la page d&apos;accueil
+                    </span>
+                    <p>
+                        Si ce n&apos;est pas le cas au bout de quelques secondes, vous
+                        pouvez cliquer ici : <a href="/">Accueil</a>
+                    </p>
+                    {isAlertVisible && (
+                        <div className={styles.alertContainer}>
+                            <Alert
+                                severity="success"
+                                title="Votre avis a été soumis, Merci !"
+                                description=""
+                                small
+                            />
+                        </div>
+                    )}
+                </>
             )}
         </div>
-    )
-};
+    );
+}
 
 export default FeedbackJoona;
