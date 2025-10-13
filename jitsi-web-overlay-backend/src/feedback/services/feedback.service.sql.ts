@@ -87,7 +87,7 @@ export class FeedbackServiceSQL implements IFeedbackService {
       const templateLabel = f.feedbackTemplate.label;
 
       if (!acc.byTemplate[templateLabel]) {
-        acc.byTemplate[templateLabel] = { count: 0, responses: [] };
+        acc.byTemplate[templateLabel] = { label: f.feedbackTemplate.label, count: 0, responses: [] };
       }
 
       acc.byTemplate[templateLabel].count++;
