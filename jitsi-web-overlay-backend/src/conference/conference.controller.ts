@@ -97,7 +97,7 @@ export class ConferenceController {
     return { message: 'Mise à jour non supportée pour cette base.' };
   }
 
-  @Put('conferences/confname/:confName')
+  @Put('conferences/:confName/end')
   async updateEndTime(
     @Param('confName') confName: string,
     @Body() dto: EndConferenceDTO,
