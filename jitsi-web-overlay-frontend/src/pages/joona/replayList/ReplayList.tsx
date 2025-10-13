@@ -1,45 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { API_BASE_URL } from '../jitsi_meet/visio_replay';
+import { ReplayService, useApi } from '@/api';
 import styles from './ReplayList.module.css';
 import { useParams } from 'react-router-dom';
 import Button from '@codegouvfr/react-dsfr/Button';
-
-interface Replay {
-    id: number;
-    uid: string;
-    file_path: string;
-    status: string;
-    message: string;
-    conference_name: string;
-    created_at: string;
-    updated_at: string;
-}
-
-const formatDate = (isoString: string): string => {
-    const date = new Date(isoString);
-    return new Intl.DateTimeFormat('fr-FR', {
-        dateStyle: 'long',
-        timeStyle: 'short',
-    }).format(date);
-};
+import type { Replay } from '@/api';
+import { formatDate } from '@/utils/date';
 
 const ReplayList: React.FC = () => {
     const [replays, setReplays] = useState<Replay[]>([]);
+
     const { conference_uid } = useParams<{ conference_uid: string }>();
-    const [loading, setLoading] = useState(true);
+
+    const { run: fetchByConf, loading, error } = useApi(ReplayService.getByConferenceUid);
+
 
     useEffect(() => {
-        axios.get<Replay[]>(`${API_BASE_URL}/replays/conference/${conference_uid}`)
-            .then((res) => setReplays(res.data))
-            .catch((err) => console.error('Erreur :', err))
-            .finally(() => setLoading(false));
-    }, []);
+        if (conference_uid) {
+            fetchByConf(conference_uid)
+                .then(setReplays)
+                .catch(() => { });
+        }
+    }, [conference_uid, fetchByConf]);
 
     if (loading) return <p>Chargement...</p>;
+    if (error) return <p>Erreur : {error.message}</p>;
 
     return (
-
         <div className={styles.replayList}>
             <h1>Enregistrements Vidéo</h1>
 
@@ -54,11 +40,7 @@ const ReplayList: React.FC = () => {
                             className={styles.downloadButton}
                             priority="primary"
                             onClick={() => {
-                                window.open(
-                                    `${API_BASE_URL}/replays/download/${encodeURIComponent(replay.uid)}`,
-                                    '_blank',
-                                    'noopener,noreferrer'
-                                );
+                                window.open(ReplayService.getDownloadUrl(replay.uid), '_blank', 'noopener,noreferrer');
                             }}
                         >
                             Télécharger
@@ -68,7 +50,6 @@ const ReplayList: React.FC = () => {
             )}
         </div>
     );
-
 };
 
 export default ReplayList;

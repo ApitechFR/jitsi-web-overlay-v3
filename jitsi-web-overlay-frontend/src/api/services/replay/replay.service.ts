@@ -1,6 +1,6 @@
 import { http } from '../../http';
 import { toApiError } from '@/api/errors';
-import { ReplayStatus } from './replay.types';
+import { Replay, ReplayStatus } from './replay.types';
 
 
 export const ReplayService = {
@@ -20,6 +20,32 @@ export const ReplayService = {
             return data;
         } catch (error) {
             throw toApiError(error, 'Erreur lors de la récupération du replay');
+        }
+    },
+
+    async getByConferenceUid(conference_uid: string): Promise<Replay[]> {
+        try {
+            const { data } = await http.get(`/replays/conference/${conference_uid}`);
+            return data;
+        } catch (error) {
+            throw toApiError(error, 'Erreur lors de la récupération des replays de la conférence');
+        }
+    },
+
+    async getAll(): Promise<Record<string, Replay[]>> {
+        try {
+            const { data } = await http.get('/replays');
+            return data;
+        } catch (error) {
+            throw toApiError(error, 'Erreur lors de la récupération des replays');
+        }
+    },
+
+    getDownloadUrl(replay_uid: string) {
+        try {
+            return `${http.defaults.baseURL}/replays/download/${replay_uid}`;
+        } catch (error) {
+            throw toApiError(error, 'Erreur lors du téléchargement');
         }
     }
 

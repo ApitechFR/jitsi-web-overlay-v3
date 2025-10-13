@@ -7,6 +7,10 @@ export enum ReplayStatus {
 
 export interface Replay {
     id: number | string;
+    uid: string;
     status: ReplayStatus | string;
-    conference?: { uid?: string; name?: string };
+    message: string;
+    conference_name: string;
+    created_at: string;
+    updated_at: string;
 }

@@ -1,49 +1,35 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { API_BASE_URL } from '../jitsi_meet/visio_replay';
+import { useApi, ReplayService } from '@/api';
 import styles from './ReplayList.module.css';
 import Button from '@codegouvfr/react-dsfr/Button';
-
-interface Replay {
-    id: number;
-    uid: string;
-    file_path: string;
-    status: string;
-    message: string;
-    conference_name: string;
-    created_at: string;
-    updated_at: string;
-}
-
-const formatDate = (isoString: string): string => {
-    const date = new Date(isoString);
-    return new Intl.DateTimeFormat('fr-FR', {
-        dateStyle: 'long',
-        timeStyle: 'short',
-    }).format(date);
-};
+import { formatDate } from '@/utils/date';
+import type { Replay } from '@/api';
 
 
 const ReplayListGrouped: React.FC = () => {
     const [groupedReplays, setGroupedReplays] = useState<Record<string, Replay[]>>({});
-    const [loading, setLoading] = useState(true);
+
+    const { run: fetchGrouped, loading, error } = useApi(ReplayService.getAll);
 
     useEffect(() => {
-        axios.get(`${API_BASE_URL}/replays`)
-            .then((res) => setGroupedReplays(res.data))
-            .catch((err) => console.error('Erreur :', err))
-            .finally(() => setLoading(false));
-    }, []);
+        fetchGrouped()
+            .then(setGroupedReplays)
+            .catch(() => { });
+    }, [fetchGrouped]);
 
     if (loading) return <p>Chargement...</p>;
+    if (error) return <p>Erreur : {error.message}</p>;
+
+    const groups = Object.entries(groupedReplays);
 
     return (
         <div className={styles.replayList}>
             <h1>Enregistrements Vidéo par conférence</h1>
-            {Object.keys(groupedReplays).length === 0 ? (
+
+            {groups.length === 0 ? (
                 <p className={styles.noReplays}>Aucun replay disponible</p>
             ) : (
-                Object.entries(groupedReplays).map(([confName, replays]) => (
+                groups.map(([confName, replays]) => (
                     <div key={confName} className={styles.conferenceGroup}>
                         <h3>{confName}</h3>
                         {replays.map((replay) => (
@@ -53,13 +39,13 @@ const ReplayListGrouped: React.FC = () => {
                                 <Button
                                     className={styles.downloadButton}
                                     priority="primary"
-                                    onClick={() => {
+                                    onClick={() =>
                                         window.open(
-                                            `${API_BASE_URL}/replays/download/${encodeURIComponent(replay.uid)}`,
+                                            ReplayService.getDownloadUrl(replay.uid),
                                             '_blank',
                                             'noopener,noreferrer'
-                                        );
-                                    }}
+                                        )
+                                    }
                                 >
                                     Télécharger
                                 </Button>
