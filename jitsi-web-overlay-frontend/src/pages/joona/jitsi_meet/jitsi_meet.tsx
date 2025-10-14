@@ -4,22 +4,22 @@ import { validateconferenceName } from '../../../utils/conferenceName';
 import JitsiMeetWrapper from './JitsiMeetWrapper';
 
 export default function JitsiMeet() {
-    const { roomName } = useParams();
+    const { conferenceName } = useParams();
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!roomName) return;
+        if (!conferenceName) return;
 
-        if (!validateconferenceName(roomName)) {
+        if (!validateconferenceName(conferenceName)) {
             navigate('/', {
                 replace: true,
-                state: { prefillRoomName: roomName, invalidRoom: true },
+                state: { prefillRoomName: conferenceName, invalidRoom: true },
             });
             return;
         }
-    }, [roomName, navigate]);
+    }, [conferenceName, navigate]);
 
-    if (!roomName || !validateconferenceName(roomName)) return null;
+    if (!conferenceName || !validateconferenceName(conferenceName)) return null;
 
     return <JitsiMeetWrapper />;
 }

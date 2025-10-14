@@ -14,7 +14,7 @@ type JwtResponse =
   | { error: string };
 
 const JitsiMeetWrapper: React.FC = () => {
-  const { conference_name } = useParams<{ conference_name: string }>();
+  const { conferenceName } = useParams<{ conferenceName: string }>();
   const navigate = useNavigate();
   const location = useLocation() as { state?: any };
   const { authenticated, status, user } = useAuth();
@@ -27,7 +27,7 @@ const JitsiMeetWrapper: React.FC = () => {
 
   const domain = import.meta.env.VITE_JITSI_DOMAIN as string;
 
-  const validRoom = !!conference_name && validateconferenceName(conference_name);
+  const validRoom = !!conferenceName && validateconferenceName(conferenceName);
 
   useEffect(() => {
     if (!validRoom) return;
@@ -37,11 +37,11 @@ const JitsiMeetWrapper: React.FC = () => {
       if (!allowGuest) {
         navigate('/', {
           replace: true,
-          state: { waitForRoom: conference_name, openAuthModal: true },
+          state: { waitForRoom: conferenceName, openAuthModal: true },
         });
       }
     }
-  }, [validRoom, status, authenticated, conference_name, navigate, location.state]);
+  }, [validRoom, status, authenticated, conferenceName, navigate, location.state]);
 
   // Récup JWT uniquement si connecté
   useEffect(() => {
@@ -50,7 +50,7 @@ const JitsiMeetWrapper: React.FC = () => {
     if (!authenticated) return;
 
     setJwtError(null);
-    fetchJitsiJwt(conference_name!)
+    fetchJitsiJwt(conferenceName!)
       .then(resp => {
         setJwtToken(resp.token);
       })
@@ -58,7 +58,7 @@ const JitsiMeetWrapper: React.FC = () => {
         setJwtToken(undefined);
         setJwtError(e?.message || 'Impossible de récupérer le JWT pour cette conférence.');
       });
-  }, [authenticated, status, conference_name, validRoom, fetchJitsiJwt]);
+  }, [authenticated, status, conferenceName, validRoom, fetchJitsiJwt]);
 
   // displayName : on privilégie prénom/nom/email si présents
   const displayName = useMemo<string>(() => {
@@ -130,7 +130,7 @@ const JitsiMeetWrapper: React.FC = () => {
       </div>
       <JitsiMeetingView
         domain={domain}
-        conferenceName={conference_name!}
+        conferenceName={conferenceName!}
         jwt={jwtToken}          // undefined => invité
         displayName={displayName}
       />

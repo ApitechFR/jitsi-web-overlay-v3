@@ -1,7 +1,6 @@
 import Home from './pages/home/Home';
 import Layout from './components/layout/Layout';
 import { useState, useEffect } from 'react';
-import { logDebug } from './utils/logDebug';
 import {
   Routes,
   Route,
@@ -20,7 +19,6 @@ import MentionslegalesVisioByApitech from './pages/MentionsLegales/MentionsLegal
 import StaticPagesBuilder from './pages/staticPagesBuilder/StaticPagesBuilder';
 import Feedback from './pages/feedback/Feedback';
 import BrowserTest from './pages/browserTest/BrowserTest';
-import api from './axios/axios';
 import LoginCallback from './pages/login/LoginCallback';
 import LogoutCallback from './pages/login/LogoutCallback';
 import Error from './pages/Error/Error';
@@ -40,6 +38,8 @@ import AdminRoute from './auth/AdminRoute';
 import { useAuth } from './auth/useAuth';
 import RouteThemeController from './RouteThemeController';
 
+import { useApi, ConferenceService, StatsService } from '@/api';
+
 type errorObj = {
   message: string;
   error: {
@@ -48,12 +48,9 @@ type errorObj = {
   };
 };
 
-interface JwtPayload {
-  exp: number;
-}
 
 function App() {
-  const [roomName, setRoomName] = useState('');
+  const [confName, setConfName] = useState('');
   const [jwt, setJwt] = useState<string | undefined>(undefined);
   const [error, setError] = useState<errorObj>({
     message: "la page que vous demandez n'existe pas",
@@ -65,50 +62,43 @@ function App() {
   const [conferenceNumber, setConferenceNumber] = useState(0);
   const [participantsNumber, setparticipantsNumber] = useState(0);
 
-  const location = useLocation();
   const AppTemplate = import.meta.env.VITE_APP_TEMPLATE || 'joona';
   const { authenticated } = useAuth();
 
-  const sendEmail = (roomName: string) => {
-    api
-      .post('conference/create/byemail', { roomName, email })
-      .then(res => {
-        if (res.data.error) {
-          setError({
-            message: "la page que vous demandez n'existe pas",
-            error: { status: '404', stack: '' },
-          });
-          navigate('/error');
-        } else {
-          setIsWhitelisted(res.data.isWhitelisted);
-        }
-      })
-      .catch(err => {
-        if (err?.response) {
-          setIsWhitelisted(false);
-        } else if (err?.request) {
-          setError({
-            message: "la page que vous demandez n'existe pas",
-            error: { status: '404', stack: '' },
-          });
-          navigate('/error');
-        } else {
-          setError({
-            message: "la page que vous demandez n'existe pas",
-            error: { status: '500', stack: '' },
-          });
-          navigate('/error');
-        }
-      });
+
+  const { run: createByEmail } = useApi(ConferenceService.createByEmail);
+  const { run: joinConf } = useApi(ConferenceService.join);
+  const { run: getHomeStats } = useApi(StatsService.homePage);
+
+  const sendEmail = async (name: string) => {
+    try {
+      const res = await createByEmail(name, email);
+      if (res?.error) {
+        setError({ message: "la page que vous demandez n'existe pas", error: { status: '404', stack: '' } });
+        navigate('/error');
+      } else {
+        setIsWhitelisted(res.isWhitelisted);
+      }
+    } catch (e: any) {
+      if (e?.status) {
+        setIsWhitelisted(false);
+      } else if (e?.request) {
+        setError({ message: e?.message || "la page que vous demandez n'existe pas", error: { status: e?.status || '404', stack: '' } });
+        navigate('/error');
+      } else {
+        setError({ message: e?.message || "la page que vous demandez n'existe pas", error: { status: e?.status || '500', stack: '' } });
+        navigate('/error');
+      }
+    }
   };
+
 
   useEffect(() => {
     if (AppTemplate === 'webconf') {
-      api
-        .get('/stats/homePage')
-        .then(res => {
-          setConferenceNumber(res.data.conf);
-          setparticipantsNumber(res.data.part);
+      getHomeStats()
+        .then(({ conf, part }) => {
+          setConferenceNumber(conf);
+          setparticipantsNumber(part);
         })
         .catch(() => {
           setError({
@@ -117,48 +107,39 @@ function App() {
           });
         });
     }
-  }, []);
+  }, [AppTemplate, getHomeStats]);
 
-  const joinConference = () => {
-    api
-      .get(`/${roomName}`)
-      .then(res => {
-        if (res.data.error) {
-          setError({
-            message: "la page que vous demandez n'existe pas",
-            error: { status: '404', stack: '' },
-          });
-          navigate('/error');
-        } else {
-          setRoomName(roomName);
-          setJwt(res.data.jwt);
-          return res;
-        }
-      })
-      .then(res => {
-        if (res?.data) {
-          if (res.data.jwt) {
-            setJwt(res.data.jwt);
-            return navigate(`/${res.data.roomName}`, { replace: true });
-          } else if (!res.data.error && !res.data.login) {
-            setJwt(undefined);
-            return navigate(`/${roomName}`);
-          } else if (res.data.login) {
-            setError({
-              message: "Vous n'etes pas authentifié.",
-              error: { status: '404', stack: '' },
-            });
-            return navigate('/error');
-          }
-        }
-      })
-      .catch(err => {
+  const joinConference = async () => {
+    try {
+      const res = await joinConf(confName);
+      if (res?.error) {
         setError({
           message: "la page que vous demandez n'existe pas",
-          error: { status: err?.response?.status || '500', stack: '' },
+          error: { status: '404', stack: '' },
         });
         navigate('/error');
+        return;
+      }
+      setConfName(confName);
+      setJwt(res.jwt);
+
+      if (res.jwt) {
+        navigate(`/${res.confName ?? confName}`, { replace: true });
+      } else if (!res.login) {
+        setJwt(undefined);
+        navigate(`/${confName}`);
+      } else {
+        setError({ message: "Vous n'etes pas authentifié.", error: { status: '404', stack: '' } });
+        navigate('/error');
+      }
+    } catch (err: any) {
+      setError({
+        message: "la page que vous demandez n'existe pas",
+        error: { status: err?.response?.status || '500', stack: '' },
       });
+      navigate('/error');
+    }
+
   };
 
   return (
@@ -189,8 +170,8 @@ function App() {
                 index
                 element={
                   <HomeJoona
-                    conferenceName={roomName}
-                    setconferenceName={setRoomName}
+                    conferenceName={confName}
+                    setconferenceName={setConfName}
                     setIsWhitelisted={setIsWhitelisted}
                     isWhitelisted={isWhitelisted}
                     email={email}
@@ -259,8 +240,8 @@ function App() {
                 index
                 element={
                   <Home
-                    roomName={roomName}
-                    setRoomName={setRoomName}
+                    roomName={confName}
+                    setRoomName={setConfName}
                     setIsWhitelisted={setIsWhitelisted}
                     isWhitelisted={isWhitelisted}
                     email={email}

@@ -1,6 +1,6 @@
 import { http } from '../../http';
 import { toApiError } from '@/api/errors';
-import type { JitsiJwtResponse } from './conference.types';
+import type { CreateByEmailRes, JitsiJwtResponse, JoinRes } from './conference.types';
 
 export const ConferenceService = {
 
@@ -13,40 +13,58 @@ export const ConferenceService = {
         }
     },
 
-    async setEnd(conference_name: string, endTimeISO: string) {
+    async createByEmail(confName: string, email: string) {
         try {
-            await http.put(`/conferences/${encodeURIComponent(conference_name)}/end`, { end_time: endTimeISO });
+            const { data } = await http.post<CreateByEmailRes>('conference/create/byemail', { confName, email });
+            return data;
+        } catch (error) {
+            throw toApiError(error, 'Erreur lors de la création de la conférence par email');
+        }
+    },
+
+
+    async join(confName: string) {
+        try {
+            const { data } = await http.get<JoinRes>(`/${encodeURIComponent(confName)}`);
+            return data;
+        } catch (error) {
+            throw toApiError(error, 'Erreur lors de la jonction à la conférence');
+        }
+    },
+
+    async setEnd(confName: string, endTimeISO: string) {
+        try {
+            await http.put(`/conferences/${encodeURIComponent(confName)}/end`, { end_time: endTimeISO });
         } catch (error) {
             throw toApiError(error, 'Erreur lors de la clôture de la conférence');
         }
     },
 
-    async getConfSize(conference_name: string) {
+    async getConfSize(confName: string) {
         try {
-            const { data } = await http.get(`/conferences/${encodeURIComponent(conference_name)}/room-size`);
+            const { data } = await http.get(`/conferences/${encodeURIComponent(confName)}/room-size`);
             return data;
         } catch (error) {
             throw toApiError(error, 'Erreur lors de la récupération de la taille de la conférence');
         }
     },
 
-    async state(conference_name: string) {
+    async state(confName: string) {
         try {
-            const { data } = await http.get(`/conferences/${encodeURIComponent(conference_name)}/state`);
+            const { data } = await http.get(`/conferences/${encodeURIComponent(confName)}/state`);
             return data;
         } catch (error) {
             throw toApiError(error, 'Erreur lors de la récupération de l’état de la conférence');
         }
     },
 
-    async jitsiJwt(conference_name: string): Promise<JitsiJwtResponse> {
+    async jitsiJwt(confName: string): Promise<JitsiJwtResponse> {
         try {
             const { data } = await http.post(
-                `/conferences/${encodeURIComponent(conference_name)}/tokens/jitsi`,
+                `/conferences/${encodeURIComponent(confName)}/tokens/jitsi`,
                 {},
                 { withCredentials: true }
             );
-
 
             const token = data?.token ?? data?.jwt;
             if (!token) {
@@ -60,6 +78,16 @@ export const ConferenceService = {
             };
         } catch (e) {
             throw toApiError(e, "Échec de récupération du JWT Jitsi");
+        }
+    },
+
+
+    async getStats() {
+        try {
+            const { data } = await http.get('/stats/homePage');
+            return data;
+        } catch (error) {
+            throw toApiError(error, 'Erreur lors de la récupération des statistiques');
         }
     }
 

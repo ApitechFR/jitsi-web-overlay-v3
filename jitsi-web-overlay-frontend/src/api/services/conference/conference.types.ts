@@ -10,3 +10,13 @@ export interface JitsiJwtResponse {
     exp?: number;             // timestamp d’expiration (optionnel)
     moderator: boolean;       // rôle accordé par le backend
 }
+export interface CreateByEmailRes {
+    isWhitelisted: boolean;
+    error?: string;
+}
+export interface JoinRes {
+    jwt?: string;
+    confName?: string;
+    error?: string;
+    login?: boolean;
+}
