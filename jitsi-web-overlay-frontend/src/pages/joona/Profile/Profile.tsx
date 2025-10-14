@@ -3,7 +3,7 @@ import { Breadcrumb } from '@apitechfr/react-dsapitech/Breadcrumb';
 import { Tag } from '@apitechfr/react-dsapitech/Tag';
 import styles from './Profile.module.css';
 import { useAuth } from '../../../auth/useAuth';
-import { getUserFullName, getUserEmail, isUserAdmin } from '../../../utils/userInfos';
+import { getUserFullName, getUserEmail, isUserAdmin } from '../../../utils/user';
 
 function Profile() {
   const { user } = useAuth();

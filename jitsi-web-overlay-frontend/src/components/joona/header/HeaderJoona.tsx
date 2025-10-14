@@ -8,7 +8,7 @@ import visioLogo from '/assets/visiobyapitech-creme.png'
 import { Header } from '@apitechfr/react-dsapitech/Header';
 import { createModal } from '@apitechfr/react-dsapitech/Modal';
 import { SideMenu } from "@apitechfr/react-dsapitech/SideMenu";
-import { isUserAdmin } from '../../../utils/userInfos';
+import { isUserAdmin } from '../../../utils/user';
 
 import dataChangelog from '../../../utils/changelogs/infos.json'
 import { Item } from '../../../utils/changelogs/Item'

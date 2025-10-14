@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { ReactNode } from 'react';
 import { useAuth } from './useAuth';
-import { isUserAdmin } from '../utils/userInfos';
+import { isUserAdmin } from '../utils/user';
 import CircularProgress from '@mui/material/CircularProgress';
 
 

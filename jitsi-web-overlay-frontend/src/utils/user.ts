@@ -1,57 +1,7 @@
 
-import { decodeJwt } from './decodeJwt';
+import { UserInfos } from '@/api';
 
-export interface UserInfos {
-  email?: string;
-  nom?: string;
-  lastName?: string;
-  family_name?: string;
-  prenom?: string;
-  firstName?: string;
-  given_name?: string;
-  isAdmin?: boolean;
-  admin?: boolean;
-  roles?: string[];
-  realm_access?: { roles?: string[] };
-  [key: string]: unknown;
-}
-
-export async function fetchUserInfos(): Promise<UserInfos | null> {
-  const apiBase = import.meta.env.VITE_API_URL || '/api';
-  const url = `${apiBase}/authentication/userinfo`;
-
-  const ctrl = new AbortController();
-  const to = setTimeout(() => ctrl.abort(), 8000);
-
-  try {
-    const res = await fetch(url, {
-      credentials: 'include',
-      headers: { Accept: 'application/json' },
-      signal: ctrl.signal,
-    });
-
-    if (res.status === 401) return null;
-    if (!res.ok) return null;
-
-    const data = (await res.json()) as UserInfos & { idToken?: string };
-
-
-    if (data?.idToken && typeof data.idToken === 'string') {
-      try {
-        return decodeJwt(data.idToken) as unknown as UserInfos;
-      } catch {
-        return data;
-      }
-    }
-    return data;
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(to);
-  }
-}
-
-export function getFirstStringProp(obj: Record<string, unknown>, props: string[]): string {
+export function getFirstStringProp(obj: Record<string, unknown>, props: string[]) {
   for (const key of props) {
     const v = obj[key];
     if (typeof v === 'string' && v.trim().length > 0) return v.trim();
