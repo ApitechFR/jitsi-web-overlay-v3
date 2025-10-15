@@ -1,11 +1,17 @@
+
 import Swal from "sweetalert2";
+import { getCachedRuntimeConfig } from '../../../config/runtimeConfig';
 
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL;
+export function getApiBaseUrl() {
+    return getCachedRuntimeConfig()?.VITE_API_URL || '/api';
+}
 
-const envValue = import.meta.env.VITE_REPLAY_CHECK_TIMEOUT_MS;
-const parsed = Number(envValue);
-export const REPLAY_CHECK_TIMEOUT_MS = Number.isFinite(parsed) ? parsed : 600000;
+export function getReplayCheckTimeoutMs() {
+    const val = getCachedRuntimeConfig()?.VITE_REPLAY_CHECK_TIMEOUT_MS;
+    const parsed = Number(val);
+    return Number.isFinite(parsed) ? parsed : 600000;
+}
 
 export const showLoadingToast = (message: string) => {
     Swal.fire({
@@ -27,7 +33,7 @@ export const startVideo = async (roomName: string) => {
     const message = "Utilisateur commence l'enregistrement";
 
     try {
-        const response = await fetch(`${API_BASE_URL}/replays/start_recording`, {
+        const response = await fetch(`${getApiBaseUrl()}/replays/start_recording`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -51,7 +57,7 @@ export const checkVideo = async (roomName: string, checkVideoInterval: NodeJS.Ti
     const conference_name = roomName;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/replays/${encodeURIComponent(conference_name)}`);
+        const response = await fetch(`${getApiBaseUrl()}/replays/${encodeURIComponent(conference_name)}`);
 
         if (response.status === 404) {
             console.warn("Aucun replay trouvé pour", conference_name);
@@ -186,7 +192,7 @@ function retryVerification(roomName: string, checkVideoInterval: NodeJS.Timeout 
                 showConfirmButton: false,
                 showCloseButton: true
             });
-        }, REPLAY_CHECK_TIMEOUT_MS); // 10 min
+        }, getReplayCheckTimeoutMs()); // 10 min
     }
 }
 

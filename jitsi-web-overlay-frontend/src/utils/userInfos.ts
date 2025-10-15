@@ -1,6 +1,6 @@
 
 import { decodeJwt } from './decodeJwt';
-
+import { getCachedRuntimeConfig } from '../config/runtimeConfig';
 export interface UserInfos {
   email?: string;
   nom?: string;
@@ -16,8 +16,10 @@ export interface UserInfos {
   [key: string]: unknown;
 }
 
+
+
 export async function fetchUserInfos(): Promise<UserInfos | null> {
-  const apiBase = import.meta.env.VITE_API_URL || '/api';
+  const apiBase = getCachedRuntimeConfig()?.VITE_API_URL || '/api';
   const url = `${apiBase}/authentication/userinfo`;
 
   const ctrl = new AbortController();

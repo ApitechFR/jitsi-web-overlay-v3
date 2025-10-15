@@ -6,6 +6,7 @@ import { validateRoomName } from '../../../utils/roomName';
 import CircularProgress from '@mui/material/CircularProgress';
 import Header from '../../../components/joona/header/HeaderVisio';
 import styles from './JitsiMeetWrapper.module.css'
+import { useRuntimeConfig } from '../../../config/ConfigProvider';
 
 type JwtResponse = | { token: string; exp?: number; moderator: boolean } | { error: string };
 
@@ -52,8 +53,9 @@ const JitsiMeetWrapper: React.FC = () => {
 
   const [isHeaderOpen, setIsHeaderOpen] = useState(true);
 
-  const domain = import.meta.env.VITE_JITSI_DOMAIN as string;
-  const apiBase = (import.meta.env.VITE_API_URL as string | undefined) || '/api';
+  const { VITE_JITSI_DOMAIN, VITE_API_URL } = useRuntimeConfig();
+  const domain = VITE_JITSI_DOMAIN as string;
+  const apiBase = VITE_API_URL || '/api';
 
   const validRoom = !!roomName && validateRoomName(roomName);
 

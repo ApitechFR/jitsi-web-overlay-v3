@@ -1,8 +1,12 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+import { getCachedRuntimeConfig } from '../../../config/runtimeConfig';
+
+function getApiBaseUrl() {
+    return getCachedRuntimeConfig()?.VITE_API_URL || '/api';
+}
 
 export const getParicipantsNumber = async (roomName: string) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/conferences/${roomName}/room-size`);
+        const response = await fetch(`${getApiBaseUrl()}/conferences/${roomName}/room-size`);
         return await response.json();
     } catch (error) {
         console.error('Erreur lors de la récupération des données :', error);
@@ -13,7 +17,7 @@ export const checkConferenceEnd = async (roomName: string) => {
     const endTime = new Date();
 
     try {
-        await fetch(`${API_BASE_URL}/conferences/confname/${roomName}`, {
+        await fetch(`${getApiBaseUrl()}/conferences/confname/${roomName}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ end_time: endTime.toISOString() }),
@@ -29,10 +33,10 @@ export const createRoom = async (roomName: string) => {
         console.info("La room existe déjà");
         return roomExists;
     }
-    
+
     const roomPayload = { name: roomName };
 
-    const roomResponse = await fetch(`${API_BASE_URL}/room`, {
+    const roomResponse = await fetch(`${getApiBaseUrl()}/room`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(roomPayload),
@@ -56,7 +60,7 @@ export const createConference = async (roomName: string) => {
         name: roomName,
     };
 
-    const conferenceResponse = await fetch(`${API_BASE_URL}/conferences`, {
+    const conferenceResponse = await fetch(`${getApiBaseUrl()}/conferences`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -71,7 +75,7 @@ export const createConference = async (roomName: string) => {
 
 export const getRoomByName = async (roomName: string) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/room/name/${encodeURIComponent(roomName)}`);
+        const response = await fetch(`${getApiBaseUrl()}/room/name/${encodeURIComponent(roomName)}`);
         if (response.ok) {
             const room = await response.json();
             return room;
@@ -85,7 +89,7 @@ export const getRoomByName = async (roomName: string) => {
 
 export const checkConferenceExists = async (roomName: string) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/conferences/${encodeURIComponent(roomName)}/state`);
+        const response = await fetch(`${getApiBaseUrl()}/conferences/${encodeURIComponent(roomName)}/state`);
 
         if (response.ok) {
             console.info("La conférence existe déjà.");

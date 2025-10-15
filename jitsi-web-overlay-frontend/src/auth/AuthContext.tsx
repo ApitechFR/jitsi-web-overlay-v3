@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, useMemo, ReactNode, useCallback } from 'react';
 import { fetchUserInfos, UserInfos } from '../utils/userInfos';
+import { useRuntimeConfig } from '../config/ConfigProvider';
 
 type AuthStatus = 'unknown' | 'authenticated' | 'unauthenticated';
 
@@ -29,7 +30,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserInfos | null>(null);
 
 
-  const baseApi = (import.meta.env.VITE_API_URL as string | undefined) || '/api';
+  const { VITE_API_URL } = useRuntimeConfig();
+  const baseApi = VITE_API_URL || '/api';
 
   const refresh = useCallback(async () => {
     try {

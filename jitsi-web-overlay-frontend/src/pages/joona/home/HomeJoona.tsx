@@ -10,7 +10,7 @@ import { createModal } from '@apitechfr/react-dsapitech/Modal';
 import { useIsModalOpen } from '@apitechfr/react-dsapitech/Modal/useIsModalOpen';
 import { useAuth } from '../../../auth/useAuth';
 import CircularProgress from '@mui/material/CircularProgress';
-
+import { useRuntimeConfig } from '../../../config/ConfigProvider';
 
 interface HomeJoonaProps {
   readonly roomName: string;
@@ -26,9 +26,12 @@ interface HomeJoonaProps {
 }
 
 const POLLING_INTERVAL = 2000; // 2s
-const API_BASE = import.meta.env.VITE_API_URL ?? '/api';
+
+
 
 function HomeJoona(props: HomeJoonaProps) {
+  const { VITE_API_URL, VITE_CONFERENCE_NAME_REGEX_MESSAGE } = useRuntimeConfig();
+  const API_BASE = VITE_API_URL ?? '/api';
   const navigate = useNavigate();
   const location = useLocation();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -388,7 +391,7 @@ function HomeJoona(props: HomeJoonaProps) {
                   ref: inputRef,
                 }}
                 stateRelatedMessage={
-                  isError && import.meta.env.VITE_CONFERENCE_NAME_REGEX_MESSAGE
+                  isError && VITE_CONFERENCE_NAME_REGEX_MESSAGE
                 }
                 style={{ width: '100%' }}
                 addon={
@@ -401,7 +404,7 @@ function HomeJoona(props: HomeJoonaProps) {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <Button onClick={onSubmit} className={styles.joinButton} style={{ width: '100%'}}>
+            <Button onClick={onSubmit} className={styles.joinButton} style={{ width: '100%' }}>
               <span>Rejoindre ou créer</span>
             </Button>
 
