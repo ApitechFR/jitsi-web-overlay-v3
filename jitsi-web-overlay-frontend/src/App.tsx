@@ -180,10 +180,12 @@ function App() {
               path="/login_callback"
               element={<LoginCallback />}
             />
+            <Route path="/auth/logout" element={<LogoutCallback />} />
             <Route
               path="/login/callback"
               element={<LoginCallback />}
             />
+            <Route path="/auth/callback" element={<LoginCallback />} />
             <Route path="/" element={<LayoutJoona />}>
               <Route
                 index
