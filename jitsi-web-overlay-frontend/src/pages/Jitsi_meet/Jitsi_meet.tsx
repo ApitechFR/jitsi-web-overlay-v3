@@ -125,10 +125,13 @@ const Jitsi_meet = ({
       });
     }
   }, [roomName, jwt, joinConference, navigate, setError, setRoomName]);
-
+  const sanitizeDomain = (d?: string) =>
+    (d ?? '')
+      .replace(/^https?:\/\//i, '')
+      .replace(/\/+$/, '');
   return (
     <JitsiMeeting
-      domain={import.meta.env.VITE_JITSI_DOMAIN}
+      domain={sanitizeDomain(import.meta.env.VITE_JITSI_DOMAIN || window.location.hostname)}
       roomName={roomName ?? ''}
       jwt={jwt1 || undefined}
       spinner={renderSpinner}
