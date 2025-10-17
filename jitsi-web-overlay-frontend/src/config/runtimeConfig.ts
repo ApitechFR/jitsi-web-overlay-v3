@@ -20,8 +20,8 @@ export async function loadRuntimeConfig(force = false): Promise<FrontConfig> {
     if (cached && !force) return cached;
     if (inflight && !force) return inflight;
 
-    const apiBase = (import.meta.env.VITE_API_URL as string | undefined) || '';
-    const url = apiBase ? `${apiBase.replace(/\/$/, '')}/config` : '/config';
+    const apiBase = (import.meta.env.VITE_API_URL as string | undefined) || '/api';
+    const url = `${apiBase.replace(/\/$/, '')}/config`;
 
     inflight = fetch(url, { credentials: 'include' })
         .then(async (r) => {
@@ -34,6 +34,7 @@ export async function loadRuntimeConfig(force = false): Promise<FrontConfig> {
 
             cached = {
                 ...raw,
+                VITE_APP_TEMPLATE: raw.VITE_APP_TEMPLATE || (import.meta.env.VITE_APP_TEMPLATE as string | undefined) || 'joona',
                 VITE_ENABLE_JIBRI_APITECH_API: coerceBool(raw.VITE_ENABLE_JIBRI_APITECH_API),
                 VITE_REPLAY_CHECK_TIMEOUT_MS: coerceNum(raw.VITE_REPLAY_CHECK_TIMEOUT_MS),
                 VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS: coerceNum(raw.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS),
