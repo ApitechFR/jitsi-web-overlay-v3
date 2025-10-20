@@ -1,7 +1,7 @@
 import Swal from 'sweetalert2';
 import { ReplayService } from '../replay/replay.service';
 import { showLoadingToast } from './toast';
-import { REPLAY_CHECK_TIMEOUT_MS } from './config';
+import { getReplayCheckTimeoutMs } from './config';
 import { ReplayStatus } from '../replay/replay.types';
 
 export async function startVideo(roomName: string) {
@@ -33,6 +33,9 @@ export async function checkVideo(
         }
 
         if (data.status === 'terminated') {
+            // Exemple d'utilisation du timeout dynamique
+            const timeoutMs = getReplayCheckTimeoutMs();
+            console.log('Replay check timeout (ms):', timeoutMs);
             Swal.fire({
                 title: 'Succès !',
                 text: `La vidéo pour "${conference_name}" a été enregistrée avec succès.`,
@@ -133,7 +136,7 @@ function retryVerification(
                 showConfirmButton: false,
                 showCloseButton: true,
             });
-        }, REPLAY_CHECK_TIMEOUT_MS);
+        }, getReplayCheckTimeoutMs());
     }
 }
 

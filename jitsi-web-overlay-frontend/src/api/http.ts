@@ -8,8 +8,15 @@
 import axios from 'axios';
 import { ApiError } from './errors';
 
+import { getCachedRuntimeConfig } from '@/config/runtimeConfig';
+
+function getApiBaseUrl(): string {
+    const cfg = getCachedRuntimeConfig();
+    return cfg?.VITE_API_URL || '/api';
+}
+
 export const http = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || '/api',
+    baseURL: getApiBaseUrl(),
     withCredentials: true,
     headers: { Accept: 'application/json' },
 });

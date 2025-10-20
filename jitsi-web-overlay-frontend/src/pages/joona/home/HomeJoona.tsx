@@ -10,6 +10,8 @@ import { createModal } from '@apitechfr/react-dsapitech/Modal';
 import { useIsModalOpen } from '@apitechfr/react-dsapitech/Modal/useIsModalOpen';
 import { useAuth } from '../../../auth/useAuth';
 import CircularProgress from '@mui/material/CircularProgress';
+import { getCachedRuntimeConfig } from '../../../config/runtimeConfig';
+import { useRuntimeConfig } from '../../../config/ConfigProvider';
 
 
 interface HomeJoonaProps {
@@ -26,7 +28,12 @@ interface HomeJoonaProps {
 }
 
 const POLLING_INTERVAL = 2000; // 2s
-const API_BASE = import.meta.env.VITE_API_URL ?? '/api';
+function getApiBaseUrl(): string {
+  const cfg = getCachedRuntimeConfig();
+  return cfg?.VITE_API_URL ?? '/api';
+}
+
+const API_BASE = getApiBaseUrl();
 
 function HomeJoona(props: HomeJoonaProps) {
   const navigate = useNavigate();
@@ -52,6 +59,8 @@ function HomeJoona(props: HomeJoonaProps) {
   const backoffRef = useRef(POLLING_INTERVAL);
   const [isWaiting, setIsWaiting] = useState(false);
   const currentRoomRef = useRef<string>('');
+
+  const cfg = useRuntimeConfig();
 
 
 
@@ -388,7 +397,7 @@ function HomeJoona(props: HomeJoonaProps) {
                   ref: inputRef,
                 }}
                 stateRelatedMessage={
-                  isError && import.meta.env.VITE_CONFERENCE_NAME_REGEX_MESSAGE
+                  isError && cfg.VITE_CONFERENCE_NAME_REGEX_MESSAGE
                 }
                 style={{ width: '100%' }}
                 addon={

@@ -8,6 +8,7 @@ import axios from 'axios';
 import styles from './Home.module.css';
 import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
+import { useRuntimeConfig } from '../../config/ConfigProvider';
 
 import { useState, useEffect } from 'react';
 
@@ -87,15 +88,13 @@ export default function CalendarModalComponent(props: any) {
     '^(?=(?:[a-zA-Z0-9]*[a-zA-Z]))(?=(?:[a-zA-Z0-9]*[0-9]){3})[a-zA-Z0-9]{10,}$'
   );
 
+  const cfg = useRuntimeConfig();
+
   useEffect(() => {
     if (pattern.test(roomName) && isOpen) {
       axios
         .get(
-          `${
-            import.meta.env.VITE_VOXAPI_URL
-          }/api/v1/conn/jitsi/conference/code?conference=${roomName}@conference.${
-            import.meta.env.VITE_JITSI_DOMAIN
-          }&url=https://${import.meta.env.VITE_JITSI_DOMAIN}/${roomName}`
+          `${cfg.VITE_VOXAPI_URL}/api/v1/conn/jitsi/conference/code?conference=${roomName}@conference.${cfg.VITE_JITSI_DOMAIN}&url=https://${cfg.VITE_JITSI_DOMAIN}/${roomName}`
         )
         .then(res => {
           setPin(res.data.id);
@@ -107,11 +106,7 @@ export default function CalendarModalComponent(props: any) {
     if (pattern.test(roomName) && isOpen) {
       axios
         .get(
-          `${
-            import.meta.env.VITE_VOXAPI_URL
-          }/api/v1/conn/jitsi/phoneNumbers?conference=${roomName}@conference.${
-            import.meta.env.VITE_JITSI_DOMAIN
-          }`
+          `${cfg.VITE_VOXAPI_URL}/api/v1/conn/jitsi/phoneNumbers?conference=${roomName}@conference.${cfg.VITE_JITSI_DOMAIN}`
         )
         .then(res => {
           setPhoneNumber(res.data.numbers.FR[0]);
@@ -127,14 +122,12 @@ export default function CalendarModalComponent(props: any) {
     };
     const par = `
     Lien vers la conférence: ${window.location}${roomName}
-    date de début: ${
-      dateTimeStart &&
+    date de début: ${dateTimeStart &&
       transformDate((dateTimeStart || '').toString().substring(0, 16))
-    } 
-    date de fin: ${
-      dateTimeEnd &&
+      } 
+    date de fin: ${dateTimeEnd &&
       transformDate((dateTimeEnd || '').toString().substring(0, 16))
-    } 
+      } 
     Coordonnées téléphoniques de la conférence :
          - Numéro de téléphone: ${phoneNumber} 
          - PIN: ${pin}
@@ -242,7 +235,7 @@ export default function CalendarModalComponent(props: any) {
             onClick={() => copyEvent()}
             disabled={disabled}
             type="button"
-            // nativeButtonProps={{ id: 'copyCalendarButton' }}
+          // nativeButtonProps={{ id: 'copyCalendarButton' }}
           >
             Copier
           </Button>

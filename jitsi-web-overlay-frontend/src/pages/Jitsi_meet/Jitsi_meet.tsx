@@ -7,6 +7,7 @@ import styles from './jitsi_meet.module.css';
 import jwt_decode from 'jwt-decode';
 
 import api from '../../axios/axios';
+import { useRuntimeConfig } from '../../config/ConfigProvider';
 
 type errorObj = {
   message: string;
@@ -42,6 +43,7 @@ const Jitsi_meet = ({
   const navigate = useNavigate();
   const { roomName } = useParams();
   const jwt1 = jwt || window.location.search.split('=')[1];
+  const cfg = useRuntimeConfig();
 
   const handleJitsiIFrameRef1 = (parentNode: HTMLDivElement) => {
     const iframe = parentNode.querySelector('iframe');
@@ -128,7 +130,7 @@ const Jitsi_meet = ({
 
   return (
     <JitsiMeeting
-      domain={import.meta.env.VITE_JITSI_DOMAIN}
+      domain={cfg.VITE_JITSI_DOMAIN}
       roomName={roomName ?? ''}
       jwt={jwt1 || undefined}
       spinner={renderSpinner}

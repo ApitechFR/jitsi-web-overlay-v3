@@ -8,6 +8,7 @@ import Header from '../../../components/joona/header/HeaderVisio';
 import styles from './JitsiMeetWrapper.module.css';
 import { useApi } from '@/api';
 import { ConferenceService } from '@/api';
+import { useRuntimeConfig } from '../../../config/ConfigProvider';
 
 type JwtResponse =
   | { token: string; exp?: number; moderator: boolean }
@@ -25,7 +26,8 @@ const JitsiMeetWrapper: React.FC = () => {
 
   const [isHeaderOpen, setIsHeaderOpen] = useState(true);
 
-  const domain = import.meta.env.VITE_JITSI_DOMAIN as string;
+  const cfg = useRuntimeConfig();
+  const domain = cfg.VITE_JITSI_DOMAIN as string;
 
   const validRoom = !!conferenceName && validateconferenceName(conferenceName);
 

@@ -3,8 +3,16 @@ import { toApiError } from '../../errors';
 import { UserInfos } from './auth.types';
 import { decodeJwt } from '@/utils/decodeJwt';
 import { joinUrl } from '@/utils/url';
+import { genState, saveState } from './oidc.utils';
 
-const baseApi = (import.meta.env.VITE_API_URL as string | undefined) || '/api';
+import { getCachedRuntimeConfig } from '@/config/runtimeConfig';
+
+function getApiBaseUrl(): string {
+    const cfg = getCachedRuntimeConfig();
+    return cfg?.VITE_API_URL || '/api';
+}
+
+const baseApi = getApiBaseUrl();
 
 
 async function userinfo(): Promise<UserInfos | null> {
@@ -30,28 +38,57 @@ async function userinfoDecoded(): Promise<UserInfos | null> {
 
 function getLoginUrl(confName?: string) {
     const url = joinUrl(baseApi, '/authentication/login_authorize');
-    const params = new URLSearchParams({ ...(confName ? { room: confName } : {}), state: genState() });
+    const state = genState();
+    saveState(state);
 
-    sessionStorage.setItem('oidc_state', params.get('state') || '');
+    const params = new URLSearchParams({ state, ...(confName ? { room: confName } : {}) });
+
+    //sessionStorage.setItem('oidc_state', params.get('state') || '');
     return `${url}?${params.toString()}`;
 
+}
+
+
+// const login = (room?: string) => {
+//     const state = [...crypto.getRandomValues(new Uint8Array(16))]
+//       .map(b => b.toString(16).padStart(2, '0'))
+//       .join('');
+//     sessionStorage.setItem('oidc_state', state);
+
+//     const loginUrl = joinUrl(baseApi, '/authentication/login_authorize');
+//     const qs = new URLSearchParams({ state, ...(room ? { room } : {}) });
+//     window.location.href = `${loginUrl}?${qs.toString()}`;
+//   };
+
+
+
+function getLoginCallbackUrl(code: string, state: string) {
+    const url = joinUrl(baseApi, '/authentication/login_callback');
+    const qs = new URLSearchParams({ code, state });
+    return `${url}?${qs.toString()}`;
+}
+
+
+async function logout() {
+    try {
+        return await http.post('/authentication/logout');
+    } catch (e) {
+        return Promise.reject(toApiError(e));
+    }
 }
 
 function getLogoutUrl() {
     return joinUrl(baseApi, '/authentication/logout');
 }
 
-function genState() {
-    return [...crypto.getRandomValues(new Uint8Array(16))]
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('');
-}
 
 export const AuthService = {
     userinfo,
     userinfoDecoded,
     getLoginUrl,
     getLogoutUrl,
+    getLoginCallbackUrl,
+    logout,
 };
 
 

@@ -1,5 +1,6 @@
 import Button from '@apitechfr/react-dsapitech/Button';
 import { Alert } from '@apitechfr/react-dsapitech/Alert';
+import { useRuntimeConfig } from '../../../config/ConfigProvider';
 
 import styles from './FeedbackJoona.module.css';
 import { useEffect, useMemo, useState } from 'react';
@@ -8,9 +9,9 @@ import { useNavigate } from 'react-router';
 import { FeedbackService, useApi } from '@/api';
 import type { FeedbackTemplate } from '@/api';
 
-const organizationFilter = import.meta.env.VITE_APP_ORGANIZATION;
-
 function FeedbackJoona() {
+    const cfg = useRuntimeConfig();
+    const organizationFilter = cfg.VITE_APP_ORGANIZATION;
 
     const navigate = useNavigate();
 

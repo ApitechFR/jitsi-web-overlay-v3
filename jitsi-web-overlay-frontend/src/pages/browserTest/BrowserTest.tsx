@@ -25,6 +25,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import { useNavigate } from 'react-router-dom';
 import { Alert } from '@codegouvfr/react-dsfr/Alert';
+import { useRuntimeConfig } from '../../config/ConfigProvider';
 
 export default function BrowserTest() {
   const [expanded, setExpanded] = React.useState<string | boolean>('');
@@ -50,6 +51,7 @@ export default function BrowserTest() {
   const [loading, setLoading] = useState<boolean>();
 
   const navigate = useNavigate();
+  const cfg = useRuntimeConfig();
 
   useEffect(() => {
     window
@@ -412,23 +414,23 @@ export default function BrowserTest() {
         style={
           matches
             ? {
-                textTransform: 'none',
-                borderRadius: 0,
-                backgroundColor: '#0a76f6',
-                marginBottom: '5px',
-                display: 'block',
-                margin: '30px auto',
-                width: '20%',
-              }
+              textTransform: 'none',
+              borderRadius: 0,
+              backgroundColor: '#0a76f6',
+              marginBottom: '5px',
+              display: 'block',
+              margin: '30px auto',
+              width: '20%',
+            }
             : {
-                textTransform: 'none',
-                borderRadius: 0,
-                backgroundColor: '#0a76f6',
-                marginBottom: '5px',
-                display: 'block',
-                margin: '30px auto',
-                width: '50%',
-              }
+              textTransform: 'none',
+              borderRadius: 0,
+              backgroundColor: '#0a76f6',
+              marginBottom: '5px',
+              display: 'block',
+              margin: '30px auto',
+              width: '50%',
+            }
         }
       >
         Lancer le test
@@ -482,23 +484,23 @@ export default function BrowserTest() {
               style={
                 matches
                   ? {
-                      textTransform: 'none',
-                      borderRadius: 0,
-                      backgroundColor: '#0a76f6',
-                      marginBottom: '5px',
-                      display: 'block',
-                      margin: '30px auto',
-                      width: '20%',
-                    }
+                    textTransform: 'none',
+                    borderRadius: 0,
+                    backgroundColor: '#0a76f6',
+                    marginBottom: '5px',
+                    display: 'block',
+                    margin: '30px auto',
+                    width: '20%',
+                  }
                   : {
-                      textTransform: 'none',
-                      borderRadius: 0,
-                      backgroundColor: '#0a76f6',
-                      marginBottom: '5px',
-                      display: 'block',
-                      margin: '30px auto',
-                      width: '50%',
-                    }
+                    textTransform: 'none',
+                    borderRadius: 0,
+                    backgroundColor: '#0a76f6',
+                    marginBottom: '5px',
+                    display: 'block',
+                    margin: '30px auto',
+                    width: '50%',
+                  }
               }
               className={styles.micButton}
               onClick={() => {
@@ -588,7 +590,7 @@ export default function BrowserTest() {
                     <Alert
                       closable
                       description="Veuillez autoriser le navigateur à utiliser le microphone."
-                      onClose={() => {}}
+                      onClose={() => { }}
                       small
                       title="Information"
                       severity="error"
@@ -613,23 +615,23 @@ export default function BrowserTest() {
               style={
                 matches
                   ? {
-                      textTransform: 'none',
-                      borderRadius: 0,
-                      backgroundColor: '#0a76f6',
-                      marginBottom: '5px',
-                      display: 'block',
-                      margin: '30px auto',
-                      width: '20%',
-                    }
+                    textTransform: 'none',
+                    borderRadius: 0,
+                    backgroundColor: '#0a76f6',
+                    marginBottom: '5px',
+                    display: 'block',
+                    margin: '30px auto',
+                    width: '20%',
+                  }
                   : {
-                      textTransform: 'none',
-                      borderRadius: 0,
-                      backgroundColor: '#0a76f6',
-                      marginBottom: '5px',
-                      display: 'block',
-                      margin: '30px auto',
-                      width: '50%',
-                    }
+                    textTransform: 'none',
+                    borderRadius: 0,
+                    backgroundColor: '#0a76f6',
+                    marginBottom: '5px',
+                    display: 'block',
+                    margin: '30px auto',
+                    width: '50%',
+                  }
               }
               className={styles.micButton}
               onClick={startRecording}
@@ -641,23 +643,23 @@ export default function BrowserTest() {
               style={
                 matches
                   ? {
-                      textTransform: 'none',
-                      borderRadius: 0,
-                      backgroundColor: '#0a76f6',
-                      marginBottom: '5px',
-                      display: 'block',
-                      margin: '30px auto',
-                      width: '20%',
-                    }
+                    textTransform: 'none',
+                    borderRadius: 0,
+                    backgroundColor: '#0a76f6',
+                    marginBottom: '5px',
+                    display: 'block',
+                    margin: '30px auto',
+                    width: '20%',
+                  }
                   : {
-                      textTransform: 'none',
-                      borderRadius: 0,
-                      backgroundColor: '#0a76f6',
-                      marginBottom: '5px',
-                      display: 'block',
-                      margin: '30px auto',
-                      width: '50%',
-                    }
+                    textTransform: 'none',
+                    borderRadius: 0,
+                    backgroundColor: '#0a76f6',
+                    marginBottom: '5px',
+                    display: 'block',
+                    margin: '30px auto',
+                    width: '50%',
+                  }
               }
               className={styles.micButton}
               onClick={stopRecording}
@@ -738,23 +740,23 @@ export default function BrowserTest() {
                   style={
                     matches
                       ? {
-                          textTransform: 'none',
-                          borderRadius: 0,
-                          backgroundColor: '#0a76f6',
-                          marginBottom: '5px',
-                          display: 'block',
-                          margin: '30px auto',
-                          width: '20%',
-                        }
+                        textTransform: 'none',
+                        borderRadius: 0,
+                        backgroundColor: '#0a76f6',
+                        marginBottom: '5px',
+                        display: 'block',
+                        margin: '30px auto',
+                        width: '20%',
+                      }
                       : {
-                          textTransform: 'none',
-                          borderRadius: 0,
-                          backgroundColor: '#0a76f6',
-                          marginBottom: '5px',
-                          display: 'block',
-                          margin: '30px auto',
-                          width: '50%',
-                        }
+                        textTransform: 'none',
+                        borderRadius: 0,
+                        backgroundColor: '#0a76f6',
+                        marginBottom: '5px',
+                        display: 'block',
+                        margin: '30px auto',
+                        width: '50%',
+                      }
                   }
                   className={styles.micButton}
                   onClick={handleStopCaptureClick}
@@ -767,23 +769,23 @@ export default function BrowserTest() {
                   style={
                     matches
                       ? {
-                          textTransform: 'none',
-                          borderRadius: 0,
-                          backgroundColor: '#0a76f6',
-                          marginBottom: '5px',
-                          display: 'block',
-                          margin: '30px auto',
-                          width: '20%',
-                        }
+                        textTransform: 'none',
+                        borderRadius: 0,
+                        backgroundColor: '#0a76f6',
+                        marginBottom: '5px',
+                        display: 'block',
+                        margin: '30px auto',
+                        width: '20%',
+                      }
                       : {
-                          textTransform: 'none',
-                          borderRadius: 0,
-                          backgroundColor: '#0a76f6',
-                          marginBottom: '5px',
-                          display: 'block',
-                          margin: '30px auto',
-                          width: '50%',
-                        }
+                        textTransform: 'none',
+                        borderRadius: 0,
+                        backgroundColor: '#0a76f6',
+                        marginBottom: '5px',
+                        display: 'block',
+                        margin: '30px auto',
+                        width: '50%',
+                      }
                   }
                   className={styles.micButton}
                   onClick={handleStartCaptureClick}
@@ -829,7 +831,7 @@ export default function BrowserTest() {
               {/* <div style={{ display: 'none' }}>{iframe}</div> */}
               <div className={styles.iframe}>
                 <JitsiMeeting
-                  domain={import.meta.env.VITE_JITSI_DOMAIN}
+                  domain={cfg.VITE_JITSI_DOMAIN}
                   roomName={conference}
                   jwt={jwt}
                   spinner={renderSpinner}
@@ -861,7 +863,7 @@ export default function BrowserTest() {
                 />
                 <br />
                 <JitsiMeeting
-                  domain={import.meta.env.VITE_JITSI_DOMAIN}
+                  domain={cfg.VITE_JITSI_DOMAIN}
                   roomName={conference}
                   jwt={jwt}
                   spinner={renderSpinner}
@@ -902,23 +904,23 @@ export default function BrowserTest() {
                 style={
                   matches
                     ? {
-                        textTransform: 'none',
-                        borderRadius: 0,
-                        backgroundColor: '#0a76f6',
-                        marginBottom: '5px',
-                        display: 'block',
-                        margin: '30px auto',
-                        width: '20%',
-                      }
+                      textTransform: 'none',
+                      borderRadius: 0,
+                      backgroundColor: '#0a76f6',
+                      marginBottom: '5px',
+                      display: 'block',
+                      margin: '30px auto',
+                      width: '20%',
+                    }
                     : {
-                        textTransform: 'none',
-                        borderRadius: 0,
-                        backgroundColor: '#0a76f6',
-                        marginBottom: '5px',
-                        display: 'block',
-                        margin: '30px auto',
-                        width: '80%',
-                      }
+                      textTransform: 'none',
+                      borderRadius: 0,
+                      backgroundColor: '#0a76f6',
+                      marginBottom: '5px',
+                      display: 'block',
+                      margin: '30px auto',
+                      width: '80%',
+                    }
                 }
                 className={styles.confButton}
                 onClick={handleStartConference}

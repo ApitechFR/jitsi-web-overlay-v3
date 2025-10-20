@@ -1,6 +1,9 @@
-const minDigits = import.meta.env.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS || 3;
-const length = import.meta.env.VITE_FRONTCONF_ROOMNAMECONSTRAINT_LENGTH || 10;
-const regexString = import.meta.env.VITE_CONFERENCE_NAME_REGEX || "^[a-zA-Z0-9_-]";
+import { getCachedRuntimeConfig } from '@/config/runtimeConfig';
+
+const cfg = getCachedRuntimeConfig();
+const minDigits = cfg?.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS || 3;
+const length = cfg?.VITE_FRONTCONF_ROOMNAMECONSTRAINT_LENGTH || 10;
+const regexString = cfg?.VITE_CONFERENCE_NAME_REGEX || "^[a-zA-Z0-9_-]";
 
 export const conferenceNameConfig = {
   regex: new RegExp(
@@ -12,7 +15,6 @@ export function validateconferenceName(conferenceName: string | undefined): bool
   if (!conferenceName) return false;
   return conferenceNameConfig.regex.test(conferenceName);
 }
-
 
 export function generateconferenceName(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';

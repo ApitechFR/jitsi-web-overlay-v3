@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, useMemo, ReactNode, useCallback } from 'react';
 import { AuthService, type UserInfos } from '@/api'
+import { getCachedRuntimeConfig } from '@/config/runtimeConfig';
 
 type AuthStatus = 'unknown' | 'authenticated' | 'unauthenticated';
 
@@ -16,11 +17,13 @@ export interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-function joinUrl(base: string, path: string) {
-  const b = base?.endsWith('/') ? base.slice(0, -1) : base || '';
-  const p = path?.startsWith('/') ? path : `/${path}`;
-  return `${b}${p}`;
+function getApiBaseUrl(): string {
+  const cfg = getCachedRuntimeConfig();
+  return cfg?.VITE_API_URL || '/api';
 }
+
+const baseApi = getApiBaseUrl();
+
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>('unknown');
@@ -28,9 +31,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [email, setEmail] = useState('');
   const [user, setUser] = useState<UserInfos | null>(null);
 
-
-  const baseApi = (import.meta.env.VITE_API_URL as string | undefined) || '/api';
-
+  function joinUrl(base: string, path: string) {
+    const b = base?.endsWith('/') ? base.slice(0, -1) : base || '';
+    const p = path?.startsWith('/') ? path : `/${path}`;
+    return `${b}${p}`;
+  }
   const refresh = useCallback(async () => {
     try {
       const info = await AuthService.userinfoDecoded();
@@ -59,13 +64,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [refresh]);
 
+  // const login = (confName?: string) => {
+  //   window.location.href = AuthService.getLoginUrl(confName);
+  // };
   const login = (room?: string) => {
-    window.location.href = AuthService.getLoginUrl(room);
+    const state = [...crypto.getRandomValues(new Uint8Array(16))]
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    sessionStorage.setItem('oidc_state', state);
+
+    const loginUrl = joinUrl(baseApi, '/authentication/login_authorize');
+    const qs = new URLSearchParams({ state, ...(room ? { room } : {}) });
+    window.location.href = `${loginUrl}?${qs.toString()}`;
   };
 
+  // const logout = () => {
+  //   window.location.href = AuthService.getLogoutUrl();
+  // };
   const logout = () => {
-    window.location.href = AuthService.getLogoutUrl();
-
+    const logoutUrl = joinUrl(baseApi, '/authentication/logout');
+    window.location.href = logoutUrl;
   };
 
   const contextValue = useMemo(

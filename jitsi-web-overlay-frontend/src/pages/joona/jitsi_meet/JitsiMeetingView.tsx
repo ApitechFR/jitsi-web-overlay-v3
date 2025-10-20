@@ -6,6 +6,7 @@ import { handleRecordingStatus } from '@/api/services/jitsi/jitsi-recording.serv
 import { handleJibriApitechApi } from '@/api/services/jitsi/jibri.service';
 import { ConferenceService, RoomService, useApi } from '@/api';
 import type { Props } from '@/api';
+import { useRuntimeConfig } from '../../../config/ConfigProvider';
 
 const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displayName }) => {
   const participantCountRef = useRef(0);
@@ -14,6 +15,7 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
   const checkTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const myRole = useRef('');
   const navigate = useNavigate();
+  const cfg = useRuntimeConfig();
 
   // wrap des appels API avec useApi (gestion erreur/chargement centralisée)
   const { run: getConfSize } = useApi(ConferenceService.getConfSize);
@@ -22,8 +24,8 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
   const { run: createRoom } = useApi(RoomService.create);
   const { run: createConf } = useApi(ConferenceService.create);
 
-  const enableJibriApitechApi = import.meta.env.VITE_ENABLE_JIBRI_APITECH_API;
-  const jibriApitechApiDomain = import.meta.env.VITE_JIBRI_APITECH_API_DOMAIN;
+  const enableJibriApitechApi = cfg.VITE_ENABLE_JIBRI_APITECH_API ?? '';
+  const jibriApitechApiDomain = cfg.VITE_JIBRI_APITECH_API_DOMAIN ?? '';
   const jitsiAPIOptions = (window as any).jitsiAPIOptions;
 
   const onClose = () => navigate('/feedback');

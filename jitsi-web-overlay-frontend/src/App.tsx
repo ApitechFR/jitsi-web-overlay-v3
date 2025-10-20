@@ -39,6 +39,7 @@ import { useAuth } from './auth/useAuth';
 import RouteThemeController from './RouteThemeController';
 
 import { useApi, ConferenceService, StatsService } from '@/api';
+import { useRuntimeConfig } from './config/ConfigProvider';
 
 type errorObj = {
   message: string;
@@ -62,7 +63,8 @@ function App() {
   const [conferenceNumber, setConferenceNumber] = useState(0);
   const [participantsNumber, setparticipantsNumber] = useState(0);
 
-  const AppTemplate = import.meta.env.VITE_APP_TEMPLATE || 'joona';
+  const cfg = useRuntimeConfig();
+  const AppTemplate = cfg.VITE_APP_TEMPLATE || 'joona';
   const { authenticated } = useAuth();
 
 
@@ -157,6 +159,7 @@ function App() {
               }
             />
             <Route path="/logout/callback" element={<LogoutCallback />} />
+            <Route path="/auth/logout" element={<LogoutCallback />} />
             <Route
               path="/login_callback"
               element={<LoginCallback />}
@@ -165,6 +168,8 @@ function App() {
               path="/login/callback"
               element={<LoginCallback />}
             />
+            <Route path="/auth/callback" element={<LoginCallback />} />
+
             <Route path="/" element={<LayoutJoona />}>
               <Route
                 index
@@ -261,8 +266,8 @@ function App() {
                 element={
                   <Navigate
                     to={
-                      import.meta.env.VITE_API_URL?.startsWith('/')
-                        ? import.meta.env.VITE_API_URL
+                      cfg.VITE_API_URL?.startsWith('/')
+                        ? cfg.VITE_API_URL
                         : '/'
                     }
                     replace
