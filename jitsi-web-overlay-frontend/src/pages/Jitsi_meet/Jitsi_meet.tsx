@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styles from './jitsi_meet.module.css';
 import jwt_decode from 'jwt-decode';
+import { useRuntimeConfig } from '../../config/ConfigProvider';
 
 import api from '../../axios/axios';
 
@@ -39,6 +40,7 @@ const Jitsi_meet = ({
   setRoomName,
   jwt,
 }: JitsiMeetProps) => {
+  const { VITE_JITSI_DOMAIN } = useRuntimeConfig();
   const navigate = useNavigate();
   const { roomName } = useParams();
   const jwt1 = jwt || window.location.search.split('=')[1];
@@ -128,7 +130,7 @@ const Jitsi_meet = ({
 
   return (
     <JitsiMeeting
-      domain={import.meta.env.VITE_JITSI_DOMAIN}
+      domain={VITE_JITSI_DOMAIN}
       roomName={roomName ?? ''}
       jwt={jwt1 || undefined}
       spinner={renderSpinner}

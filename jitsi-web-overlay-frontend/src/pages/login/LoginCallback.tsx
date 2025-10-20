@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { getCachedRuntimeConfig } from '../../config/runtimeConfig';
 import { useNavigate } from 'react-router-dom';
 
 export default function LoginCallback() {
@@ -27,7 +28,7 @@ export default function LoginCallback() {
 
     // Consommer le code via navigation (pas de XHR, pas de retry)
     sessionStorage.removeItem('oidc_state');
-    const apiBase = import.meta.env.VITE_API_URL || '/api';
+    const apiBase = getCachedRuntimeConfig()?.VITE_API_URL || '/api';
     const url = `${apiBase}/authentication/login_callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`;
 
 

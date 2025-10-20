@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import { useRuntimeConfig } from '../../../config/ConfigProvider';
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import { handlejibriApitechApi, handleRecordingStatus } from './visio_replay';
 import { useNavigate } from 'react-router';
@@ -20,8 +21,7 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
   const navigate = useNavigate();
   const myRole = useRef("");
 
-  const enableJibriApitechApi = import.meta.env.VITE_ENABLE_JIBRI_APITECH_API;
-  const jibriApitechApiDomain = import.meta.env.VITE_JIBRI_APITECH_API_DOMAIN;
+  const { VITE_ENABLE_JIBRI_APITECH_API: enableJibriApitechApi, VITE_JIBRI_APITECH_API_DOMAIN: jibriApitechApiDomain } = useRuntimeConfig();
   const jitsiAPIOptions = (window as any).jitsiAPIOptions;
 
   const onClose = () => {
@@ -52,7 +52,7 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
       onApiReady={(api) => {
         console.info('[Jitsi] API prête');
 
-        if (enableJibriApitechApi === "true") { handlejibriApitechApi(jitsiAPIOptions, enableJibriApitechApi, jibriApitechApiDomain); }
+        if (enableJibriApitechApi === "true") { handlejibriApitechApi(jitsiAPIOptions, enableJibriApitechApi ?? "", jibriApitechApiDomain ?? ""); }
 
         api.on('readyToClose', async () => {
           console.info("La réunion est terminée");
@@ -73,9 +73,9 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
               handleRecordingStatus(api, roomName, myRole.current, checkVideoInterval.current, checkTimeout.current);
             }
 
-            
+
           });
-          
+
           const data = await getParicipantsNumber(roomName);
           participantCountRef.current = data;
           if (participantCountRef.current === 1 && !conferenceRef.current) {
@@ -86,7 +86,7 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, roomName, jwt, displayName 
           // api.getRoomsInfo().then((rooms : any) => {
           //   const roomsArray: any = Object.values(rooms);
           //   console.log('Rooms info:', roomsArray[0].participants);
-            
+
           // })
 
         });

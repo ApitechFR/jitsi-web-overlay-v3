@@ -1,35 +1,34 @@
 import Button from '@apitechfr/react-dsapitech/Button';
 import { Alert } from '@apitechfr/react-dsapitech/Alert';
-
 import styles from './FeedbackJoona.module.css'
 import { useEffect, useState } from 'react';
 import { FieldComponent } from '../../../components/joona/feedbacks/FieldComponent';
 import { useNavigate } from 'react-router';
-
+import { useRuntimeConfig } from '../../../config/ConfigProvider';
 export interface FeedbackType {
-  id: number;
-  name: string;
-  description: string;
+    id: number;
+    name: string;
+    description: string;
 }
 
 export interface Feedback {
-  id: number;
+    id: number;
 }
 
 export interface FeedbackTemplate {
-  id: number;
-  label: string;
-  organization: string;
-  choices: string[];
-  deletedAt: string | null;
-  feedbacks: Feedback[];
-  type: FeedbackType;
+    id: number;
+    label: string;
+    organization: string;
+    choices: string[];
+    deletedAt: string | null;
+    feedbacks: Feedback[];
+    type: FeedbackType;
 }
 
-const organizationFilter = import.meta.env.VITE_APP_ORGANIZATION;
-const baseUrl = import.meta.env.VITE_API_URL;
+
 
 function FeedbackJoona() {
+    const { VITE_APP_ORGANIZATION: organizationFilter, VITE_API_URL: baseUrl } = useRuntimeConfig();
 
     const navigate = useNavigate();
 
@@ -40,16 +39,16 @@ function FeedbackJoona() {
     const [isAlertVisible, setIsAlertVisible] = useState(false);
 
     const params = new URLSearchParams(window.location.search);
-    
+
     useEffect(() => {
         fetch(`${baseUrl}/feedback/templates`)
-        .then((res) => res.json())
-        .then((data: FeedbackTemplate[]) => {
-            const filtered = data.filter(
-                (template) => template.deletedAt === null && template.organization === organizationFilter
-            );
-            setTemplates(filtered);
-        });
+            .then((res) => res.json())
+            .then((data: FeedbackTemplate[]) => {
+                const filtered = data.filter(
+                    (template) => template.deletedAt === null && template.organization === organizationFilter
+                );
+                setTemplates(filtered);
+            });
     }, []);
 
     useEffect(() => {
@@ -62,7 +61,7 @@ function FeedbackJoona() {
                 const timer = setTimeout(() => {
                     window.close();
                 }, 4500);
-                
+
                 return () => clearTimeout(timer);
             } else {
                 const timer = setTimeout(() => {
@@ -78,7 +77,7 @@ function FeedbackJoona() {
         setResponses((previousData) => ({ ...previousData, [templateId]: value }));
     };
 
-    const handleSubmit = async (e : React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         const baseData = {
@@ -102,7 +101,7 @@ function FeedbackJoona() {
                     body: JSON.stringify(feedbacks),
                 }
             );
-            
+
             if (params.get("src") === "visio") {
                 setIsBlankNewPage(true);
             }
@@ -120,7 +119,7 @@ function FeedbackJoona() {
     return (
         <div className={styles.content}>
             <h1 className={styles.title}>Mesurez la qualité du service</h1>
-            {!isSubmitted ? 
+            {!isSubmitted ?
                 (templates.length > 0 ? (
                     <div className={styles.contentFeedback}>
                         <form action="" onSubmit={e => handleSubmit(e)}>
@@ -165,7 +164,7 @@ function FeedbackJoona() {
                             </div>
                         )}
                     </>
-            )}
+                )}
         </div>
     )
 };
