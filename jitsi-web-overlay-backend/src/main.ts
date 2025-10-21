@@ -7,12 +7,17 @@ import { useContainer } from 'class-validator';
 import * as cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import * as morgan from 'morgan';
 
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   // Permet à class-validator d'utiliser l'injection de dépendances NestJS
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
+
+  if (process.env.DEBUG === 'true') {
+    app.use(morgan('combined'));
+  }
 
   // Swagger
   const config = new DocumentBuilder()
