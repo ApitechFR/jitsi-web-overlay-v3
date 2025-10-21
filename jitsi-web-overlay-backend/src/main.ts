@@ -16,7 +16,7 @@ async function bootstrap() {
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
   if (process.env.DEBUG === 'true') {
-    app.use(morgan('combined'));
+    app.use(morgan('dev'));
   }
 
   // Swagger
