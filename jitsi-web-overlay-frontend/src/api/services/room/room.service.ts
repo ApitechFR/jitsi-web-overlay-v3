@@ -1,4 +1,4 @@
-import { http } from '../../http';
+import { getHttp } from '../../http';
 import { toApiError } from '@/api/errors';
 import { Room } from './room.types';
 
@@ -7,6 +7,7 @@ export const RoomService = {
 
     async getByName(roomName: string): Promise<Room> {
         try {
+            const http = await getHttp();
             const { data } = await http.get(`/rooms/${encodeURIComponent(roomName)}`);
             return data;
         } catch (error) {
@@ -22,6 +23,7 @@ export const RoomService = {
                 return existingRoom;
             }
 
+            const http = await getHttp();
             const { data } = await http.post('/rooms', { name: roomName });
             return data;
         } catch (error) {

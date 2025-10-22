@@ -1,4 +1,4 @@
-import { http } from '../../http';
+import { getHttp } from '../../http';
 import { toApiError } from '../../errors';
 import { UserInfos } from './auth.types';
 import { decodeJwt } from '@/utils/decodeJwt';
@@ -9,7 +9,15 @@ import { getCachedRuntimeConfig } from '@/config/runtimeConfig';
 
 function getApiBaseUrl(): string {
     const cfg = getCachedRuntimeConfig();
-    return cfg?.VITE_API_URL || '/api';
+    // Si la config n'est pas encore chargée, on retourne une chaîne vide
+    return cfg?.VITE_API_URL ?? '';
+}
+
+// Toutes les fonctions qui utilisent baseApi doivent attendre que la config soit chargée
+function getBaseApiOrThrow(): string {
+    const api = getApiBaseUrl();
+    if (!api) throw new Error('API URL non chargée. Attendez que la configuration soit disponible.');
+    return api;
 }
 
 const baseApi = getApiBaseUrl();
@@ -17,6 +25,7 @@ const baseApi = getApiBaseUrl();
 
 async function userinfo(): Promise<UserInfos | null> {
     try {
+        const http = await getHttp();
         const { data } = await http.get<UserInfos>('/authentication/userinfo');
         return data ?? null;
     } catch (e) {
@@ -37,7 +46,7 @@ async function userinfoDecoded(): Promise<UserInfos | null> {
 }
 
 function getLoginUrl(confName?: string) {
-    const url = joinUrl(baseApi, '/authentication/login_authorize');
+    const url = joinUrl(getBaseApiOrThrow(), '/authentication/login_authorize');
     const state = genState();
     saveState(state);
 
@@ -60,10 +69,8 @@ function getLoginUrl(confName?: string) {
 //     window.location.href = `${loginUrl}?${qs.toString()}`;
 //   };
 
-
-
 function getLoginCallbackUrl(code: string, state: string) {
-    const url = joinUrl(baseApi, '/authentication/login_callback');
+    const url = joinUrl(getBaseApiOrThrow(), '/authentication/login_callback');
     const qs = new URLSearchParams({ code, state });
     return `${url}?${qs.toString()}`;
 }
@@ -71,6 +78,7 @@ function getLoginCallbackUrl(code: string, state: string) {
 
 async function logout() {
     try {
+        const http = await getHttp();
         return await http.post('/authentication/logout');
     } catch (e) {
         return Promise.reject(toApiError(e));
@@ -78,7 +86,7 @@ async function logout() {
 }
 
 function getLogoutUrl() {
-    return joinUrl(baseApi, '/authentication/logout');
+    return joinUrl(getBaseApiOrThrow(), '/authentication/logout');
 }
 
 

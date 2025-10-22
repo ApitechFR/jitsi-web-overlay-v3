@@ -1,4 +1,4 @@
-import { http } from '../../http';
+import { getHttp } from '../../http';
 import { toApiError } from '@/api/errors';
 import { Replay, ReplayStatus } from './replay.types';
 
@@ -7,6 +7,7 @@ export const ReplayService = {
 
     async startRecording(body: { conference_name: string, status: ReplayStatus, message: string }) {
         try {
+            const http = await getHttp();
             const { data } = await http.post('/replay/start', body);
             return data;
         } catch (error) {
@@ -16,6 +17,7 @@ export const ReplayService = {
 
     async getByConfName(conference_name: string) {
         try {
+            const http = await getHttp();
             const { data } = await http.get(`/replays/${encodeURIComponent(conference_name)}`);
             return data;
         } catch (error) {
@@ -25,6 +27,7 @@ export const ReplayService = {
 
     async getByConferenceUid(conference_uid: string): Promise<Replay[]> {
         try {
+            const http = await getHttp();
             const { data } = await http.get(`/replays/conference/${conference_uid}`);
             return data;
         } catch (error) {
@@ -34,6 +37,7 @@ export const ReplayService = {
 
     async getAll(): Promise<Record<string, Replay[]>> {
         try {
+            const http = await getHttp();
             const { data } = await http.get('/replays');
             return data;
         } catch (error) {
@@ -41,8 +45,9 @@ export const ReplayService = {
         }
     },
 
-    getDownloadUrl(replay_uid: string) {
+    async getDownloadUrl(replay_uid: string) {
         try {
+            const http = await getHttp();
             return `${http.defaults.baseURL}/replays/download/${replay_uid}`;
         } catch (error) {
             throw toApiError(error, 'Erreur lors du téléchargement');

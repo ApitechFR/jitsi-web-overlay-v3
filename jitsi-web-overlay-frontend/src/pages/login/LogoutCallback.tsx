@@ -7,7 +7,7 @@ export default function LogoutCallback() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    
+
     sessionStorage.removeItem('oidc_state');
 
     const timeout = setTimeout(() => {
@@ -20,7 +20,7 @@ export default function LogoutCallback() {
   return (
     <div className={styles.home}>
       <div className={styles.progress}>
-        <CircularProgress style={{ height: '150px', width: '150px' }} />
+        <CircularProgress style={{ height: 150, width: 150 }} />
       </div>
     </div>
   );

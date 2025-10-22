@@ -1,4 +1,4 @@
-import { http } from '../../http';
+import { getHttp } from '../../http';
 import { toApiError } from '@/api/errors';
 import type { CreateByEmailRes, JitsiJwtResponse, JoinRes } from './conference.types';
 
@@ -6,6 +6,7 @@ export const ConferenceService = {
 
     async create(payload: { name: string; room_uid: string }) {
         try {
+            const http = await getHttp();
             const { data } = await http.post('/conferences', payload);
             return data;
         } catch (error) {
@@ -15,6 +16,7 @@ export const ConferenceService = {
 
     async createByEmail(confName: string, email: string) {
         try {
+            const http = await getHttp();
             const { data } = await http.post<CreateByEmailRes>('conference/create/byemail', { confName, email });
             return data;
         } catch (error) {
@@ -25,6 +27,7 @@ export const ConferenceService = {
 
     async join(confName: string) {
         try {
+            const http = await getHttp();
             const { data } = await http.get<JoinRes>(`/${encodeURIComponent(confName)}`);
             return data;
         } catch (error) {
@@ -34,6 +37,7 @@ export const ConferenceService = {
 
     async setEnd(confName: string, endTimeISO: string) {
         try {
+            const http = await getHttp();
             await http.put(`/conferences/${encodeURIComponent(confName)}/end`, { end_time: endTimeISO });
         } catch (error) {
             throw toApiError(error, 'Erreur lors de la clôture de la conférence');
@@ -42,6 +46,7 @@ export const ConferenceService = {
 
     async getConfSize(confName: string) {
         try {
+            const http = await getHttp();
             const { data } = await http.get(`/conferences/${encodeURIComponent(confName)}/room-size`);
             return data;
         } catch (error) {
@@ -51,6 +56,7 @@ export const ConferenceService = {
 
     async state(confName: string) {
         try {
+            const http = await getHttp();
             const { data } = await http.get(`/conferences/${encodeURIComponent(confName)}/state`);
             return data;
         } catch (error) {
@@ -60,6 +66,7 @@ export const ConferenceService = {
 
     async jitsiJwt(confName: string): Promise<JitsiJwtResponse> {
         try {
+            const http = await getHttp();
             const { data } = await http.post(
                 `/conferences/${encodeURIComponent(confName)}/tokens/jitsi`,
                 {},
@@ -84,6 +91,7 @@ export const ConferenceService = {
 
     async getStats() {
         try {
+            const http = await getHttp();
             const { data } = await http.get('/stats/homePage');
             return data;
         } catch (error) {

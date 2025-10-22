@@ -19,5 +19,5 @@ export * from './services/authentication/auth.types';
 
 
 export * from './errors';
-export { http } from './http';
+export { getHttp } from './http';
 export * from './hooks/useApi';

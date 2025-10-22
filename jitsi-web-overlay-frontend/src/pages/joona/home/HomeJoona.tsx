@@ -10,7 +10,6 @@ import { createModal } from '@apitechfr/react-dsapitech/Modal';
 import { useIsModalOpen } from '@apitechfr/react-dsapitech/Modal/useIsModalOpen';
 import { useAuth } from '../../../auth/useAuth';
 import CircularProgress from '@mui/material/CircularProgress';
-import { getCachedRuntimeConfig } from '../../../config/runtimeConfig';
 import { useRuntimeConfig } from '../../../config/ConfigProvider';
 
 
@@ -28,12 +27,6 @@ interface HomeJoonaProps {
 }
 
 const POLLING_INTERVAL = 2000; // 2s
-function getApiBaseUrl(): string {
-  const cfg = getCachedRuntimeConfig();
-  return cfg?.VITE_API_URL ?? '/api';
-}
-
-const API_BASE = getApiBaseUrl();
 
 function HomeJoona(props: HomeJoonaProps) {
   const navigate = useNavigate();
@@ -108,7 +101,9 @@ function HomeJoona(props: HomeJoonaProps) {
     const controller = new AbortController();
     const t = window.setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const url = `${API_BASE}/conferences/${encodeURIComponent(room)}/state`;
+      const apiBase = cfg.VITE_API_URL ?? '/api';
+      //console.info('API Base URL for room state check:', apiBase);
+      const url = `${apiBase}/conferences/${encodeURIComponent(room)}/state`;
       const res = await fetch(url, { signal: controller.signal, credentials: 'include' });
       if (!res.ok) return false;
       const data = await res.json().catch(() => null);
