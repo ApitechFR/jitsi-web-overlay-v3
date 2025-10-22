@@ -73,7 +73,7 @@
     "prettier": "^2.8.8",
     "semantic-release": "^23.0.2",
     "typescript": "^5.0.2",
-    "vite": "^4.3.2",
+    "vite": "^7.1.11",
     "vite-plugin-pwa": "^0.16.7",
     "workbox-window": "^7.0.0"
   }
