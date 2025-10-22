@@ -74,7 +74,7 @@
     "semantic-release": "^23.0.2",
     "typescript": "^5.0.2",
     "vite": "^7.1.11",
-    "vite-plugin-pwa": "^0.16.7",
+    "vite-plugin-pwa": "^1.1.0",
     "workbox-window": "^7.0.0"
   }
 }
