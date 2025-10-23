@@ -53,7 +53,8 @@ const JitsiMeetWrapper: React.FC = () => {
   const [isHeaderOpen, setIsHeaderOpen] = useState(true);
 
   const jitsi_domaine = import.meta.env.VITE_JITSI_DOMAIN as string;
-  const domain = `${jitsi_domaine}?embedded=1`;
+  const domain = `${jitsi_domaine}`;
+  const roomForJitsi = `${roomName!}?embedded=1`;
   const apiBase = (import.meta.env.VITE_API_URL as string | undefined) || '/api';
 
   const validRoom = !!roomName && validateRoomName(roomName);
@@ -182,7 +183,7 @@ const JitsiMeetWrapper: React.FC = () => {
       </div>
       <JitsiMeetingView
         domain={domain}
-        roomName={roomName!}
+        roomName={roomForJitsi}
         jwt={jwtToken}          // undefined => invité
         displayName={displayName}
       />
