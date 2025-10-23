@@ -9,8 +9,8 @@ export interface FieldProps {
   onChange: (templateId: number, value: any) => void;
 }
 
-export const FieldComponent: Record<number, React.FC<FieldProps>> = {
-  1: StarRatingField,
-  2: InputField,
-  3: RadioField,
+export const FieldComponent: Record<string, React.FC<FieldProps>> = {
+  "rating": StarRatingField,
+  "text": InputField,
+  "radio": RadioField,
 };

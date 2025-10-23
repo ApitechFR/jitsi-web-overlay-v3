@@ -36,12 +36,12 @@ export default function HeaderJoona() {
       return <ChangelogContent content={currentItem.content} />
     }
   };
-
+  let roomName = localStorage.getItem("roomName");
   const quickAccessItems = [
     {
       buttonProps: {
         onClick: () => {
-          window.open('/feedback?src=visio', '_blank', 'noopener,noreferrer');
+          window.open(`/feedback?src=visio&room=${roomName}`, '_blank', 'noopener,noreferrer');
         },
         className: 'fr-btn--icon-right',
       },

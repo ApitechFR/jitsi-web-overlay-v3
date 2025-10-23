@@ -16,6 +16,7 @@ import { FeedbackTemplate } from './entities/feedback_template.entity';
 import { FeedbackType } from './entities/feedback_type.entity';
 import { FeedbackTemplateService } from './services/feedback_template.service';
 import { FeedbackTypeService } from './services/feedback_type.service';
+import { Conference } from '../conference/entities/conference.entity';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { FeedbackTypeService } from './services/feedback_type.service';
             { name: FeedbackMongo.name, schema: FeedbackSchema },
           ]),
         ]
-      : [TypeOrmModule.forFeature([FeedbackEntity, FeedbackTemplate, FeedbackType])]),
+      : [TypeOrmModule.forFeature([FeedbackEntity, FeedbackTemplate, FeedbackType, Conference])]),
   ],
   controllers: [FeedbackController],
   providers: [
