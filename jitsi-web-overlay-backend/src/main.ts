@@ -51,6 +51,7 @@ async function bootstrap() {
   }));
 
   await app.listen(process.env.BACKEND_PORT || 3030);
+  console.log(`Backend démarré sur le port ${process.env.BACKEND_PORT || 3030}`);
 }
 
 bootstrap();
