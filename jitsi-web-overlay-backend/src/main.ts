@@ -5,7 +5,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { useContainer } from 'class-validator';
 import * as cookieParser from 'cookie-parser';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 
@@ -50,8 +50,11 @@ async function bootstrap() {
     transform: true,
   }));
 
-  await app.listen(process.env.BACKEND_PORT || 3030);
-  console.log(`Backend démarré sur le port ${process.env.BACKEND_PORT || 3030}`);
+
+  const port = Number(process.env.PORT) || 3030;
+  await app.listen(port, '0.0.0.0');
+  new Logger('Bootstrap').log(`Serveur démarré sur le port ${port}`);
+
 }
 
 bootstrap();
