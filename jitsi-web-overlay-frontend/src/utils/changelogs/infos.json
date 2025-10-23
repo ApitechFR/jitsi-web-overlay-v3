@@ -7,14 +7,22 @@
         "id": "web-overlay",
         "label": "Version Web Overlay",
         "content": {
-          "title": "Nouvelles version 25/09/2025",
-          "version": "v3.0.0",
-          "releaseDate": "2025-09-25",
+          "title": "Nouvelles version 21/10/2025",
+          "version": "v3.0.2",
+          "releaseDate": "2025-10-21",
           "blocks": [
             {
-              "description": "La dernière version 1.6.3 du 15 avril 2025 apporte des correctifs. Cette nouvelle version apporte notamment :",
+              "description": "Première version officielle du produit de visioconférence Visio By Apitech. Cette version unifie Joona et La Webconf de l’État en une plateforme complète. L’objectif est d’offrir une surcouche moderne, ergonomique et plus riche en fonctionnalités pour nos utilisateurs.",
               "features": {
-                "ameliorations": []
+                "ameliorations": [
+                  "Gestion de la connexion des utilisateurs via token",
+                  "Ajout de la documentation utilisateur dans l’application",
+                  "Ajout de la page Mentions légales.",
+                  "Ajout de la page Compte utilisateur.",
+                  "Ajout des sondages de fin de réunion.",
+                  "Ajout d’un menu enrichi sur la page de visioconférence.",
+                  "Ajout de la fonction d’enregistrement vidéo."
+                ]
               },
               "fix": {
                 "bugs": []
@@ -33,32 +41,29 @@
         "id": "jitsi",
         "label": "Version Jitsi",
         "content": {
-          "title": "Nouvelles fonctionnalités du 10/04/2025",
-          "releaseDate": "2025-04-10",
+          "title": "Nouvelles fonctionnalités du 24/07/2025",
+          "releaseDate": "2025-07-24",
           "version": "v2.0.10184",
           "blocks": [
             {
-              "description": "La dernière version stable du 10 avril 2025 apporte des nouvelles améliorations. Cette nouvelle version apporte notamment :",
+              "description": "La dernière version stable du 24 juillet 2025 apporte des nouvelles améliorations. Cette nouvelle version apporte notamment :",
               "features": {
                 "ameliorations": [
-                  "L'état 'startMuted' est désormais converti en métadonnées pour une meilleure gestion des participants qui démarrent leur session en mode muet.",
-                  "Ajout de nouveaux tests, notamment pour vérifier la présence des participants et leur identification via l'ID utilisateur et le client",
-                  "Le support des WebSockets est désormais activé par défaut pour une meilleure gestion de la communication en temps réel.",
-                  "Ajout d'une vérification des occupants sur la configuration Disco-Info dans le protocole Prosody.",
-                  "Ajout de tests pour vérifier le bon fonctionnement des transcriptions."
+                  "Ajout d'une fonction de capture de la caméra.",
+                  "Ajout de la modération du partage d’écran.",
+                  "Ajout d’un bouton “Quitter la réunion”.",
+                  "Affichage des fichiers partagés pendant une réunion.",
+                  "Ajout de la liste des visiteurs dans le panneau des participants."
                 ]
               },
               "fix": {
                 "bugs": [
-                  "Suppression d'une configuration de websocket par défaut, afin d'assurer une meilleure compatibilité.",
-                  "Ajout de vérifications pour éviter des erreurs nil et améliorer la stabilité de Prosody.",
-                  "Correction d'un problème où les fonctionnalités étaient vérifiées sans JWT, garantissant ainsi un fonctionnement même en l'absence de ce token.",
-                  "Correction des problèmes d'initialisation des périphériques multimédias, empêchant des événements inutiles.",
-                  "Mise à jour de l'ordre de préférence des codecs pour améliorer la qualité des appels et des transmissions.",
-                  "Permet une reconfiguration de la résolution de l'écran partagé, mais uniquement lorsqu'un mode de test est activé.",
-                  "Amélioration de la gestion de la qualité de la connexion en traitant les statistiques de bande passante sur le canal de pont.",
-                  "Mise à jour des cibles TypeScript pour améliorer la compatibilité et la performance du système.",
-                  "Ajout d'un rôle d'accessibilité sur le bouton de téléchargement d'images pour rendre l'interface plus inclusive."
+                  "Résolution des problèmes de nom d'affichage vide pour les visiteurs.",
+                  "Correction du comportement du bouton “Créer un sondage” lorsqu’il est désactivé.",
+                  "Meilleure gestion de la déconnexion lors de la fermeture de page.",
+                  "Résolution d’un problème de détection des visiteurs dans les salles inactives.",
+                  "Meilleure gestion des fichiers partagés.",
+                  "Résolution des erreurs liées à la transcription asynchrone."
                 ]
               },
               "link": [
