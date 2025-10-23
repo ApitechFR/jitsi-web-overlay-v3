@@ -5,6 +5,7 @@ import { ToggleSwitch } from '@apitechfr/react-dsapitech/ToggleSwitch';
 import { Input } from '@apitechfr/react-dsapitech/Input';
 import { Card } from '@apitechfr/react-dsapitech/Card';
 import { useEffect, useState } from 'react';
+import { useRuntimeConfig } from '../../../config/ConfigProvider';
 
 import cardsData from '../../../data/cardConfig.json';
 import Button from '@apitechfr/react-dsapitech/Button';
@@ -24,7 +25,7 @@ function Dashboard() {
     setIsToogleActive(!isToogleActive);
   };
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL;
+  const { VITE_API_URL: API_BASE_URL } = useRuntimeConfig();
 
   useEffect(() => {
     const fetchStats = async () => {

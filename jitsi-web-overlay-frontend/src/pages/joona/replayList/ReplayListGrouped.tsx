@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { API_BASE_URL } from '../jitsi_meet/visio_replay';
+import { useRuntimeConfig } from '../../../config/ConfigProvider';
+
 import styles from './ReplayList.module.css';
 import Button from '@codegouvfr/react-dsfr/Button';
 
@@ -27,6 +28,7 @@ const formatDate = (isoString: string): string => {
 const ReplayListGrouped: React.FC = () => {
     const [groupedReplays, setGroupedReplays] = useState<Record<string, Replay[]>>({});
     const [loading, setLoading] = useState(true);
+    const { VITE_API_URL: API_BASE_URL } = useRuntimeConfig();
 
     useEffect(() => {
         axios.get(`${API_BASE_URL}/replays`)
@@ -39,9 +41,9 @@ const ReplayListGrouped: React.FC = () => {
 
     return (
         <div className={styles.replayList}>
-            <h1>Enregistrements Vidéo par conférence</h1>
+            <h1>Enregistrements vidéo par conférence</h1>
             {Object.keys(groupedReplays).length === 0 ? (
-                <p className={styles.noReplays}>Aucun replay disponible</p>
+                <p className={styles.noReplays}>Aucun enregistrement disponible</p>
             ) : (
                 Object.entries(groupedReplays).map(([confName, replays]) => (
                     <div key={confName} className={styles.conferenceGroup}>

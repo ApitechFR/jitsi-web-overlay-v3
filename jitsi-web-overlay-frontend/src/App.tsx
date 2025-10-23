@@ -1,7 +1,6 @@
 import Home from './pages/home/Home';
 import Layout from './components/layout/Layout';
 import { useState, useEffect } from 'react';
-import { logDebug } from './utils/logDebug';
 import {
   Routes,
   Route,
@@ -27,11 +26,11 @@ import Error from './pages/Error/Error';
 import MuiDsfrThemeProvider from '@codegouvfr/react-dsfr/mui';
 import PlanDuSite from './pages/PlanDuSite/PlanDuSite';
 import Profile from './pages/joona/Profile/Profile';
-import Dashboard from './pages/joona/Dashboard/Dashboard';
+// import Dashboard from './pages/joona/Dashboard/Dashboard';
 import LayoutJoona from './components/joona/layout/LayoutJoona';
 import HomeJoona from './pages/joona/home/HomeJoona';
 import JitsiMeet from './pages/joona/jitsi_meet/jitsi_meet';
-import Admin from './pages/joona/Admin/Admin';
+// import Admin from './pages/joona/Admin/Admin';
 import FeedbackJoona from './pages/joona/Feedback/FeedbackJoona';
 import ReplayList from './pages/joona/replayList/ReplayList';
 import ReplayListGrouped from './pages/joona/replayList/ReplayListGrouped';
@@ -40,19 +39,15 @@ import AdminRoute from './auth/AdminRoute';
 import { useAuth } from './auth/useAuth';
 import RouteThemeController from './RouteThemeController';
 
+/* === AJOUTS pour config runtime === */
+import { ConfigProvider, useRuntimeConfig } from './config/ConfigProvider';
+
 type errorObj = {
   message: string;
-  error: {
-    status: string;
-    stack: string;
-  };
+  error: { status: string; stack: string };
 };
 
-interface JwtPayload {
-  exp: number;
-}
-
-function App() {
+function AppInner() {
   const [roomName, setRoomName] = useState('');
   const [jwt, setJwt] = useState<string | undefined>(undefined);
   const [error, setError] = useState<errorObj>({
@@ -66,12 +61,15 @@ function App() {
   const [participantsNumber, setparticipantsNumber] = useState(0);
 
   const location = useLocation();
-  const AppTemplate = import.meta.env.VITE_APP_TEMPLATE || 'joona';
   const { authenticated } = useAuth();
 
-  const sendEmail = (roomName: string) => {
+  /* === LIT LA CONFIG RUNTIME AU LIEU DE import.meta.env === */
+  const cfg = useRuntimeConfig();
+  const AppTemplate = (cfg.VITE_APP_TEMPLATE as string) || 'joona';
+
+  const sendEmail = (room: string) => {
     api
-      .post('conference/create/byemail', { roomName, email })
+      .post('conference/create/byemail', { roomName: room, email })
       .then(res => {
         if (res.data.error) {
           setError({
@@ -117,7 +115,7 @@ function App() {
           });
         });
     }
-  }, []);
+  }, [AppTemplate]);
 
   const joinConference = () => {
     api
@@ -180,10 +178,12 @@ function App() {
               path="/login_callback"
               element={<LoginCallback />}
             />
+            <Route path="/auth/logout" element={<LogoutCallback />} />
             <Route
               path="/login/callback"
               element={<LoginCallback />}
             />
+            <Route path="/auth/callback" element={<LoginCallback />} />
             <Route path="/" element={<LayoutJoona />}>
               <Route
                 index
@@ -210,21 +210,12 @@ function App() {
                   </PrivateRoute>
                 }
               />
-              <Route
-                path="dashboard"
-                element={
-                  <AdminRoute>
-                    <Dashboard />
-                  </AdminRoute>
-                }
-              />
               <Route path="visioreplay/:conference_uid" element={<ReplayList />} />
-              <Route path="replays" element={<AdminRoute><ReplayListGrouped /></AdminRoute>} />
               <Route
-                path="admin"
+                path="replays"
                 element={
                   <AdminRoute>
-                    <Admin />
+                    <ReplayListGrouped />
                   </AdminRoute>
                 }
               />
@@ -280,8 +271,8 @@ function App() {
                 element={
                   <Navigate
                     to={
-                      import.meta.env.VITE_API_URL?.startsWith('/')
-                        ? import.meta.env.VITE_API_URL
+                      cfg.VITE_API_URL?.startsWith('/')
+                        ? cfg.VITE_API_URL
                         : '/'
                     }
                     replace
@@ -350,4 +341,11 @@ function App() {
   );
 }
 
-export default App;
+/* === WRAP l’appli dans le ConfigProvider === */
+export default function App() {
+  return (
+    <ConfigProvider>
+      <AppInner />
+    </ConfigProvider>
+  );
+}

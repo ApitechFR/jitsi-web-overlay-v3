@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { API_BASE_URL } from '../jitsi_meet/visio_replay';
+import { useRuntimeConfig } from '../../../config/ConfigProvider';
+
 import styles from './ReplayList.module.css';
 import { useParams } from 'react-router-dom';
 import Button from '@codegouvfr/react-dsfr/Button';
@@ -28,6 +29,7 @@ const ReplayList: React.FC = () => {
     const [replays, setReplays] = useState<Replay[]>([]);
     const { conference_uid } = useParams<{ conference_uid: string }>();
     const [loading, setLoading] = useState(true);
+    const { VITE_API_URL: API_BASE_URL } = useRuntimeConfig();
 
     useEffect(() => {
         axios.get<Replay[]>(`${API_BASE_URL}/replays/conference/${conference_uid}`)

@@ -44,5 +44,4 @@ export class InitSchema1759846318006 implements MigrationInterface {
         await queryRunner.query(`DROP INDEX \`IDX_fe0bb3f6520ee0469504521e71\` ON \`users\``);
         await queryRunner.query(`DROP TABLE \`users\``);
     }
-
 }

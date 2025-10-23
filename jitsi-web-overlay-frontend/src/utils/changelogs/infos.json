@@ -7,14 +7,22 @@
         "id": "web-overlay",
         "label": "Version Web Overlay",
         "content": {
-          "title": "Nouvelles version 25/09/2025",
-          "version": "v3.0.0",
-          "releaseDate": "2025-09-25",
+          "title": "Nouvelles version 21/10/2025",
+          "version": "v3.0.2",
+          "releaseDate": "2025-10-21",
           "blocks": [
             {
-              "description": "La dernière version 1.6.3 du 15 avril 2025 apporte des correctifs. Cette nouvelle version apporte notamment :",
+              "description": "Première version officielle du produit de visioconférence Visio By Apitech. Cette version unifie Joona et La Webconf de l’État en une plateforme complète. L’objectif est d’offrir une surcouche moderne, ergonomique et plus riche en fonctionnalités pour nos utilisateurs.",
               "features": {
-                "ameliorations": []
+                "ameliorations": [
+                  "Gestion de la connexion des utilisateurs via token",
+                  "Ajout de la documentation utilisateur dans l’application",
+                  "Ajout de la page Mentions légales.",
+                  "Ajout de la page Compte utilisateur.",
+                  "Ajout des sondages de fin de réunion.",
+                  "Ajout d’un menu enrichi sur la page de visioconférence.",
+                  "Ajout de la fonction d’enregistrement vidéo."
+                ]
               },
               "fix": {
                 "bugs": []
