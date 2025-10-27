@@ -1,5 +1,5 @@
-import Home from './pages/home/Home';
-import Layout from './components/layout/Layout';
+import Home from './features/webconf/pages/home/Home';
+import Layout from './features/webconf/components/layout/Layout';
 import { useState, useEffect } from 'react';
 import {
   Routes,
@@ -16,14 +16,14 @@ import Apropos from './pages/Apropos/Apropos.md';
 import Accessibilite from './pages/Accessibilite/Accessibilite.md';
 import Mentionslegales from './pages/MentionsLegales/MentionsLegales.md';
 import MentionslegalesVisioByApitech from './pages/MentionsLegales/MentionsLegalesVisioByApitech.md';
-import StaticPagesBuilder from './pages/staticPagesBuilder/StaticPagesBuilder';
+import StaticPagesBuilder from './features/webconf/pages/staticPagesBuilder/StaticPagesBuilder';
 import Feedback from './pages/feedback/Feedback';
 import BrowserTest from './pages/browserTest/BrowserTest';
-import LoginCallback from './pages/login/LoginCallback';
-import LogoutCallback from './pages/login/LogoutCallback';
-import Error from './pages/Error/Error';
+import LoginCallback from './features/webconf/pages/login/LoginCallback';
+import LogoutCallback from './features/webconf/pages/login/LogoutCallback';
+import Error from './features/webconf/pages/Error/Error';
 import MuiDsfrThemeProvider from '@codegouvfr/react-dsfr/mui';
-import PlanDuSite from './pages/PlanDuSite/PlanDuSite';
+import PlanDuSite from './features/webconf/pages/PlanDuSite/PlanDuSite';
 import Profile from './pages/joona/Profile/Profile';
 import Dashboard from './pages/joona/Dashboard/Dashboard';
 import LayoutJoona from './components/joona/layout/LayoutJoona';

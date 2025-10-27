@@ -1,4 +1,4 @@
-import { validateconferenceName } from '../../utils/conferenceName';
+import { validateconferenceName } from '../../../../utils/conferenceName';
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useEffect } from 'react';
@@ -6,8 +6,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import styles from './jitsi_meet.module.css';
 import jwt_decode from 'jwt-decode';
 
-import api from '../../axios/axios';
-import { useRuntimeConfig } from '../../config/ConfigProvider';
+import api from '../../../../axios/axios';
+import { useRuntimeConfig } from '../../../../config/ConfigProvider';
 
 type errorObj = {
   message: string;

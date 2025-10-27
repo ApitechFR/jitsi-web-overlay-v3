@@ -1,5 +1,5 @@
 import styles from './Layout.module.css';
-import Header from '../header/Header';
+import Header from '../../../../components/header/Header';
 import Footer from '../footer/Footer';
 import { Outlet } from 'react-router-dom';
 import {
@@ -22,7 +22,7 @@ export default function Layout() {
     <div className={styles.layout}>
       <header>
         {/* <Header {...props} /> */}
-        <Header  />
+        <Header />
       </header>
       <main>
         <Outlet />
