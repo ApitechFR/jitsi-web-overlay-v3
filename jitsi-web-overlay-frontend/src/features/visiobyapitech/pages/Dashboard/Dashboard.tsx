@@ -7,7 +7,7 @@ import { Card } from '@apitechfr/react-dsapitech/Card';
 import Button from '@apitechfr/react-dsapitech/Button';
 import { useEffect, useMemo, useState } from 'react';
 
-import cardsData from '../../../data/cardConfig.json';
+import cardsData from '../../../../data/cardConfig.json';
 import { StatsService, useApi } from '@/api';
 
 type CardData = {

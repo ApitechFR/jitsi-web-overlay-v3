@@ -7,8 +7,8 @@ import styles from './HeaderJoona.module.css';
 import { Header } from '@apitechfr/react-dsapitech/Header';
 import { createModal } from '@apitechfr/react-dsapitech/Modal';
 
-import dataChangelog from '../../../utils/changelogs/infos.json'
-import { Item } from '../../../utils/changelogs/Item'
+import dataChangelog from '../../../../utils/changelogs/infos.json'
+import { Item } from '../../../../utils/changelogs/Item'
 import ChangelogContent from '../iframePopup/ChangelogContent';
 
 const modal = createModal({

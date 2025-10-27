@@ -1,17 +1,17 @@
 
 import styles from './HeaderJoona.module.css';
 import { useState } from 'react';
-import { useAuth } from '../../../auth/useAuth';
+import { useAuth } from '../../../../auth/useAuth';
 import docUtilisateur from '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf';
 import visioLogo from '/assets/visiobyapitech-creme.png'
 
 import { Header } from '@apitechfr/react-dsapitech/Header';
 import { createModal } from '@apitechfr/react-dsapitech/Modal';
 import { SideMenu } from "@apitechfr/react-dsapitech/SideMenu";
-import { isUserAdmin } from '../../../utils/user';
+import { isUserAdmin } from '../../../../utils/user';
 
-import dataChangelog from '../../../utils/changelogs/infos.json'
-import { Item } from '../../../utils/changelogs/Item'
+import dataChangelog from '../../../../utils/changelogs/infos.json'
+import { Item } from '../../../../utils/changelogs/Item'
 import ChangelogContent from '../iframePopup/ChangelogContent';
 
 const modal = createModal({

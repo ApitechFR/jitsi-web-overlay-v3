@@ -6,7 +6,7 @@ import { handleRecordingStatus } from '@/api/services/jitsi/jitsi-recording.serv
 import { handleJibriApitechApi } from '@/api/services/jitsi/jibri.service';
 import { ConferenceService, RoomService, useApi } from '@/api';
 import type { Props } from '@/api';
-import { useRuntimeConfig } from '../../../config/ConfigProvider';
+import { useRuntimeConfig } from '../../../../config/ConfigProvider';
 
 const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displayName }) => {
   const participantCountRef = useRef(0);

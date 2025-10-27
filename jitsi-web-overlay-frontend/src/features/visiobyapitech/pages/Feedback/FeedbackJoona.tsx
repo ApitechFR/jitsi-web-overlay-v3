@@ -1,6 +1,6 @@
 import Button from '@apitechfr/react-dsapitech/Button';
 import { Alert } from '@apitechfr/react-dsapitech/Alert';
-import { useRuntimeConfig } from '../../../config/ConfigProvider';
+import { useRuntimeConfig } from '../../../../config/ConfigProvider';
 
 import styles from './FeedbackJoona.module.css';
 import { useEffect, useMemo, useState } from 'react';

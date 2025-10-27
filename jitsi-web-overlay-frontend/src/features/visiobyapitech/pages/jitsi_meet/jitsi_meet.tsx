@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { validateconferenceName } from '../../../utils/conferenceName';
+import { validateconferenceName } from '../../../../utils/conferenceName';
 import JitsiMeetWrapper from './JitsiMeetWrapper';
 
 export default function JitsiMeet() {

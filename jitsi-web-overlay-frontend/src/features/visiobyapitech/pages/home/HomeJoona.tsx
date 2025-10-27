@@ -1,4 +1,4 @@
-import { generateconferenceName, validateconferenceName } from '../../../utils/conferenceName';
+import { generateconferenceName, validateconferenceName } from '../../../../utils/conferenceName';
 import { useState, useRef, FormEvent, useEffect, useMemo } from 'react';
 import styles from './HomeJoona.module.css';
 import { Button } from '@apitechfr/react-dsapitech/Button';
@@ -8,9 +8,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Alert } from '@apitechfr/react-dsapitech/Alert';
 import { createModal } from '@apitechfr/react-dsapitech/Modal';
 import { useIsModalOpen } from '@apitechfr/react-dsapitech/Modal/useIsModalOpen';
-import { useAuth } from '../../../auth/useAuth';
+import { useAuth } from '../../../../auth/useAuth';
 import CircularProgress from '@mui/material/CircularProgress';
-import { useRuntimeConfig } from '../../../config/ConfigProvider';
+import { useRuntimeConfig } from '../../../../config/ConfigProvider';
 
 
 interface HomeJoonaProps {
