@@ -20,12 +20,12 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
-import api from '../../axios/axios';
+import api from '../../../../axios/axios';
 import CircularProgress from '@mui/material/CircularProgress';
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import { useNavigate } from 'react-router-dom';
 import { Alert } from '@codegouvfr/react-dsfr/Alert';
-import { useRuntimeConfig } from '../../config/ConfigProvider';
+import { useRuntimeConfig } from '../../../../config/ConfigProvider';
 
 export default function BrowserTest() {
   const [expanded, setExpanded] = React.useState<string | boolean>('');

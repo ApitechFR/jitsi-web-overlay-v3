@@ -10,6 +10,7 @@ import { getCachedRuntimeConfig } from '@/config/runtimeConfig';
 function getApiBaseUrl(): string {
     const cfg = getCachedRuntimeConfig();
     // Si la config n'est pas encore chargée, on retourne une chaîne vide
+    console.log('Runtime config in auth service:', cfg);
     return cfg?.VITE_API_URL ?? '';
 }
 

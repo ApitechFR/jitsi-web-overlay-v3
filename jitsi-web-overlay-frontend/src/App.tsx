@@ -8,38 +8,41 @@ import {
   Navigate,
   useLocation,
 } from 'react-router-dom';
-import FAQ from './pages/FAQ/FAQ.md';
-import DonneesPerso from './pages/DonneesPerso/DonneesPerso.md';
-import Contact from './pages/Contact/Contact.md';
-import Cgu from './pages/Cgu/Cgu.md';
-import Apropos from './pages/Apropos/Apropos.md';
-import Accessibilite from './pages/Accessibilite/Accessibilite.md';
-import Mentionslegales from './pages/MentionsLegales/MentionsLegales.md';
-import MentionslegalesVisioByApitech from './pages/MentionsLegales/MentionsLegalesVisioByApitech.md';
+import FAQ from './features/webconf/pages/FAQ/FAQ.md';
+import DonneesPerso from './features/webconf/pages/donneesPerso/DonneesPerso.md';
+import Contact from './features/webconf/pages/contact/Contact.md';
+import Cgu from './features/webconf/pages/cgu/Cgu.md';
+import Apropos from './features/webconf/pages/apropos/Apropos.md';
+import Accessibilite from './features/webconf/pages/accessibilite/Accessibilite.md';
+import Mentionslegales from './features/webconf/pages/mentionsLegales/MentionsLegales.md';
+import MentionslegalesVisioByApitech from './features/visiobyapitech/pages/staticPagesBuilder/MentionsLegales.md';
 import StaticPagesBuilder from './features/webconf/pages/staticPagesBuilder/StaticPagesBuilder';
-import Feedback from './pages/feedback/Feedback';
-import BrowserTest from './pages/browserTest/BrowserTest';
+import Feedback from "./features/webconf/pages/feedback/Feedback";
+import BrowserTest from './features/webconf/pages/browserTest/BrowserTest';
 import LoginCallback from './features/webconf/pages/login/LoginCallback';
 import LogoutCallback from './features/webconf/pages/login/LogoutCallback';
-import Error from './features/webconf/pages/Error/Error';
+import Error from './features/webconf/pages/error/Error';
 import MuiDsfrThemeProvider from '@codegouvfr/react-dsfr/mui';
-import PlanDuSite from './features/webconf/pages/PlanDuSite/PlanDuSite';
-import Profile from './pages/joona/Profile/Profile';
-import Dashboard from './pages/joona/Dashboard/Dashboard';
-import LayoutJoona from './components/joona/layout/LayoutJoona';
-import HomeJoona from './pages/joona/home/HomeJoona';
-import JitsiMeet from './pages/joona/jitsi_meet/jitsi_meet';
-import Admin from './features/visiobyapitech/pages/Admin/Admin';
-import FeedbackJoona from './pages/joona/Feedback/FeedbackJoona';
+import PlanDuSite from './features/webconf/pages/planDuSite/PlanDuSite';
+import Profile from './features/visiobyapitech/pages/profile/Profile';
+import Dashboard from './features/visiobyapitech/pages/dashboard/Dashboard';
+import LayoutJoona from './features/visiobyapitech/components/layout/LayoutJoona';
+import HomeJoona from './features/visiobyapitech/pages/home/HomeJoona';
+import JitsiMeet from './features/visiobyapitech/pages/jitsi_meet/Jitsi_meet';
+import Admin from './features/visiobyapitech/pages/admin/Admin';
+import FeedbackJoona from './features/visiobyapitech/pages/feedback/FeedbackJoona';
 import ReplayList from './features/visiobyapitech/pages/replayList/ReplayList';
 import ReplayListGrouped from './features/visiobyapitech/pages/replayList/ReplayListGrouped';
 import PrivateRoute from './auth/PrivateRoute';
 import AdminRoute from './auth/AdminRoute';
 import { useAuth } from './auth/useAuth';
 import RouteThemeController from './RouteThemeController';
+import api from './axios/axios';
 
-import { useApi, ConferenceService, StatsService } from '@/api';
-import { useRuntimeConfig } from './config/ConfigProvider';
+
+
+/* === AJOUTS pour config runtime === */
+import { ConfigProvider, useRuntimeConfig } from './config/ConfigProvider';
 
 type errorObj = {
   message: string;
@@ -50,8 +53,8 @@ type errorObj = {
 };
 
 
-function App() {
-  const [confName, setConfName] = useState('');
+function AppInner() {
+  const [roomName, setRoomName] = useState('');
   const [jwt, setJwt] = useState<string | undefined>(undefined);
   const [error, setError] = useState<errorObj>({
     message: "la page que vous demandez n'existe pas",
@@ -63,44 +66,53 @@ function App() {
   const [conferenceNumber, setConferenceNumber] = useState(0);
   const [participantsNumber, setparticipantsNumber] = useState(0);
 
-  const cfg = useRuntimeConfig();
-  const AppTemplate = cfg.VITE_APP_TEMPLATE || 'joona';
+  const location = useLocation();
   const { authenticated } = useAuth();
 
+  /* === LIT LA CONFIG RUNTIME AU LIEU DE import.meta.env === */
+  const cfg = useRuntimeConfig();
+  const AppTemplate = (cfg.VITE_APP_TEMPLATE as string) || 'joona';
 
-  const { run: createByEmail } = useApi(ConferenceService.createByEmail);
-  const { run: joinConf } = useApi(ConferenceService.join);
-  const { run: getHomeStats } = useApi(StatsService.homePage);
-
-  const sendEmail = async (name: string) => {
-    try {
-      const res = await createByEmail(name, email);
-      if (res?.error) {
-        setError({ message: "la page que vous demandez n'existe pas", error: { status: '404', stack: '' } });
-        navigate('/error');
-      } else {
-        setIsWhitelisted(res.isWhitelisted);
-      }
-    } catch (e: any) {
-      if (e?.status) {
-        setIsWhitelisted(false);
-      } else if (e?.request) {
-        setError({ message: e?.message || "la page que vous demandez n'existe pas", error: { status: e?.status || '404', stack: '' } });
-        navigate('/error');
-      } else {
-        setError({ message: e?.message || "la page que vous demandez n'existe pas", error: { status: e?.status || '500', stack: '' } });
-        navigate('/error');
-      }
-    }
+  const sendEmail = (room: string) => {
+    api
+      .post('conference/create/byemail', { roomName: room, email })
+      .then(res => {
+        if (res.data.error) {
+          setError({
+            message: "la page que vous demandez n'existe pas",
+            error: { status: '404', stack: '' },
+          });
+          navigate('/error');
+        } else {
+          setIsWhitelisted(res.data.isWhitelisted);
+        }
+      })
+      .catch(err => {
+        if (err?.response) {
+          setIsWhitelisted(false);
+        } else if (err?.request) {
+          setError({
+            message: "la page que vous demandez n'existe pas",
+            error: { status: '404', stack: '' },
+          });
+          navigate('/error');
+        } else {
+          setError({
+            message: "la page que vous demandez n'existe pas",
+            error: { status: '500', stack: '' },
+          });
+          navigate('/error');
+        }
+      });
   };
-
 
   useEffect(() => {
     if (AppTemplate === 'webconf') {
-      getHomeStats()
-        .then(({ conf, part }) => {
-          setConferenceNumber(conf);
-          setparticipantsNumber(part);
+      api
+        .get('/stats/homePage')
+        .then(res => {
+          setConferenceNumber(res.data.conf);
+          setparticipantsNumber(res.data.part);
         })
         .catch(() => {
           setError({
@@ -109,39 +121,48 @@ function App() {
           });
         });
     }
-  }, [AppTemplate, getHomeStats]);
+  }, [AppTemplate]);
 
-  const joinConference = async () => {
-    try {
-      const res = await joinConf(confName);
-      if (res?.error) {
+  const joinConference = () => {
+    api
+      .get(`/${roomName}`)
+      .then(res => {
+        if (res.data.error) {
+          setError({
+            message: "la page que vous demandez n'existe pas",
+            error: { status: '404', stack: '' },
+          });
+          navigate('/error');
+        } else {
+          setRoomName(roomName);
+          setJwt(res.data.jwt);
+          return res;
+        }
+      })
+      .then(res => {
+        if (res?.data) {
+          if (res.data.jwt) {
+            setJwt(res.data.jwt);
+            return navigate(`/${res.data.roomName}`, { replace: true });
+          } else if (!res.data.error && !res.data.login) {
+            setJwt(undefined);
+            return navigate(`/${roomName}`);
+          } else if (res.data.login) {
+            setError({
+              message: "Vous n'etes pas authentifié.",
+              error: { status: '404', stack: '' },
+            });
+            return navigate('/error');
+          }
+        }
+      })
+      .catch(err => {
         setError({
           message: "la page que vous demandez n'existe pas",
-          error: { status: '404', stack: '' },
+          error: { status: err?.response?.status || '500', stack: '' },
         });
         navigate('/error');
-        return;
-      }
-      setConfName(confName);
-      setJwt(res.jwt);
-
-      if (res.jwt) {
-        navigate(`/${res.confName ?? confName}`, { replace: true });
-      } else if (!res.login) {
-        setJwt(undefined);
-        navigate(`/${confName}`);
-      } else {
-        setError({ message: "Vous n'etes pas authentifié.", error: { status: '404', stack: '' } });
-        navigate('/error');
-      }
-    } catch (err: any) {
-      setError({
-        message: "la page que vous demandez n'existe pas",
-        error: { status: err?.response?.status || '500', stack: '' },
       });
-      navigate('/error');
-    }
-
   };
 
   return (
@@ -151,7 +172,7 @@ function App() {
         {AppTemplate === 'joona' && (
           <>
             <Route
-              path=":conferenceName"
+              path=":roomName"
               element={
                 <PrivateRoute>
                   <JitsiMeet />
@@ -159,24 +180,23 @@ function App() {
               }
             />
             <Route path="/logout/callback" element={<LogoutCallback />} />
-            <Route path="/auth/logout" element={<LogoutCallback />} />
             <Route
               path="/login_callback"
               element={<LoginCallback />}
             />
+            <Route path="/auth/logout" element={<LogoutCallback />} />
             <Route
               path="/login/callback"
               element={<LoginCallback />}
             />
             <Route path="/auth/callback" element={<LoginCallback />} />
-
             <Route path="/" element={<LayoutJoona />}>
               <Route
                 index
                 element={
                   <HomeJoona
-                    conferenceName={confName}
-                    setconferenceName={setConfName}
+                    conferenceName={roomName}
+                    setconferenceName={setRoomName}
                     setIsWhitelisted={setIsWhitelisted}
                     isWhitelisted={isWhitelisted}
                     email={email}
@@ -196,6 +216,16 @@ function App() {
                   </PrivateRoute>
                 }
               />
+              <Route path="visioreplay/:conference_uid" element={<ReplayList />} />
+
+              <Route
+                path="replays"
+                element={
+                  <AdminRoute>
+                    <ReplayListGrouped />
+                  </AdminRoute>
+                }
+              />
               <Route
                 path="dashboard"
                 element={
@@ -204,8 +234,7 @@ function App() {
                   </AdminRoute>
                 }
               />
-              <Route path="visioreplay/:conference_uid" element={<ReplayList />} />
-              <Route path="replays" element={<AdminRoute><ReplayListGrouped /></AdminRoute>} />
+
               <Route
                 path="admin"
                 element={
@@ -245,8 +274,8 @@ function App() {
                 index
                 element={
                   <Home
-                    roomName={confName}
-                    setRoomName={setConfName}
+                    roomName={roomName}
+                    setRoomName={setRoomName}
                     setIsWhitelisted={setIsWhitelisted}
                     isWhitelisted={isWhitelisted}
                     email={email}
@@ -335,5 +364,10 @@ function App() {
     </MuiDsfrThemeProvider>
   );
 }
-
-export default App;
+export default function App() {
+  return (
+    <ConfigProvider>
+      <AppInner />
+    </ConfigProvider>
+  );
+}

@@ -9,7 +9,7 @@ import { Accordion } from '@codegouvfr/react-dsfr/Accordion';
 import MuiAlert from '@mui/material/Alert';
 import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
-import api from '../../axios/axios';
+import api from '../../../../axios/axios';
 import { validateconferenceName } from '../../utils/conferenceName';
 import { useNavigate } from 'react-router-dom';
 import { fr } from '@codegouvfr/react-dsfr';

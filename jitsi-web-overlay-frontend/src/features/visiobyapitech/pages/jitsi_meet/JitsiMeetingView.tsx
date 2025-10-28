@@ -28,8 +28,11 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
   const jibriApitechApiDomain = cfg.VITE_JIBRI_APITECH_API_DOMAIN ?? '';
   const jitsiAPIOptions = (window as any).jitsiAPIOptions;
 
-  const onClose = () => navigate('/feedback');
-
+  const onClose = () => {
+    navigate('/feedback', { state: { room: conferenceName } });
+    localStorage.removeItem("conferenceName");
+  };
+  console.info('JitsiMeetingView render with conference:', conferenceName);
   return (
     <JitsiMeeting
       domain={domain}
@@ -48,6 +51,7 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
       }}
       onApiReady={(api) => {
         console.info('[Jitsi] API prête');
+        localStorage.setItem("conferenceName", conferenceName);
 
         if (enableJibriApitechApi === 'true') {
           handleJibriApitechApi(jitsiAPIOptions, enableJibriApitechApi, jibriApitechApiDomain);

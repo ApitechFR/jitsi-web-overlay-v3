@@ -4,10 +4,10 @@ import { useRuntimeConfig } from '../../../../config/ConfigProvider';
 
 import styles from './FeedbackJoona.module.css';
 import { useEffect, useMemo, useState } from 'react';
-import { FieldComponent } from '@/components/joona/feedbacks/FieldComponent';
-import { useNavigate } from 'react-router';
+import { FieldComponent } from '../../components/feedbacks/FieldComponent';
 import { FeedbackService, useApi } from '@/api';
 import type { FeedbackTemplate } from '@/api';
+import { useLocation, useNavigate } from 'react-router';
 
 function FeedbackJoona() {
     const cfg = useRuntimeConfig();
@@ -20,8 +20,11 @@ function FeedbackJoona() {
     const [isBlankNewPage, setIsBlankNewPage] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(false);
+    const location = useLocation();
 
     const params = new URLSearchParams(window.location.search);
+
+    const room = location.state?.room || params.get('room');
 
     // useApi hooks
     const { run: fetchTemplates, loading, error } = useApi(FeedbackService.listTemplates);
@@ -64,7 +67,7 @@ function FeedbackJoona() {
         e.preventDefault();
 
         const baseData = {
-            conferenceUuid: "123e4567-e89b-12d3-a456-426614174000", // à remplacer par le nom de la conf plus tard
+            conferenceUuid: room, // à remplacer par le nom de la conf plus tard
             date: new Date().toISOString(),
             userAgent: navigator.userAgent,
         };
@@ -100,7 +103,7 @@ function FeedbackJoona() {
                     <div className={styles.contentFeedback}>
                         <form onSubmit={handleSubmit}>
                             {templates.map((template) => {
-                                const Component = FieldComponent[template.type.id];
+                                const Component = FieldComponent[template.type.name];
                                 if (!Component) return null;
                                 return (
                                     <div key={template.id}>

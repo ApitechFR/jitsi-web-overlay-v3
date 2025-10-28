@@ -43,6 +43,8 @@ export default function RouteThemeController() {
     const isJitsi = isSingleSeg && !RESERVED_SEGMENTS.has(firstSeg) && validateconferenceName(firstSeg);
 
     useEffect(() => {
+        let scheme = (localStorage.getItem("scheme") as Scheme | null) ?? "system";
+        try { localStorage.setItem("scheme", scheme); } catch { }
         if (isJitsi) {
 
             const saved = (localStorage.getItem(BASELINE_KEY) as Scheme | null);

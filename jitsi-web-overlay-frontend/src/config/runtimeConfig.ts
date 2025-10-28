@@ -22,7 +22,7 @@ export async function loadRuntimeConfig(force = false): Promise<FrontConfig> {
 
     const apiBase = (import.meta.env.VITE_API_URL as string | undefined) || '/api';
     const url = `${apiBase.replace(/\/$/, '')}/config`;
-    //console.info('Loading runtime config from:', { url, apiBase });
+
     inflight = fetch(url, { credentials: 'include' })
         .then(async (r) => {
             if (!r.ok) throw new Error(`Failed to load config: ${r.status}`);
@@ -34,7 +34,6 @@ export async function loadRuntimeConfig(force = false): Promise<FrontConfig> {
 
             cached = {
                 ...raw,
-                VITE_API_URL: apiBase,
                 VITE_APP_TEMPLATE: raw.VITE_APP_TEMPLATE || (import.meta.env.VITE_APP_TEMPLATE as string | undefined) || 'joona',
                 VITE_ENABLE_JIBRI_APITECH_API: coerceBool(raw.VITE_ENABLE_JIBRI_APITECH_API),
                 VITE_REPLAY_CHECK_TIMEOUT_MS: coerceNum(raw.VITE_REPLAY_CHECK_TIMEOUT_MS),

@@ -4,7 +4,7 @@ import { useAuth } from '../../../../auth/useAuth';
 import JitsiMeetingView from './JitsiMeetingView';
 import { validateconferenceName } from '../../../../utils/conferenceName';
 import CircularProgress from '@mui/material/CircularProgress';
-import Header from '../../../../components/joona/header/HeaderVisio';
+import Header from '../../components/header/HeaderVisio';
 import styles from './JitsiMeetWrapper.module.css';
 import { useApi } from '@/api';
 import { ConferenceService } from '@/api';
