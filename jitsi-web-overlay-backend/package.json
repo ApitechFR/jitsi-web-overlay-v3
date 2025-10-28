@@ -1,6 +1,6 @@
 {
-  "name": "jitsi-web-overlay-v3",
-  "version": "3.0.1",
+  "name": "jitsi-web-overlay-v3-backend",
+  "version": "3.0.0",
   "description": "",
   "author": "APITECH",
   "private": true,
@@ -56,6 +56,7 @@
     "joi": "^17.12.3",
     "mariadb": "^3.3.2",
     "moment": "^2.30.1",
+    "morgan": "^1.10.1",
     "mysql2": "^3.11.3",
     "nodemailer": "^6.9.11",
     "openid-client": "^5.6.4",

@@ -35,8 +35,6 @@ services:
       MARIADB_DATABASE: ${DB_NAME}
       MARIADB_USER: ${DB_USERNAME}
       MARIADB_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - '3306:3306'
     volumes:
       - mariadb_data:/var/lib/mysql
 
@@ -60,7 +58,7 @@ services:
         /usr/sbin/sshd -D -d -p 22;
     volumes:
       - ./jibri-k8s-record_home:/home/jibri-k8s-record
-      - visioreplay_data:/data
+      - visioreplay_data:/data/visioreplay
 
 volumes:
   visioreplay_data:
