@@ -172,7 +172,7 @@ function AppInner() {
         {AppTemplate === 'joona' && (
           <>
             <Route
-              path=":roomName"
+              path=":conferenceName"
               element={
                 <PrivateRoute>
                   <JitsiMeet />

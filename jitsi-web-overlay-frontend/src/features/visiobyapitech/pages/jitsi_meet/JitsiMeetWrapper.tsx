@@ -15,7 +15,7 @@ type JwtResponse =
   | { error: string };
 
 const JitsiMeetWrapper: React.FC = () => {
-  const { conferenceName } = useParams<{ conferenceName: string }>();
+  const { conferenceName } = useParams();
   const navigate = useNavigate();
   const location = useLocation() as { state?: any };
   const { authenticated, status, user } = useAuth();
