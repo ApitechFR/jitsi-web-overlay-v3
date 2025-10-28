@@ -21,7 +21,6 @@ function getBaseApiOrThrow(): string {
     return api;
 }
 
-const baseApi = getApiBaseUrl();
 
 
 async function userinfo(): Promise<UserInfos | null> {
