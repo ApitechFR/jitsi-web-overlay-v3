@@ -9,6 +9,7 @@ export class AppController {
   @Get('/config')
   getFrontendConfig() {
     return {
+
       VITE_APP_TEMPLATE: process.env.APP_TEMPLATE,
       VITE_JITSI_DOMAIN: process.env.JITSI_DOMAIN,
       VITE_VOXAPI_URL: process.env.VOXAPI_URL,
