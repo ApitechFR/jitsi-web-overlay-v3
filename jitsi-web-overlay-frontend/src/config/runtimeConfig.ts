@@ -11,6 +11,10 @@ export type FrontConfig = {
     VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS?: number | string;
     VITE_FRONTCONF_ROOMNAMECONSTRAINT_LENGTH?: number | string;
     VITE_APP_ORGANIZATION?: string;
+    VITE_APP_LIGHTVISIOLOGOHEADER?: string;
+    VITE_APP_DARKVISIOLOGOHEADER?: string;
+    VITE_APP_LIGHTVISIOLOGOFOOTER?: string;
+    VITE_APP_DARKVISIOLOGOFOOTER?: string;
 };
 
 let cached: FrontConfig | null = null;
@@ -35,6 +39,10 @@ export async function loadRuntimeConfig(force = false): Promise<FrontConfig> {
             cached = {
                 ...raw,
                 VITE_APP_TEMPLATE: raw.VITE_APP_TEMPLATE || (import.meta.env.VITE_APP_TEMPLATE as string | undefined) || 'joona',
+                VITE_APP_LIGHTVISIOLOGOHEADER: raw.VITE_APP_LIGHTVISIOLOGOHEADER || (import.meta.env.VITE_APP_LIGHTVISIOLOGOHEADER as string | undefined) || '/assets/visiobyapitech-creme.png',
+                VITE_APP_DARKVISIOLOGOHEADER: raw.VITE_APP_DARKVISIOLOGOHEADER || (import.meta.env.VITE_APP_DARKVISIOLOGOHEADER as string | undefined) || '/assets/visiobyapitech-creme.png',
+                VITE_APP_LIGHTVISIOLOGOFOOTER: raw.VITE_APP_LIGHTVISIOLOGOFOOTER || (import.meta.env.VITE_APP_LIGHTVISIOLOGOFOOTER as string | undefined) || '/assets/apitech-logo-bleunuit.png',
+                VITE_APP_DARKVISIOLOGOFOOTER: raw.VITE_APP_DARKVISIOLOGOFOOTER || (import.meta.env.VITE_APP_DARKVISIOLOGOFOOTER as string | undefined) || '/assets/apitech-logo-blanc.png',
                 VITE_ENABLE_JIBRI_APITECH_API: coerceBool(raw.VITE_ENABLE_JIBRI_APITECH_API),
                 VITE_REPLAY_CHECK_TIMEOUT_MS: coerceNum(raw.VITE_REPLAY_CHECK_TIMEOUT_MS),
                 VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS: coerceNum(raw.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS),
