@@ -18,8 +18,8 @@ export const ReplayService = {
     async getByConfName(conference_name: string) {
         try {
             const http = await getHttp();
-            const { data } = await http.get(`/replays/${encodeURIComponent(conference_name)}`);
-            return data;
+            const reponse = await http.get(`/replays/${encodeURIComponent(conference_name)}`);
+            return reponse.data;
         } catch (error) {
             throw toApiError(error, 'Erreur lors de la récupération du replay');
         }
