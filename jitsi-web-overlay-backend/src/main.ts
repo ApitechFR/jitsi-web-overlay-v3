@@ -20,15 +20,17 @@ async function bootstrap() {
   }
 
   // Swagger
-  const config = new DocumentBuilder()
-    .setTitle("Visio By Apitech")
-    .setDescription("la spécification openApi de  Visio By Apitech")
-    .setVersion('1.0')
-    .addTag("Visio By Apitech")
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle("Visio By Apitech")
+      .setDescription("la spécification openApi de  Visio By Apitech")
+      .setVersion('1.0')
+      .addTag("Visio By Apitech")
+      .addBearerAuth()
+      .build();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api', app, document);
+  }
 
   // CORS (déduire un tableau depuis la chaîne d'env)
   const corsOrigins = (process.env.CORS_ORIGIN || '')
