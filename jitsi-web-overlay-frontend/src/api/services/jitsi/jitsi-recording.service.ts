@@ -23,16 +23,14 @@ export async function checkVideo(
     checkTimeout: ReturnType<typeof setTimeout> | null
 ) {
     try {
-        const response = await ReplayService.getByConfName(conference_name);
-        if (!response) {
+        const data = await ReplayService.getByConfName(conference_name);
+        if (!data) {
             console.warn('Aucun replay trouvé pour', conference_name);
             if (checkVideoInterval) clearInterval(checkVideoInterval);
             if (checkTimeout) clearTimeout(checkTimeout);
             localStorage.removeItem('isRecordingStarted');
             return 'error';
         }
-
-        const data = await response.json();
 
         console.info('Statut du replay :', data.status);
 
