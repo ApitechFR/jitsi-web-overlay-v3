@@ -23,14 +23,20 @@ export async function checkVideo(
     checkTimeout: ReturnType<typeof setTimeout> | null
 ) {
     try {
-        const data = await ReplayService.getByConfName(conference_name);
-        if (!data) {
+        const response = await ReplayService.getByConfName(conference_name);
+        if (!response) {
             console.warn('Aucun replay trouvé pour', conference_name);
             if (checkVideoInterval) clearInterval(checkVideoInterval);
             if (checkTimeout) clearTimeout(checkTimeout);
             localStorage.removeItem('isRecordingStarted');
             return 'error';
         }
+        if (!response.ok) {
+            console.error("Erreur HTTP :", response.status);
+            return "error";
+        }
+
+        const data = await response.json();
 
         if (data.status === 'terminated') {
             // Exemple d'utilisation du timeout dynamique
@@ -44,6 +50,9 @@ export async function checkVideo(
                 showCloseButton: true,
                 confirmButtonText: 'Voir l’enregistrement',
                 reverseButtons: true,
+                customClass: {
+                    popup: 'small-swal-popup'
+                }
             }).then((result) => {
                 if (result.isConfirmed && data.conference?.uid) {
                     window.open(`/visioreplay/${encodeURIComponent(data.conference.uid)}`, '_blank');
@@ -64,7 +73,6 @@ export async function checkVideo(
             });
             clearTimers(checkVideoInterval, checkTimeout);
             localStorage.removeItem('isRecordingStarted');
-            return 'error';
         }
     } catch (err: any) {
         if (err?.status === 404) {
@@ -94,11 +102,13 @@ export function handleRecordingStatus(
         const error = event.error;
 
         if (isRecordingOn && myRole === 'moderator') {
+            isRecordingStarted = "true";
             localStorage.setItem('isRecordingStarted', 'true');
             startVideo(conference_name);
         } else if (error) {
             console.error('Erreur d’enregistrement :', error);
         } else if (isRecordingStarted) {
+            isRecordingStarted = "false";
             localStorage.setItem('isRecordingStarted', 'false');
             showLoadingToast("Chargement de l'enregistrement en cours ...");
             retryVerification(conference_name, checkVideoInterval, checkTimeout);
