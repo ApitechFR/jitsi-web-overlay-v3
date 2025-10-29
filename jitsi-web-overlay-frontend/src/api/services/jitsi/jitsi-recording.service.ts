@@ -31,10 +31,6 @@ export async function checkVideo(
             localStorage.removeItem('isRecordingStarted');
             return 'error';
         }
-        if (!response.ok) {
-            console.error("Erreur HTTP :", response.status);
-            return "error";
-        }
 
         const data = await response.json();
 
