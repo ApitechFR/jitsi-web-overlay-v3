@@ -1,31 +1,25 @@
 import { getHttp } from '../../http';
 import { toApiError } from '@/api/errors';
-import { Room } from './room.types';
 
 
 export const RoomService = {
 
-    async getByName(roomName: string): Promise<Room> {
+    async getByName(roomName: string): Promise<any> {
         try {
             const http = await getHttp();
-            const { data } = await http.get(`/rooms/${encodeURIComponent(roomName)}`);
-            return data;
+            const reponse = await http.get(`/rooms/name/${encodeURIComponent(roomName)}`);
+            return reponse.data;
         } catch (error) {
             throw toApiError(error, 'Erreur lors de la récupération de la salle');
         }
     },
 
-    async create(roomName: string): Promise<Room> {
+    async create(roomName: string): Promise<any> {
         try {
 
-            const existingRoom = await this.getByName(roomName);
-            if (existingRoom) {
-                return existingRoom;
-            }
-
             const http = await getHttp();
-            const { data } = await http.post('/rooms', { name: roomName });
-            return data;
+            const reponse = await http.post('/rooms', { name: roomName });
+            return reponse.data;
         } catch (error) {
             throw toApiError(error, 'Erreur lors de la création de la salle');
         }
