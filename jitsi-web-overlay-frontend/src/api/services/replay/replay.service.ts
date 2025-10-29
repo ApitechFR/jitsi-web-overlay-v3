@@ -8,7 +8,7 @@ export const ReplayService = {
     async startRecording(body: { conference_name: string, status: ReplayStatus, message: string }) {
         try {
             const http = await getHttp();
-            const { data } = await http.post('/replay/start', body);
+            const { data } = await http.post('/replays/start_recording', body);
             return data;
         } catch (error) {
             throw toApiError(error, 'Erreur lors du démarrage de l’enregistrement');

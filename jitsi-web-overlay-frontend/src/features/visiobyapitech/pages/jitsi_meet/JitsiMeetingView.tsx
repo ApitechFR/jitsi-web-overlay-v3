@@ -94,8 +94,7 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
             participantCountRef.current = count ?? 0;
 
             if (participantCountRef.current === 1 && !conferenceRef.current) {
-              const existingRoom = await getRoomByName(conferenceName).catch(() => null);
-              const room = existingRoom ?? (await createRoom(conferenceName));
+              const room = await createRoom(conferenceName);
               const conf = await createConf({ room_uid: room.uid, name: conferenceName });
               conferenceRef.current = conf;
             }
