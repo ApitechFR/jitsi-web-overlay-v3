@@ -11,15 +11,14 @@ function FooterJoona({ headerFooterDisplayItem }: props) {
   const cfg = useRuntimeConfig();
   const VisioLogo = (cfg.VITE_APP_LIGHTVISIOLOGOFOOTER as string);
   const DarkVisioLogo = (cfg.VITE_APP_DARKVISIOLOGOFOOTER as string);
+  const FooterDescription = (cfg.VITE_APP_FOOTERDESCRIPTION as string) || '';
 
   return (
     <Footer
       mainLogoURL={VisioLogo}
       mainLogoURLDark={DarkVisioLogo}
       accessibility="fully compliant"
-      contentDescription="
-        Apitech, Éditeur Open Solutions  - L’esprit du Libre au service de la productivité.
-        "
+      contentDescription={FooterDescription}
       termsLinkProps={{
         href: '/mentionslegales',
       }}

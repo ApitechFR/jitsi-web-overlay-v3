@@ -23,6 +23,9 @@ export default function HeaderJoona() {
   const cfg = useRuntimeConfig();
   const VisioLogo = (cfg.VITE_APP_LIGHTVISIOLOGOHEADER as string) || '/assets/visiobyapitech-creme.png';
   const DarkVisioLogo = (cfg.VITE_APP_DARKVISIOLOGOHEADER as string) || '/assets/visiobyapitech-creme.png';
+  const HeaderServiceTitle = (cfg.VITE_APP_HEADERSERVICETITLE as string) || '';
+  const HeaderServiceTagline = (cfg.VITE_APP_HEADERSERVICETAGLINE as string) || '';
+
 
   const [modalContent, setModalContent] = useState<string | null>(
     dataChangelog.submenu.items.length > 0
@@ -111,8 +114,8 @@ export default function HeaderJoona() {
         <Header
           mainLogoURL={VisioLogo}
           mainLogoURLDark={DarkVisioLogo}
-          serviceTitle="Visio"
-          serviceTagline="by Apitech"
+          serviceTitle={HeaderServiceTitle}
+          serviceTagline={HeaderServiceTagline}
           brandTop={
             <>
               INTITULE
