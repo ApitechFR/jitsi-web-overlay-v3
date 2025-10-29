@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Replay } from './entities/replay.entity';
@@ -13,6 +13,7 @@ import { ReplayStatus } from './enum/replay_status.enum';
 
 @Injectable()
 export class ReplayService {
+    private readonly logger = new Logger(ReplayService.name);
     constructor(
         @InjectRepository(Replay)
         private readonly replayRepository: Repository<Replay>,
@@ -140,9 +141,17 @@ export class ReplayService {
 
             const isEnabled = process.env.ENABLE_JIBRI_APITECH_API === 'true';
 
-            if (replay_status === ReplayStatus.UPLOADED_RSYNC && filePath && fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-                if (!isEnabled) {
-                    replay_status = ReplayStatus.TERMINATED;
+            if (replay_status === ReplayStatus.UPLOADED_RSYNC && filePath) {
+                try {
+                    const stats = fs.statSync(filePath);
+                    if (stats.isFile() && !isEnabled) {
+                        this.logger.log(`Fichier trouvé à l'emplacement : ${filePath}`);
+                        replay_status = ReplayStatus.TERMINATED;
+                    } else {
+                        this.logger.warn(`Le fichier n'existe pas ou n'est pas un fichier : ${filePath}`);
+                    }
+                } catch (err) {
+                    this.logger.error(`Erreur lors de la vérification du fichier à l'emplacement : ${filePath}`, err);
                 }
             }
             replay.status = replay_status;

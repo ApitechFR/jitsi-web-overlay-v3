@@ -38,6 +38,8 @@ export async function checkVideo(
 
         const data = await response.json();
 
+        console.info('Statut du replay :', data.status);
+
         if (data.status === 'terminated') {
             // Exemple d'utilisation du timeout dynamique
             const timeoutMs = getReplayCheckTimeoutMs();
