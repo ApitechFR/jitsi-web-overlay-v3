@@ -1,7 +1,6 @@
 
 import { useState } from 'react';
 import docUtilisateur from '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf';
-import visioLogo from '/assets/visiobyapitech-creme.png'
 
 import styles from './HeaderJoona.module.css';
 import { Header } from '@apitechfr/react-dsapitech/Header';
@@ -10,6 +9,7 @@ import { createModal } from '@apitechfr/react-dsapitech/Modal';
 import dataChangelog from '../../../utils/changelogs/infos.json'
 import { Item } from '../../../utils/changelogs/Item'
 import ChangelogContent from '../iframePopup/ChangelogContent';
+import { useRuntimeConfig } from '../../../config/ConfigProvider';
 
 const modal = createModal({
   id: 'foo-modal',
@@ -22,6 +22,12 @@ export default function HeaderJoona() {
       ? dataChangelog.submenu.items[0].id
       : null
   );
+
+  const cfg = useRuntimeConfig();
+  const VisioLogo = (cfg.VITE_APP_LIGHTVISIOLOGOHEADER as string) || '/assets/visiobyapitech-creme.png';
+  const DarkVisioLogo = (cfg.VITE_APP_DARKVISIOLOGOHEADER as string) || '/assets/visiobyapitech-creme.png';
+  const HeaderServiceTitle = (cfg.VITE_APP_HEADERSERVICETITLE as string) || '';
+  const HeaderServiceTagline = (cfg.VITE_APP_HEADERSERVICETAGLINE as string) || '';
 
   const openPdf = () => {
     window.open(docUtilisateur, '_blank', 'noopener,noreferrer');
@@ -77,9 +83,10 @@ export default function HeaderJoona() {
   return (
     <>
       <Header
-        mainLogoURLDark={visioLogo}
-        serviceTitle="Visio"
-        serviceTagline="by Apitech"
+        mainLogoURL={VisioLogo}
+        mainLogoURLDark={DarkVisioLogo}
+        serviceTitle={HeaderServiceTitle}
+        serviceTagline={HeaderServiceTagline}
         brandTop={
           <>
             INTITULE
