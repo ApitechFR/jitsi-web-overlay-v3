@@ -73,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    const logoutUrl = joinUrl(baseApi, '/authentication/logout');
+    const logoutUrl = joinUrl(baseApi, '/auth/logout');
     window.location.href = logoutUrl;
   };
 
