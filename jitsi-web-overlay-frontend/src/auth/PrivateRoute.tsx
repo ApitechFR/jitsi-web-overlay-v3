@@ -7,26 +7,25 @@ export default function PrivateRoute({ children }: { children: ReactNode }) {
   const { authenticated, status } = useAuth();
   const location = useLocation();
 
-  if (status === 'unknown') {
-    return (
-      <div>
-        <CircularProgress style={{ height: '150px', width: '150px' }} />
-      </div>
-    );
+  const allowGuest = Boolean((location.state as any)?.allowGuest);
+  const path = location.pathname.replace(/\/+$/, '');
+  const segs = path.split('/').filter(Boolean);
+  const waitForRoom = segs.length === 1 ? segs[0] : undefined;
+
+  // laisser passer les invités sur "/:roomName" même si status === 'unknown'
+  if (!authenticated && allowGuest && waitForRoom) {
+    return <>{children}</>;
   }
 
+  // if (status === 'unknown') {
+  //   return (
+  //     <div>
+  //       <CircularProgress style={{ height: 150, width: 150 }} />
+  //     </div>
+  //   );
+  // }
+
   if (!authenticated) {
-    const allowGuest = Boolean((location.state as any)?.allowGuest);
-    const path = location.pathname.replace(/\/+$/, '');
-    const segs = path.split('/').filter(Boolean);
-    const waitForRoom = segs.length === 1 ? segs[0] : undefined;
-
-    // On autorise l'invité uniquement pour une route de type "/:roomName"
-    if (allowGuest && waitForRoom) {
-      return <>{children}</>;
-    }
-
-    // Sinon: redirection habituelle vers la Home
     return (
       <Navigate
         to="/"

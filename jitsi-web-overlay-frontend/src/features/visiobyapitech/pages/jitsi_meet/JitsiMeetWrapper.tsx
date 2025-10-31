@@ -88,7 +88,8 @@ const JitsiMeetWrapper: React.FC = () => {
   if (!validRoom) return null;
   if (status === 'unknown') {
     return (
-      <div>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+
         <CircularProgress style={{ height: '150px', width: '150px' }} />
       </div>
     );
@@ -99,8 +100,10 @@ const JitsiMeetWrapper: React.FC = () => {
   // Si auth, on rend Jitsi avec ou sans JWT (selon fetch en cours).
 
   if (authenticated && loadingJitsiJwt && !jwtToken) {
+    console.log('Loading Jitsi JWT...');
     return (
-      <div>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+
         <CircularProgress style={{ height: '150px', width: '150px' }} />
       </div>
     );
