@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../../auth/useAuth';
 import JitsiMeetingView from './JitsiMeetingView';
-import { validateconferenceName } from '../../../../utils/conferenceName';
+import { validateConferenceName } from '../../../../utils/conferenceName';
 import CircularProgress from '@mui/material/CircularProgress';
 import Header from '../../components/header/HeaderVisio';
 import styles from './JitsiMeetWrapper.module.css';
@@ -29,7 +29,7 @@ const JitsiMeetWrapper: React.FC = () => {
   const cfg = useRuntimeConfig();
   const domain = cfg.VITE_JITSI_DOMAIN as string;
 
-  const validRoom = !!conferenceName && validateconferenceName(conferenceName);
+  const validRoom = !!conferenceName && validateConferenceName(conferenceName);
 
   useEffect(() => {
     if (!validRoom) return;

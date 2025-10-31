@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { validateconferenceName } from "./utils/conferenceName";
+import { validateConferenceName } from "./utils/conferenceName";
 import { RESERVED_SEGMENTS } from "./constant/routes";
 import { useFrTheme } from "@apitechfr/react-dsapitech/dsapitech_hooks"
 
@@ -40,7 +40,7 @@ export default function RouteThemeController() {
 
     const firstSeg = path.split("/")[1] ?? "";
     const isSingleSeg = path === `/${firstSeg}` && firstSeg.length > 0;
-    const isJitsi = isSingleSeg && !RESERVED_SEGMENTS.has(firstSeg) && validateconferenceName(firstSeg);
+    const isJitsi = isSingleSeg && !RESERVED_SEGMENTS.has(firstSeg) && validateConferenceName(firstSeg);
 
     useEffect(() => {
         let scheme = (localStorage.getItem("scheme") as Scheme | null) ?? "system";

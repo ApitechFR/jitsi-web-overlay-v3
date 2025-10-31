@@ -11,19 +11,19 @@ export const conferenceNameConfig = {
   ),
 };
 
-export function validateconferenceName(conferenceName: string | undefined): boolean {
+export function validateConferenceName(conferenceName: string | undefined): boolean {
   if (!conferenceName) return false;
   return conferenceNameConfig.regex.test(conferenceName);
 }
 
-export function generateconferenceName(): string {
+export function generateConferenceName(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let name = '';
   do {
     name = Array.from({ length: 10 }, () =>
       chars.charAt(Math.floor(Math.random() * chars.length))
     ).join('');
-  } while (!validateconferenceName(name));
+  } while (!validateConferenceName(name));
   return name;
 }
 
