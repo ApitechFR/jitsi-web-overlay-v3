@@ -1,4 +1,4 @@
-import { generateconferenceName, validateconferenceName } from '../../../../utils/conferenceName';
+import { generateConferenceName, validateConferenceName } from '../../../../utils/conferenceName';
 import { useState, useRef, FormEvent, useEffect, useMemo } from 'react';
 import styles from './HomeJoona.module.css';
 import { Button } from '@apitechfr/react-dsapitech/Button';
@@ -40,6 +40,14 @@ function HomeJoona(props: HomeJoonaProps) {
   const extraDelayTimerRef = useRef<number | null>(null);
 
   const { authenticated, login } = useAuth();
+
+  // Redirection immédiate si connecté et conferenceName présent
+  useEffect(() => {
+    if (authenticated && props.conferenceName && isValidConferenceName(props.conferenceName)) {
+      navigate(`/${props.conferenceName}`, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authenticated, props.conferenceName]);
 
   // pour intercepter toute fermeture de modal
   const stopRef = useRef<null | ((byModalClose?: boolean) => void)>(null);
@@ -85,11 +93,11 @@ function HomeJoona(props: HomeJoonaProps) {
     return () => { (modal as any).close = originalClose; };
   }, [modal]);
 
-  const isValidconferenceName = (name: string) => validateconferenceName(name);
+  const isValidConferenceName = (name: string) => validateConferenceName(name);
 
   // retire l’erreur visuelle dès que le nom devient valide
   useEffect(() => {
-    if (props.conferenceName && isValidconferenceName(props.conferenceName)) setIsError(false);
+    if (props.conferenceName && isValidConferenceName(props.conferenceName)) setIsError(false);
   }, [props.conferenceName]);
 
   // ---------- Helpers ----------
@@ -121,7 +129,7 @@ function HomeJoona(props: HomeJoonaProps) {
 
   /** Premier check silencieux via backend (2.5s) */
   const firstCheckRoomStarted = async (room: string): Promise<boolean> => {
-    if (!isValidconferenceName(room)) return false;
+    if (!isValidConferenceName(room)) return false;
     return await getRoomStateFromBackend(room, 2500);
   };
 
@@ -134,7 +142,7 @@ function HomeJoona(props: HomeJoonaProps) {
 
   const scheduleNext = (room: string) => {
     if (cancelledRef.current) return;
-    if (!room || !isValidconferenceName(room)) return;
+    if (!room || !isValidConferenceName(room)) return;
     backoffRef.current = Math.min(backoffRef.current + 2000, 30000);
     timerRef.current = window.setTimeout(() => pollRoomUntilStarted(room), backoffRef.current) as unknown as number;
   };
@@ -163,10 +171,11 @@ function HomeJoona(props: HomeJoonaProps) {
 
   // Démarre par un check silencieux, puis (si non lancé) ouvre la modale et lance le poll
   const runFirstCheckThenMaybeWait = async (room?: string) => {
+    if (authenticated) return;
     if (phase !== 'idle') return;
 
     const rn = (room ?? props.conferenceName) || '';
-    if (!isValidconferenceName(rn)) {
+    if (!isValidConferenceName(rn)) {
       setIsError(true);
       setTimeout(() => inputRef.current?.focus(), 0);
       return;
@@ -202,8 +211,9 @@ function HomeJoona(props: HomeJoonaProps) {
   };
 
   const startWaitingAndPoll = (room?: string) => {
+    if (authenticated) return;
     const rn = (room ?? props.conferenceName) || '';
-    if (!isValidconferenceName(rn)) {
+    if (!isValidConferenceName(rn)) {
       setIsError(true);
       setTimeout(() => inputRef.current?.focus(), 0);
       return;
@@ -255,7 +265,7 @@ function HomeJoona(props: HomeJoonaProps) {
     if (st.prefillconferenceName) {
       const nm = st.prefillconferenceName.trim();
       props.setconferenceName(nm);
-      setIsError(!validateconferenceName(nm));
+      setIsError(!validateConferenceName(nm));
       setTimeout(() => inputRef.current?.focus(), 0);
       navigate('.', { replace: true, state: {} });
       return;
@@ -280,14 +290,14 @@ function HomeJoona(props: HomeJoonaProps) {
 
   // ---------- Actions UI ----------
   const onCopyLink = () => {
-    if (!props.conferenceName || !isValidconferenceName(props.conferenceName)) return;
+    if (!props.conferenceName || !isValidConferenceName(props.conferenceName)) return;
     const textToCopy = `${window.location.origin}/${props.conferenceName}`;
     navigator.clipboard.writeText(textToCopy).then(() => setIsAlertVisible(true));
   };
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!isValidconferenceName(props.conferenceName)) {
+    if (!isValidConferenceName(props.conferenceName)) {
       setIsError(true);
       return;
     }
@@ -304,7 +314,7 @@ function HomeJoona(props: HomeJoonaProps) {
   }
 
   const handleGenerateconferenceName = () => {
-    props.setconferenceName(generateconferenceName());
+    props.setconferenceName(generateConferenceName());
   };
 
   return (
@@ -339,7 +349,7 @@ function HomeJoona(props: HomeJoonaProps) {
             priority: 'primary',
             onClick: () => {
               stopWaitingAndPoll();
-              login(validateconferenceName(props.conferenceName) ? props.conferenceName : undefined);
+              login(validateConferenceName(props.conferenceName) ? props.conferenceName : undefined);
             },
             doClosesModal: false,
           },
@@ -379,7 +389,7 @@ function HomeJoona(props: HomeJoonaProps) {
           <div className={styles.inputsRoom}>
             <div className={styles.joinPart}>
               <Input
-                label=""
+                label="Nom de la conférence"
                 id="conferenceName"
                 state={isError ? 'error' : 'default'}
                 nativeInputProps={{
@@ -388,7 +398,7 @@ function HomeJoona(props: HomeJoonaProps) {
                   onChange: e => {
                     const value = e.currentTarget.value;
                     props.setconferenceName(value);
-                    setIsError(!isValidconferenceName(value));
+                    setIsError(!isValidConferenceName(value));
                   },
                   ref: inputRef,
                 }}
