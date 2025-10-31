@@ -11,26 +11,32 @@ function getApiBaseUrl(): string {
     const cfg = getCachedRuntimeConfig();
     // Si la config n'est pas encore chargée, on retourne une chaîne vide
     console.log('Runtime config in auth service:', cfg);
-    return cfg?.VITE_API_URL ?? '';
+    return cfg?.VITE_API_URL || '/api';
 }
 
 // Toutes les fonctions qui utilisent baseApi doivent attendre que la config soit chargée
 function getBaseApiOrThrow(): string {
     const api = getApiBaseUrl();
-    if (!api) throw new Error('API URL non chargée. Attendez que la configuration soit disponible.');
+    // if (!api) throw new Error('API URL non chargée. Attendez que la configuration soit disponible.');
     return api;
 }
-
-
-
 async function userinfo(): Promise<UserInfos | null> {
+    const withTimeout = <T,>(p: Promise<T>, ms = 5000): Promise<T> =>
+        new Promise((resolve, reject) => {
+            const t = setTimeout(() => reject(Object.assign(new Error('auth timeout'), { status: 0 })), ms);
+            p.then(v => { clearTimeout(t); resolve(v); })
+                .catch(e => { clearTimeout(t); reject(e); });
+        });
+
     try {
         const http = await getHttp();
-        const { data } = await http.get<UserInfos>('/authentication/userinfo');
+        const { data } = await withTimeout(http.get<UserInfos>('/authentication/userinfo'), 5000);
         return data ?? null;
     } catch (e) {
         const err = toApiError(e);
+        //  On mappe 401 en invité, on ne bloque jamais l’UI
         if (err.status === 401) return null;
+        //  Réseau/timeout/5xx → on traite comme invité pour ne pas spinner
         return null;
     }
 }
@@ -39,11 +45,34 @@ async function userinfoDecoded(): Promise<UserInfos | null> {
     const data = await userinfo();
     if (!data) return null;
     if (data.idToken && typeof data.idToken === 'string') {
-        try { return decodeJwt(data.idToken) as unknown as UserInfos; }
-        catch { /* ignore */ }
+        try { return decodeJwt(data.idToken) as unknown as UserInfos; } catch { }
     }
     return data;
 }
+
+
+
+// async function userinfo(): Promise<UserInfos | null> {
+//     try {
+//         const http = await getHttp();
+//         const { data } = await http.get<UserInfos>('/authentication/userinfo');
+//         return data ?? null;
+//     } catch (e) {
+//         const err = toApiError(e);
+//         if (err.status === 401) return null;
+//         return null;
+//     }
+// }
+
+// async function userinfoDecoded(): Promise<UserInfos | null> {
+//     const data = await userinfo();
+//     if (!data) return null;
+//     if (data.idToken && typeof data.idToken === 'string') {
+//         try { return decodeJwt(data.idToken) as unknown as UserInfos; }
+//         catch { /* ignore */ }
+//     }
+//     return data;
+// }
 
 function getLoginUrl(confName?: string) {
     const url = joinUrl(getBaseApiOrThrow(), '/authentication/login_authorize');

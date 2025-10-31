@@ -104,7 +104,8 @@ function HomeJoona(props: HomeJoonaProps) {
       const apiBase = cfg.VITE_API_URL ?? '/api';
       //console.info('API Base URL for room state check:', apiBase);
       const url = `${apiBase}/conferences/${encodeURIComponent(room)}/state`;
-      const res = await fetch(url, { signal: controller.signal, credentials: 'include' });
+      //const res = await fetch(url, { signal: controller.signal, credentials: 'include' });
+      const res = await fetch(url, { signal: controller.signal });
       if (!res.ok) return false;
       const data = await res.json().catch(() => null);
       if (data && typeof data === 'object' && typeof data.active === 'boolean') {
