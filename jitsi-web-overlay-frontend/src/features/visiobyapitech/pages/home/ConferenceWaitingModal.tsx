@@ -1,6 +1,4 @@
 import React from 'react';
-import { Button } from '@apitechfr/react-dsapitech/Button';
-import { Alert } from '@apitechfr/react-dsapitech/Alert';
 import styles from './HomeJoona.module.css';
 
 interface ConferenceWaitingModalProps {

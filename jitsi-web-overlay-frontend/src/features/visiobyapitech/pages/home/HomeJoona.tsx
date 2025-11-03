@@ -99,7 +99,6 @@ function HomeJoona(props: HomeJoonaProps) {
     setIsError(!!props.conferenceName && !isValidConferenceName(props.conferenceName));
   }, [props.conferenceName, isValidConferenceName]);
 
-
   const stopWaitingAndPoll = (byModalClose?: boolean) => {
     stopPolling();
     if (extraDelayTimerRef.current) {
@@ -121,7 +120,7 @@ function HomeJoona(props: HomeJoonaProps) {
     };
   }, []);
 
-  // ---------- Navigation state ----------
+  //  Navigation state
   useEffect(() => {
     const st = (location.state || {}) as {
       prefillRoomName?: string;
@@ -155,7 +154,6 @@ function HomeJoona(props: HomeJoonaProps) {
     }
   }, [location.state, authenticated, navigate, props.conferenceName, props.setConferenceName]);
 
-  // ---------- Actions UI ----------
   const onCopyLink = () => {
     if (!props.conferenceName || !isValidConferenceName(props.conferenceName)) return;
     const textToCopy = `${window.location.origin}/${props.conferenceName}`;

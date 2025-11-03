@@ -21,7 +21,6 @@ export function useConferencePolling({
     const timerRef = useRef<number | null>(null);
     const cancelledRef = useRef(false);
     const backoffRef = useRef(pollingInterval);
-    const currentRoomRef = useRef<string>('');
 
     const clearTimer = useCallback(() => {
         if (timerRef.current) {
