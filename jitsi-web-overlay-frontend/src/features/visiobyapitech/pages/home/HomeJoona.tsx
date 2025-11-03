@@ -1,6 +1,5 @@
 
 import { generateConferenceName, validateConferenceName } from '../../../../utils/conferenceName';
-
 import { useState, useRef, FormEvent, useEffect, useMemo } from 'react';
 import styles from './HomeJoona.module.css';
 import { Button } from '@apitechfr/react-dsapitech/Button';
@@ -11,11 +10,9 @@ import { Alert } from '@apitechfr/react-dsapitech/Alert';
 import { createModal } from '@apitechfr/react-dsapitech/Modal';
 import { useIsModalOpen } from '@apitechfr/react-dsapitech/Modal/useIsModalOpen';
 import { useAuth } from '../../../../auth/useAuth';
-import CircularProgress from '@mui/material/CircularProgress';
 import { useRuntimeConfig } from '../../../../config/ConfigProvider';
-import { ConferenceService } from '../../../../api/services/conference/conference.service';
-
-
+import { useConferencePolling } from '../../hooks/useConferencePolling';
+import { ConferenceWaitingModal } from './ConferenceWaitingModal';
 
 interface HomeJoonaProps {
   readonly conferenceName: string;
@@ -32,7 +29,6 @@ interface HomeJoonaProps {
 
 const POLLING_INTERVAL = 2000; // 2s
 
-
 function HomeJoona(props: HomeJoonaProps) {
   const cfg = useRuntimeConfig();
   const navigate = useNavigate();
@@ -40,30 +36,34 @@ function HomeJoona(props: HomeJoonaProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isError, setIsError] = useState(false);
   const [isAlertVisible, setIsAlertVisible] = useState(false);
-  // Phase d’attente: 'idle' | 'first-check' | 'waiting'
-  const [phase, setPhase] = useState<'idle' | 'first-check' | 'waiting'>('idle');
   // Timer pour le délai supplémentaire de 2s avant d’ouvrir le modal
   const extraDelayTimerRef = useRef<number | null>(null);
 
+  const isValidConferenceName = (name: string) => validateConferenceName(name);
 
   const { authenticated, login } = useAuth();
-  const API_BASE = cfg.VITE_API_URL;
 
   // pour intercepter toute fermeture de modal
   const stopRef = useRef<null | ((byModalClose?: boolean) => void)>(null);
 
   const originalCloseRef = useRef<() => void>();
 
-  // Polling
-  const timerRef = useRef<number | null>(null);
-  const cancelledRef = useRef(false);
-  const backoffRef = useRef(POLLING_INTERVAL);
-  const [isWaiting, setIsWaiting] = useState(false);
-  const currentRoomRef = useRef<string>('');
-
-
-
-
+  // Polling 
+  const {
+    runFirstCheckThenMaybeWait,
+    stopPolling,
+  } = useConferencePolling({
+    isValidConferenceName,
+    onConferenceStarted: (room) => {
+      if (authenticated) {
+        navigate(`/${room}`, { replace: true });
+      } else {
+        navigate(`/${room}`, { replace: true, state: { allowGuest: true } });
+      }
+    },
+    onWaitingStart: () => setTimeout(() => modal.open(), 0),
+    pollingInterval: POLLING_INTERVAL,
+  });
 
   useEffect(() => {
     if (isAlertVisible) {
@@ -93,136 +93,15 @@ function HomeJoona(props: HomeJoonaProps) {
     return () => { (modal as any).close = originalClose; };
   }, [modal]);
 
-  const isValidConferenceName = (name: string) => validateConferenceName(name);
 
-  // retire l’erreur visuelle dès que le nom devient valide
+  // Met à jour l'état d'erreur dès que le nom change (affiche l'erreur si invalide, la retire si valide)
   useEffect(() => {
-    if (props.conferenceName && isValidConferenceName(props.conferenceName)) setIsError(false);
-  }, [props.conferenceName]);
+    setIsError(!!props.conferenceName && !isValidConferenceName(props.conferenceName));
+  }, [props.conferenceName, isValidConferenceName]);
 
-  // ---------- Helpers ----------
-  /**
-   * Vérifie l'état d'une salle via le backend.
-   * Retourne true si la salle est active, false sinon ou en cas d'erreur.
-   */
-  const getRoomStateFromBackend = async (room: string): Promise<boolean> => {
-    // Utilise ConferenceService pour vérifier l'état de la conférence
-    try {
-      const data = await ConferenceService.state(room);
-      if (data && typeof data === 'object' && typeof data.active === 'boolean') {
-        return data.active;
-      }
-      return false;
-    } catch {
-      return false;
-    }
-  };
-
-  /** Premier check silencieux via backend (2.5s) */
-  const firstCheckRoomStarted = async (room: string): Promise<boolean> => {
-    if (!isValidConferenceName(room)) return false;
-    return await getRoomStateFromBackend(room);
-  };
-
-  const clearTimer = () => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-  };
-
-  const scheduleNext = (room: string) => {
-    if (cancelledRef.current) return;
-    if (!room || !isValidConferenceName(room)) return;
-    backoffRef.current = Math.min(backoffRef.current + 2000, 30000);
-    timerRef.current = window.setTimeout(() => pollRoomUntilStarted(room), backoffRef.current) as unknown as number;
-  };
-
-  /** Un “tick” de polling via backend */
-  const pollRoomUntilStarted = async (room: string) => {
-    if (cancelledRef.current) return;
-    const isActive = await getRoomStateFromBackend(room);
-
-    if (isActive) {
-      // Conf démarrée
-      clearTimer();
-      setIsWaiting(false);
-      try { modal.close(); } catch { }
-      if (authenticated) {
-        navigate(`/${room}`);
-      } else {
-        navigate(`/${room}`, { replace: true, state: { allowGuest: true } });
-      }
-      return;
-    }
-
-    // pas encore démarrée ou backend indispo → replanifie
-    scheduleNext(room);
-  };
-
-
-  // Démarre par un check silencieux, puis (si non lancé) ouvre la modale et lance le poll
-  const runFirstCheckThenMaybeWait = async (room?: string) => {
-    if (phase !== 'idle') return;
-
-    const rn = (room ?? props.conferenceName) || '';
-    if (!isValidConferenceName(rn)) {
-      setIsError(true);
-      setTimeout(() => inputRef.current?.focus(), 0);
-      return;
-    }
-
-    // reset
-    cancelledRef.current = true;
-    clearTimer();
-    setIsWaiting(false);
-    if (extraDelayTimerRef.current) {
-      clearTimeout(extraDelayTimerRef.current);
-      extraDelayTimerRef.current = null;
-    }
-    cancelledRef.current = false;
-
-    // Premier check + overlay
-    setPhase('first-check');
-    const started = await firstCheckRoomStarted(rn);
-
-    if (started) {
-      setPhase('idle');
-      if (authenticated) {
-        navigate(`/${rn}`, { replace: true });
-      } else {
-        navigate(`/${rn}`, { replace: true, state: { allowGuest: true } });
-      }
-      return;
-    }
-
-    // Afficher la modale et lancer le polling immédiatement si la conf n'est pas démarrée
-    setPhase('waiting');
-    startWaitingAndPoll(rn);
-  };
-
-  const startWaitingAndPoll = (room?: string) => {
-    const rn = (room ?? props.conferenceName) || '';
-    if (!isValidConferenceName(rn)) {
-      setIsError(true);
-      setTimeout(() => inputRef.current?.focus(), 0);
-      return;
-    }
-
-    currentRoomRef.current = rn;
-    cancelledRef.current = false;
-    backoffRef.current = POLLING_INTERVAL;
-    setIsWaiting(true);
-    setTimeout(() => modal.open(), 0);
-    clearTimer();
-    pollRoomUntilStarted(rn);
-  };
 
   const stopWaitingAndPoll = (byModalClose?: boolean) => {
-    cancelledRef.current = true;
-    clearTimer();
-    setIsWaiting(false);
-    setPhase('idle');
+    stopPolling();
     if (extraDelayTimerRef.current) {
       clearTimeout(extraDelayTimerRef.current);
       extraDelayTimerRef.current = null;
@@ -235,8 +114,6 @@ function HomeJoona(props: HomeJoonaProps) {
 
   useEffect(() => {
     return () => {
-      cancelledRef.current = true;
-      clearTimer();
       if (extraDelayTimerRef.current) {
         clearTimeout(extraDelayTimerRef.current);
         extraDelayTimerRef.current = null;
@@ -300,7 +177,7 @@ function HomeJoona(props: HomeJoonaProps) {
     }
 
     // invité : premier check via backend, puis éventuel waiting + poll
-    runFirstCheckThenMaybeWait();
+    runFirstCheckThenMaybeWait(props.conferenceName);
   }
 
   const handleGenerateRoomName = () => {
@@ -330,48 +207,14 @@ function HomeJoona(props: HomeJoonaProps) {
         </div>
       )} */}
 
-      <modal.Component
-        title=""
-        concealingBackdrop={false}
-        buttons={[
-          !authenticated && {
-            children: "S'authentifier",
-            priority: 'primary',
-            onClick: () => {
-              stopWaitingAndPoll();
-              login(validateConferenceName(props.conferenceName) ? props.conferenceName : undefined);
-            },
-            doClosesModal: false,
-          },
-          {
-            children: "Annuler l’attente",
-            priority: 'secondary',
-            onClick: () => stopWaitingAndPoll(),
-            doClosesModal: false,
-          },
-        ].filter(Boolean) as any}
-      >
-        <div className={styles.contentModal}>
-          <h1>La conférence n'a pas encore démarré</h1>
-          <p>
-            Si vous disposez d'un compte <b>Visio By Apitech</b> vous pouvez vous authentifier,
-            sinon merci de patienter. Vous serez connecté automatiquement dès le démarrage.
-          </p>
-
-          {/* {!authenticated && (
-            <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
-              <Button
-                onClick={() => {
-                  stopWaitingAndProbe();
-                  login(validateRoomName(props.roomName) ? props.roomName : undefined);
-                }}
-              >
-                S&apos;authentifier
-              </Button>
-            </div>
-          )} */}
-        </div>
-      </modal.Component>
+      <ConferenceWaitingModal
+        modal={modal}
+        authenticated={authenticated}
+        stopWaitingAndPoll={stopWaitingAndPoll}
+        login={login}
+        conferenceName={props.conferenceName}
+        validateConferenceName={validateConferenceName}
+      />
 
       <div className={styles.firstContainer}>
         <div className={styles.homeContent}>
