@@ -20,16 +20,6 @@ services:
       args:
         VITE_API_URL: ${API_URL}
         VITE_APP_TEMPLATE: ${APP_TEMPLATE}
-        VITE_JITSI_DOMAIN: ${JITSI_DOMAIN}
-        VITE_CONFERENCE_NAME_REGEX_MESSAGE: ${CONFERENCE_NAME_REGEX_MESSAGE}
-        VITE_VOXAPI_URL: ${VOXAPI_URL}
-        VITE_CONFERENCE_NAME_REGEX: ${CONFERENCE_NAME_REGEX}
-        VITE_ENABLE_JIBRI_APITECH_API: ${ENABLE_JIBRI_APITECH_API}
-        VITE_JIBRI_APITECH_API_DOMAIN: ${JIBRI_APITECH_API_DOMAIN}
-        VITE_REPLAY_CHECK_TIMEOUT_MS: ${REPLAY_CHECK_TIMEOUT_MS}
-        VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS: ${FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS}
-        VITE_FRONTCONF_ROOMNAMECONSTRAINT_LENGTH: ${FRONTCONF_ROOMNAMECONSTRAINT_LENGTH}
-        VITE_APP_ORGANIZATION: ${APP_ORGANIZATION}
     ports:
       - '${FRONTEND_PORT}:80'
     restart: always
@@ -68,7 +58,7 @@ services:
         /usr/sbin/sshd -D -d -p 22;
     volumes:
       - ./jibri-k8s-record_home:/home/jibri-k8s-record
-      - visioreplay_data:/data
+      - visioreplay_data:/data/visioreplay
 
 volumes:
   visioreplay_data:

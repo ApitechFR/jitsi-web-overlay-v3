@@ -1,8 +1,15 @@
 import axios from 'axios';
+import { getCachedRuntimeConfig } from '../config/runtimeConfig';
+
+
+function getBaseUrl() {
+    const cfg = getCachedRuntimeConfig();
+    return cfg?.VITE_API_URL || '';
+}
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true,
+    baseURL: getBaseUrl(),
+    withCredentials: true,
 });
 
 

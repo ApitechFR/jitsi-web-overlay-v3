@@ -25,7 +25,7 @@ import {
 } from '@nestjs/swagger';
 import { IConferenceService } from '../conference/interfaces/conference-service.interface';
 
-@Controller('authentication')
+@Controller()
 export class AuthenticationController {
 
   constructor(
@@ -55,7 +55,7 @@ export class AuthenticationController {
   /**
     * Return user information from the JWT.
     */
-  @Get('userinfo')
+  @Get('authentication/userinfo')
   @ApiOkResponse({ description: 'Retourne les infos utilisateur du JWT' })
   @ApiUnauthorizedResponse({ description: 'Utilisateur non authentifié' })
   userinfo(@Req() request: Request) {
@@ -77,13 +77,13 @@ export class AuthenticationController {
     }
   }
 
-  @Get('whereami')
+  @Get('authentication/whereami')
   @ApiOkResponse({ description: "retoune 'RIE' ou 'INTERNET' " })
   whereami(@Headers('webconf-user-region') userAgent: string) {
     return userAgent;
   }
 
-  @Get('login_authorize')
+  @Get('authentication/login_authorize')
   @Redirect('', 302)
   @ApiOkResponse({
     description: "retourne l'url de redirection",
@@ -104,7 +104,7 @@ export class AuthenticationController {
 
     return { url: this.authenticationService.loginAuthorize(state, nonce) };
   }
-  @Get('login_callback')
+  @Get('authentication/login_callback')
   @ApiResponse({ status: 302, description: 'Pose les cookies puis redirige vers le front' })
   @ApiUnauthorizedResponse({ description: "state invalide ou absent" })
   @ApiNotFoundResponse({ description: "erreur lors de l’échange code→tokens ou userinfo" })
@@ -181,7 +181,7 @@ export class AuthenticationController {
 
 
 
-  @Get('logout')
+  @Get('authentication/logout')
   @Redirect('', 302)
   @ApiResponse({ status: 302, description: 'redirection vers cerbère' })
   logout(
@@ -200,7 +200,7 @@ export class AuthenticationController {
     return { url: this.authenticationService.logout(state, idToken) };
   }
 
-  @Get('logout_callback')
+  @Get('authentication/logout_callback')
   @ApiOkResponse({ description: "retourne l'url /" })
   @ApiUnauthorizedResponse({
     description:
@@ -225,8 +225,18 @@ export class AuthenticationController {
     return response.redirect(this.configService.get('FRONTEND_LOGOUT_REDIRECT') || '/');
   }
 
+  @Get('/auth/logout')
+  logoutCallbackAlias(
+    @Query() query: LogoutCallbackDTO,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    // Appelle la méthode existante
+    return this.logoutCallback(query, request, response);
+  }
 
-  @Get('refreshToken')
+
+  @Get('authentication/refreshToken')
   @ApiOkResponse({ description: 'retourne { accessToken }' })
   @ApiUnauthorizedResponse({ description: 'veuillez vous authentifier' })
   async refreshToken(

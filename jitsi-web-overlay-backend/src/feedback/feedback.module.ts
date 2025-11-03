@@ -16,6 +16,7 @@ import { FeedbackTemplate } from './entities/feedback_template.entity';
 import { FeedbackType } from './entities/feedback_type.entity';
 import { FeedbackTemplateService } from './services/feedback_template.service';
 import { FeedbackTypeService } from './services/feedback_type.service';
+import { Conference } from '../conference/entities/conference.entity';
 
 @Module({
   imports: [
@@ -23,34 +24,34 @@ import { FeedbackTypeService } from './services/feedback_type.service';
     ConfigModule,
     ...(process.env.DB_TYPE === 'mongodb'
       ? [
-          MongooseModule.forFeature([
-            { name: FeedbackMongo.name, schema: FeedbackSchema },
-          ]),
-        ]
-      : [TypeOrmModule.forFeature([FeedbackEntity, FeedbackTemplate, FeedbackType])]),
+        MongooseModule.forFeature([
+          { name: FeedbackMongo.name, schema: FeedbackSchema },
+        ]),
+      ]
+      : [TypeOrmModule.forFeature([FeedbackEntity, FeedbackTemplate, FeedbackType, Conference])]),
   ],
   controllers: [FeedbackController],
   providers: [
     ...(process.env.DB_TYPE === 'mongodb'
       ? [
-          FeedbackServiceMongo,
-          {
-            provide: IFeedbackService,
-            inject: [FeedbackServiceMongo, ConfigService],
-            useFactory: (mongo: FeedbackServiceMongo) => mongo,
-          },
-        ]
+        FeedbackServiceMongo,
+        {
+          provide: IFeedbackService,
+          inject: [FeedbackServiceMongo, ConfigService],
+          useFactory: (mongo: FeedbackServiceMongo) => mongo,
+        },
+      ]
       : [
-          FeedbackServiceSQL,
-          FeedbackTemplateService,
-          FeedbackTypeService,
-          {
-            provide: IFeedbackService,
-            inject: [FeedbackServiceSQL, ConfigService],
-            useFactory: (sql: FeedbackServiceSQL) => sql,
-          },
-        ]),
+        FeedbackServiceSQL,
+        FeedbackTemplateService,
+        FeedbackTypeService,
+        {
+          provide: IFeedbackService,
+          inject: [FeedbackServiceSQL, ConfigService],
+          useFactory: (sql: FeedbackServiceSQL) => sql,
+        },
+      ]),
   ],
   exports: [IFeedbackService],
 })
-export class FeedbackModule {}
+export class FeedbackModule { }

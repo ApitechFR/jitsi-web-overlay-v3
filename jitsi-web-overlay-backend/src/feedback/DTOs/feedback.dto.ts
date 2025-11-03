@@ -63,9 +63,9 @@ export class CreateFeedbackDto {
   @IsNotEmpty()
   feedbackTemplateId: number;
 
-  @IsUUID()
+  @IsString()
   @IsNotEmpty()
-  conferenceUuid: string;
+  conference_name: string;
 
   @IsDateString()
   @IsNotEmpty()

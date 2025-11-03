@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { validateRoomName } from "./utils/roomName";
+import { validateConferenceName } from "./utils/conferenceName";
 import { RESERVED_SEGMENTS } from "./constant/routes";
 import { useFrTheme } from "@apitechfr/react-dsapitech/dsapitech_hooks"
 
@@ -34,15 +34,17 @@ function hardApplyScheme(scheme: Scheme) {
 export default function RouteThemeController() {
 
     const theme = useFrTheme();
-    
+
     const { pathname } = useLocation();
     const path = pathname.replace(/\/+$/, "") || "/";
 
     const firstSeg = path.split("/")[1] ?? "";
     const isSingleSeg = path === `/${firstSeg}` && firstSeg.length > 0;
-    const isJitsi = isSingleSeg && !RESERVED_SEGMENTS.has(firstSeg) && validateRoomName(firstSeg);
+    const isJitsi = isSingleSeg && !RESERVED_SEGMENTS.has(firstSeg) && validateConferenceName(firstSeg);
 
     useEffect(() => {
+        let scheme = (localStorage.getItem("scheme") as Scheme | null) ?? "system";
+        try { localStorage.setItem("scheme", scheme); } catch { }
         if (isJitsi) {
 
             const saved = (localStorage.getItem(BASELINE_KEY) as Scheme | null);
@@ -58,7 +60,7 @@ export default function RouteThemeController() {
             if (baseline) {
                 hardApplyScheme(baseline);
                 try {
-                        localStorage.removeItem(BASELINE_KEY);
+                    localStorage.removeItem(BASELINE_KEY);
                 } catch { }
             } else {
                 const scheme = localStorage.getItem("scheme") as Scheme;

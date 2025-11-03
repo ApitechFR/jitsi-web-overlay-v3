@@ -4,7 +4,7 @@ import { RoomService } from './room.service';
 import { CreateRoomDTO, UpdateRoomDTO } from './DTOs/room.dto';
 
 @ApiTags('room')
-@Controller('room')
+@Controller('rooms')
 export class RoomController {
 
     constructor(private readonly roomService: RoomService) { }

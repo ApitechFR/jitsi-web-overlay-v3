@@ -1,7 +1,6 @@
-import Home from './pages/home/Home';
-import Layout from './components/layout/Layout';
+import Home from './features/webconf/pages/home/Home';
+import Layout from './features/webconf/components/layout/Layout';
 import { useState, useEffect } from 'react';
-import { logDebug } from './utils/logDebug';
 import {
   Routes,
   Route,
@@ -9,36 +8,41 @@ import {
   Navigate,
   useLocation,
 } from 'react-router-dom';
-import FAQ from './pages/FAQ/FAQ.md';
-import DonneesPerso from './pages/DonneesPerso/DonneesPerso.md';
-import Contact from './pages/Contact/Contact.md';
-import Cgu from './pages/Cgu/Cgu.md';
-import Apropos from './pages/Apropos/Apropos.md';
-import Accessibilite from './pages/Accessibilite/Accessibilite.md';
-import Mentionslegales from './pages/MentionsLegales/MentionsLegales.md';
-import MentionslegalesVisioByApitech from './pages/MentionsLegales/MentionsLegalesVisioByApitech.md';
-import StaticPagesBuilder from './pages/staticPagesBuilder/StaticPagesBuilder';
-import Feedback from './pages/feedback/Feedback';
-import BrowserTest from './pages/browserTest/BrowserTest';
-import api from './axios/axios';
-import LoginCallback from './pages/login/LoginCallback';
-import LogoutCallback from './pages/login/LogoutCallback';
-import Error from './pages/Error/Error';
+import FAQ from './features/webconf/pages/FAQ/FAQ.md';
+import DonneesPerso from './features/webconf/pages/DonneesPerso/DonneesPerso.md';
+import Contact from './features/webconf/pages/Contact/Contact.md';
+import Cgu from './features/webconf/pages/Cgu/Cgu.md';
+import Apropos from './features/webconf/pages/Apropos/Apropos.md';
+import Accessibilite from './features/webconf/pages/Accessibilite/Accessibilite.md';
+import Mentionslegales from './features/webconf/pages/MentionsLegales/MentionsLegales.md';
+import MentionslegalesVisioByApitech from './features/visiobyapitech/pages/staticPagesBuilder/MentionsLegales.md';
+import StaticPagesBuilder from './features/webconf/pages/staticPagesBuilder/StaticPagesBuilder';
+import Feedback from "./features/webconf/pages/feedback/Feedback";
+import BrowserTest from './features/webconf/pages/browserTest/BrowserTest';
+import LoginCallback from './features/webconf/pages/login/LoginCallback';
+import LogoutCallback from './features/webconf/pages/login/LogoutCallback';
+import Error from './features/webconf/pages/Error/Error';
 import MuiDsfrThemeProvider from '@codegouvfr/react-dsfr/mui';
-import PlanDuSite from './pages/PlanDuSite/PlanDuSite';
-import Profile from './pages/joona/Profile/Profile';
-import Dashboard from './pages/joona/Dashboard/Dashboard';
-import LayoutJoona from './components/joona/layout/LayoutJoona';
-import HomeJoona from './pages/joona/home/HomeJoona';
-import JitsiMeet from './pages/joona/jitsi_meet/jitsi_meet';
-import Admin from './pages/joona/Admin/Admin';
-import FeedbackJoona from './pages/joona/Feedback/FeedbackJoona';
-import ReplayList from './pages/joona/replayList/ReplayList';
-import ReplayListGrouped from './pages/joona/replayList/ReplayListGrouped';
+import PlanDuSite from './features/webconf/pages/PlanDuSite/PlanDuSite';
+import Profile from './features/visiobyapitech/pages/Profile/Profile';
+import Dashboard from './features/visiobyapitech/pages/Dashboard/Dashboard';
+import LayoutJoona from './features/visiobyapitech/components/layout/LayoutJoona';
+import HomeJoona from './features/visiobyapitech/pages/home/HomeJoona';
+import JitsiMeet from './features/visiobyapitech/pages/jitsi_meet/jitsi_meet';
+import Admin from './features/visiobyapitech/pages/Admin/Admin';
+import FeedbackJoona from './features/visiobyapitech/pages/Feedback/FeedbackJoona';
+import ReplayList from './features/visiobyapitech/pages/replayList/ReplayList';
+import ReplayListGrouped from './features/visiobyapitech/pages/replayList/ReplayListGrouped';
 import PrivateRoute from './auth/PrivateRoute';
 import AdminRoute from './auth/AdminRoute';
 import { useAuth } from './auth/useAuth';
 import RouteThemeController from './RouteThemeController';
+import api from './axios/axios';
+
+
+
+/* === AJOUTS pour config runtime === */
+import { ConfigProvider, useRuntimeConfig } from './config/ConfigProvider';
 
 type errorObj = {
   message: string;
@@ -48,11 +52,8 @@ type errorObj = {
   };
 };
 
-interface JwtPayload {
-  exp: number;
-}
 
-function App() {
+function AppInner() {
   const [roomName, setRoomName] = useState('');
   const [jwt, setJwt] = useState<string | undefined>(undefined);
   const [error, setError] = useState<errorObj>({
@@ -66,12 +67,15 @@ function App() {
   const [participantsNumber, setparticipantsNumber] = useState(0);
 
   const location = useLocation();
-  const AppTemplate = import.meta.env.VITE_APP_TEMPLATE || 'joona';
   const { authenticated } = useAuth();
 
-  const sendEmail = (roomName: string) => {
+  /* === LIT LA CONFIG RUNTIME AU LIEU DE import.meta.env === */
+  const cfg = useRuntimeConfig();
+  const AppTemplate = (cfg.VITE_APP_TEMPLATE as string) || 'joona';
+
+  const sendEmail = (room: string) => {
     api
-      .post('conference/create/byemail', { roomName, email })
+      .post('conference/create/byemail', { roomName: room, email })
       .then(res => {
         if (res.data.error) {
           setError({
@@ -117,7 +121,7 @@ function App() {
           });
         });
     }
-  }, []);
+  }, [AppTemplate]);
 
   const joinConference = () => {
     api
@@ -168,7 +172,7 @@ function App() {
         {AppTemplate === 'joona' && (
           <>
             <Route
-              path=":roomName"
+              path=":conferenceName"
               element={
                 <PrivateRoute>
                   <JitsiMeet />
@@ -180,17 +184,19 @@ function App() {
               path="/login_callback"
               element={<LoginCallback />}
             />
+            <Route path="/auth/logout" element={<LogoutCallback />} />
             <Route
               path="/login/callback"
               element={<LoginCallback />}
             />
+            <Route path="/auth/callback" element={<LoginCallback />} />
             <Route path="/" element={<LayoutJoona />}>
               <Route
                 index
                 element={
                   <HomeJoona
-                    roomName={roomName}
-                    setRoomName={setRoomName}
+                    conferenceName={roomName}
+                    setConferenceName={setRoomName}
                     setIsWhitelisted={setIsWhitelisted}
                     isWhitelisted={isWhitelisted}
                     email={email}
@@ -210,6 +216,16 @@ function App() {
                   </PrivateRoute>
                 }
               />
+              <Route path="visioreplay/:conference_uid" element={<ReplayList />} />
+
+              <Route
+                path="replays"
+                element={
+                  <AdminRoute>
+                    <ReplayListGrouped />
+                  </AdminRoute>
+                }
+              />
               <Route
                 path="dashboard"
                 element={
@@ -218,8 +234,7 @@ function App() {
                   </AdminRoute>
                 }
               />
-              <Route path="visioreplay/:conference_uid" element={<ReplayList />} />
-              <Route path="replays" element={<AdminRoute><ReplayListGrouped /></AdminRoute>} />
+
               <Route
                 path="admin"
                 element={
@@ -280,8 +295,8 @@ function App() {
                 element={
                   <Navigate
                     to={
-                      import.meta.env.VITE_API_URL?.startsWith('/')
-                        ? import.meta.env.VITE_API_URL
+                      cfg.VITE_API_URL?.startsWith('/')
+                        ? cfg.VITE_API_URL
                         : '/'
                     }
                     replace
@@ -349,5 +364,10 @@ function App() {
     </MuiDsfrThemeProvider>
   );
 }
-
-export default App;
+export default function App() {
+  return (
+    <ConfigProvider>
+      <AppInner />
+    </ConfigProvider>
+  );
+}

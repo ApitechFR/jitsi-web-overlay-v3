@@ -9,7 +9,7 @@ export default function PrivateRoute({ children }: { children: ReactNode }) {
 
   if (status === 'unknown') {
     return (
-      <div>
+      <div style={{ display: 'grid', placeItems: 'center', minHeight: '50vh' }}>
         <CircularProgress style={{ height: '150px', width: '150px' }} />
       </div>
     );
