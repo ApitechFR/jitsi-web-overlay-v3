@@ -39,15 +39,12 @@ function HomeJoona(props: HomeJoonaProps) {
   // Timer pour le délai supplémentaire de 2s avant d’ouvrir le modal
   const extraDelayTimerRef = useRef<number | null>(null);
 
-  const { authenticated, login } = useAuth();
+  const { authenticated, login, status } = useAuth();
+  const authReady = status !== 'unknown';
+
 
   // Redirection immédiate si connecté et conferenceName présent
-  useEffect(() => {
-    if (authenticated && props.conferenceName && isValidConferenceName(props.conferenceName)) {
-      navigate(`/${props.conferenceName}`, { replace: true });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authenticated, props.conferenceName]);
+
 
   // pour intercepter toute fermeture de modal
   const stopRef = useRef<null | ((byModalClose?: boolean) => void)>(null);
@@ -254,13 +251,11 @@ function HomeJoona(props: HomeJoonaProps) {
     };
   }, []);
 
-  // ---------- Navigation state ----------
+
   useEffect(() => {
-    const st = (location.state || {}) as {
-      prefillconferenceName?: string;
-      waitForRoom?: string;
-      openAuthModal?: boolean;
-    };
+    if (!authReady) return; // ← bloque tant que l’auth n’est pas fixée
+    const st = (location.state || {}) as { prefillconferenceName?: string; waitForRoom?: string; openAuthModal?: boolean };
+
 
     if (st.prefillconferenceName) {
       const nm = st.prefillconferenceName.trim();
@@ -271,22 +266,63 @@ function HomeJoona(props: HomeJoonaProps) {
       return;
     }
 
-    if (st.waitForRoom) {
-      const target = st.waitForRoom;
-      if (props.conferenceName !== target) props.setconferenceName(target);
-      runFirstCheckThenMaybeWait(target);
+    // Si on arrive avec une room et qu'on EST authentifié → aller direct dans la conf
+    if (authenticated && st.waitForRoom) {
+      navigate(`/${st.waitForRoom}`, { replace: true });
+      return;
+    }
+
+    // Invité: ne lance l'attente que si on veut vraiment ce comportement auto
+    if (!authenticated && st.waitForRoom) {
+      runFirstCheckThenMaybeWait(st.waitForRoom);
       navigate('.', { replace: true, state: {} });
       return;
     }
 
-    if (st.openAuthModal && !authenticated) {
+    if (!authenticated && st.openAuthModal) {
       const target = st.waitForRoom ?? props.conferenceName;
       if (target && target !== props.conferenceName) props.setconferenceName(target);
       runFirstCheckThenMaybeWait(target);
       navigate('.', { replace: true, state: {} });
       return;
     }
-  }, [location.state, authenticated, navigate, props.conferenceName, props.setconferenceName]);
+  }, [status, authenticated, location.state, navigate, props.conferenceName, props.setconferenceName]);
+  // ---------- Navigation state ----------
+  // useEffect(() => {
+
+
+  //   const st = (location.state || {}) as {
+  //     prefillconferenceName?: string;
+  //     waitForRoom?: string;
+  //     openAuthModal?: boolean;
+  //   };
+
+
+  //   if (st.prefillconferenceName) {
+  //     const nm = st.prefillconferenceName.trim();
+  //     props.setconferenceName(nm);
+  //     setIsError(!validateConferenceName(nm));
+  //     setTimeout(() => inputRef.current?.focus(), 0);
+  //     navigate('.', { replace: true, state: {} });
+  //     return;
+  //   }
+
+  //   if (st.waitForRoom) {
+  //     const target = st.waitForRoom;
+  //     if (props.conferenceName !== target) props.setconferenceName(target);
+  //     runFirstCheckThenMaybeWait(target);
+  //     navigate('.', { replace: true, state: {} });
+  //     return;
+  //   }
+
+  //   if (st.openAuthModal && !authenticated) {
+  //     const target = st.waitForRoom ?? props.conferenceName;
+  //     if (target && target !== props.conferenceName) props.setconferenceName(target);
+  //     runFirstCheckThenMaybeWait(target);
+  //     navigate('.', { replace: true, state: {} });
+  //     return;
+  //   }
+  // }, [location.state, authenticated, navigate, props.conferenceName, props.setconferenceName]);
 
   // ---------- Actions UI ----------
   const onCopyLink = () => {
