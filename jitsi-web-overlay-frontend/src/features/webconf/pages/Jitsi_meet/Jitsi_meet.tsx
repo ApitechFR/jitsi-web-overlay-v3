@@ -1,4 +1,4 @@
-import { validateconferenceName } from '../../../../utils/conferenceName';
+import { validateconferenceName } from '../../utils/conferenceName';
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useEffect } from 'react';
