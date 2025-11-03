@@ -3,7 +3,6 @@ import styles from './HeaderJoona.module.css';
 import { useState } from 'react';
 import { useAuth } from '../../../../auth/useAuth';
 import docUtilisateur from '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf';
-import visioLogo from '/assets/visiobyapitech-creme.png'
 
 import { Header } from '@apitechfr/react-dsapitech/Header';
 import { createModal } from '@apitechfr/react-dsapitech/Modal';
@@ -13,6 +12,7 @@ import { isUserAdmin } from '../../../../utils/user';
 import dataChangelog from '../../../../utils/changelogs/infos.json'
 import { Item } from '../../../../utils/changelogs/Item'
 import ChangelogContent from '../iframePopup/ChangelogContent';
+import { useRuntimeConfig } from '../../../../config/ConfigProvider';
 
 const modal = createModal({
   id: 'foo-modal',
@@ -20,6 +20,13 @@ const modal = createModal({
 });
 
 export default function HeaderJoona() {
+  const cfg = useRuntimeConfig();
+  const VisioLogo = (cfg.VITE_APP_LIGHTVISIOLOGOHEADER as string) || '/assets/visiobyapitech-creme.png';
+  const DarkVisioLogo = (cfg.VITE_APP_DARKVISIOLOGOHEADER as string) || '/assets/visiobyapitech-creme.png';
+  const HeaderServiceTitle = (cfg.VITE_APP_HEADERSERVICETITLE as string) || '';
+  const HeaderServiceTagline = (cfg.VITE_APP_HEADERSERVICETAGLINE as string) || '';
+
+
   const [modalContent, setModalContent] = useState<string | null>(
     dataChangelog.submenu.items.length > 0
       ? dataChangelog.submenu.items[0].id
@@ -56,9 +63,9 @@ export default function HeaderJoona() {
         ...(isUserAdmin(user)
           ? [
 
-            { linkProps: { href: '/admin', target: '_self' }, text: 'Administration' },
+            //{ linkProps: { href: '/admin', target: '_self' }, text: 'Administration' },
             { linkProps: { href: '/replays', target: '_self' }, text: 'Conférences' },
-            { linkProps: { href: '/dashboard', target: '_self' }, text: 'Dashboard' },
+            //{ linkProps: { href: '/dashboard', target: '_self' }, text: 'Dashboard' },
           ]
           : []),
       ]
@@ -105,10 +112,10 @@ export default function HeaderJoona() {
     <>
       <div className={styles.parent}>
         <Header
-          mainLogoURL={visioLogo}
-          mainLogoURLDark={visioLogo}
-          serviceTitle="Visio"
-          serviceTagline="by Apitech"
+          mainLogoURL={VisioLogo}
+          mainLogoURLDark={DarkVisioLogo}
+          serviceTitle={HeaderServiceTitle}
+          serviceTagline={HeaderServiceTagline}
           brandTop={
             <>
               INTITULE
