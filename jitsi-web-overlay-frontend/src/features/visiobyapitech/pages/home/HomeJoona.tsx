@@ -1,4 +1,6 @@
+
 import { generateConferenceName, validateConferenceName } from '../../../../utils/conferenceName';
+
 import { useState, useRef, FormEvent, useEffect, useMemo } from 'react';
 import styles from './HomeJoona.module.css';
 import { Button } from '@apitechfr/react-dsapitech/Button';
@@ -13,9 +15,10 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useRuntimeConfig } from '../../../../config/ConfigProvider';
 
 
+
 interface HomeJoonaProps {
   readonly conferenceName: string;
-  readonly setconferenceName: (conferenceName: string) => void;
+  readonly setConferenceName: (conferenceName: string) => void;
   readonly setIsWhitelisted: (value: boolean | null) => void;
   readonly isWhitelisted: boolean | null;
   readonly email: string;
@@ -28,7 +31,9 @@ interface HomeJoonaProps {
 
 const POLLING_INTERVAL = 2000; // 2s
 
+
 function HomeJoona(props: HomeJoonaProps) {
+  const cfg = useRuntimeConfig();
   const navigate = useNavigate();
   const location = useLocation();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -39,12 +44,9 @@ function HomeJoona(props: HomeJoonaProps) {
   // Timer pour le délai supplémentaire de 2s avant d’ouvrir le modal
   const extraDelayTimerRef = useRef<number | null>(null);
 
-  const { authenticated, login, status } = useAuth();
-  const authReady = status !== 'unknown';
 
-
-  // Redirection immédiate si connecté et conferenceName présent
-
+  const { authenticated, login } = useAuth();
+  const API_BASE = cfg.VITE_API_URL;
 
   // pour intercepter toute fermeture de modal
   const stopRef = useRef<null | ((byModalClose?: boolean) => void)>(null);
@@ -58,7 +60,7 @@ function HomeJoona(props: HomeJoonaProps) {
   const [isWaiting, setIsWaiting] = useState(false);
   const currentRoomRef = useRef<string>('');
 
-  const cfg = useRuntimeConfig();
+
 
 
 
@@ -106,11 +108,8 @@ function HomeJoona(props: HomeJoonaProps) {
     const controller = new AbortController();
     const t = window.setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const apiBase = cfg.VITE_API_URL ?? '/api';
-      //console.info('API Base URL for room state check:', apiBase);
-      const url = `${apiBase}/conferences/${encodeURIComponent(room)}/state`;
-      //const res = await fetch(url, { signal: controller.signal, credentials: 'include' });
-      const res = await fetch(url, { signal: controller.signal });
+      const url = `${API_BASE}/conferences/${encodeURIComponent(room)}/state`;
+      const res = await fetch(url, { signal: controller.signal, credentials: 'include' });
       if (!res.ok) return false;
       const data = await res.json().catch(() => null);
       if (data && typeof data === 'object' && typeof data.active === 'boolean') {
@@ -168,7 +167,6 @@ function HomeJoona(props: HomeJoonaProps) {
 
   // Démarre par un check silencieux, puis (si non lancé) ouvre la modale et lance le poll
   const runFirstCheckThenMaybeWait = async (room?: string) => {
-    if (authenticated) return;
     if (phase !== 'idle') return;
 
     const rn = (room ?? props.conferenceName) || '';
@@ -208,7 +206,6 @@ function HomeJoona(props: HomeJoonaProps) {
   };
 
   const startWaitingAndPoll = (room?: string) => {
-    if (authenticated) return;
     const rn = (room ?? props.conferenceName) || '';
     if (!isValidConferenceName(rn)) {
       setIsError(true);
@@ -251,78 +248,39 @@ function HomeJoona(props: HomeJoonaProps) {
     };
   }, []);
 
-
+  // ---------- Navigation state ----------
   useEffect(() => {
-    if (!authReady) return; // ← bloque tant que l’auth n’est pas fixée
-    const st = (location.state || {}) as { prefillconferenceName?: string; waitForRoom?: string; openAuthModal?: boolean };
+    const st = (location.state || {}) as {
+      prefillRoomName?: string;
+      waitForRoom?: string;
+      openAuthModal?: boolean;
+    };
 
-
-    if (st.prefillconferenceName) {
-      const nm = st.prefillconferenceName.trim();
-      props.setconferenceName(nm);
+    if (st.prefillRoomName) {
+      const nm = st.prefillRoomName.trim();
+      props.setConferenceName(nm);
       setIsError(!validateConferenceName(nm));
       setTimeout(() => inputRef.current?.focus(), 0);
       navigate('.', { replace: true, state: {} });
       return;
     }
 
-    // Si on arrive avec une room et qu'on EST authentifié → aller direct dans la conf
-    if (authenticated && st.waitForRoom) {
-      navigate(`/${st.waitForRoom}`, { replace: true });
-      return;
-    }
-
-    // Invité: ne lance l'attente que si on veut vraiment ce comportement auto
-    if (!authenticated && st.waitForRoom) {
-      runFirstCheckThenMaybeWait(st.waitForRoom);
-      navigate('.', { replace: true, state: {} });
-      return;
-    }
-
-    if (!authenticated && st.openAuthModal) {
-      const target = st.waitForRoom ?? props.conferenceName;
-      if (target && target !== props.conferenceName) props.setconferenceName(target);
+    if (st.waitForRoom) {
+      const target = st.waitForRoom;
+      if (props.conferenceName !== target) props.setConferenceName(target);
       runFirstCheckThenMaybeWait(target);
       navigate('.', { replace: true, state: {} });
       return;
     }
-  }, [status, authenticated, location.state, navigate, props.conferenceName, props.setconferenceName]);
-  // ---------- Navigation state ----------
-  // useEffect(() => {
 
-
-  //   const st = (location.state || {}) as {
-  //     prefillconferenceName?: string;
-  //     waitForRoom?: string;
-  //     openAuthModal?: boolean;
-  //   };
-
-
-  //   if (st.prefillconferenceName) {
-  //     const nm = st.prefillconferenceName.trim();
-  //     props.setconferenceName(nm);
-  //     setIsError(!validateConferenceName(nm));
-  //     setTimeout(() => inputRef.current?.focus(), 0);
-  //     navigate('.', { replace: true, state: {} });
-  //     return;
-  //   }
-
-  //   if (st.waitForRoom) {
-  //     const target = st.waitForRoom;
-  //     if (props.conferenceName !== target) props.setconferenceName(target);
-  //     runFirstCheckThenMaybeWait(target);
-  //     navigate('.', { replace: true, state: {} });
-  //     return;
-  //   }
-
-  //   if (st.openAuthModal && !authenticated) {
-  //     const target = st.waitForRoom ?? props.conferenceName;
-  //     if (target && target !== props.conferenceName) props.setconferenceName(target);
-  //     runFirstCheckThenMaybeWait(target);
-  //     navigate('.', { replace: true, state: {} });
-  //     return;
-  //   }
-  // }, [location.state, authenticated, navigate, props.conferenceName, props.setconferenceName]);
+    if (st.openAuthModal && !authenticated) {
+      const target = st.waitForRoom ?? props.conferenceName;
+      if (target && target !== props.conferenceName) props.setConferenceName(target);
+      runFirstCheckThenMaybeWait(target);
+      navigate('.', { replace: true, state: {} });
+      return;
+    }
+  }, [location.state, authenticated, navigate, props.conferenceName, props.setConferenceName]);
 
   // ---------- Actions UI ----------
   const onCopyLink = () => {
@@ -349,8 +307,8 @@ function HomeJoona(props: HomeJoonaProps) {
     runFirstCheckThenMaybeWait();
   }
 
-  const handleGenerateconferenceName = () => {
-    props.setconferenceName(generateConferenceName());
+  const handleGenerateRoomName = () => {
+    props.setConferenceName(generateConferenceName());
   };
 
   return (
@@ -409,7 +367,7 @@ function HomeJoona(props: HomeJoonaProps) {
               <Button
                 onClick={() => {
                   stopWaitingAndProbe();
-                  login(validateconferenceName(props.conferenceName) ? props.conferenceName : undefined);
+                  login(validateRoomName(props.roomName) ? props.roomName : undefined);
                 }}
               >
                 S&apos;authentifier
@@ -425,7 +383,7 @@ function HomeJoona(props: HomeJoonaProps) {
           <div className={styles.inputsRoom}>
             <div className={styles.joinPart}>
               <Input
-                label="Nom de la conférence"
+                label=""
                 id="conferenceName"
                 state={isError ? 'error' : 'default'}
                 nativeInputProps={{
@@ -433,7 +391,7 @@ function HomeJoona(props: HomeJoonaProps) {
                   value: props.conferenceName,
                   onChange: e => {
                     const value = e.currentTarget.value;
-                    props.setconferenceName(value);
+                    props.setConferenceName(value);
                     setIsError(!isValidConferenceName(value));
                   },
                   ref: inputRef,
@@ -443,7 +401,7 @@ function HomeJoona(props: HomeJoonaProps) {
                 }
                 style={{ width: '100%' }}
                 addon={
-                  <Button className={styles.plusButton} onClick={handleGenerateconferenceName} type="button">
+                  <Button className={styles.plusButton} onClick={handleGenerateRoomName} type="button">
                     <ShuffleIcon />
                   </Button>
                 }

@@ -196,7 +196,7 @@ function AppInner() {
                 element={
                   <HomeJoona
                     conferenceName={roomName}
-                    setconferenceName={setRoomName}
+                    setConferenceName={setRoomName}
                     setIsWhitelisted={setIsWhitelisted}
                     isWhitelisted={isWhitelisted}
                     email={email}
