@@ -23,4 +23,9 @@ export class AppController {
       VITE_APP_ORGANIZATION: process.env.APP_ORGANIZATION,
     };
   }
+
+  @Get('/health')
+  getHealth() {
+    return { status: 'ok' };
+  }
 }

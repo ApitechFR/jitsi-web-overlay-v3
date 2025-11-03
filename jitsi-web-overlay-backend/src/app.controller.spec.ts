@@ -18,5 +18,8 @@ describe('AppController', () => {
     it('should return "Hello World!"', () => {
       expect(appController).toBeDefined();
     });
+    it('should return health status', () => {
+      expect(appController.getHealth()).toEqual({ status: 'ok' });
+    });
   });
 });
