@@ -2,6 +2,7 @@ import * as dotenv from 'dotenv';
 dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 
 import { NestFactory } from '@nestjs/core';
+import { Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { useContainer } from 'class-validator';
 import * as cookieParser from 'cookie-parser';
@@ -57,7 +58,9 @@ async function bootstrap() {
     transform: true,
   }));
 
-  await app.listen(process.env.BACKEND_PORT || 3030);
+  const port = process.env.BACKEND_PORT || 3030;
+  await app.listen(port);
+  Logger.log(`Serveur démarré sur le port ${port}`, 'Bootstrap');
 }
 
 bootstrap();
