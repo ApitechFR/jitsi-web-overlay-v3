@@ -13,6 +13,7 @@ import { useIsModalOpen } from '@apitechfr/react-dsapitech/Modal/useIsModalOpen'
 import { useAuth } from '../../../../auth/useAuth';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useRuntimeConfig } from '../../../../config/ConfigProvider';
+import { ConferenceService } from '../../../../api/services/conference/conference.service';
 
 
 
@@ -104,29 +105,23 @@ function HomeJoona(props: HomeJoonaProps) {
    * Vérifie l'état d'une salle via le backend.
    * Retourne true si la salle est active, false sinon ou en cas d'erreur.
    */
-  const getRoomStateFromBackend = async (room: string, timeoutMs = 2500): Promise<boolean> => {
-    const controller = new AbortController();
-    const t = window.setTimeout(() => controller.abort(), timeoutMs);
+  const getRoomStateFromBackend = async (room: string): Promise<boolean> => {
+    // Utilise ConferenceService pour vérifier l'état de la conférence
     try {
-      const url = `${API_BASE}/conferences/${encodeURIComponent(room)}/state`;
-      const res = await fetch(url, { signal: controller.signal, credentials: 'include' });
-      if (!res.ok) return false;
-      const data = await res.json().catch(() => null);
+      const data = await ConferenceService.state(room);
       if (data && typeof data === 'object' && typeof data.active === 'boolean') {
         return data.active;
       }
       return false;
     } catch {
       return false;
-    } finally {
-      clearTimeout(t);
     }
   };
 
   /** Premier check silencieux via backend (2.5s) */
   const firstCheckRoomStarted = async (room: string): Promise<boolean> => {
     if (!isValidConferenceName(room)) return false;
-    return await getRoomStateFromBackend(room, 2500);
+    return await getRoomStateFromBackend(room);
   };
 
   const clearTimer = () => {
@@ -146,7 +141,7 @@ function HomeJoona(props: HomeJoonaProps) {
   /** Un “tick” de polling via backend */
   const pollRoomUntilStarted = async (room: string) => {
     if (cancelledRef.current) return;
-    const isActive = await getRoomStateFromBackend(room, 4000);
+    const isActive = await getRoomStateFromBackend(room);
 
     if (isActive) {
       // Conf démarrée
@@ -164,6 +159,7 @@ function HomeJoona(props: HomeJoonaProps) {
     // pas encore démarrée ou backend indispo → replanifie
     scheduleNext(room);
   };
+
 
   // Démarre par un check silencieux, puis (si non lancé) ouvre la modale et lance le poll
   const runFirstCheckThenMaybeWait = async (room?: string) => {
