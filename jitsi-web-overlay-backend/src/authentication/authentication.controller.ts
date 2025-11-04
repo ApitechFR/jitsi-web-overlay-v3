@@ -141,7 +141,8 @@ export class AuthenticationController {
     const { userinfo, idToken } =
       await this.authenticationService.loginCallback(code, state, sendedState);
 
-
+    // Enregistre ou met à jour l'utilisateur OIDC dans la base
+    await this.authenticationService.upsertOidcUser(userinfo);
 
     const userInfos = this.authenticationService.extractUserInfos(userinfo);
 
@@ -153,17 +154,13 @@ export class AuthenticationController {
       ...userInfos,
     };
 
-
     const accessToken = this.authenticationService.generateAccessToken(baseClaims);
     const refreshToken = this.authenticationService.generateRefreshToken({
       ...baseClaims,
       idToken,
     });
 
-
     // Pose les cookies de session
-    // this.authenticationService.setAuthCookie(response, 'refreshToken', refreshToken);
-    // this.authenticationService.setAuthCookie(response, 'accessToken', accessToken);
     this.authenticationService.setAuthCookie(response, 'accessToken', accessToken, {
       maxAge: 2 * 60 * 60 * 1000, // 2h
     });
