@@ -43,9 +43,12 @@ export class User {
   @Column({ name: 'avatar_url', nullable: true })
   avatarUrl?: string | null;
 
-  // Rôle principal (ex: 'admin', 'user', etc.)
   @Column({ name: 'role', type: 'varchar', length: 64, nullable: true })
   role?: string | null;
+
+  // Indique si l'utilisateur est administrateur
+  @Column({ name: 'admin', type: 'boolean', default: false })
+  admin!: boolean;
 
   @Column({ type: 'enum', enum: AuthProvider, default: AuthProvider.OIDC })
   provider!: AuthProvider;
