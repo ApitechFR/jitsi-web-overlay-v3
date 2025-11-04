@@ -39,8 +39,13 @@ export class User {
   @Column({ name: 'phone', length: 32, nullable: true })
   phone?: string | null;
 
+
   @Column({ name: 'avatar_url', nullable: true })
   avatarUrl?: string | null;
+
+  // Rôle principal (ex: 'admin', 'user', etc.)
+  @Column({ name: 'role', type: 'varchar', length: 64, nullable: true })
+  role?: string | null;
 
   @Column({ type: 'enum', enum: AuthProvider, default: AuthProvider.OIDC })
   provider!: AuthProvider;
