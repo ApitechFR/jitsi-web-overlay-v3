@@ -7,46 +7,61 @@ import {
   OneToMany,
   JoinColumn,
   ManyToOne,
+  ManyToMany,
+  Index,
 } from 'typeorm';
 import { Participant } from '../../participant/entities/participant.entity';
 import { Replay } from '../../replay/entities/replay.entity';
 import { Room } from '../../room/entities/room.entity';
+import { User } from 'src/users/entities/users.entity';
+import { ConferenceStatus } from '../enum/conference_status.enum';
 
 @Entity('conferences')
+@Index('ix_conferences_uid', ['uid'], { unique: true })
+@Index('ix_conferences_status', ['status'])
+@Index('ix_conferences_start', ['startAt'])
 export class Conference {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column()
-  name: string;
-
-  @Column({ type: 'timestamp' })
-  start_time: Date;
-
-  @Column({ type: 'timestamp', nullable: true })
-  end_time: Date | null;
 
   @Column({ unique: true })
   uid: string;
 
   @Column()
-  status: string;
+  name: string;
 
-  @UpdateDateColumn()
-  updated_at: Date;
+  @Column({ name: 'start_time', type: 'timestamp' })
+  startAt!: Date;
 
-  @CreateDateColumn()
-  created_at: Date;
+  @Column({ name: 'end_time', type: 'timestamp', nullable: true })
+  endAt!: Date | null;
+
+  // Statut métier
+  @Column({ type: 'enum', enum: ConferenceStatus, default: ConferenceStatus.DRAFT })
+  status!: ConferenceStatus;
 
   @OneToMany(() => Participant, (participant) => participant.conference, {
     cascade: true,
   })
-  participants: Participant[];
+  participants!: Participant[];
+
 
   @OneToMany(() => Replay, (replay) => replay.conference, { cascade: true })
-  replays: Replay[];
+  replays!: Replay[];
+
 
   @JoinColumn({ name: 'room_uid', referencedColumnName: 'uid' })
-  @ManyToOne(() => Room, (room) => room.conferences)
-  room: Room;
+  @ManyToOne(() => Room, (room) => room.conferences, { nullable: false })
+  room!: Room;
+
+  // Organisateurs ou createurs de la conférence
+  @ManyToMany(() => User, u => u.organizedConferences, { cascade: false })
+  organizers!: User[];
+
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
+  createdAt!: Date;
+
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
+  updatedAt!: Date;
+
 }
