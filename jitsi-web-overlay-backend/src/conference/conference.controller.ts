@@ -29,7 +29,7 @@ import { ByEmailDTO } from './DTOs/byEmail.dto';
 import { JwtDTO } from './DTOs/jwt.dto';
 import { RoomNameDto } from './DTOs/room-name.dto';
 import { ConferenceFilter } from './enum/conference_filter.enum';
-import { ParseConferenceFilterPipe } from '../../utils/ParseConferenceFilterPipe';
+import { ParseConferenceFilterPipe } from './utils/ParseConferenceFilterPipe';
 import { ProsodyRuntimeService } from '../prosody/prosody-runtime.service';
 import { JwtAuthGuard } from '../authentication/jwt-auth.guard';
 

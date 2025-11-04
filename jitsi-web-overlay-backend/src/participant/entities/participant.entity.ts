@@ -3,7 +3,7 @@ import {
   CreateDateColumn, UpdateDateColumn, JoinColumn, Index
 } from 'typeorm';
 import { Conference } from '../../conference/entities/conference.entity';
-import { User } from 'src/users/entities/users.entity';
+import { User } from '../../users/entities/users.entity';
 import { ParticipantSession } from './participant-session.entity';
 import { InviteMethod, ParticipantRole, ParticipantStatus } from '../participant.enums';
 
