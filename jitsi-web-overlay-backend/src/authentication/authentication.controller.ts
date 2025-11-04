@@ -11,6 +11,7 @@ import {
   UnauthorizedException,
   Inject,
 } from '@nestjs/common';
+import { UsersService } from '../users/users.service';
 import { Request, Response } from 'express';
 import * as crypto from 'crypto';
 
@@ -34,6 +35,7 @@ export class AuthenticationController {
     private readonly conferenceService: IConferenceService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly usersService: UsersService,
   ) { }
 
   private getFrontBaseUrl(): string {
@@ -56,9 +58,9 @@ export class AuthenticationController {
     * Return user information from the JWT.
     */
   @Get('authentication/userinfo')
-  @ApiOkResponse({ description: 'Retourne les infos utilisateur du JWT' })
+  @ApiOkResponse({ description: 'Retourne les infos utilisateur du JWT + synchronisées avec la base' })
   @ApiUnauthorizedResponse({ description: 'Utilisateur non authentifié' })
-  userinfo(@Req() request: Request) {
+  async userinfo(@Req() request: Request) {
     const accessToken = request.signedCookies?.accessToken;
     if (!accessToken) {
       throw new UnauthorizedException('Utilisateur non authentifié');
@@ -70,6 +72,18 @@ export class AuthenticationController {
       });
       if (!decoded) {
         throw new UnauthorizedException('JWT invalide');
+      }
+      // Synchronise avec la base si possible (par email)
+      if (decoded.email) {
+        const user = await this.usersService.findByEmail(decoded.email);
+        if (user) {
+          // On renvoie les infos du JWT + admin et role de la base
+          return {
+            ...decoded,
+            admin: user.admin,
+            role: user.role,
+          };
+        }
       }
       return decoded;
     } catch {
