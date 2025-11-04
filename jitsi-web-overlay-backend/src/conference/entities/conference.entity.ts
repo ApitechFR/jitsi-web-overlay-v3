@@ -13,13 +13,13 @@ import {
 import { Participant } from '../../participant/entities/participant.entity';
 import { Replay } from '../../replay/entities/replay.entity';
 import { Room } from '../../room/entities/room.entity';
-import { User } from 'src/users/entities/users.entity';
+import { User } from '../../users/entities/users.entity';
 import { ConferenceStatus } from '../enum/conference_status.enum';
 
 @Entity('conferences')
 @Index('ix_conferences_uid', ['uid'], { unique: true })
 @Index('ix_conferences_status', ['status'])
-@Index('ix_conferences_start', ['startAt'])
+@Index('ix_conferences_start', ['start_time'])
 export class Conference {
   @PrimaryGeneratedColumn()
   id: number;
@@ -31,10 +31,10 @@ export class Conference {
   name: string;
 
   @Column({ name: 'start_time', type: 'timestamp' })
-  startAt!: Date;
+  start_time!: Date;
 
   @Column({ name: 'end_time', type: 'timestamp', nullable: true })
-  endAt!: Date | null;
+  end_time!: Date | null;
 
   // Statut métier
   @Column({ type: 'enum', enum: ConferenceStatus, default: ConferenceStatus.DRAFT })
@@ -59,9 +59,9 @@ export class Conference {
   organizers!: User[];
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
-  createdAt!: Date;
+  created_at!: Date;
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
-  updatedAt!: Date;
+  updated_at!: Date;
 
 }
