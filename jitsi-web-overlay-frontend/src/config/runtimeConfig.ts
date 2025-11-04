@@ -42,6 +42,7 @@ export async function loadRuntimeConfig(force = false): Promise<FrontConfig> {
 
             cached = {
                 ...raw,
+                VITE_API_URL: (import.meta.env.VITE_API_URL as string | undefined) || '/api',
                 VITE_APP_TEMPLATE: raw.VITE_APP_TEMPLATE || (import.meta.env.VITE_APP_TEMPLATE as string | undefined) || 'joona',
                 VITE_APP_LIGHTVISIOLOGOHEADER: raw.VITE_APP_LIGHTVISIOLOGOHEADER || (import.meta.env.VITE_APP_LIGHTVISIOLOGOHEADER as string | undefined) || '/assets/visiobyapitech-creme.png',
                 VITE_APP_DARKVISIOLOGOHEADER: raw.VITE_APP_DARKVISIOLOGOHEADER || (import.meta.env.VITE_APP_DARKVISIOLOGOHEADER as string | undefined) || '/assets/visiobyapitech-creme.png',
