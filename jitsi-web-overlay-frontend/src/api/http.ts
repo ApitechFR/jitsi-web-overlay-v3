@@ -15,7 +15,6 @@ export async function getHttp(): Promise<AxiosInstance> {
     if (httpInstance) return httpInstance;
     const cfg = await loadRuntimeConfig();
     const baseURL = cfg?.VITE_API_URL || '/api';
-    console.info('Using API URL:', baseURL);
     httpInstance = axios.create({
         baseURL,
         withCredentials: true,
