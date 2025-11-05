@@ -42,6 +42,7 @@ export async function loadRuntimeConfig(force = false): Promise<FrontConfig> {
 
             cached = {
                 ...raw,
+                VITE_API_URL: (import.meta.env.VITE_API_URL as string | undefined) || '/api',
                 VITE_APP_TEMPLATE: raw.VITE_APP_TEMPLATE || (import.meta.env.VITE_APP_TEMPLATE as string | undefined) || 'joona',
                 VITE_APP_LIGHTVISIOLOGOHEADER: raw.VITE_APP_LIGHTVISIOLOGOHEADER || (import.meta.env.VITE_APP_LIGHTVISIOLOGOHEADER as string | undefined) || '/assets/visiobyapitech-creme.png',
                 VITE_APP_DARKVISIOLOGOHEADER: raw.VITE_APP_DARKVISIOLOGOHEADER || (import.meta.env.VITE_APP_DARKVISIOLOGOHEADER as string | undefined) || '/assets/visiobyapitech-creme.png',
@@ -49,7 +50,7 @@ export async function loadRuntimeConfig(force = false): Promise<FrontConfig> {
                 VITE_APP_DARKVISIOLOGOFOOTER: raw.VITE_APP_DARKVISIOLOGOFOOTER || (import.meta.env.VITE_APP_DARKVISIOLOGOFOOTER as string | undefined) || '/assets/apitech-logo-blanc.png',
                 VITE_APP_FOOTERDESCRIPTION: raw.VITE_APP_FOOTERDESCRIPTION || (import.meta.env.VITE_APP_FOOTERDESCRIPTION as string | undefined) || '',
                 VITE_APP_HEADERSERVICETITLE: raw.VITE_APP_HEADERSERVICETITLE || (import.meta.env.VITE_APP_HEADERSERVICETITLE as string | undefined) || '',
-                VITE_APP_HEADERSERVICETAGLINE: raw.VITE_APP_HEADERSERVICETAGLINE|| (import.meta.env.VITE_APP_HEADERSERVICETAGLINE as string | undefined) || '',
+                VITE_APP_HEADERSERVICETAGLINE: raw.VITE_APP_HEADERSERVICETAGLINE || (import.meta.env.VITE_APP_HEADERSERVICETAGLINE as string | undefined) || '',
                 VITE_APP_FOOTERLINKS: raw.VITE_APP_FOOTERLINKS || (import.meta.env.VITE_APP_FOOTERLINKS as string | undefined) || '',
                 VITE_ENABLE_JIBRI_APITECH_API: coerceBool(raw.VITE_ENABLE_JIBRI_APITECH_API),
                 VITE_REPLAY_CHECK_TIMEOUT_MS: coerceNum(raw.VITE_REPLAY_CHECK_TIMEOUT_MS),
