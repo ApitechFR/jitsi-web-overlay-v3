@@ -3,10 +3,11 @@ import { Module } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import { AuthenticationController } from './authentication.controller';
 import { ConferenceModule } from '../conference/conference.module';
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [HttpModule, ConferenceModule],
-  providers: [AuthenticationService],
+  providers: [AuthenticationService, JwtStrategy],
   controllers: [AuthenticationController],
 })
-export class AuthenticationModule {}
+export class AuthenticationModule { }

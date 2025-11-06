@@ -10,6 +10,7 @@ import {
   Get,
   Delete,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { CreateFeedbackDto, FeedbackDTO } from './DTOs/feedback.dto';
@@ -24,6 +25,7 @@ import { FeedbackTypeService } from './services/feedback_type.service';
 import { CreateFeedbackTypeDto, UpdateFeedbackTypeDto } from './DTOs/feedback_type.dto';
 import { FeedbackTemplateService } from './services/feedback_template.service';
 import { CreateFeedbackTemplateDto, UpdateFeedbackTemplateDto } from './DTOs/feedback_template.dto';
+import { JwtAuthGuard } from '../authentication/jwt-auth.guard';
 
 @Controller('feedback')
 export class FeedbackController {
@@ -89,70 +91,79 @@ export class FeedbackController {
   // }
 
   // === Feedback par conférence ===
+  @UseGuards(JwtAuthGuard)
   @Get('conference/:uuid')
   getFeedbackByConference(@Param('uuid') uuid: string) {
     return this.feedbackService.findByConference(uuid);
   }
-
+  @UseGuards(JwtAuthGuard)
   @Get('conference/:uuid/stats')
   getFeedbackStats(@Param('uuid') uuid: string) {
     return this.feedbackService.getStats(uuid);
   }
 
   // === FeedbackType Endpoints ===
-
+  @UseGuards(JwtAuthGuard)
   @Post('types')
   createType(@Body() dto: CreateFeedbackTypeDto) {
     return this.feedbackTypeService.create(dto);
   }
 
+  //@UseGuards(JwtAuthGuard)
   @Get('types')
   getAllTypes() {
     return this.feedbackTypeService.findAll();
   }
 
+  //@UseGuards(JwtAuthGuard)
   @Get('types/:id')
   getTypeById(@Param('id') id: number) {
     return this.feedbackTypeService.findOne(id);
   }
-
+  @UseGuards(JwtAuthGuard)
   @Put('types/:id')
   updateType(@Param('id') id: number, @Body() dto: UpdateFeedbackTypeDto) {
     return this.feedbackTypeService.update(id, dto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete('types/:id')
   deleteType(@Param('id') id: number) {
     return this.feedbackTypeService.remove(id);
   }
 
   // === FeedbackTemplate Endpoints ===
-
+  @UseGuards(JwtAuthGuard)
   @Post('templates')
   createTemplate(@Body() dto: CreateFeedbackTemplateDto) {
     return this.templateService.create(dto);
   }
 
+  //@UseGuards(JwtAuthGuard)
   @Get('templates')
   getAllTemplates() {
     return this.templateService.findAll();
   }
 
+  //@UseGuards(JwtAuthGuard)
   @Get('templates/organization/:organization')
   findByOrganization(@Param('organization') organization: string) {
     return this.templateService.findByOrganization(organization);
   }
 
+  //@UseGuards(JwtAuthGuard)
   @Get('templates/:id')
   getTemplateById(@Param('id') id: number) {
     return this.templateService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put('templates/:id')
   updateTemplate(@Param('id') id: number, @Body() dto: UpdateFeedbackTemplateDto) {
     return this.templateService.update(id, dto);
   }
 
+  //@UseGuards(JwtAuthGuard)
   @Delete('templates/:id')
   deleteTemplate(@Param('id') id: number) {
     return this.templateService.softDelete(id);
