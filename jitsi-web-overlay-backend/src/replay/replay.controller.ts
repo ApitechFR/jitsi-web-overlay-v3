@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, HttpStatus, InternalServerErrorException, NotFoundException, Param, Post, Put, Query, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, InternalServerErrorException, NotFoundException, Param, Post, Put, Res, UseGuards } from '@nestjs/common';
 import { ReplayService } from './replay.service';
 import { CreateReplayDto, UpdateReplayDto } from './DTOs/replay.dto';
 import { Replay } from './entities/replay.entity';
@@ -7,11 +7,14 @@ import * as FormData from 'form-data';
 import { Response } from 'express';
 import { ReplayStatus } from './enum/replay_status.enum';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../authentication/jwt-auth.guard';
 
 @ApiTags('replays')
+@UseGuards(JwtAuthGuard)
 @Controller('replays')
 export class ReplayController {
     constructor(private readonly replayService: ReplayService) { }
+
 
     @Post('start_recording')
     @ApiOperation({ summary: 'Commancer l\'enregistrement vidéo' })
@@ -197,7 +200,7 @@ export class ReplayController {
         },
     ) {
         const { eventid, jwt, uploadCallbackUrl, uploadCallbackDomainUrl } = body;
-        
+
         if (!eventid || !jwt || !uploadCallbackUrl || !uploadCallbackDomainUrl) {
             throw new HttpException(
                 { message: 'Certains paramètres sont manquants.' },

@@ -1,9 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { RoomService } from './room.service';
 import { CreateRoomDTO, UpdateRoomDTO } from './DTOs/room.dto';
+import { JwtAuthGuard } from '../authentication/jwt-auth.guard';
 
 @ApiTags('room')
+@UseGuards(JwtAuthGuard)
 @Controller('rooms')
 export class RoomController {
 

@@ -42,7 +42,7 @@ export default function HeaderJoona() {
       return <ChangelogContent content={currentItem.content} />
     }
   };
-  let roomName = localStorage.getItem("roomName");
+  let roomName = localStorage.getItem("conferenceName") || "";
   const quickAccessItems = [
     {
       buttonProps: {

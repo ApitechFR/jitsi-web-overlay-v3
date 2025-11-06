@@ -234,7 +234,7 @@ function HomeJoona(props: HomeJoonaProps) {
                   ref: inputRef,
                 }}
                 stateRelatedMessage={
-                  isError && cfg.VITE_CONFERENCE_NAME_REGEX_MESSAGE
+                  isError && (cfg.VITE_CONFERENCE_NAME_REGEX_MESSAGE || 'Nom de conférence invalide.')
                 }
                 style={{ width: '100%' }}
                 addon={

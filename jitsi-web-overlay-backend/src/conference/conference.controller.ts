@@ -11,6 +11,7 @@ import {
   Req,
   Query,
   Header,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -30,6 +31,7 @@ import { RoomNameDto } from './DTOs/room-name.dto';
 import { ConferenceFilter } from './enum/conference_filter.enum';
 import { ParseConferenceFilterPipe } from './utils/ParseConferenceFilterPipe';
 import { ProsodyRuntimeService } from '../prosody/prosody-runtime.service';
+import { JwtAuthGuard } from '../authentication/jwt-auth.guard';
 
 interface AuthenticatedRequest extends Request {
   user?: any;
@@ -44,18 +46,21 @@ export class ConferenceController {
     private readonly prosodyRuntimeService: ProsodyRuntimeService
   ) { }
 
+  @UseGuards(JwtAuthGuard)
   @Post('conferences')
   @ApiOkResponse({ description: 'Conférence créée avec succès' })
   async create(@Body() dto: CreateConferenceDTO) {
     return this.conferenceService.create(dto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('conferences')
   @ApiOkResponse({ description: 'Liste des conférences' })
   async findAll() {
     return this.conferenceService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get("conferences/statistics")
   @ApiOkResponse({ description: "Statistiques des conférences" })
   @ApiBadRequestResponse({ description: "Filtre invalide" })
@@ -66,12 +71,14 @@ export class ConferenceController {
     return this.conferenceService.getGlobalStatistics();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('conferences/:uid/duration')
   async getDuration(@Param('uid') uid: string): Promise<{ duration: string }> {
     const duration = await this.conferenceService.getDuration(uid);
     return { duration };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('conferences/:uid')
   @ApiOkResponse({ description: 'Conférence trouvée' })
   @ApiNotFoundResponse({ description: 'Conférence non trouvée' })
@@ -79,11 +86,13 @@ export class ConferenceController {
     return this.conferenceService.findOne(uid);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete('conferences/:id')
   @ApiOkResponse({ description: 'Conférence supprimée' })
   async delete(@Param('id') id: string) {
     return this.conferenceService.delete(id);
   }
+
 
   @Put('conferences/:id')
   @ApiOkResponse({ description: 'Conférence mise à jour' })
@@ -106,6 +115,7 @@ export class ConferenceController {
   }
 
   //TODO : to remove Old name /roomExists/:roomName
+  @UseGuards(JwtAuthGuard)
   @Get('/roomExists/:roomName')
   @ApiOkResponse({ description: 'retourne roomName si la conférence existe' })
   @ApiNotFoundResponse({
@@ -123,6 +133,7 @@ export class ConferenceController {
   async getConferenceState(@Param() params: RoomNameDto) {
     return this.conferenceService.roomExists(params.roomName);
   }
+
 
   @Get('/conferences/:roomName/room-size')
   async getRoomSize(@Param() params: RoomNameDto) {
@@ -154,6 +165,7 @@ export class ConferenceController {
   }
 
   // Check JWT token validity
+  @UseGuards(JwtAuthGuard)
   @Post('verify-token')
   @ApiOkResponse({ description: 'JWT vérifié avec succès' })
   @ApiUnauthorizedResponse({ description: 'JWT invalide ou expiré' })
@@ -162,6 +174,7 @@ export class ConferenceController {
   }
 
   //TODO update new name :old name /:roomName
+  @UseGuards(JwtAuthGuard)
   @Get('conferences/access/:roomName')
   @ApiOkResponse({
     description: 'retourne roomName si la conférence est déja ouverte',
@@ -191,7 +204,7 @@ export class ConferenceController {
     );
   }
 
-
+  @UseGuards(JwtAuthGuard)
   @Post('conferences/:roomName/tokens/jitsi')
   @Header('Cache-Control', 'no-store')
   async createJitsiToken(
