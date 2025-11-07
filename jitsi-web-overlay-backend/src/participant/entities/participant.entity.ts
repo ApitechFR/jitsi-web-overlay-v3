@@ -9,7 +9,6 @@ import { InviteMethod, ParticipantRole, ParticipantStatus } from '../participant
 
 
 @Entity('participants')
-@Index('ix_participants_conference', ['conference'])
 export class Participant {
   @PrimaryGeneratedColumn()
   id: number;
