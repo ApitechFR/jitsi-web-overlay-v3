@@ -4,8 +4,7 @@ export class AddAdmin1762266834541 implements MigrationInterface {
     name = 'AddAdmin1762266834541'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP INDEX \`IDX_97672ac88f789774dd47f7c8be\` ON \`users\``);
-        await queryRunner.query(`DROP INDEX \`IDX_fe0bb3f6520ee0469504521e71\` ON \`users\``);
+        await queryRunner.query(`ALTER TABLE \`users\` ADD \`admin\` tinyint NOT NULL DEFAULT 0`);
         await queryRunner.query(`ALTER TABLE \`users\` ADD \`admin\` tinyint NOT NULL DEFAULT 0`);
     }
 
