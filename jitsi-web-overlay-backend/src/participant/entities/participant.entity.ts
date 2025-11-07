@@ -1,6 +1,6 @@
 import {
   Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany,
-  CreateDateColumn, UpdateDateColumn, JoinColumn
+  CreateDateColumn, UpdateDateColumn, JoinColumn, Index
 } from 'typeorm';
 import { Conference } from '../../conference/entities/conference.entity';
 import { User } from '../../users/entities/users.entity';
@@ -9,6 +9,7 @@ import { InviteMethod, ParticipantRole, ParticipantStatus } from '../participant
 
 
 @Entity('participants')
+@Index('ix_participants_conference', ['conference'])
 export class Participant {
   @PrimaryGeneratedColumn()
   id: number;
