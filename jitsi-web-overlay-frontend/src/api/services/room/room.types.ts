@@ -4,3 +4,8 @@ export interface Room {
     created_at: string;
     updated_at: string;
 }
+
+export interface CreateRoomPayload {
+    name: string;
+    created_by: string;
+}

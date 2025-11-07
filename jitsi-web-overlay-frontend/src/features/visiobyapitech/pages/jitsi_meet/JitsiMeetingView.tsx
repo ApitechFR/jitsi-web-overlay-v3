@@ -8,7 +8,7 @@ import { ConferenceService, RoomService, useApi } from '@/api';
 import type { Props } from '@/api';
 import { useRuntimeConfig } from '../../../../config/ConfigProvider';
 
-const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displayName }) => {
+const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displayName, user }) => {
   const participantCountRef = useRef(0);
   const conferenceRef = useRef<any>(null);
   const checkVideoInterval = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -94,7 +94,7 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
             participantCountRef.current = count ?? 0;
 
             if (participantCountRef.current === 1 && !conferenceRef.current) {
-              const room = await createRoom(conferenceName);
+              const room = await createRoom({ name: conferenceName, created_by: user?.uid});
               const conf = await createConf({ room_uid: room.uid, name: conferenceName });
               conferenceRef.current = conf;
             }

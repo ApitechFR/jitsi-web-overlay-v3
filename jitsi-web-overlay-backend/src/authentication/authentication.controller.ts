@@ -156,7 +156,7 @@ export class AuthenticationController {
       await this.authenticationService.loginCallback(code, state, sendedState);
 
     // Enregistre ou met à jour l'utilisateur OIDC dans la base
-    await this.authenticationService.upsertOidcUser(userinfo);
+    const user = await this.authenticationService.upsertOidcUser(userinfo);
 
     const userInfos = this.authenticationService.extractUserInfos(userinfo);
 
@@ -166,6 +166,7 @@ export class AuthenticationController {
       sub: this.configService.get('JITSI_JITSIJWT_SUB'),
       email: this.authenticationService.extractEmail(userinfo),
       ...userInfos,
+      uid: user.uid,
     };
 
     const accessToken = this.authenticationService.generateAccessToken(baseClaims);
@@ -274,6 +275,7 @@ export class AuthenticationController {
         family_name: decoded?.family_name || '',
         name: decoded?.name || '',
         isAdmin: Boolean(decoded?.admin),
+        uid: decoded?.uid,
       };
 
       const accessToken = this.authenticationService.generateAccessToken(baseClaims);

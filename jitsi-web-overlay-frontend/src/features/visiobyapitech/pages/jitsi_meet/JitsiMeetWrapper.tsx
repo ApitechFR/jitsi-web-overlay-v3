@@ -138,6 +138,7 @@ const JitsiMeetWrapper: React.FC = () => {
         conferenceName={conferenceName!}
         jwt={jwtToken}          // undefined => invité
         displayName={displayName}
+        user={user}
       />
     </>
   );
