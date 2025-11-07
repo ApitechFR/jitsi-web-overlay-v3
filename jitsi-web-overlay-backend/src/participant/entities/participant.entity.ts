@@ -1,6 +1,6 @@
 import {
   Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany,
-  CreateDateColumn, UpdateDateColumn, JoinColumn, Index
+  CreateDateColumn, UpdateDateColumn, JoinColumn
 } from 'typeorm';
 import { Conference } from '../../conference/entities/conference.entity';
 import { User } from '../../users/entities/users.entity';
@@ -9,24 +9,12 @@ import { InviteMethod, ParticipantRole, ParticipantStatus } from '../participant
 
 
 @Entity('participants')
-@Index('ix_participants_conference', ['conference'])
-@Index('ix_participants_status', ['status'])
-// Un participant "compte" unique par conférence
-@Index('uq_participant_conf_user', ['conference', 'user'], {
-  unique: true,
-  where: 'user_id IS NOT NULL',
-})
-// Un participant "email" unique par conférence (pour les externes)
-@Index('uq_participant_conf_email', ['conference', 'email'], {
-  unique: true,
-  where: 'email IS NOT NULL',
-})
 export class Participant {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ unique: true })
-  uid: string;
+  uid!: string;
 
   @ManyToOne(() => Conference, (c) => c.participants, { onDelete: 'CASCADE', nullable: false })
   @JoinColumn({ name: 'conference_id' })
