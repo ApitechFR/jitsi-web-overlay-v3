@@ -20,4 +20,4 @@ COPY --from=builder /app/package*.json ./
 
 EXPOSE 3030
 
-CMD ["sh", "-c", "npm run migration:run && node dist/src/main.js"] 
+CMD ["node", "dist/src/main.js"]
