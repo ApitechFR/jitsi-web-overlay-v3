@@ -4,7 +4,8 @@ export class RemoveIndexes1762529567886 implements MigrationInterface {
     name = 'RemoveIndexes1762529567886'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP INDEX \`ix_sessions_participant\` ON \`participant_sessions\``);
+        await queryRunner.query('ALTER TABLE participant_sessions DROP FOREIGN KEY FK_d8c95ae40b20969359a024adc6c;');
+        await queryRunner.query('DROP INDEX ix_sessions_participant ON participant_sessions;');
         await queryRunner.query(`DROP INDEX \`uq_participant_conf_email\` ON \`participants\``);
         await queryRunner.query(`DROP INDEX \`uq_participant_conf_user\` ON \`participants\``);
         await queryRunner.query(`DROP INDEX \`ix_participants_status\` ON \`participants\``);
