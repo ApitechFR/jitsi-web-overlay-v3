@@ -19,7 +19,7 @@ import MentionslegalesVisioByApitech from './features/visiobyapitech/pages/stati
 import StaticPagesBuilder from './features/webconf/pages/staticPagesBuilder/StaticPagesBuilder';
 import Feedback from "./features/webconf/pages/feedback/Feedback";
 import BrowserTest from './features/webconf/pages/browserTest/BrowserTest';
-import BrowserTestJoona from './features/visiobyapitech/pages/browserTestJoona/browserTestJoona';
+import BrowserTestJoona from './features/visiobyapitech/pages/browserTestJoona/BrowserTestJoona';
 import LoginCallback from './features/webconf/pages/login/LoginCallback';
 import LogoutCallback from './features/webconf/pages/login/LogoutCallback';
 import Error from './features/webconf/pages/Error/Error';
