@@ -244,6 +244,7 @@ function AppInner() {
                 }
               />
               <Route path="feedback" element={<FeedbackJoona />} />
+              <Route path="browser_test" element={<BrowserTest />} />
               <Route
                 path="mentionslegales"
                 element={
