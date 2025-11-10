@@ -108,6 +108,12 @@ function AppInner() {
   };
 
   useEffect(() => {
+    if (window.location.pathname.includes("/browser_test")) {
+      document.body.classList.add("no-iframe-style");
+    } else {
+      document.body.classList.remove("no-iframe-style");
+    }
+    
     if (AppTemplate === 'webconf') {
       api
         .get('/stats/homePage')
