@@ -9,7 +9,7 @@
     "--------------------------Migrate--------------------------": "",
     "typeorm": "typeorm-ts-node-commonjs -d db/datasource.ts",
     "migration:generate": "npm run build && npm run typeorm -- migration:generate",
-    "migration:run": "npm run typeorm -- migration:run",
+    "migration:run": "npm run typeorm -- migration:run -d dist/db/datasource.js",
     "migration:revert": "npm run typeorm -- migration:revert",
     "migration:show": "npm run typeorm -- migration:show",
     "--------------------------RUN--------------------------": "",

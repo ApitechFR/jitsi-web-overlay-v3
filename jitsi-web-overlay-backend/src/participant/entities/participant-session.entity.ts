@@ -2,7 +2,6 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Index, JoinColumn } 
 import { Participant } from './participant.entity';
 
 @Entity('participant_sessions')
-@Index('ix_sessions_participant', ['participant'])
 export class ParticipantSession {
     @PrimaryGeneratedColumn()
     id: number;

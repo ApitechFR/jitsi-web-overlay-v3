@@ -1,5 +1,5 @@
 import {
-  Entity, PrimaryGeneratedColumn, Column, Index, OneToMany, ManyToMany, JoinTable,
+  Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany, JoinTable,
   CreateDateColumn, UpdateDateColumn
 } from 'typeorm';
 import { Participant } from '../../participant/entities/participant.entity';
@@ -12,15 +12,13 @@ export enum AuthProvider {
 }
 
 @Entity('users')
-@Index('ix_users_email', ['email'], { unique: true })
-@Index('ix_users_username', ['username'], { unique: true })
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
   // Identifiant public stable pour exposer en API/URL
   @Column({ unique: true })
-  uid: string; // uuid v4 généré côté service
+  uid!: string; // uuid v4 généré côté service
 
   // Postgres: vous pouvez remplacer par { type: 'citext', nullable: true }
   @Column({ nullable: true })

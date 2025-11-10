@@ -8,7 +8,6 @@ import {
   JoinColumn,
   ManyToOne,
   ManyToMany,
-  Index,
 } from 'typeorm';
 import { Participant } from '../../participant/entities/participant.entity';
 import { Replay } from '../../replay/entities/replay.entity';
@@ -17,15 +16,12 @@ import { User } from '../../users/entities/users.entity';
 import { ConferenceStatus } from '../enum/conference_status.enum';
 
 @Entity('conferences')
-@Index('ix_conferences_uid', ['uid'], { unique: true })
-@Index('ix_conferences_status', ['status'])
-@Index('ix_conferences_start', ['start_time'])
 export class Conference {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ unique: true })
-  uid: string;
+  uid!: string;
 
   @Column()
   name: string;
