@@ -14,6 +14,17 @@ export const ConferenceService = {
         }
     },
 
+    async getConferenceByName(conference_name: string) {
+        try {
+            const http = await getHttp();
+            const { data } = await http.get(`/conferences/${encodeURIComponent(conference_name)}/name`);
+            return data;
+        } catch (error: any) {
+            // if (error?.response?.status === 404) return null;
+            throw toApiError(error, 'Erreur lors de la récupération de la conférence');
+        }
+    },
+
     async createByEmail(confName: string, email: string) {
         try {
             const http = await getHttp();

@@ -1,5 +1,6 @@
 import { IsEmail, IsEnum, IsOptional, IsString, Length } from 'class-validator';
 import { InviteMethod, ParticipantRole, ParticipantStatus } from '../participant.enums';
+import { PartialType } from '@nestjs/mapped-types';
 
 export class CreateParticipantDto {
     @IsString()
@@ -14,7 +15,6 @@ export class CreateParticipantDto {
     displayName!: string;
 
     @IsOptional()
-    @IsEmail()
     email?: string;
 
     @IsOptional()
@@ -33,3 +33,5 @@ export class CreateParticipantDto {
     @IsEnum(InviteMethod)
     inviteMethod?: InviteMethod;
 }
+
+export class UpdateParticipantDto extends PartialType(CreateParticipantDto) {}

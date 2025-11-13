@@ -10,6 +10,7 @@ export interface IConferenceService<T = any> {
   create?(data: CreateConferenceDTO): Promise<T>;
   findAll?(): Promise<T[]>;
   findOne?(id: string): Promise<T | null>;
+  findByName?(name: string): Promise<T | null>;
   delete?(id: string): Promise<void>;
   update?(id: string, data: Partial<CreateConferenceDTO>): Promise<T>;
 

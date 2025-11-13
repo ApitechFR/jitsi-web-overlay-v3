@@ -86,6 +86,11 @@ export class ConferenceController {
     return this.conferenceService.findOne(uid);
   }
 
+  @Get('conferences/:conference_name/name')
+  async getConferenceByName(@Param('conference_name') name: string) {
+    return  await this.conferenceService.findByName(name);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Delete('conferences/:id')
   @ApiOkResponse({ description: 'Conférence supprimée' })

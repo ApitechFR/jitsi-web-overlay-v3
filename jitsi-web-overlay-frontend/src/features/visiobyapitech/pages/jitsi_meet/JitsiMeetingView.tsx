@@ -7,6 +7,7 @@ import { handleJibriApitechApi } from '@/api/services/jitsi/jibri.service';
 import { ConferenceService, RoomService, useApi } from '@/api';
 import type { Props } from '@/api';
 import { useRuntimeConfig } from '../../../../config/ConfigProvider';
+import { ParticipantService } from '@/api/services/participants/participant.service';
 
 const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displayName, user }) => {
   const participantCountRef = useRef(0);
@@ -23,6 +24,7 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
   const { run: getRoomByName } = useApi(RoomService.getByName);
   const { run: createRoom } = useApi(RoomService.create);
   const { run: createConf } = useApi(ConferenceService.create);
+  const { run: createParticipant } = useApi(ParticipantService.create);
 
   const enableJibriApitechApi = cfg.VITE_ENABLE_JIBRI_APITECH_API ?? '';
   const jibriApitechApiDomain = cfg.VITE_JIBRI_APITECH_API_DOMAIN ?? '';
@@ -94,10 +96,62 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
             participantCountRef.current = count ?? 0;
 
             if (participantCountRef.current === 1 && !conferenceRef.current) {
-              const room = await createRoom({ name: conferenceName, created_by: user?.uid});
+              const room = await createRoom({ name: conferenceName, created_by: user?.uid });
               const conf = await createConf({ room_uid: room.uid, name: conferenceName });
+
               conferenceRef.current = conf;
             }
+
+            //Participant connecté (user avec compte)
+            if (user?.uid) {
+              console.info('Creating participant for user:', user);
+              console.log("conferenceRef.current:", conferenceRef.current);
+              const participant = await createParticipant({
+                conferenceUid: conferenceRef.current.uid,
+                userUid: user.uid,
+                displayName: user.name,
+                role: myRole.current.toUpperCase(),
+                email: user.email,
+                phone: user.phone,
+                status: 'JOINED',
+              });
+              console.info('Participant created:', participant);
+            }
+
+            //Participant invité (pas de user compte)
+            else {
+
+              const participantsInfo = api.getParticipantsInfo();
+              console.info('Participants info (guest):', participantsInfo);
+              const me = participantsInfo.find((p: any) => p.participantId === myId) as any;
+              console.info('Me info (guest):', me);
+              console.log("conferenceRef.current:", conferenceRef.current);
+
+              //find conference
+              let conf = conferenceRef.current;
+              if (!conf) {
+                conf = await ConferenceService.getConferenceByName(conferenceName);
+                // if (!conf) {
+                //   const room = await createRoom({ name: conferenceName, created_by: user?.uid });
+                //   conf = await createConf({ room_uid: room.uid, name: conferenceName });
+                // }
+                conferenceRef.current = conf;
+              }
+
+              const guestName = me?.displayName+"_"+me?.participantId || 'Invité';
+              const guestEmail = me?.email || "";
+
+              const guestParticipant = await createParticipant({
+                conferenceUid: conferenceRef.current.uid,
+                displayName: guestName,
+                email: guestEmail,
+                role: myRole.current?.toUpperCase() || 'ATTENDEE',
+                status: 'INVITED',
+              });
+
+              console.info('Participant (guest) created:', guestParticipant);
+            }
+
           } catch (e) {
             console.error('[Jitsi] join flow error:', e);
           }

@@ -17,11 +17,11 @@ export class Participant {
   uid!: string;
 
   @ManyToOne(() => Conference, (c) => c.participants, { onDelete: 'CASCADE', nullable: false })
-  @JoinColumn({ name: 'conference_id' })
+  @JoinColumn({ name: 'conference_uid', referencedColumnName: 'uid' })
   conference!: Conference;
 
   @ManyToOne(() => User, (u) => u.participants, { onDelete: 'SET NULL', nullable: true })
-  @JoinColumn({ name: 'user_id' })
+  @JoinColumn({ name: 'user_uid', referencedColumnName: 'uid' })
   user?: User | null;
 
   @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true })

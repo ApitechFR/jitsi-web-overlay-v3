@@ -85,6 +85,13 @@ export class ConferenceServiceSQL implements IConferenceService {
     });
   }
 
+  async findByName(name: string): Promise<Conference | null> {
+  return await this.conferenceRepo.findOne({
+    where: { name },
+    order: { start_time: 'DESC' },
+  });
+}
+
   async update(
     id: string,
     data: Partial<CreateConferenceDTO>,
