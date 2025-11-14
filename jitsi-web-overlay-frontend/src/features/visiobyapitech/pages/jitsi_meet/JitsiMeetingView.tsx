@@ -138,7 +138,7 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
                 conferenceRef.current = conf;
               }
 
-              const guestName = me?.displayName+"_"+me?.participantId || 'Invité';
+              const guestName = me?.displayName || 'Invité';
               const guestEmail = me?.email || "";
 
               const guestParticipant = await createParticipant({

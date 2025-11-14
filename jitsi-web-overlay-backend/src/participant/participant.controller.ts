@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Request } from 'express';
 import { ParticipantService } from './participant.service';
 import { CreateParticipantDto, UpdateParticipantDto } from './dto/create-participant.dto';
 import { PaginationDto } from './dto/pagination.dto';
@@ -9,8 +10,12 @@ export class ParticipantController {
     constructor(private readonly participantService: ParticipantService) { }
 
     @Post()
-    create(@Body() dto: CreateParticipantDto) {
-        return this.participantService.create(dto);
+    create(@Body() dto: CreateParticipantDto, @Req() req: Request) {
+        const clientIp =
+            (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+            req.socket.remoteAddress ||
+            req.ip;
+        return this.participantService.create(dto, clientIp);
     }
 
     @UseGuards(JwtAuthGuard)

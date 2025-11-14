@@ -44,6 +44,9 @@ export class Participant {
   @Column({ type: 'enum', enum: ParticipantStatus, default: ParticipantStatus.INVITED })
   status?: ParticipantStatus;
 
+  @Column({ name: 'ip_hash', type: 'varchar', nullable: true })
+  ipHash?: string | null;
+
   @Column({ type: 'enum', enum: InviteMethod, default: InviteMethod.LINK })
   inviteMethod?: InviteMethod;
 

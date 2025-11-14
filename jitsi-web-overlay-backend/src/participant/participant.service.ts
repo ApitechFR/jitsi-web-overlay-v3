@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { CreateParticipantDto, UpdateParticipantDto } from './dto/create-participant.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { PaginationDto } from './dto/pagination.dto';
+import { compareIp, hashIp } from './utils/ipHash.util';
 
 @Injectable()
 export class ParticipantService {
@@ -21,7 +22,7 @@ export class ParticipantService {
         private readonly userRepo: Repository<User>,
     ) { }
 
-    async create(dto: CreateParticipantDto): Promise<Participant> {
+    async create(dto: CreateParticipantDto, clientIp?: string): Promise<Participant> {
         const conference = await this.conferenceRepo.findOne({
             where: { uid: dto.conferenceUid },
         });
@@ -37,17 +38,11 @@ export class ParticipantService {
             }
         }
 
-        if (dto.email) {
-            const existingParticipant = await this.findByEmail(dto.email, dto.conferenceUid);
-            if (existingParticipant) {
-                return existingParticipant;
-            }
-        } else if (dto.displayName) {
-            const existingParticipant = await this.findByDisplayName(dto.displayName, dto.conferenceUid);
-            if (existingParticipant) {
-                return existingParticipant;
-            }
-        }
+        const existing = await this.findExistingParticipant(dto.conferenceUid, dto.email, dto.displayName, clientIp);
+
+        if (existing) return existing;
+
+        const ipHash = clientIp ? await hashIp(clientIp) : null;
 
         const participant = this.participantRepo.create({
             uid: uuidv4(),
@@ -59,9 +54,31 @@ export class ParticipantService {
             role: dto.role,
             status: dto.status,
             inviteMethod: dto.inviteMethod,
+            ipHash: ipHash,
         });
 
         return await this.participantRepo.save(participant);
+    }
+
+    async findExistingParticipant(conferenceUid: string, email?: string, displayName?: string, clientIp?: string): Promise<Participant | null> {
+        if (email) {
+            const existingParticipant = await this.findByEmail(email, conferenceUid);
+            if (existingParticipant) return existingParticipant;
+        }
+
+        const existingParticipant = await this.findByDisplayName(displayName!, conferenceUid);
+
+        if (!existingParticipant) return null;
+
+        if (clientIp && existingParticipant.ipHash) {
+            const sameIp = await compareIp(clientIp, existingParticipant.ipHash);
+
+            if (sameIp) {
+                return existingParticipant;
+            }
+        }
+
+        return null;
     }
 
     async findByEmail(email: string, conferenceUid: string): Promise<Participant | null> {
