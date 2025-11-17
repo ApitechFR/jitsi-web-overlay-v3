@@ -21,7 +21,9 @@ export default function LayoutJoona() {
         <Header />
       </header>
       <main>
-        <Outlet />
+        <div className="fr-container">
+          <Outlet />
+        </div>
       </main>
       <footer className={styles.footer}>
 
