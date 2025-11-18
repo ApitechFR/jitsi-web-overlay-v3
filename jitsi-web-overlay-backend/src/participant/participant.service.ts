@@ -38,7 +38,7 @@ export class ParticipantService {
             }
         }
 
-        const existing = await this.findExistingParticipant(dto.conferenceUid, dto.email, dto.displayName, clientIp);
+        const existing = await this.findExistingParticipant(dto.conferenceUid, dto.email, clientIp);
 
         if (existing) return existing;
 
@@ -60,21 +60,24 @@ export class ParticipantService {
         return await this.participantRepo.save(participant);
     }
 
-    async findExistingParticipant(conferenceUid: string, email?: string, displayName?: string, clientIp?: string): Promise<Participant | null> {
+    async findExistingParticipant(conferenceUid: string, email?: string, clientIp?: string): Promise<Participant | null> {
         if (email) {
             const existingParticipant = await this.findByEmail(email, conferenceUid);
             if (existingParticipant) return existingParticipant;
         }
 
-        const existingParticipant = await this.findByDisplayName(displayName!, conferenceUid);
-
-        if (!existingParticipant) return null;
-
-        if (clientIp && existingParticipant.ipHash) {
-            const sameIp = await compareIp(clientIp, existingParticipant.ipHash);
-
-            if (sameIp) {
-                return existingParticipant;
+        if (clientIp) {
+            const participants = await this.participantRepo.find({
+                where: { conference: { uid: conferenceUid } },
+                relations: ['conference', 'user'],
+            });
+            for (const participant of participants) {
+                if (participant.ipHash) {
+                    const sameIp = await compareIp(clientIp, participant.ipHash);
+                    if (sameIp) {
+                        return participant;
+                    }
+                }
             }
         }
 
