@@ -21,6 +21,11 @@ export class ParticipantController {
         return this.participantService.create(dto, clientIp);
     }
 
+    @Get('getIP')
+    getClientIP(@Req() req: Request) {
+        return {ip : req.headers['x-real-ip'], ipForward : req.headers['x-forwarded-for'], remoteAddress : req.socket.remoteAddress, self : req.headers['cf-connecting-ip']};
+    }
+
     @UseGuards(JwtAuthGuard)
     @Get()
     findAll() {
