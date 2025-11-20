@@ -40,6 +40,8 @@ export class ParticipantService {
 
         const existing = await this.findExistingParticipant(dto.conferenceUid, dto.email, clientIp);
 
+        console.log('existing participant check:', { existing });
+
         if (existing) return existing;
 
         const ipHash = clientIp ? await hashIp(clientIp) : null;

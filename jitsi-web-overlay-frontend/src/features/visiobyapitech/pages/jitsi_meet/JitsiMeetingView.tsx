@@ -125,7 +125,6 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
               console.info('Participants info (guest):', participantsInfo);
               const me = participantsInfo.find((p: any) => p.participantId === myId) as any;
               console.info('Me info (guest):', me);
-              console.log("conferenceRef.current:", conferenceRef.current);
 
               //find conference
               let conf = conferenceRef.current;
@@ -137,6 +136,8 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
                 // }
                 conferenceRef.current = conf;
               }
+
+              console.log("conferenceRef.current (guest):", conferenceRef.current);
 
               const guestName = me?.displayName || 'Invité';
               const guestEmail = me?.email || "";
