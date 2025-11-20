@@ -17,7 +17,7 @@ const modal = createModal({
   isOpenedByDefault: false,
 });
 
-export default function HeaderJoona() {
+export default function HeaderVisio() {
   const [modalContent, setModalContent] = useState<string | null>(
     dataChangelog.submenu.items.length > 0
       ? dataChangelog.submenu.items[0].id
