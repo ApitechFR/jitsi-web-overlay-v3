@@ -15,7 +15,7 @@ export class ParticipantController {
             (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
             req.socket.remoteAddress ||
             req.ip;
-            
+        console.log(req.ip, req.socket.remoteAddress, req.headers['x-forwarded-for']);    
         console.log('--- Creating participant ---');
         console.log({ dto, clientIp });
         return this.participantService.create(dto, clientIp);

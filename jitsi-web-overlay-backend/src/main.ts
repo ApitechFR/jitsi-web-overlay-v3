@@ -49,7 +49,7 @@ async function bootstrap() {
 
   // Important si derrière un proxy/ingress (TLS terminé en amont)
   const expressApp = app.getHttpAdapter().getInstance();
-  expressApp.set('trust proxy', true);
+  expressApp.set('trust proxy', 1);
 
 
   // Validation globale
