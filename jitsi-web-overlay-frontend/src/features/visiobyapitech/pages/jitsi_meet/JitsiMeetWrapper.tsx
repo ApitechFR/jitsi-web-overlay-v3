@@ -122,16 +122,8 @@ const JitsiMeetWrapper: React.FC = () => {
 
   return (
     <>
-      <div className={`${styles.headerContainer} ${isHeaderOpen ? styles.open : ""}`}>
+      <div className={styles.headerContainer}>
         <Header />
-      </div>
-      <div className={`${styles.iconButtonContainer} ${isHeaderOpen ? styles.openBtn : ""}`}>
-        <button
-          className={styles.iconButton}
-          onClick={() => setIsHeaderOpen((previous) => !previous)}
-        >
-          {isHeaderOpen ? <span aria-hidden="true" className="fr-icon-arrow-up-s-line"></span> : <span aria-hidden="true" className="fr-icon-arrow-down-s-line"></span>}
-        </button>
       </div>
       <JitsiMeetingView
         domain={domain}
