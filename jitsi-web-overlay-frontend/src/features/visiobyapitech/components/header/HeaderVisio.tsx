@@ -66,7 +66,7 @@ export default function HeaderVisio() {
         className: 'fr-btn--icon-right',
       },
       iconId: 'fr-icon-external-link-fill',
-      text: 'Documentation utilisateur',
+      text: 'Foire Aux Questions',
     },
     {
       buttonProps: {

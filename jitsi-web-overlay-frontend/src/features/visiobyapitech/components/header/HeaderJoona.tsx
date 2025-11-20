@@ -79,7 +79,7 @@ export default function HeaderJoona() {
         className: 'fr-btn--icon-right',
       },
       iconId: 'fr-icon-external-link-fill',
-      text: 'Documentation utilisateur',
+      text: 'Foire Aux Questions',
     },
     {
       buttonProps: {
@@ -95,7 +95,7 @@ export default function HeaderJoona() {
           onClick: () => logout(),
           className: 'fr-btn--icon-right',
         },
-        iconId: 'fr-icon-account-circle-fill',
+        iconId: 'fr-icon-logout-box-r-line',
         text: 'Se déconnecter',
       }
       : {
