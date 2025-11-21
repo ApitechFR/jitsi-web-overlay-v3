@@ -21,6 +21,7 @@ import { ProsodyService } from '../../prosody/prosody.service';
 import { ProsodyRuntimeService } from '../../prosody/prosody-runtime.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ParticipantService } from '../../participant/participant.service';
+import { Participant } from '../../participant/entities/participant.entity';
 
 @Injectable()
 export class ConferenceServiceSQL implements IConferenceService {
@@ -30,6 +31,8 @@ export class ConferenceServiceSQL implements IConferenceService {
     private readonly conferenceRepo: Repository<Conference>,
     @InjectRepository(Room)
     private readonly roomRepo: Repository<Room>,
+    @InjectRepository(Participant)
+    private readonly participantRepo: Repository<Participant>,
 
     private readonly participantService: ParticipantService,
     private readonly jwtService: JwtService,
@@ -200,10 +203,11 @@ export class ConferenceServiceSQL implements IConferenceService {
     const confMoyTime = await this.getAverageDuration(start, end);
     const confMoyPart = await this.getAverageParticipants(start, end);
     const users = await this.participantService.countParticipantsByDateRange(start, end);
+    const partMaxSimult = await this.getMaxSimultParticipants(start, end);
 
-    console.log({ confNb, maxSimult, confMoyTime, confMoyPart, users });
+    console.log({ confNb, maxSimult, confMoyTime, confMoyPart, users, partMaxSimult });
 
-    return { confNb, maxSimult, confMoyTime, confMoyPart, users };
+    return { confNb, maxSimult, confMoyTime, confMoyPart, users, partMaxSimult };
   }
 
   async getAverageParticipants(start?: Date, end?: Date): Promise<number> {
@@ -322,6 +326,63 @@ export class ConferenceServiceSQL implements IConferenceService {
     }
 
     return maxsimult;
+  }
+
+  async getMaxSimultParticipants(
+    start?: Date,
+    end?: Date
+  ): Promise<number> {
+
+    // 1️⃣ Récupération de tous les participants + leur conférence
+    let query = `
+    SELECT p.created_at AS join_time, c.end_time AS leave_time
+    FROM participants p
+    JOIN conferences c ON c.uid = p.conference_uid
+  `;
+
+    const params: any[] = [];
+
+    if (start && end) {
+      query += `
+      WHERE p.created_at <= ?
+      AND (c.end_time IS NULL OR c.end_time >= ?)
+    `;
+      params.push(end, start);
+    }
+
+    const rows = await this.participantRepo.query(query, params);
+
+    if (!rows.length) return 0;
+
+    const events: { time: Date; type: "join" | "leave" }[] = [];
+
+    for (const r of rows) {
+      events.push({ time: new Date(r.join_time), type: "join" });
+
+      if (r.leave_time) {
+        events.push({ time: new Date(r.leave_time), type: "leave" });
+      }
+    }
+
+    events.sort(
+      (a, b) =>
+        a.time.getTime() - b.time.getTime() ||
+        (a.type === "leave" ? -1 : 1)
+    );
+
+    let simult = 0;
+    let maxSimult = 0;
+
+    for (const ev of events) {
+      if (ev.type === "join") {
+        simult++;
+        if (simult > maxSimult) maxSimult = simult;
+      } else {
+        simult--;
+      }
+    }
+
+    return maxSimult;
   }
 
   async delete(id: string): Promise<void> {
