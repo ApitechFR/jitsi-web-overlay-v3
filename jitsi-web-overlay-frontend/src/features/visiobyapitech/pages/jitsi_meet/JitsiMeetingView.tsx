@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import { useNavigate } from 'react-router';
 
@@ -8,6 +8,7 @@ import { ConferenceService, RoomService, useApi } from '@/api';
 import type { Props } from '@/api';
 import { useRuntimeConfig } from '../../../../config/ConfigProvider';
 import { ParticipantService } from '@/api/services/participants/participant.service';
+import { cleanupExpiredGuests, getStoredGuestParticipant, saveGuestParticipant } from '@/api/services/participants/participants.guests';
 
 const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displayName, user }) => {
   const participantCountRef = useRef(0);
@@ -29,6 +30,10 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
   const enableJibriApitechApi = cfg.VITE_ENABLE_JIBRI_APITECH_API ?? '';
   const jibriApitechApiDomain = cfg.VITE_JIBRI_APITECH_API_DOMAIN ?? '';
   const jitsiAPIOptions = (window as any).jitsiAPIOptions;
+
+  useEffect(() => {
+    cleanupExpiredGuests();
+  }, []);
 
   const onClose = () => {
     navigate('/feedback', { state: { room: conferenceName } });
@@ -126,15 +131,6 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
               const me = participantsInfo.find((p: any) => p.participantId === myId) as any;
               console.info('Me info (guest):', me);
 
-              const localKey = `guest-participant-${conferenceName}`;
-
-              const existingParticipantUid = localStorage.getItem(localKey);
-
-              if (existingParticipantUid) {
-                console.info('Guest already exists');
-                return;
-              }
-
               //find conference
               let conf = conferenceRef.current;
               if (!conf) {
@@ -144,6 +140,13 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
                 //   conf = await createConf({ room_uid: room.uid, name: conferenceName });
                 // }
                 conferenceRef.current = conf;
+              }
+
+              const existing = getStoredGuestParticipant(conf.uid);
+
+              if (existing) {
+                console.info('Guest already exists');
+                return;
               }
 
               console.log("conferenceRef.current (guest):", conferenceRef.current);
@@ -160,7 +163,7 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
               });
 
               if (guestParticipant?.uid) {
-                localStorage.setItem(localKey, guestParticipant.uid);
+                saveGuestParticipant(conferenceRef.current.uid, guestParticipant.uid, 24);
                 console.info("Guest participant stored in localStorage:", guestParticipant.uid);
               }
 
