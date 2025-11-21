@@ -115,7 +115,12 @@ export class ConferenceController {
     return { message: 'Mise à jour non supportée pour cette base.' };
   }
 
-  @Put('conferences/confname/:confName')
+  @Get('conferences/:conference_name/name')
+  async getConferenceByName(@Param('conference_name') name: string) {
+    return await this.conferenceService.findByName(name);
+  }
+
+  @Put('conferences/:confName/end')
   async updateEndTime(
     @Param('confName') confName: string,
     @Body() dto: EndConferenceDTO,
