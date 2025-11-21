@@ -9,21 +9,22 @@ import { JwtAuthGuard } from '../authentication/jwt-auth.guard';
 export class ParticipantController {
     constructor(private readonly participantService: ParticipantService) { }
 
-    @Post()
-    create(@Body() dto: CreateParticipantDto, @Req() req: Request) {
-        const clientIp =
-            (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
-            req.socket.remoteAddress ||
-            req.ip;
-        console.log(req.ip, req.socket.remoteAddress, req.headers['x-forwarded-for']);    
-        console.log('--- Creating participant ---');
-        console.log({ dto, clientIp });
-        return this.participantService.create(dto, clientIp);
-    }
+    // @Post()
+    // create(@Body() dto: CreateParticipantDto, @Req() req: Request) {
+    //     const clientIp =
+    //         (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+    //         req.socket.remoteAddress ||
+    //         req.ip;
+    //     console.log(req.ip, req.socket.remoteAddress, req.headers['x-forwarded-for']);    
+    //     console.log('--- Creating participant ---');
+    //     console.log({ dto, clientIp });
+    //     return this.participantService.create(dto, clientIp);
+    // }
 
-    @Get('getIP')
-    getClientIP(@Req() req: Request) {
-        return {ip : req.headers['x-real-ip'], ipForward : req.headers['x-forwarded-for'], remoteAddress : req.socket.remoteAddress, self : req.headers['cf-connecting-ip']};
+
+    @Post()
+    create(@Body() dto: CreateParticipantDto) {
+        return this.participantService.create(dto);
     }
 
     @UseGuards(JwtAuthGuard)

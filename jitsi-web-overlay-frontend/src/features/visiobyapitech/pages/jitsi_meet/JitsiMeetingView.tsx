@@ -126,6 +126,15 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
               const me = participantsInfo.find((p: any) => p.participantId === myId) as any;
               console.info('Me info (guest):', me);
 
+              const localKey = `guest-participant-${conferenceName}`;
+
+              const existingParticipantUid = localStorage.getItem(localKey);
+
+              if (existingParticipantUid) {
+                console.info('Guest already exists');
+                return;
+              }
+
               //find conference
               let conf = conferenceRef.current;
               if (!conf) {
@@ -139,7 +148,7 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
 
               console.log("conferenceRef.current (guest):", conferenceRef.current);
 
-              const guestName = me?.displayName || 'Invité';
+              const guestName = me?.displayName + "_" + me?.participantId || 'Invité';
               const guestEmail = me?.email || "";
 
               const guestParticipant = await createParticipant({
@@ -149,6 +158,11 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
                 role: myRole.current?.toUpperCase() || 'ATTENDEE',
                 status: 'INVITED',
               });
+
+              if (guestParticipant?.uid) {
+                localStorage.setItem(localKey, guestParticipant.uid);
+                console.info("Guest participant stored in localStorage:", guestParticipant.uid);
+              }
 
               console.info('Participant (guest) created:', guestParticipant);
             }
