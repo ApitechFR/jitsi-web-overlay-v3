@@ -20,6 +20,7 @@ import { ConfigService } from '@nestjs/config';
 import { ProsodyService } from '../../prosody/prosody.service';
 import { ProsodyRuntimeService } from '../../prosody/prosody-runtime.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { ParticipantService } from '../../participant/participant.service';
 
 @Injectable()
 export class ConferenceServiceSQL implements IConferenceService {
@@ -29,6 +30,8 @@ export class ConferenceServiceSQL implements IConferenceService {
     private readonly conferenceRepo: Repository<Conference>,
     @InjectRepository(Room)
     private readonly roomRepo: Repository<Room>,
+
+    private readonly participantService: ParticipantService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly prosodyService: ProsodyService,
@@ -85,13 +88,6 @@ export class ConferenceServiceSQL implements IConferenceService {
     });
   }
 
-  async findByName(name: string): Promise<Conference | null> {
-  return await this.conferenceRepo.findOne({
-    where: { name },
-    order: { start_time: 'DESC' },
-  });
-}
-
   async update(
     id: string,
     data: Partial<CreateConferenceDTO>,
@@ -117,13 +113,12 @@ export class ConferenceServiceSQL implements IConferenceService {
 
   private async countByDateRange(start: Date, end: Date): Promise<number> {
     return this.conferenceRepo.count({
-      where: { created_at: Between(start, end) }
+      where: { start_time: Between(start, end) }
     });
   }
 
-  async getStatisticsByFilter(filter: ConferenceFilter): Promise<{ filter: string; total: number }> {
+  private getDateRangeByFilter(filter: ConferenceFilter): { start: Date; end: Date } {
     const now = new Date();
-
     let start: Date;
     let end: Date;
 
@@ -161,6 +156,12 @@ export class ConferenceServiceSQL implements IConferenceService {
         throw new NotFoundException(`Invalid filter: ${filter}`);
     }
 
+    return { start, end };
+  }
+
+  async getStatisticsByFilter(filter: ConferenceFilter): Promise<{ filter: string; total: number }> {
+    const { start, end } = this.getDateRangeByFilter(filter);
+
     const total = await this.countByDateRange(start, end);
     return { filter, total };
   }
@@ -173,6 +174,78 @@ export class ConferenceServiceSQL implements IConferenceService {
       month: (await this.getStatisticsByFilter(ConferenceFilter.MONTH)).total,
       year: (await this.getStatisticsByFilter(ConferenceFilter.YEAR)).total
     };
+  }
+
+  async getHistoricSummary(filter?: ConferenceFilter, start_time?: Date, end_time?: Date) {
+    let start: Date | undefined, end: Date | undefined;
+
+    if (filter) {
+      ({ start, end } = this.getDateRangeByFilter(filter));
+
+    } else if (start_time && end_time) {
+      start = new Date(start_time);
+      end = new Date(end_time);
+    }
+
+    const confNb = await this.countByDateRange(start, end);
+    const maxSimult = await this.getMaxSimultConferences(start, end);
+    const confMoyTime = await this.getAverageDuration(start, end);
+    const confMoyPart = await this.getAverageParticipants(start, end);
+    const users = await this.participantService.countParticipantsByDateRange(start, end);
+
+    console.log({ confNb, maxSimult, confMoyTime, confMoyPart, users });
+
+    return { confNb, maxSimult, confMoyTime, confMoyPart, users };
+  }
+
+  async getAverageParticipants(start?: Date, end?: Date): Promise<number> {
+    const conferences = await this.conferenceRepo.find({
+      where: {
+        status: ConferenceStatus.COMPLETED,
+        ...(start && end ? { start_time: Between(start, end) } : {}),
+      },
+      relations: ['participants'],
+    });
+
+    if (conferences.length === 0) return 0;
+
+    const totalParticipants = conferences.reduce(
+      (sum, conf) => sum + (conf.participants?.length || 0),
+      0,
+    );
+
+    const avg = totalParticipants / conferences.length;
+
+    return Number(avg.toFixed(2));
+  }
+
+  async getAverageDuration(
+    start?: Date,
+    end?: Date,
+  ): Promise<string> {
+
+
+    let query = `
+    SELECT AVG(TIMESTAMPDIFF(SECOND, start_time, end_time)) AS avg_seconds
+    FROM conferences
+    WHERE status = 'completed'
+  `;
+
+    const params: any[] = [];
+    if (start && end) {
+      query += ` AND start_time BETWEEN ? AND ?`;
+      params.push(start, end);
+    }
+
+    const result = await this.conferenceRepo.query(query, params);
+
+    const avgSeconds = Math.floor(result[0]?.avg_seconds || 0);
+    const hours = Math.floor(avgSeconds / 3600);
+    const minutes = Math.floor((avgSeconds % 3600) / 60);
+    const seconds = avgSeconds % 60;
+
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
   }
 
   async getDuration(uid: string): Promise<string> {
@@ -197,6 +270,50 @@ export class ConferenceServiceSQL implements IConferenceService {
 
     const pad = (n: number) => n.toString().padStart(2, '0');
     return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  }
+
+  async getMaxSimultConferences(
+    start?: Date,
+    end?: Date,
+  ): Promise<number> {
+
+    // Récupération des conférences dans l'intervalle
+    let query = `
+    SELECT start_time, end_time
+    FROM conferences
+    WHERE status = 'completed'
+  `;
+    const params: any[] = [];
+    if (start && end) {
+      query += ` AND start_time <= ? AND end_time >= ?`;
+      params.push(end, start);
+    }
+
+    const conferences = await this.conferenceRepo.query(query, params);
+
+    // Création des événements
+    const events: { time: Date; type: 'start' | 'end' }[] = [];
+    for (const conf of conferences) {
+      events.push({ time: new Date(conf.start_time), type: 'start' });
+      events.push({ time: new Date(conf.end_time), type: 'end' });
+    }
+
+    // Tri par date, les "end" avant "start" en cas d'égalité
+    events.sort((a, b) => a.time.getTime() - b.time.getTime() || (a.type === 'end' ? -1 : 1));
+
+    // Calcul du max simultané
+    let simult = 0;
+    let maxsimult = 0;
+    for (const event of events) {
+      if (event.type === 'start') {
+        simult++;
+        if (simult > maxsimult) maxsimult = simult;
+      } else {
+        simult--;
+      }
+    }
+
+    return maxsimult;
   }
 
   async delete(id: string): Promise<void> {

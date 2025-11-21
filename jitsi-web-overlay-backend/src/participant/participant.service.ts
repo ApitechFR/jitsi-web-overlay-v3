@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Participant } from './entities/participant.entity';
 import { Conference } from '../conference/entities/conference.entity';
 import { User } from '../users/entities/users.entity';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { CreateParticipantDto, UpdateParticipantDto } from './dto/create-participant.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { PaginationDto } from './dto/pagination.dto';
@@ -198,4 +198,13 @@ export class ParticipantService {
 
         return { data, total, page, pageCount: Math.ceil(total / limit) };
     }
+
+    async countParticipantsByDateRange(start: Date, end: Date): Promise<number> {
+        return this.participantRepo.count({
+            where: {
+                createdAt: Between(start, end),
+            },
+        });
+    }
+
 }

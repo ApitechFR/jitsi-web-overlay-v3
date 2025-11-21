@@ -20,12 +20,14 @@ import { User } from '../users/entities/users.entity';
 import { RoomModule } from '../room/room.module';
 import { Room } from '../room/entities/room.entity';
 import { ProsodyRuntimeService } from '../prosody/prosody-runtime.service';
+import { ParticipantModule } from '../participant/participant.module';
 
 @Module({
   imports: [
     HttpModule,
     ProsodyModule,
     RoomModule,
+    ParticipantModule,
     ...(process.env.DB_TYPE === 'mongodb'
       ? [
         MongooseModule.forFeature([
