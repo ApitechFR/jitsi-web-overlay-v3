@@ -120,16 +120,14 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
                 phone: user.phone,
                 status: 'JOINED',
               });
-              console.info('Participant created:', participant);
+              console.info('Participant created');
             }
 
             //Participant invité (pas de user compte)
             else {
 
               const participantsInfo = api.getParticipantsInfo();
-              console.info('Participants info (guest):', participantsInfo);
               const me = participantsInfo.find((p: any) => p.participantId === myId) as any;
-              console.info('Me info (guest):', me);
 
               //find conference
               let conf = conferenceRef.current;
@@ -164,10 +162,10 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
 
               if (guestParticipant?.uid) {
                 saveGuestParticipant(conferenceRef.current.uid, guestParticipant.uid, 24);
-                console.info("Guest participant stored in localStorage:", guestParticipant.uid);
+                console.info("Guest participant stored in localStorage");
               }
 
-              console.info('Participant (guest) created:', guestParticipant);
+              console.info('Participant (guest) created');
             }
 
           } catch (e) {

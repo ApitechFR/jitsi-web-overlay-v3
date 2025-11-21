@@ -205,8 +205,6 @@ export class ConferenceServiceSQL implements IConferenceService {
     const users = await this.participantService.countParticipantsByDateRange(start, end);
     const partMaxSimult = await this.getMaxSimultParticipants(start, end);
 
-    console.log({ confNb, maxSimult, confMoyTime, confMoyPart, users, partMaxSimult });
-
     return { confNb, maxSimult, confMoyTime, confMoyPart, users, partMaxSimult };
   }
 
@@ -303,17 +301,14 @@ export class ConferenceServiceSQL implements IConferenceService {
 
     const conferences = await this.conferenceRepo.query(query, params);
 
-    // Création des événements
     const events: { time: Date; type: 'start' | 'end' }[] = [];
     for (const conf of conferences) {
       events.push({ time: new Date(conf.start_time), type: 'start' });
       events.push({ time: new Date(conf.end_time), type: 'end' });
     }
 
-    // Tri par date, les "end" avant "start" en cas d'égalité
     events.sort((a, b) => a.time.getTime() - b.time.getTime() || (a.type === 'end' ? -1 : 1));
 
-    // Calcul du max simultané
     let simult = 0;
     let maxsimult = 0;
     for (const event of events) {
@@ -333,7 +328,6 @@ export class ConferenceServiceSQL implements IConferenceService {
     end?: Date
   ): Promise<number> {
 
-    // 1️⃣ Récupération de tous les participants + leur conférence
     let query = `
     SELECT p.created_at AS join_time, c.end_time AS leave_time
     FROM participants p
