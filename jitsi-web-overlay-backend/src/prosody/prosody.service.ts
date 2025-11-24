@@ -7,20 +7,20 @@ export class ProsodyService {
   constructor(
     private configService: ConfigService,
     private readonly httpService: HttpService,
-  ) {}
+  ) { }
 
   private readonly logger = new Logger(ProsodyService.name);
 
   private jicofo_available_instances: string[] = this.configService.get(
     'JICOFO_AVAILABLE_INSTANCES',
   )
-    ? this.configService.get('JICOFO_AVAILABLE_INSTANCES').split(' ')
+    ? this.configService.get('JICOFO_AVAILABLE_INSTANCES').split(',')
     : [];
 
   private prosody_available_instances: string[] = this.configService.get(
     'PROSODY_AVAILABLE_INSTANCES',
   )
-    ? this.configService.get('PROSODY_AVAILABLE_INSTANCES').split(' ')
+    ? this.configService.get('PROSODY_AVAILABLE_INSTANCES').split(',')
     : [];
 
   async getRoomFromProsody(urls: string[]): Promise<string[] | [] | false> {
@@ -45,12 +45,12 @@ export class ProsodyService {
     const room_prosody_urls =
       this.prosody_available_instances.length !== 0
         ? this.prosody_available_instances.map(
-            (url) =>
-              url +
-              `/room?domain=${prosody_domain}&room=${roomName.toLocaleLowerCase()}&subdomain=`,
-          )
+          (url) =>
+            url +
+            `/room?domain=${prosody_domain}&room=${roomName.toLocaleLowerCase()}&subdomain=`,
+        )
         : null;
-    console.log({room_prosody_urls});
+    console.log({ room_prosody_urls });
     if (await this.getRoomFromProsody(room_prosody_urls)) {
       return this.getRoomFromProsody(room_prosody_urls);
     } else {
