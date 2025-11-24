@@ -19,6 +19,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ProsodyService } from '../../prosody/prosody.service';
 import { ProsodyRuntimeService } from '../../prosody/prosody-runtime.service';
+import { JitsiJwtService } from '../../common/services/jitsi-jwt.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
@@ -32,7 +33,8 @@ export class ConferenceServiceSQL implements IConferenceService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly prosodyService: ProsodyService,
-    private readonly prosodyRuntimeService: ProsodyRuntimeService
+    private readonly prosodyRuntimeService: ProsodyRuntimeService,
+    private readonly jitsiJwtService: JitsiJwtService
   ) { }
 
   async create(data: CreateConferenceDTO): Promise<Conference> {
@@ -47,7 +49,7 @@ export class ConferenceServiceSQL implements IConferenceService {
       await this.roomRepo.save(room);
     }
 
-    // Vérifier s'il existe déjà une conférence active pour cette room
+    // check if there is already an active conference for this room
     const existingConference = await this.conferenceRepo.findOne({
       where: {
         room: { uid: room.uid },
@@ -268,68 +270,8 @@ export class ConferenceServiceSQL implements IConferenceService {
     return true;
   }
 
-  async generateJitsiJwt(user: any, moderator: boolean, roomName: string) {
-    try {
-      const aud = this.configService.get('JITSI_JITSIJWT_AUD') ?? 'jitsi';
-      const iss = this.configService.get('JITSI_JITSIJWT_ISS');
-      const sub = this.configService.get('JITSI_JITSIJWT_SUB');
-      const minutes = Number(this.configService.get('JITSI_JITSIJWT_EXPIRESAFTER') ?? 60);
-
-      if (!iss || !sub) {
-        throw new InternalServerErrorException('Jitsi JWT config missing (iss/sub)');
-      }
-      if (!minutes || minutes <= 0) {
-        throw new InternalServerErrorException('Invalid Jitsi JWT expiration');
-      }
-
-      const first = user?.given_name || user?.firstName || user?.prenom || '';
-      const last = user?.family_name || user?.lastName || user?.nom || '';
-      const full = [first, last].filter(Boolean).join(' ').trim();
-
-      const displayName = full || user?.name || user?.email || 'Invité';
-      const email = user?.email || '';
-
-      const now = Math.floor(Date.now() / 1000);
-      const exp = now + minutes * 60;
-      const nbf = now - 10; // tolérance 10s
-
-      const payload: any = {
-        context: {
-          user: {
-            avatar: user?.avatar ?? '',
-            name: displayName,
-            email,
-            moderator: Boolean(moderator),
-          },
-        },
-        aud, iss, sub,
-        room: roomName,
-        iat: now,
-        nbf,
-        exp,
-      };
-
-      const secret = this.configService.get('JITSI_JITSIJWT_SECRET');
-      let token: string;
-
-      if (secret) {
-        token = this.jwtService.sign(payload, {
-          secret,
-          algorithm: 'HS256',
-        });
-      } else {
-        // Fallback: token pré-signé 
-        token = this.configService.get('JITSI_JWT');
-        if (!token) {
-          throw new InternalServerErrorException('No signing secret or fallback token configured');
-        }
-      }
-
-      return { token, exp };
-    } catch (error) {
-      this.logger.error('Erreur lors de la création du token Jitsi', error);
-      throw new UnauthorizedException('Impossible de générer le token');
-    }
+  generateJitsiJwt(user: any, moderator: boolean, roomName: string) {
+    return this.jitsiJwtService.generateJitsiJwt(user, moderator, roomName);
   }
 
   /**
