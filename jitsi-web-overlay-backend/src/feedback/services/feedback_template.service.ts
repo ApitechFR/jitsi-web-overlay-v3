@@ -13,7 +13,7 @@ export class FeedbackTemplateService {
 
     @InjectRepository(FeedbackType)
     private readonly typeRepo: Repository<FeedbackType>,
-  ) {}
+  ) { }
 
   async create(dto: CreateFeedbackTemplateDto): Promise<FeedbackTemplate> {
     const type = await this.typeRepo.findOne({ where: { id: dto.typeId } });
@@ -68,7 +68,7 @@ export class FeedbackTemplateService {
     return this.templateRepo.save(template);
   }
 
-    async findByOrganization(organization: string): Promise<FeedbackTemplate[]> {
+  async findByOrganization(organization: string): Promise<FeedbackTemplate[]> {
     const templates = await this.templateRepo.find({
       where: { organization, deletedAt: null },
     });
