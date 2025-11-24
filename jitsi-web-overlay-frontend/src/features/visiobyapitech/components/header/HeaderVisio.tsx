@@ -8,7 +8,7 @@ import { createModal } from '@apitechfr/react-dsapitech/Modal';
 
 import dataChangelog from '../../../../utils/changelogs/infos.json'
 import { Item } from '../../../../utils/changelogs/Item'
-import ChangelogContent from '../iframePopup/ChangelogContent';
+import ChangelogContent from '../IframePopup/ChangelogContent';
 import { useRuntimeConfig } from '../../../../config/ConfigProvider';
 
 const modal = createModal({

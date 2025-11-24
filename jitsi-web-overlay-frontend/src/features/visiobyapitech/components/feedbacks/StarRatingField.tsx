@@ -1,4 +1,4 @@
-import StarRating from "../stars/StarRating";
+import StarRating from "../Stars/StarRating";
 import { FieldProps } from "./FieldComponent";
 
 export const StarRatingField: React.FC<FieldProps> = ({ template, value, onChange }) => (
