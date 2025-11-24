@@ -3,7 +3,8 @@ import {
   NotFoundException,
   UnauthorizedException,
   Logger,
-  InternalServerErrorException
+  InternalServerErrorException,
+  BadRequestException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
@@ -323,28 +324,20 @@ export class ConferenceServiceSQL implements IConferenceService {
     return maxsimult;
   }
 
-  async getMaxSimultParticipants(
-    start?: Date,
-    end?: Date
-  ): Promise<number> {
+  async getMaxSimultParticipants(start?: Date, end?: Date): Promise<number> {
 
-    let query = `
+    if (!start || !end) {
+      throw new BadRequestException('Specify start and end date for max simultaneous participants');
+    }
+
+    const query = `
     SELECT p.created_at AS join_time, c.end_time AS leave_time
     FROM participants p
     JOIN conferences c ON c.uid = p.conference_uid
+    WHERE p.created_at <= ? AND (c.end_time IS NULL OR c.end_time >= ?)
   `;
 
-    const params: any[] = [];
-
-    if (start && end) {
-      query += `
-      WHERE p.created_at <= ?
-      AND (c.end_time IS NULL OR c.end_time >= ?)
-    `;
-      params.push(end, start);
-    }
-
-    const rows = await this.participantRepo.query(query, params);
+    const rows = await this.participantRepo.query(query, [end, start]);
 
     if (!rows.length) return 0;
 
