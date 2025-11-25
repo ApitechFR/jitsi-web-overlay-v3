@@ -138,9 +138,11 @@ export class FeedbackController {
     @Query('end') end?: Date,
   ) {
     const csvBuffer = await this.feedbackService.exportFeedbacksToCSV(filter, start, end);
+    const now = new Date();
+    const date = now.getFullYear().toString() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0');
 
     res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename="feedbacks.csv"');
+    res.setHeader('Content-Disposition', `attachment; filename="feedbacks_${date}.csv"`);
     res.send(csvBuffer);
   }
 
