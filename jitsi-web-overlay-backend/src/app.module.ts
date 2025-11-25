@@ -100,37 +100,37 @@ export class AppModule implements NestModule {
       .forRoutes({ path: 'conferences/*', method: RequestMethod.ALL });
     consumer
       .apply(OriginMiddleware)
-      .forRoutes({ path: 'conferences', method: RequestMethod.GET });
+      .forRoutes({ path: 'conferences*', method: RequestMethod.GET });
 
     //particcipants endpoint
     consumer
       .apply(OriginMiddleware)
-      .forRoutes({ path: 'participants/*', method: RequestMethod.GET });
+      .forRoutes({ path: 'participants*', method: RequestMethod.GET });
 
     //feedback endpoint  
     consumer
       .apply(OriginMiddleware)
-      .forRoutes({ path: 'feedback/*', method: RequestMethod.GET });
+      .forRoutes({ path: 'feedback*', method: RequestMethod.GET });
 
     // replay endpoints
     consumer
       .apply(OriginMiddleware)
-      .forRoutes({ path: 'replays/*', method: RequestMethod.GET });
+      .forRoutes({ path: 'replays*', method: RequestMethod.GET });
 
     //user
     consumer
       .apply(OriginMiddleware)
-      .forRoutes({ path: 'users/*', method: RequestMethod.GET });
+      .forRoutes({ path: 'users*', method: RequestMethod.GET });
 
     //rooms
     consumer
       .apply(OriginMiddleware)
-      .forRoutes({ path: 'rooms/*', method: RequestMethod.GET });
+      .forRoutes({ path: 'rooms*', method: RequestMethod.GET });
 
     //stats
     consumer
       .apply(OriginMiddleware)
-      .forRoutes({ path: 'stats/*', method: RequestMethod.GET });
+      .forRoutes({ path: 'stats*', method: RequestMethod.GET });
 
 
   }
