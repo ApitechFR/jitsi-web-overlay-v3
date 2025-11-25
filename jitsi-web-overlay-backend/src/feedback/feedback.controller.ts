@@ -12,6 +12,7 @@ import {
   Put,
   Query,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { CreateFeedbackDto, FeedbackDTO } from './DTOs/feedback.dto';
@@ -30,6 +31,7 @@ import { FeedbackFilter } from './enums/feedback_filter.enum';
 import { ParseFeedbackFilterPipe } from './utils/ParseFeedbackFilterPipe';
 import { PaginationDto } from './DTOs/pagination.dto';
 import { plainToInstance } from 'class-transformer';
+import { JwtAuthGuard } from '../authentication/jwt-auth.guard';
 
 @Controller('feedback')
 export class FeedbackController {
@@ -89,6 +91,7 @@ export class FeedbackController {
     return this.feedbackService.createFeedbackBulk(dtos);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('statistics/organization/:organization')
   @ApiOkResponse({ description: 'Statistiques des feedbacks pour une organisation donnée' })
   @ApiBadRequestResponse({ description: 'Filtre ou dates invalides' })
@@ -107,7 +110,7 @@ export class FeedbackController {
     );
   }
 
-
+  @UseGuards(JwtAuthGuard)
   @Get('statistics/organization/:organization/text')
   async getTextCommentsByOrganization(
     @Param('organization') organization: string,
@@ -129,6 +132,7 @@ export class FeedbackController {
     );
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('export')
   @ApiOkResponse({ description: 'Export des feedbacks en format CSV' })
   async exportFeedbacks(
@@ -152,6 +156,7 @@ export class FeedbackController {
   // }
 
   // === Feedback par conférence ===
+  @UseGuards(JwtAuthGuard)
   @Get('conference/:uuid')
   getFeedbackByConference(
     @Param('uuid') uuid: string,
@@ -162,6 +167,7 @@ export class FeedbackController {
     return this.feedbackService.findByConference(uuid, filter, start, end);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('conference/:uuid/stats')
   getFeedbackStats(@Param('uuid') uuid: string) {
     return this.feedbackService.getStats(uuid);
@@ -189,6 +195,7 @@ export class FeedbackController {
     return this.feedbackTypeService.update(id, dto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete('types/:id')
   deleteType(@Param('id') id: number) {
     return this.feedbackTypeService.remove(id);
@@ -221,6 +228,7 @@ export class FeedbackController {
     return this.templateService.update(id, dto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete('templates/:id')
   deleteTemplate(@Param('id') id: number) {
     return this.templateService.softDelete(id);

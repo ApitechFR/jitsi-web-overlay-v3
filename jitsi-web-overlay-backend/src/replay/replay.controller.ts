@@ -10,7 +10,6 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../authentication/jwt-auth.guard';
 
 @ApiTags('replays')
-@UseGuards(JwtAuthGuard)
 @Controller('replays')
 export class ReplayController {
     constructor(private readonly replayService: ReplayService) { }
@@ -144,6 +143,7 @@ export class ReplayController {
         }
     }
 
+    @UseGuards(JwtAuthGuard)
     @Get('download/:uid')
     @ApiOperation({ summary: 'Télécharger la vidéo' })
     async downloadVideo(
@@ -167,6 +167,7 @@ export class ReplayController {
         stream.pipe(res);
     }
 
+    @UseGuards(JwtAuthGuard)
     @Get('')
     @ApiOperation({ summary: 'Lister tous les replays groupés par conférence' })
     async findAllGroupedByConference() {
@@ -181,6 +182,7 @@ export class ReplayController {
         return grouped;
     }
 
+    @UseGuards(JwtAuthGuard)
     @Get('conference/:conference_uid')
     @ApiOperation({ summary: 'Obtenir un replay par UID de conférence' })
     async getByLatestConfUID(@Param('conference_uid') conference_uid: string) {
@@ -221,6 +223,7 @@ export class ReplayController {
         };
     }
 
+    @UseGuards(JwtAuthGuard)
     @Get(':conference_name')
     @ApiOperation({ summary: 'Obtenir un replay par nom de conférence' })
     async findReplayByConfName(@Param('conference_name') conference_name: string): Promise<Replay> {
