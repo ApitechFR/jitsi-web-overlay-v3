@@ -62,7 +62,7 @@ export class ProsodyRuntimeService {
     /** Generate a JWT for Prosody service authentication. */
     private generateProsodyJwt(): string {
         // Use a fictitious "service" user with moderator true
-        const { token } = this.jitsiJwtService.generateJitsiJwt({ role: 'service' }, true, 'prosody');
+        const { token } = this.jitsiJwtService.generateJitsiJwt({ role: 'service' }, true, '*');
         return token;
     }
 
