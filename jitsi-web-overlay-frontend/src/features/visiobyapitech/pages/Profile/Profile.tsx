@@ -29,7 +29,7 @@ function Profile() {
         )}
       </div>
       <div className={styles.inputSection}>
-        <Input disabled label="uid" nativeInputProps={{ value: uid }} />
+        <Input disabled label="ID" nativeInputProps={{ value: uid }} />
         <Input disabled label="Nom complet" nativeInputProps={{ value: getUserFullName(user) }} />
         <Input disabled label="Email" nativeInputProps={{ value: getUserEmail(user) }} />
       </div>
