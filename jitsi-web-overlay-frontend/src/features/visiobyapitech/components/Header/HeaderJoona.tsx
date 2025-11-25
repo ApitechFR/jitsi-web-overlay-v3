@@ -11,7 +11,7 @@ import { isUserAdmin } from '../../../../utils/user';
 
 import dataChangelog from '../../../../utils/changelogs/infos.json'
 import { Item } from '../../../../utils/changelogs/Item'
-import ChangelogContent from '../iframePopup/ChangelogContent';
+import ChangelogContent from '../IframePopup/ChangelogContent';
 import { useRuntimeConfig } from '../../../../config/ConfigProvider';
 
 const modal = createModal({
@@ -65,7 +65,7 @@ export default function HeaderJoona() {
 
             //{ linkProps: { href: '/admin', target: '_self' }, text: 'Administration' },
             { linkProps: { href: '/replays', target: '_self' }, text: 'Conférences' },
-            //{ linkProps: { href: '/dashboard', target: '_self' }, text: 'Dashboard' },
+            { linkProps: { href: '/dashboard', target: '_self' }, text: 'Dashboard' },
           ]
           : []),
       ]

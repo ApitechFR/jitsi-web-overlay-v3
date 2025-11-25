@@ -10,9 +10,10 @@ import {
   Get,
   Delete,
   Put,
-  UseGuards,
+  Query,
+  Res,
 } from '@nestjs/common';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { CreateFeedbackDto, FeedbackDTO } from './DTOs/feedback.dto';
 import { IFeedbackService } from './interfaces/feedback-service.interface';
 import {
@@ -25,7 +26,10 @@ import { FeedbackTypeService } from './services/feedback_type.service';
 import { CreateFeedbackTypeDto, UpdateFeedbackTypeDto } from './DTOs/feedback_type.dto';
 import { FeedbackTemplateService } from './services/feedback_template.service';
 import { CreateFeedbackTemplateDto, UpdateFeedbackTemplateDto } from './DTOs/feedback_template.dto';
-import { JwtAuthGuard } from '../authentication/jwt-auth.guard';
+import { FeedbackFilter } from './enums/feedback_filter.enum';
+import { ParseFeedbackFilterPipe } from './utils/ParseFeedbackFilterPipe';
+import { PaginationDto } from './DTOs/pagination.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Controller('feedback')
 export class FeedbackController {
@@ -85,85 +89,138 @@ export class FeedbackController {
     return this.feedbackService.createFeedbackBulk(dtos);
   }
 
+  @Get('statistics/organization/:organization')
+  @ApiOkResponse({ description: 'Statistiques des feedbacks pour une organisation donnée' })
+  @ApiBadRequestResponse({ description: 'Filtre ou dates invalides' })
+  async getFeedbackStatsByOrganization(
+    @Param('organization') organization: string,
+    @Query('filter', new ParseFeedbackFilterPipe()) filter?: FeedbackFilter,
+    @Query('start') start?: Date,
+    @Query('end') end?: Date,
+  ) {
+
+    return this.feedbackService.getStatsByOrganization(
+      organization,
+      filter,
+      start,
+      end,
+    );
+  }
+
+
+  @Get('statistics/organization/:organization/text')
+  async getTextCommentsByOrganization(
+    @Param('organization') organization: string,
+    @Query('label') label: string,
+    @Query() query: any,
+    @Query('filter', new ParseFeedbackFilterPipe()) filter?: FeedbackFilter,
+    @Query('start') start?: Date,
+    @Query('end') end?: Date,
+  ) {
+    const paginationDto = plainToInstance(PaginationDto, query);
+
+    return this.feedbackService.getTextCommentsByOrganization(
+      organization,
+      label,
+      paginationDto,
+      filter,
+      start,
+      end,
+    );
+  }
+
+  @Get('export')
+  @ApiOkResponse({ description: 'Export des feedbacks en format CSV' })
+  async exportFeedbacks(
+    @Res() res: Response,
+    @Query('filter', new ParseFeedbackFilterPipe()) filter?: FeedbackFilter,
+    @Query('start') start?: Date,
+    @Query('end') end?: Date,
+  ) {
+    const csvBuffer = await this.feedbackService.exportFeedbacksToCSV(filter, start, end);
+    const now = new Date();
+    const date = now.getFullYear().toString() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0');
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="feedbacks_${date}.csv"`);
+    res.send(csvBuffer);
+  }
+
   // @Delete(':id')
   // async remove(@Param('id') id: string) {
   //   return this.feedbackService.deleteFeedback(id);
   // }
 
   // === Feedback par conférence ===
-  @UseGuards(JwtAuthGuard)
   @Get('conference/:uuid')
-  getFeedbackByConference(@Param('uuid') uuid: string) {
-    return this.feedbackService.findByConference(uuid);
+  getFeedbackByConference(
+    @Param('uuid') uuid: string,
+    @Query('filter', new ParseFeedbackFilterPipe()) filter?: FeedbackFilter,
+    @Query('start') start?: Date,
+    @Query('end') end?: Date,
+  ) {
+    return this.feedbackService.findByConference(uuid, filter, start, end);
   }
-  @UseGuards(JwtAuthGuard)
+
   @Get('conference/:uuid/stats')
   getFeedbackStats(@Param('uuid') uuid: string) {
     return this.feedbackService.getStats(uuid);
   }
 
   // === FeedbackType Endpoints ===
-  @UseGuards(JwtAuthGuard)
+
   @Post('types')
   createType(@Body() dto: CreateFeedbackTypeDto) {
     return this.feedbackTypeService.create(dto);
   }
 
-  //@UseGuards(JwtAuthGuard)
   @Get('types')
   getAllTypes() {
     return this.feedbackTypeService.findAll();
   }
 
-  //@UseGuards(JwtAuthGuard)
   @Get('types/:id')
   getTypeById(@Param('id') id: number) {
     return this.feedbackTypeService.findOne(id);
   }
-  @UseGuards(JwtAuthGuard)
+
   @Put('types/:id')
   updateType(@Param('id') id: number, @Body() dto: UpdateFeedbackTypeDto) {
     return this.feedbackTypeService.update(id, dto);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Delete('types/:id')
   deleteType(@Param('id') id: number) {
     return this.feedbackTypeService.remove(id);
   }
 
   // === FeedbackTemplate Endpoints ===
-  @UseGuards(JwtAuthGuard)
+
   @Post('templates')
   createTemplate(@Body() dto: CreateFeedbackTemplateDto) {
     return this.templateService.create(dto);
   }
 
-  //@UseGuards(JwtAuthGuard)
   @Get('templates')
   getAllTemplates() {
     return this.templateService.findAll();
   }
 
-  //@UseGuards(JwtAuthGuard)
   @Get('templates/organization/:organization')
   findByOrganization(@Param('organization') organization: string) {
     return this.templateService.findByOrganization(organization);
   }
 
-  //@UseGuards(JwtAuthGuard)
   @Get('templates/:id')
   getTemplateById(@Param('id') id: number) {
     return this.templateService.findOne(id);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Put('templates/:id')
   updateTemplate(@Param('id') id: number, @Body() dto: UpdateFeedbackTemplateDto) {
     return this.templateService.update(id, dto);
   }
 
-  //@UseGuards(JwtAuthGuard)
   @Delete('templates/:id')
   deleteTemplate(@Param('id') id: number) {
     return this.templateService.softDelete(id);

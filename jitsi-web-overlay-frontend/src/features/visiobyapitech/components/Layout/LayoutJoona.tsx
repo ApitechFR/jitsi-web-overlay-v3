@@ -1,6 +1,6 @@
 import styles from './LayoutJoona.module.css';
-import Header from '../header/HeaderJoona';
-import Footer from '../footer/FooterJoona';
+import Header from '../Header/HeaderJoona';
+import Footer from '../Footer/FooterJoona';
 import { Outlet } from 'react-router-dom';
 
 import {
@@ -18,7 +18,7 @@ export default function LayoutJoona() {
   return (
     <div className={styles.layout}>
       <header>
-        <Header  />
+        <Header />
       </header>
       <main>
         <Outlet />

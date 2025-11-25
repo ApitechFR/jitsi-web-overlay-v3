@@ -1,0 +1,32 @@
+[
+    {
+        "key": "users",
+        "label": "ActifUsers",
+        "description": "Nombre d’utilisateurs actifs"
+    },
+    {
+        "key": "confNb",
+        "label": "NbConferences",
+        "description": "Nombre total de conférences lancées"
+    },
+    {
+        "key": "confTime",
+        "label": "TimeConferences",
+        "description": "Durée moyenne d'une conférence"
+    },
+    {
+        "key": "confMoyPart",
+        "label": "MoyPartConference",
+        "description": "Moy participants dans une conférence"
+    },
+    {
+        "key": "confMaxSimult",
+        "label": "MaxSimultConference",
+        "description": "Maximum de conférences simultanées"
+    },
+    {
+        "key": "partMaxSimult",
+        "label": "MaxSimultParticipant",
+        "description": "Maximum de participants simultanés"
+    }
+]

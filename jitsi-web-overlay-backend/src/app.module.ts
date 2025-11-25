@@ -21,6 +21,7 @@ import { OriginMiddleware } from './common/middleware/origin.middleware';
 import { ReplayModule } from './replay/replay.module';
 import { RoomModule } from './room/room.module';
 import { dataSourceOptions } from '../db/datasource';
+import { ParticipantModule } from './participant/participant.module';
 
 
 @Module({
@@ -86,6 +87,7 @@ import { dataSourceOptions } from '../db/datasource';
     ProsodyModule,
     ReplayModule,
     RoomModule,
+    ParticipantModule,
   ],
   controllers: [AppController],
   providers: [AppService, RoomNameValidator],

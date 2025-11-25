@@ -1,5 +1,5 @@
 import React from "react";
-import SvgDefs from "../svgDef/SvgDefs";
+import SvgDefs from "../SvgDef/SvgDefs";
 
 import styles from './StarRating.module.css'
 
@@ -8,12 +8,12 @@ interface StarRatingProps {
   changeRating: (value: number) => void;
 }
 
-function StarRating ({ rating, changeRating }: StarRatingProps) {
+function StarRating({ rating, changeRating }: StarRatingProps) {
   const maxRating = 5;
 
   return (
     <div className={styles.ratingContainer}>
-        <SvgDefs />
+      <SvgDefs />
       <div className={styles.starsGroup}>
         {Array.from({ length: maxRating }, (_, index) => {
           const starNumber = index + 1;

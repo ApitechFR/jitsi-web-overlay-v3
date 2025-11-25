@@ -4,7 +4,7 @@ import { useRuntimeConfig } from '../../../../config/ConfigProvider';
 
 import styles from './FeedbackJoona.module.css';
 import { useEffect, useMemo, useState } from 'react';
-import { FieldComponent } from '../../components/feedbacks/FieldComponent';
+import { FieldComponent } from '../../components/Feedbacks/FieldComponent';
 import { FeedbackService, useApi } from '@/api';
 import type { FeedbackTemplate } from '@/api';
 import { useLocation, useNavigate } from 'react-router';

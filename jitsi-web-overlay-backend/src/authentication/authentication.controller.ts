@@ -11,6 +11,7 @@ import {
   UnauthorizedException,
   Inject,
 } from '@nestjs/common';
+import { UsersService } from '../users/users.service';
 import { Request, Response } from 'express';
 import * as crypto from 'crypto';
 
@@ -34,6 +35,7 @@ export class AuthenticationController {
     private readonly conferenceService: IConferenceService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly usersService: UsersService,
   ) { }
 
   private getFrontBaseUrl(): string {
@@ -56,9 +58,9 @@ export class AuthenticationController {
     * Return user information from the JWT.
     */
   @Get('authentication/userinfo')
-  @ApiOkResponse({ description: 'Retourne les infos utilisateur du JWT' })
+  @ApiOkResponse({ description: 'Retourne les infos utilisateur du JWT + synchronisées avec la base' })
   @ApiUnauthorizedResponse({ description: 'Utilisateur non authentifié' })
-  userinfo(@Req() request: Request) {
+  async userinfo(@Req() request: Request) {
     const accessToken = request.signedCookies?.accessToken;
     if (!accessToken) {
       throw new UnauthorizedException('Utilisateur non authentifié');
@@ -70,6 +72,18 @@ export class AuthenticationController {
       });
       if (!decoded) {
         throw new UnauthorizedException('JWT invalide');
+      }
+      // Synchronise avec la base si possible (par email)
+      if (decoded.email) {
+        const user = await this.usersService.findByEmail(decoded.email);
+        if (user) {
+          // On renvoie les infos du JWT + admin et role de la base
+          return {
+            ...decoded,
+            admin: user.admin,
+            role: user.role,
+          };
+        }
       }
       return decoded;
     } catch {
@@ -141,7 +155,8 @@ export class AuthenticationController {
     const { userinfo, idToken } =
       await this.authenticationService.loginCallback(code, state, sendedState);
 
-
+    // Enregistre ou met à jour l'utilisateur OIDC dans la base
+    const user = await this.authenticationService.upsertOidcUser(userinfo);
 
     const userInfos = this.authenticationService.extractUserInfos(userinfo);
 
@@ -151,8 +166,8 @@ export class AuthenticationController {
       sub: this.configService.get('JITSI_JITSIJWT_SUB'),
       email: this.authenticationService.extractEmail(userinfo),
       ...userInfos,
+      uid: user.uid,
     };
-
 
     const accessToken = this.authenticationService.generateAccessToken(baseClaims);
     const refreshToken = this.authenticationService.generateRefreshToken({
@@ -160,10 +175,7 @@ export class AuthenticationController {
       idToken,
     });
 
-
     // Pose les cookies de session
-    // this.authenticationService.setAuthCookie(response, 'refreshToken', refreshToken);
-    // this.authenticationService.setAuthCookie(response, 'accessToken', accessToken);
     this.authenticationService.setAuthCookie(response, 'accessToken', accessToken, {
       maxAge: 2 * 60 * 60 * 1000, // 2h
     });
@@ -263,6 +275,7 @@ export class AuthenticationController {
         family_name: decoded?.family_name || '',
         name: decoded?.name || '',
         isAdmin: Boolean(decoded?.admin),
+        uid: decoded?.uid,
       };
 
       const accessToken = this.authenticationService.generateAccessToken(baseClaims);

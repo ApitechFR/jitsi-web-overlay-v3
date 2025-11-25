@@ -104,7 +104,7 @@ export function handleRecordingStatus(
         } else if (isRecordingStarted) {
             isRecordingStarted = "false";
             localStorage.setItem('isRecordingStarted', 'false');
-            showLoadingToast("Chargement de l'enregistrement en cours ...");
+            showLoadingToast("Préparation de l'enregistrement vidéo");
             retryVerification(conference_name, checkVideoInterval, checkTimeout);
         }
     });

@@ -29,7 +29,7 @@ import { ByEmailDTO } from './DTOs/byEmail.dto';
 import { JwtDTO } from './DTOs/jwt.dto';
 import { RoomNameDto } from './DTOs/room-name.dto';
 import { ConferenceFilter } from './enum/conference_filter.enum';
-import { ParseConferenceFilterPipe } from '../../utils/ParseConferenceFilterPipe';
+import { ParseConferenceFilterPipe } from './utils/ParseConferenceFilterPipe';
 import { ProsodyRuntimeService } from '../prosody/prosody-runtime.service';
 import { JwtAuthGuard } from '../authentication/jwt-auth.guard';
 
@@ -64,16 +64,26 @@ export class ConferenceController {
   @Get("conferences/statistics")
   @ApiOkResponse({ description: "Statistiques des conférences" })
   @ApiBadRequestResponse({ description: "Filtre invalide" })
-  async getStatistics(@Query("filter", new ParseConferenceFilterPipe()) filter?: ConferenceFilter) {
-    if (filter) {
-      return this.conferenceService.getStatisticsByFilter(filter);
-    }
+  async getStatistics() {
     return this.conferenceService.getGlobalStatistics();
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get("conferences/summary")
+  @ApiOkResponse({ description: "Statistiques des conférences" })
+  @ApiBadRequestResponse({ description: "Filtre invalide" })
+  async getSummary(
+    @Query("filter", new ParseConferenceFilterPipe()) filter?: ConferenceFilter,
+    @Query("start") start?: Date,
+    @Query("end") end?: Date,
+  ) {
+    return this.conferenceService.getHistoricSummary(filter, start, end);
+  }
+
+
   @Get('conferences/:uid/duration')
-  async getDuration(@Param('uid') uid: string): Promise<{ duration: string }> {
+  async getDuration(
+    @Param('uid') uid: string): Promise<{ duration: string }> {
     const duration = await this.conferenceService.getDuration(uid);
     return { duration };
   }
@@ -93,7 +103,6 @@ export class ConferenceController {
     return this.conferenceService.delete(id);
   }
 
-
   @Put('conferences/:id')
   @ApiOkResponse({ description: 'Conférence mise à jour' })
   async update(
@@ -104,6 +113,11 @@ export class ConferenceController {
       return (this.conferenceService as any).update(id, body);
     }
     return { message: 'Mise à jour non supportée pour cette base.' };
+  }
+
+  @Get('conferences/:conference_name/name')
+  async getConferenceByName(@Param('conference_name') name: string) {
+    return await this.conferenceService.findByName(name);
   }
 
   @Put('conferences/:confName/end')
@@ -204,7 +218,7 @@ export class ConferenceController {
     );
   }
 
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @Post('conferences/:roomName/tokens/jitsi')
   @Header('Cache-Control', 'no-store')
   async createJitsiToken(

@@ -21,7 +21,6 @@ export class RoomService {
         const room = this.roomRepo.create({
             ...data,
             uid: uuidv4(),
-            created_by: uuidv4(), // temporaire, à remplacer par l'UID de l'utilisateur connecté
         });
         return this.roomRepo.save(room);
     }

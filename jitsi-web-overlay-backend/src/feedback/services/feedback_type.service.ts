@@ -9,7 +9,7 @@ export class FeedbackTypeService {
   constructor(
     @InjectRepository(FeedbackType)
     private readonly repository: Repository<FeedbackType>,
-  ) {}
+  ) { }
 
   async create(dto: CreateFeedbackTypeDto): Promise<FeedbackType> {
     const feedbackType = this.repository.create(dto);

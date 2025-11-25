@@ -4,7 +4,7 @@ import { useAuth } from '../../../../auth/useAuth';
 import JitsiMeetingView from './JitsiMeetingView';
 import { validateConferenceName } from '../../../../utils/conferenceName';
 import CircularProgress from '@mui/material/CircularProgress';
-import Header from '../../components/header/HeaderVisio';
+import Header from '../../components/Header/HeaderVisio';
 import styles from './JitsiMeetWrapper.module.css';
 import { useApi } from '@/api';
 import { ConferenceService } from '@/api';
@@ -138,6 +138,7 @@ const JitsiMeetWrapper: React.FC = () => {
         conferenceName={conferenceName!}
         jwt={jwtToken}          // undefined => invité
         displayName={displayName}
+        user={user}
       />
     </>
   );
