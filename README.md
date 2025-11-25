@@ -11,7 +11,7 @@ Variables principales :
 - `PROSODY_ENDPOINT_ROOM` : endpoint pour obtenir la liste des participants d'une salle.
 - `PROSODY_ENDPOINT_ROOM_SIZE` : endpoint pour obtenir le nombre de participants dans une salle.
 - `PROSODY_ENDPOINT_SESSIONS` : endpoint pour accéder au nombre total de sessions actives.
-- `PROSODY_SERVICE_TOKEN` : token d'accès au service Prosody.
+
 
 ##### Endpoints Prosody utilisés
 
@@ -96,7 +96,6 @@ Les variables d'environnement permettent de configurer le comportement du backen
 | PROSODY_ENDPOINT_ROOM | Endpoint pour les salles | `/room` | Optionnelle | `/room` |
 | PROSODY_ENDPOINT_ROOM_SIZE | Endpoint pour la taille des salles | `/room-size` | Optionnelle | `/room-size` |
 | PROSODY_ENDPOINT_SESSIONS | Endpoint pour les sessions | `/sessions` | Optionnelle | `/sessions` |
-| PROSODY_SERVICE_TOKEN | Token d'accès au service Prosody Elle est optionnelle, mais doit être renseignée si le serveur Prosody requiert un token d'accès pour les requêtes API. | `token_example` | Optionnelle | (aucune) |
 | JITSI_MUC_DOMAIN | Domaine MUC utilisé par Jitsi | `conference.prosody.example.com` | Optionnelle | (aucune) |
 | BACKEND_PORT | Port d'écoute du backend | `3030` | Optionnelle | 3030 |
 | AGENTCONNECT_PROXYURL | URL du proxy AgentConnect | `https://proxy.example.com` | Optionnelle | (aucune) |
@@ -111,8 +110,8 @@ Les variables d'environnement permettent de configurer le comportement du backen
 | JITSI_JITSIJWT_SECRET | Secret JWT Jitsi | `jwt_secret_example` | Obligatoire | (aucune) |
 | JITSI_JITSIJWT_EXPIRESAFTER | Durée de validité du token | `60` | Obligatoire | (aucune) |
 | PROSODY_DOMAIN | Domaine Prosody | `prosody.example.com` | Obligatoire | (aucune) |
-| PROSODY_AVAILABLE_INSTANCES | Instances Prosody (séparées par un espace) | `prosody1.example.com prosody2.example.com` | Obligatoire | (aucune) |
-| JICOFO_AVAILABLE_INSTANCES | Instances Jicofo (séparées par un espace) | `jicofo1.example.com jicofo2.example.com` | Obligatoire | (aucune) |
+| PROSODY_AVAILABLE_INSTANCES | Instances Prosody (séparées par une virgule) | `prosody1.example.com prosody2.example.com` | Obligatoire | (aucune) |
+| JICOFO_AVAILABLE_INSTANCES | Instances Jicofo (séparées par une virgule) | `jicofo1.example.com jicofo2.example.com` | Obligatoire | (aucune) |
 | MONGO_URI | URI MongoDB | `mongodb://user:pass@host:port/dbname` | Obligatoire si DB_TYPE=mongodb | (aucune) |
 | EMAIL_FROM | Adresse email d'envoi | `noreply@example.com` | Optionnelle | (aucune) |
 | EMAIL_SUBJECT | Sujet de l'email | `Invitation à la réunion` | Obligatoire | (aucune) |
@@ -124,8 +123,11 @@ Les variables d'environnement permettent de configurer le comportement du backen
 | EMAIL_SMTP_AUTH_PASS | Mot de passe SMTP | `smtp_password` | Optionnelle | (aucune) |
 | EMAIL_SMTP_TLS_REJECTUNAUTHORIZED | Rejeter les certificats non autorisés | `false` | Optionnelle | `false` |
 | JMMC_URL | URL du service JMMC | `https://jmmc.example.com` | Optionnelle | (aucune) |
-| FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS | Nombre min de chiffres dans le nom de salle | `2` | Optionnelle | 3 |
-| FRONTCONF_ROOMNAMECONSTRAINT_LENGTH | Longueur du nom de salle | `8` | Optionnelle | 10 |
+| FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS | Nombre minimum de chiffres requis dans le nom de salle | `3` | Optionnelle | 3 |
+| FRONTCONF_ROOMNAMECONSTRAINT_MINLENGTH | Longueur minimale du nom de salle | `3` | Optionnelle | 3 |
+| FRONTCONF_ROOMNAMECONSTRAINT_MAXLENGTH| Longueur maximale du nom de salle | `10` | Optionnelle | 10 |
+| FRONTCONF_ROOMNAMECONSTRAINT_GENMINLENGTH| Longueur minimale générée pour le nom de salle | `3` (ou MINLENGTH si non défini) | Optionnelle | 3 |
+| FRONTCONF_ROOMNAMECONSTRAINT_GENMAXLENGTH| Longueur maximale générée pour le nom de salle | `10` (ou MAXLENGTH si non défini) | Optionnelle | 10 |
 | COOKIE_SECRET | Secret pour les cookies | `cookie_secret_example` | Obligatoire | (aucune) |
 | CORS_ORIGIN | Origine autorisée pour CORS | `https://frontend.example.com` | Optionnelle | (aucune) |
 | DB_TYPE | Type de base de données | `mongodb` ou `mariadb` | Obligatoire | (aucune) |

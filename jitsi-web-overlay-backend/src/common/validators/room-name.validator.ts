@@ -13,21 +13,37 @@ export class RoomNameValidator implements ValidatorConstraintInterface {
   validate(roomName: string): boolean {
     if (!this.configService) return false;
 
-    const minDigits = this.configService.get<number>(
-      'FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS',
-    ) || 3;
-    const length = this.configService.get<number>(
-      'FRONTCONF_ROOMNAMECONSTRAINT_LENGTH',
-    ) || 10;
-    const regexString = this.configService.get<string>(
-      'CONFERENCE_NAME_REGEX',
-    ) || "^[a-zA-Z0-9_-]";
+    const minDigits =
+      this.configService.get<number>(
+        'FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS',
+      ) || 3;
 
-    if (!minDigits || !length) return false;
+    const minLength =
+      this.configService.get<number>(
+        'FRONTCONF_ROOMNAMECONSTRAINT_MINLENGTH',
+      ) ?? 3;
 
-    const regex = new RegExp(
-      `${regexString}{${minDigits},${length}}$`,
-    );
+    const maxLength =
+      this.configService.get<number>(
+        'FRONTCONF_ROOMNAMECONSTRAINT_MAXLENGTH',
+      ) ?? 10;
+
+    // We assume the config regex is complete (with ^ and $)
+    // Example: "^[a-zA-Z0-9_-]{3,10}$"
+    const regexString =
+      this.configService.get<string>('CONFERENCE_NAME_REGEX') ||
+      '^[a-zA-Z0-9_-]{3,10}$';
+
+    if (!minDigits || !minLength || !maxLength) return false;
+
+    // Length min / max
+    if (roomName.length < minLength) return false;
+    if (roomName.length > maxLength) return false;
+
+    // Minimum number of digits
+    if ((roomName.match(/\d/g) || []).length < minDigits) return false;
+
+    const regex = new RegExp(regexString);
     return regex.test(roomName);
   }
 

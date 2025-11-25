@@ -1,3 +1,4 @@
+import { JitsiJwtService } from '../common/services/jitsi-jwt.service';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
@@ -38,6 +39,7 @@ import { ParticipantModule } from '../participant/participant.module';
   ],
   controllers: [ConferenceController],
   providers: [
+    JitsiJwtService,
     RoomNameValidator,
     ProsodyRuntimeService,
     ...(process.env.DB_TYPE === 'mongodb'

@@ -15,6 +15,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { RoomNameValidator } from './common/validators/room-name.validator';
 import { JwtOidcMiddleware } from './authentication/utils/jwt-oidc.middleware';
 import { ScheduleModule } from '@nestjs/schedule';
+import { OriginMiddleware } from './common/middleware/origin.middleware';
 
 
 import { ReplayModule } from './replay/replay.module';
@@ -97,5 +98,27 @@ export class AppModule implements NestModule {
     consumer
       .apply(JwtOidcMiddleware)
       .forRoutes({ path: 'conferences/*', method: RequestMethod.ALL });
+    consumer
+      .apply(OriginMiddleware)
+      .forRoutes({ path: 'conferences', method: RequestMethod.GET });
+
+    //particcipants endpoint
+    consumer
+      .apply(OriginMiddleware)
+      .forRoutes({ path: 'conferences/participants/*', method: RequestMethod.GET });
+
+    //feedback endpoint  
+    consumer
+      .apply(OriginMiddleware)
+      .forRoutes({ path: 'feedback/*', method: RequestMethod.GET });
+
+    // replay endpoints
+    consumer
+      .apply(OriginMiddleware)
+      .forRoutes({ path: 'replays/*', method: RequestMethod.GET });
+
+
+
+
   }
 }

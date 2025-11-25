@@ -19,6 +19,7 @@ import MentionslegalesVisioByApitech from './features/visiobyapitech/pages/stati
 import StaticPagesBuilder from './features/webconf/pages/staticPagesBuilder/StaticPagesBuilder';
 import Feedback from "./features/webconf/pages/feedback/Feedback";
 import BrowserTest from './features/webconf/pages/browserTest/BrowserTest';
+import BrowserTestJoona from './features/visiobyapitech/pages/browserTestJoona/BrowserTestJoona';
 import LoginCallback from './features/webconf/pages/login/LoginCallback';
 import LogoutCallback from './features/webconf/pages/login/LogoutCallback';
 import Error from './features/webconf/pages/Error/Error';
@@ -107,6 +108,12 @@ function AppInner() {
   };
 
   useEffect(() => {
+    if (window.location.pathname.includes("/browser_test")) {
+      document.body.classList.add("no-iframe-style");
+    } else {
+      document.body.classList.remove("no-iframe-style");
+    }
+    
     if (AppTemplate === 'webconf') {
       api
         .get('/stats/homePage')
@@ -244,6 +251,7 @@ function AppInner() {
                 }
               />
               <Route path="feedback" element={<FeedbackJoona />} />
+              <Route path="browser_test" element={<BrowserTestJoona />} />
               <Route
                 path="mentionslegales"
                 element={
