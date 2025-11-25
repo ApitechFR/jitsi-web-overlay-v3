@@ -105,7 +105,7 @@ export class AppModule implements NestModule {
     //particcipants endpoint
     consumer
       .apply(OriginMiddleware)
-      .forRoutes({ path: 'conferences/participants/*', method: RequestMethod.GET });
+      .forRoutes({ path: 'participants/*', method: RequestMethod.GET });
 
     //feedback endpoint  
     consumer
@@ -117,7 +117,20 @@ export class AppModule implements NestModule {
       .apply(OriginMiddleware)
       .forRoutes({ path: 'replays/*', method: RequestMethod.GET });
 
+    //user
+    consumer
+      .apply(OriginMiddleware)
+      .forRoutes({ path: 'users/*', method: RequestMethod.GET });
 
+    //rooms
+    consumer
+      .apply(OriginMiddleware)
+      .forRoutes({ path: 'rooms/*', method: RequestMethod.GET });
+
+    //stats
+    consumer
+      .apply(OriginMiddleware)
+      .forRoutes({ path: 'stats/*', method: RequestMethod.GET });
 
 
   }
