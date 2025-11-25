@@ -1,0 +1,143 @@
+.dashboardComponentTitle {
+    font-size: 1.5em;
+}
+
+.dashboardComponentContent {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+/** Pour partie ToogleSwitch (à modifier) **/
+.sectionDashboard {
+    display: flex;
+    flex-direction: row;
+    gap: 50px;
+}
+
+.dashboardStructure {
+    display: flex;
+    flex-direction: row;
+    gap: 50px;
+}
+
+.dashboardSide {
+    width: 75%;
+}
+
+.dashboardContent {
+    width: 100%;
+}
+
+.table_commentary {
+    margin: 60px 0px;
+}
+
+.table_commentary_content {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/** Surcharge DSApitech **/
+.fr-table-specific thead tr th {
+    text-align: center !important;
+}
+
+.fr-card__detail {
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+.fr-pagination__list {
+    justify-content: center !important;
+}
+
+.periodBlock {
+    display: flex;
+    flex-direction: column;
+    padding: 0px 20px;
+}
+
+.cardsSection {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 50px;
+    margin: 50px 0px;
+    text-align: center;
+}
+
+.survey_cards {
+    display: flex;
+    flex-direction: column;
+    gap: 50px;
+    margin: 50px 0px;
+    text-align: center;
+}
+
+.card_template {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.cardStyle {
+    text-align: center;
+    align-items: center;
+    border-bottom: 1px solid #3A3A3A;
+    /* override du style card dsfr de base */
+}
+
+.separator {
+    background-color: grey;
+    width: 100%;
+    height: 1px;
+    border-radius: 50%;
+    margin-bottom: 20px;
+}
+
+.validButton {
+    display: flex;
+    justify-content: flex-end;
+    margin: 20px 0;
+}
+
+.commBlock {
+    margin-bottom: 50px;
+}
+
+.exportButton {
+    display: flex;
+    justify-content: flex-end;
+}
+
+@media (max-width: 900px) {
+    .dashboardStructure {
+        flex-direction: column-reverse;
+        margin-bottom: 50px;
+    }
+
+    .dashboardSide {
+        width: 100%;
+    }
+
+    .cardsSection {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .cardStyle {
+        flex: 1 1 calc(33.333% - 1rem);
+        box-sizing: border-box;
+    }
+}
+
+@media (max-width: 600px) {
+
+    .card_template {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .periodBlock {
+        padding: 0px;
+    }
+}

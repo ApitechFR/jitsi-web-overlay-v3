@@ -1,0 +1,14 @@
+[
+    {
+        "key": "nbAnswer",
+        "label": "AnswerNumber",
+        "description": "Nombre de réponses",
+        "question": ""
+    },
+    {
+        "key": "moyNote",
+        "label": "moyenneNotes",
+        "description": "Moyenne notes",
+        "question": "Qu'avez-vous pensé de la qualité de la conférence ? "
+    }
+]

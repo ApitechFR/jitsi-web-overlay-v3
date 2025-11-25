@@ -56,6 +56,8 @@ export async function loadRuntimeConfig(force = false): Promise<FrontConfig> {
                 VITE_REPLAY_CHECK_TIMEOUT_MS: coerceNum(raw.VITE_REPLAY_CHECK_TIMEOUT_MS),
                 VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS: coerceNum(raw.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS),
                 VITE_FRONTCONF_ROOMNAMECONSTRAINT_LENGTH: coerceNum(raw.VITE_FRONTCONF_ROOMNAMECONSTRAINT_LENGTH),
+
+                VITE_APP_ORGANIZATION: raw.VITE_APP_ORGANIZATION || (import.meta.env.VITE_APP_ORGANIZATION as string | undefined) || 'apitech',
             };
             return cached;
         })

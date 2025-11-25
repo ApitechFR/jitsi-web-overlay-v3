@@ -65,7 +65,7 @@ export default function HeaderJoona() {
 
             //{ linkProps: { href: '/admin', target: '_self' }, text: 'Administration' },
             { linkProps: { href: '/replays', target: '_self' }, text: 'Conférences' },
-            //{ linkProps: { href: '/dashboard', target: '_self' }, text: 'Dashboard' },
+            { linkProps: { href: '/dashboard', target: '_self' }, text: 'Dashboard' },
           ]
           : []),
       ]
