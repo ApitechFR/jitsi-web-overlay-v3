@@ -40,8 +40,11 @@ const ReplayListGrouped: React.FC = () => {
                                     className={styles.downloadButton}
                                     priority="primary"
                                     onClick={async () => {
-                                        const url = await ReplayService.getDownloadUrl(replay.uid);
-                                        window.open(url, '_blank', 'noopener,noreferrer');
+                                        try {
+                                            await ReplayService.downloadReplay(replay.uid);
+                                        } catch (e: any) {
+                                            alert(e.message || 'Erreur lors du téléchargement');
+                                        }
                                     }}
                                 >
                                     Télécharger
