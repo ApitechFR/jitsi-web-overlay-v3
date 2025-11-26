@@ -1,16 +1,12 @@
 
 import styles from './HeaderJoona.module.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../../../auth/useAuth';
-import docUtilisateur from '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf';
-
 import { Header } from '@apitechfr/react-dsapitech/Header';
 import { createModal } from '@apitechfr/react-dsapitech/Modal';
 import { SideMenu } from "@apitechfr/react-dsapitech/SideMenu";
 import { isUserAdmin } from '../../../../utils/user';
-
-import dataChangelog from '../../../../utils/changelogs/infos.json'
-import { Item } from '../../../../utils/changelogs/Item'
+import { Item } from '../../../../utils/changelogs/Item';
 import ChangelogContent from '../IframePopup/ChangelogContent';
 import { useRuntimeConfig } from '../../../../config/ConfigProvider';
 
@@ -19,6 +15,7 @@ const modal = createModal({
   isOpenedByDefault: false,
 });
 
+
 export default function HeaderJoona() {
   const cfg = useRuntimeConfig();
   const VisioLogo = (cfg.VITE_APP_LIGHTVISIOLOGOHEADER as string) || '/assets/visiobyapitech-creme.png';
@@ -26,32 +23,39 @@ export default function HeaderJoona() {
   const HeaderServiceTitle = (cfg.VITE_APP_HEADERSERVICETITLE as string) || '';
   const HeaderServiceTagline = (cfg.VITE_APP_HEADERSERVICETAGLINE as string) || '';
 
+  const [dataChangelog, setDataChangelog] = useState<any>(null);
+  const [modalContent, setModalContent] = useState<string | null>(null);
+  const [currentModalId, setCurrentModalId] = useState<string | null>(null);
 
-  const [modalContent, setModalContent] = useState<string | null>(
-    dataChangelog.submenu.items.length > 0
-      ? dataChangelog.submenu.items[0].id
-      : null
-  );
-  const [currentModalId, setCurrentModalId] = useState<string | null>(
-    dataChangelog.submenu.items.length > 0
-      ? dataChangelog.submenu.items[0].id
-      : null
-  );
+  useEffect(() => {
+    const changelogUrl = cfg.VITE_APP_CHANGELOG_URL || '/infos.json';
+    fetch(changelogUrl)
+      .then((res) => res.json())
+      .then((data) => {
+        setDataChangelog(data);
+        if (data?.submenu?.items?.length > 0) {
+          setModalContent(data.submenu.items[0].id);
+          setCurrentModalId(data.submenu.items[0].id);
+        }
+      });
+  }, [cfg]);
 
   const { user, authenticated, login, logout } = useAuth();
 
+  const faqUrl = cfg.VITE_APP_FAQ_URL || '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf';
   const openPdf = () => {
-    window.open(docUtilisateur, '_blank', 'noopener,noreferrer');
+    window.open(faqUrl, '_blank', 'noopener,noreferrer');
   };
 
   const renderModalContent = () => {
+    if (!dataChangelog) return null;
     const currentItem = dataChangelog.submenu.items.find(
       (item: Item) => item.id === modalContent
     );
-
     if (currentItem) {
-      return <ChangelogContent content={currentItem.content} />
+      return <ChangelogContent content={currentItem.content} />;
     }
+    return null;
   };
 
   const navItems = [
@@ -134,25 +138,27 @@ export default function HeaderJoona() {
         />
       </div>
 
-      <modal.Component title={dataChangelog.submenu.title} size="large">
+      <modal.Component title={dataChangelog?.submenu?.title || ''} size="large">
         <div className={styles.modalContainer}>
-          <SideMenu
-            align="left"
-            burgerMenuButtonText=""
-            title=""
-            items={dataChangelog.submenu.items.map((item: Item) => ({
-              isActive: item.id === currentModalId,
-              linkProps: {
-                href: '#',
-                onClick: (e: React.MouseEvent) => {
-                  e.preventDefault()
-                  setCurrentModalId(item.id)
-                  setModalContent(item.id)
+          {dataChangelog && (
+            <SideMenu
+              align="left"
+              burgerMenuButtonText=""
+              title=""
+              items={dataChangelog.submenu.items.map((item: Item) => ({
+                isActive: item.id === currentModalId,
+                linkProps: {
+                  href: '#',
+                  onClick: (e: React.MouseEvent) => {
+                    e.preventDefault();
+                    setCurrentModalId(item.id);
+                    setModalContent(item.id);
+                  },
                 },
-              },
-              text: item.label,
-            }))}
-          />
+                text: item.label,
+              }))}
+            />
+          )}
           <div className={styles.secondFlexBox}>{renderModalContent()}</div>
         </div>
       </modal.Component>

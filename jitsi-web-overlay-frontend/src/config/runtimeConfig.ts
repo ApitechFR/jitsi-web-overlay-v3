@@ -22,6 +22,10 @@ export type FrontConfig = {
     VITE_APP_HEADERSERVICETITLE?: string;
     VITE_APP_HEADERSERVICETAGLINE?: string;
     VITE_APP_FOOTERLINKS?: string;
+    VITE_APP_CHANGELOG_URL?: string;
+    VITE_APP_FAQ_URL?: string;
+    VITE_APP_TITLE?: string;
+    VITE_APP_FAVICON_URL?: string;
 };
 
 let cached: FrontConfig | null = null;
@@ -45,6 +49,9 @@ export async function loadRuntimeConfig(force = false): Promise<FrontConfig> {
 
             cached = {
                 ...raw,
+                VITE_APP_CHANGELOG_URL: raw.VITE_APP_CHANGELOG_URL || (import.meta.env.VITE_APP_CHANGELOG_URL as string | undefined) || '/infos.json',
+                VITE_APP_FAQ_URL: raw.VITE_APP_FAQ_URL || (import.meta.env.VITE_APP_FAQ_URL as string | undefined) || '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf',
+                VITE_APP_TITLE: raw.VITE_APP_TITLE || (import.meta.env.VITE_APP_TITLE as string | undefined) || 'Visio By Apitech',
                 VITE_API_URL: (import.meta.env.VITE_API_URL as string | undefined) || '/api',
                 VITE_APP_TEMPLATE: raw.VITE_APP_TEMPLATE || (import.meta.env.VITE_APP_TEMPLATE as string | undefined) || 'joona',
                 VITE_APP_LIGHTVISIOLOGOHEADER: raw.VITE_APP_LIGHTVISIOLOGOHEADER || (import.meta.env.VITE_APP_LIGHTVISIOLOGOHEADER as string | undefined) || '/assets/visiobyapitech-creme.png',
@@ -63,6 +70,7 @@ export async function loadRuntimeConfig(force = false): Promise<FrontConfig> {
                 VITE_FRONTCONF_ROOMNAMECONSTRAINT_MAXLENGTH: coerceNum(raw.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MAXLENGTH),
                 VITE_FRONTCONF_ROOMNAMECONSTRAINT_GENMINLENGTH: coerceNum(raw.VITE_FRONTCONF_ROOMNAMECONSTRAINT_GENMINLENGTH),
                 VITE_FRONTCONF_ROOMNAMECONSTRAINT_GENMAXLENGTH: coerceNum(raw.VITE_FRONTCONF_ROOMNAMECONSTRAINT_GENMAXLENGTH),
+                VITE_APP_FAVICON_URL: raw.VITE_APP_FAVICON_URL || (import.meta.env.VITE_APP_FAVICON_URL as string | undefined) || '/joona/Icone_produits_V.svg',
             };
             return cached;
         })

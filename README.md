@@ -89,7 +89,7 @@ Les variables d'environnement permettent de configurer le comportement du backen
 - Consultez le code source (backend : `src/config.schema.ts`, frontend : fichiers dans `src/config/` et `vite.config.ts`) pour voir comment chaque variable est utilisée.
 
 
-### Backend
+### Variables
 | Variable | Description | Exemple | Obligatoire | Valeur par défaut |
 |----------|-------------|---------|-------------|-------------------|
 | PROSODY_API_PREFIX | Préfixe d'API Prosody | `/` | Optionnelle | `/` |
@@ -169,6 +169,10 @@ Les variables d'environnement permettent de configurer le comportement du backen
 | REPLAY_CHECK_TIMEOUT_MS | Timeout pour le check replay | `10000` | Optionnelle | 600000 |
 | FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS | Nombre min de chiffres dans le nom de salle | `2` | Optionnelle | (aucune) |
 | FRONTCONF_ROOMNAMECONSTRAINT_LENGTH | Longueur du nom de salle | `8` | Optionnelle | (aucune) |
+| VITE_APP_CHANGELOG_URL | Chemin du changelog (JSON) | `/infos.json` | Non | `/infos.json` |
+| VITE_APP_FAQ_URL | Chemin du PDF de la FAQ | `/doc/Documentation_utilisateur_Visio_By_Apitech.pdf` | Non | `/doc/Documentation_utilisateur_Visio_By_Apitech.pdf` |
+| VITE_APP_TITLE | Titre dynamique de l'application | `Visio By Apitech` | Non | `Visio By Apitech` |
+| VITE_APP_FAVICON_URL | Chemin du favicon dynamique | `/joona/Icone_produits_V.svg` | Non | `/joona/Icone_produits_V.svg` |
 
 ## Exemple de fichier `.env`
 
