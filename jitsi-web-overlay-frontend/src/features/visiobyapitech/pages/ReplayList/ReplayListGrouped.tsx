@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useAlertModal } from '@/features/visiobyapitech/hooks/useAlertModal';
 import { useApi, ReplayService } from '@/api';
 import styles from './ReplayList.module.css';
 import Button from '@codegouvfr/react-dsfr/Button';
@@ -22,6 +23,8 @@ const ReplayListGrouped: React.FC = () => {
 
     const groups = Object.entries(groupedReplays);
 
+    const showModal = useAlertModal();
+
     return (
         <div className={styles.replayList}>
             <h1>Enregistrements Vidéo par conférence</h1>
@@ -40,8 +43,11 @@ const ReplayListGrouped: React.FC = () => {
                                     className={styles.downloadButton}
                                     priority="primary"
                                     onClick={async () => {
-                                        const url = await ReplayService.getDownloadUrl(replay.uid);
-                                        window.open(url, '_blank', 'noopener,noreferrer');
+                                        try {
+                                            await ReplayService.downloadReplay(replay.uid);
+                                        } catch (e: any) {
+                                            showModal(e.message || 'Erreur lors du téléchargement');
+                                        }
                                     }}
                                 >
                                     Télécharger

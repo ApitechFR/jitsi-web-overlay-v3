@@ -403,7 +403,9 @@ export class FeedbackServiceSQL implements IFeedbackService {
     const parser = new Parser({ fields, delimiter: ';' });
     const csv = parser.parse(data);
 
-    return Buffer.from(csv, 'utf-8');
+    const bom = '\ufeff';
+
+    return Buffer.from(bom + csv, 'utf-8');
   }
 
 

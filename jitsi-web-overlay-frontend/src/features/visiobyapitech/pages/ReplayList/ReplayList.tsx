@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useAlertModal } from '@/features/visiobyapitech/hooks/useAlertModal';
 import { ReplayService, useApi } from '@/api';
 import styles from './ReplayList.module.css';
 import { useParams } from 'react-router-dom';
@@ -25,6 +26,8 @@ const ReplayList: React.FC = () => {
     if (loading) return <p>Chargement...</p>;
     if (error) return <p>Erreur : {error.message}</p>;
 
+    const showModal = useAlertModal();
+
     return (
         <div className={styles.replayList}>
             <h1>Enregistrements Vidéo</h1>
@@ -40,8 +43,11 @@ const ReplayList: React.FC = () => {
                             className={styles.downloadButton}
                             priority="primary"
                             onClick={async () => {
-                                const url = await ReplayService.getDownloadUrl(replay.uid);
-                                window.open(url, '_blank', 'noopener,noreferrer');
+                                try {
+                                    await ReplayService.downloadReplay(replay.uid);
+                                } catch (e: any) {
+                                    showModal(e.message || 'Erreur lors du téléchargement');
+                                }
                             }}
                         >
                             Télécharger
