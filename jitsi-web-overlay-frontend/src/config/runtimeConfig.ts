@@ -25,6 +25,7 @@ export type FrontConfig = {
     VITE_APP_CHANGELOG_URL?: string;
     VITE_APP_FAQ_URL?: string;
     VITE_APP_TITLE?: string;
+    VITE_APP_FAVICON_URL?: string;
 };
 
 let cached: FrontConfig | null = null;
@@ -69,6 +70,7 @@ export async function loadRuntimeConfig(force = false): Promise<FrontConfig> {
                 VITE_FRONTCONF_ROOMNAMECONSTRAINT_MAXLENGTH: coerceNum(raw.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MAXLENGTH),
                 VITE_FRONTCONF_ROOMNAMECONSTRAINT_GENMINLENGTH: coerceNum(raw.VITE_FRONTCONF_ROOMNAMECONSTRAINT_GENMINLENGTH),
                 VITE_FRONTCONF_ROOMNAMECONSTRAINT_GENMAXLENGTH: coerceNum(raw.VITE_FRONTCONF_ROOMNAMECONSTRAINT_GENMAXLENGTH),
+                VITE_APP_FAVICON_URL: raw.VITE_APP_FAVICON_URL || (import.meta.env.VITE_APP_FAVICON_URL as string | undefined) || '/joona/Icone_produits_V.svg',
             };
             return cached;
         })

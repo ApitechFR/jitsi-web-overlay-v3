@@ -34,6 +34,7 @@ export class AppController {
       VITE_APP_CHANGELOG_URL: process.env.APP_CHANGELOG_URL,
       VITE_APP_FAQ_URL: process.env.APP_FAQ_URL,
       VITE_APP_TITLE: process.env.APP_TITLE,
+      VITE_APP_FAVICON_URL: process.env.APP_FAVICON_URL,
     };
   }
 

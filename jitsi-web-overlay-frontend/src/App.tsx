@@ -81,7 +81,16 @@ function AppInner() {
     if (cfg?.VITE_APP_TITLE) {
       document.title = cfg.VITE_APP_TITLE;
     }
-  }, [cfg?.VITE_APP_TITLE]);
+    if (cfg?.VITE_APP_FAVICON_URL) {
+      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null;
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+      }
+      link.href = cfg.VITE_APP_FAVICON_URL;
+    }
+  }, [cfg?.VITE_APP_TITLE, cfg?.VITE_APP_FAVICON_URL]);
 
   const sendEmail = (room: string) => {
     api

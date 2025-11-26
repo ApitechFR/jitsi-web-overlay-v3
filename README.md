@@ -172,6 +172,7 @@ Les variables d'environnement permettent de configurer le comportement du backen
 | VITE_APP_CHANGELOG_URL | Chemin du changelog (JSON) | `/infos.json` | Non | `/infos.json` |
 | VITE_APP_FAQ_URL | Chemin du PDF de la FAQ | `/doc/Documentation_utilisateur_Visio_By_Apitech.pdf` | Non | `/doc/Documentation_utilisateur_Visio_By_Apitech.pdf` |
 | VITE_APP_TITLE | Titre dynamique de l'application | `Visio By Apitech` | Non | `Visio By Apitech` |
+| VITE_APP_FAVICON_URL | Chemin du favicon dynamique | `/joona/Icone_produits_V.svg` | Non | `/joona/Icone_produits_V.svg` |
 
 ## Exemple de fichier `.env`
 
