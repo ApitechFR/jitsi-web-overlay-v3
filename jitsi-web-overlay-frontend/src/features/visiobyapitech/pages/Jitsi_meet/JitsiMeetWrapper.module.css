@@ -1,3 +1,10 @@
+.jitsiMeetingContainer {
+  position: absolute;
+  top: 48px;
+  bottom: 0;
+  width: 100%;
+}
+
 .open {
   top: 0px;
 }
@@ -71,6 +78,10 @@
 
   .headerContainer :global(.fr-header__brand-top) {
     padding: 0.3rem 1rem;
+  }
+
+  .jitsiMeetingContainer {
+    top: 65px;
   }
 }
 
