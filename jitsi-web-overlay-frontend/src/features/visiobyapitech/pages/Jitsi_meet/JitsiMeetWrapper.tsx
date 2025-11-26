@@ -125,13 +125,15 @@ const JitsiMeetWrapper: React.FC = () => {
       <div className={styles.headerContainer}>
         <Header />
       </div>
-      <JitsiMeetingView
-        domain={domain}
-        conferenceName={conferenceName!}
-        jwt={jwtToken}          // undefined => invité
-        displayName={displayName}
-        user={user}
-      />
+      <div className={styles.jitsiMeetingContainer}>
+        <JitsiMeetingView
+          domain={domain}
+          conferenceName={conferenceName!}
+          jwt={jwtToken}          // undefined => invité
+          displayName={displayName}
+          user={user}
+        />
+      </div>
     </>
   );
 };
