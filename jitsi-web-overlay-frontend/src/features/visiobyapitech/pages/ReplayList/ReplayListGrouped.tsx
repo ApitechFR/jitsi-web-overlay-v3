@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useAlertModal } from '@/features/visiobyapitech/hooks/useAlertModal';
+import { useAlertModal } from '@/features/visiobyapitech/components/Modals/useAlertModal';
 import { useApi, ReplayService } from '@/api';
 import styles from './ReplayList.module.css';
 import Button from '@codegouvfr/react-dsfr/Button';
@@ -23,41 +23,44 @@ const ReplayListGrouped: React.FC = () => {
 
     const groups = Object.entries(groupedReplays);
 
-    const showModal = useAlertModal();
+    const [showModal, AlertModal] = useAlertModal();
 
     return (
-        <div className={styles.replayList}>
-            <h1>Enregistrements Vidéo par conférence</h1>
+        <>
+            <div className={styles.replayList}>
+                <h1>Enregistrements Vidéo par conférence</h1>
 
-            {groups.length === 0 ? (
-                <p className={styles.noReplays}>Aucun replay disponible</p>
-            ) : (
-                groups.map(([confName, replays]) => (
-                    <div key={confName} className={styles.conferenceGroup}>
-                        <h3>{confName}</h3>
-                        {replays.map((replay) => (
-                            <div className={styles.replayRow} key={replay.id}>
-                                <div className={styles.filename}>{replay.uid}</div>
-                                <div className={styles.date}>{formatDate(replay.updated_at)}</div>
-                                <Button
-                                    className={styles.downloadButton}
-                                    priority="primary"
-                                    onClick={async () => {
-                                        try {
-                                            await ReplayService.downloadReplay(replay.uid);
-                                        } catch (e: any) {
-                                            showModal(e.message || 'Erreur lors du téléchargement');
-                                        }
-                                    }}
-                                >
-                                    Télécharger
-                                </Button>
-                            </div>
-                        ))}
-                    </div>
-                ))
-            )}
-        </div>
+                {groups.length === 0 ? (
+                    <p className={styles.noReplays}>Aucun replay disponible</p>
+                ) : (
+                    groups.map(([confName, replays]) => (
+                        <div key={confName} className={styles.conferenceGroup}>
+                            <h3>{confName}</h3>
+                            {replays.map((replay) => (
+                                <div className={styles.replayRow} key={replay.id}>
+                                    <div className={styles.filename}>{replay.uid}</div>
+                                    <div className={styles.date}>{formatDate(replay.updated_at)}</div>
+                                    <Button
+                                        className={styles.downloadButton}
+                                        priority="primary"
+                                        onClick={async () => {
+                                            try {
+                                                await ReplayService.downloadReplay(replay.uid);
+                                            } catch (e: any) {
+                                                showModal(e.message || 'Erreur lors du téléchargement');
+                                            }
+                                        }}
+                                    >
+                                        Télécharger
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+                    ))
+                )}
+            </div>
+            <AlertModal />
+        </>
     );
 };
 
