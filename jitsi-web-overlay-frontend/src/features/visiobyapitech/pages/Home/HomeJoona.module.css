@@ -1,12 +1,11 @@
 .homeContainer {
   display: flex;
   flex-direction: row;
-  padding: 8% 40px;
+  padding: 8% 0px;
 }
 
 .homeContent {
-  width: 75%;
-  margin: auto;
+  width: 100%;
 }
 
 .firstContainer {
@@ -82,12 +81,6 @@
   to {
     transform: translateY(0);
     opacity: 1;
-  }
-}
-
-@media (max-width: 950px) {
-  .homeContainer {
-    padding: 8% 10px;
   }
 }
 

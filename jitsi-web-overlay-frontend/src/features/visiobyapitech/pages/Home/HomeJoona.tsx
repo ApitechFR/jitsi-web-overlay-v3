@@ -184,6 +184,7 @@ function HomeJoona(props: HomeJoonaProps) {
 
   return (
     <div className={styles.homeContainer}>
+
       {/* {phase === 'first-check' && (
         <div
           style={{
