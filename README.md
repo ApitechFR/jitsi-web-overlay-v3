@@ -59,12 +59,17 @@ Variables principales :
 		 ```
 	 - **Réponse** :
 		 ```json
+		### Dossier `client` pour les assets dynamiques
+
+		Le dossier `client` à la racine du projet permet de déposer des fichiers statiques (images, logos, documents, etc.) qui seront exposés par Nginx dans le conteneur frontend. Ce dossier est monté en lecture seule dans le conteneur à l’emplacement `/usr/share/nginx/html/assets/client` grâce à la configuration Docker Compose :
+
+		```yaml
+			- ./client:/usr/share/nginx/html/assets/client:ro
+		```
+
+		Vous pouvez ainsi ajouter, modifier ou remplacer des fichiers dans `client` sans avoir à reconstruire l’image Docker du frontend. Ces fichiers seront accessibles publiquement via l’URL du frontend.
 		 42
 		 ```
-#### Jitsi
-- Jitsi est la plateforme de visioconférence utilisée par l’application.
-- Variables principales :
-	- `JITSI_JITSIJWT_ISS`, `JITSI_JITSIJWT_AUD`, `JITSI_JITSIJWT_SUB`, `JITSI_JITSIJWT_SECRET`, `JITSI_JITSIJWT_EXPIRESAFTER` : servent à générer et vérifier les tokens JWT pour l’authentification et la sécurisation des conférences.
 	- `JITSI_DOMAIN` (frontend) : permet au client de se connecter au bon serveur Jitsi Meet.
 - Dans le backend, les variables JWT sont utilisées pour signer les tokens transmis aux clients et valider leur accès aux conférences. Dans le frontend, le domaine Jitsi est utilisé pour initialiser l’iframe ou le composant Jitsi Meet.
 
@@ -211,6 +216,53 @@ Adaptez les variables d'environnement et les volumes selon vos besoins.
 ### 5. Arrêt des services
 ```bash
 docker-compose down
+```
+
+### Dossier `client-resources` pour les assets dynamiques
+
+
+Le dossier `client-resources` à la racine du projet permet de déposer des fichiers statiques (images, logos, documents, etc.) qui seront exposés par Nginx dans le conteneur frontend. Ce dossier est monté en lecture seule dans le conteneur à l’emplacement `/usr/share/nginx/html/assets/client-resources` grâce à la configuration Docker Compose :
+
+```yaml
+	- ./client-resources:/usr/share/nginx/html/assets/client-resources:ro
+```
+
+#### Création et utilisation du dossier `client-resources`
+
+1. Créez le dossier à la racine du projet si besoin :
+   ```bash
+   mkdir client-resources
+   ```
+2. Placez-y vos fichiers statiques personnalisés (ex : images, logos, PDF, etc.).
+3. Au lancement de Docker Compose, tout le contenu de ce dossier sera accessible dans le conteneur à `/usr/share/nginx/html/assets/client-resources`.
+4. Ces fichiers seront accessibles publiquement via l’URL du frontend, par exemple :
+   - `/assets/client-resources/mon-image.png`
+   - `/assets/client-resources/mon-doc.pdf`
+
+
+#### Variables d'environnement pour les ressources dynamiques
+
+Vous pouvez configurer les variables suivantes pour pointer vers des fichiers placés dans `client-resources` :
+
+- `APP_FAQ_URL` : chemin du PDF de la FAQ (ex : `/assets/client-resources/Documentation_utilisateur.pdf`)
+- `APP_FAVICON_URL` : chemin du favicon (ex : `/assets/client-resources/favicon.svg`)
+- `APP_LIGHTVISIOLOGOHEADER` : logo clair pour le header
+- `APP_DARKVISIOLOGOHEADER` : logo sombre pour le header
+- `APP_LIGHTVISIOLOGOFOOTER` : logo clair pour le footer
+- `APP_DARKVISIOLOGOFOOTER` : logo sombre pour le footer
+- `APP_CHANGELOG_URL` : chemin du changelog (ex : `/assets/client-resources/infos.json`)
+- `APP_TITLE` : titre dynamique de l’application
+- `APP_HEADERSERVICETITLE` : titre principal du header
+- `APP_HEADERSERVICETAGLINE` : sous-titre du header
+- `APP_FOOTERDESCRIPTION` : texte du footer
+- `APP_FOOTERLINKS` : liens du footer
+
+Exemple dans `.env` :
+
+```env
+APP_FAQ_URL=/assets/client-resources/Documentation_utilisateur.pdf
+APP_FAVICON_URL=/assets/client-resources/favicon.svg
+APP_LIGHTVISIOLOGOHEADER=/assets/client-resources/logo-header-light.png
 ```
 
 ### 6. Conseils
