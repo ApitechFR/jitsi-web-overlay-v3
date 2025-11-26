@@ -53,8 +53,8 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
       }}
       interfaceConfigOverwrite={{}}
       getIFrameRef={(iframeRef) => {
-        iframeRef.style.height = '100vh';
         iframeRef.style.width = '100%';
+        iframeRef.style.height = '100%';
       }}
       onApiReady={(api) => {
         console.info('[Jitsi] API prête');
