@@ -7,7 +7,6 @@ import { Between, Repository } from 'typeorm';
 import { CreateParticipantDto, UpdateParticipantDto } from './dto/create-participant.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { PaginationDto } from './dto/pagination.dto';
-import { compareIp, hashIp } from './utils/ipHash.util';
 
 @Injectable()
 export class ParticipantService {
@@ -22,43 +21,6 @@ export class ParticipantService {
         private readonly userRepo: Repository<User>,
     ) { }
 
-    // async create(dto: CreateParticipantDto, clientIp?: string): Promise<Participant> {
-    //     const conference = await this.conferenceRepo.findOne({
-    //         where: { uid: dto.conferenceUid },
-    //     });
-    //     if (!conference) {
-    //         throw new NotFoundException('Conférence non trouvée');
-    //     }
-
-    //     let user: User | null = null;
-    //     if (dto.userUid) {
-    //         user = await this.userRepo.findOne({ where: { uid: dto.userUid } });
-    //         if (!user) {
-    //             throw new NotFoundException('Utilisateur non trouvé');
-    //         }
-    //     }
-
-    //     const existing = await this.findExistingParticipant(dto.conferenceUid, dto.email, clientIp);
-
-    //     if (existing) return existing;
-
-    //     const ipHash = clientIp ? await hashIp(clientIp) : null;
-
-    //     const participant = this.participantRepo.create({
-    //         uid: uuidv4(),
-    //         conference,
-    //         user,
-    //         displayName: dto.displayName,
-    //         email: dto.email,
-    //         phone: dto.phone,
-    //         role: dto.role,
-    //         status: dto.status,
-    //         inviteMethod: dto.inviteMethod,
-    //         ipHash: ipHash,
-    //     });
-
-    //     return await this.participantRepo.save(participant);
-    // }
 
     async create(dto: CreateParticipantDto): Promise<Participant> {
         const conference = await this.conferenceRepo.findOne({
@@ -101,30 +63,6 @@ export class ParticipantService {
         });
 
         return await this.participantRepo.save(participant);
-    }
-
-    async findExistingParticipant(conferenceUid: string, email?: string, clientIp?: string): Promise<Participant | null> {
-        if (email) {
-            const existingParticipant = await this.findByEmail(email, conferenceUid);
-            if (existingParticipant) return existingParticipant;
-        }
-
-        if (clientIp) {
-            const participants = await this.participantRepo.find({
-                where: { conference: { uid: conferenceUid } },
-                relations: ['conference', 'user'],
-            });
-            for (const participant of participants) {
-                if (participant.ipHash) {
-                    const sameIp = await compareIp(clientIp, participant.ipHash);
-                    if (sameIp) {
-                        return participant;
-                    }
-                }
-            }
-        }
-
-        return null;
     }
 
     async findByEmail(email: string, conferenceUid: string): Promise<Participant | null> {
