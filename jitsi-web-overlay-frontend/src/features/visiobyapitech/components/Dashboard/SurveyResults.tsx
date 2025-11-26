@@ -94,7 +94,7 @@ function SurveyResults() {
         radio: {},
         text: {}
     });
-    const [value, setValue] = useState<PeriodFilter>("year");
+    const [value, setValue] = useState<PeriodFilter>("today");
     const {
         startDate,
         endDate,
