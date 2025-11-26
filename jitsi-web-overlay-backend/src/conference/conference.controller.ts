@@ -32,6 +32,8 @@ import { ConferenceFilter } from './enum/conference_filter.enum';
 import { ParseConferenceFilterPipe } from './utils/ParseConferenceFilterPipe';
 import { ProsodyRuntimeService } from '../prosody/prosody-runtime.service';
 import { JwtAuthGuard } from '../authentication/jwt-auth.guard';
+import { Roles } from '../authentication/roles.decorator';
+import { RolesGuard } from '../authentication/roles.guard';
 
 interface AuthenticatedRequest extends Request {
   user?: any;
@@ -53,14 +55,16 @@ export class ConferenceController {
     return this.conferenceService.create(dto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Get('conferences')
   @ApiOkResponse({ description: 'Liste des conférences' })
   async findAll() {
     return this.conferenceService.findAll();
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Get("conferences/statistics")
   @ApiOkResponse({ description: "Statistiques des conférences" })
   @ApiBadRequestResponse({ description: "Filtre invalide" })
@@ -68,7 +72,8 @@ export class ConferenceController {
     return this.conferenceService.getGlobalStatistics();
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Get("conferences/summary")
   @ApiOkResponse({ description: "Statistiques des conférences" })
   @ApiBadRequestResponse({ description: "Filtre invalide" })

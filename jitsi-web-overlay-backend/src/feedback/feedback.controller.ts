@@ -32,6 +32,8 @@ import { ParseFeedbackFilterPipe } from './utils/ParseFeedbackFilterPipe';
 import { PaginationDto } from './DTOs/pagination.dto';
 import { plainToInstance } from 'class-transformer';
 import { JwtAuthGuard } from '../authentication/jwt-auth.guard';
+import { Roles } from '../authentication/roles.decorator';
+import { RolesGuard } from '../authentication/roles.guard';
 
 @Controller('feedback')
 export class FeedbackController {
@@ -91,7 +93,8 @@ export class FeedbackController {
     return this.feedbackService.createFeedbackBulk(dtos);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Get('statistics/organization/:organization')
   @ApiOkResponse({ description: 'Statistiques des feedbacks pour une organisation donnée' })
   @ApiBadRequestResponse({ description: 'Filtre ou dates invalides' })
@@ -110,7 +113,8 @@ export class FeedbackController {
     );
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Get('statistics/organization/:organization/text')
   async getTextCommentsByOrganization(
     @Param('organization') organization: string,
@@ -132,7 +136,8 @@ export class FeedbackController {
     );
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Get('export')
   @ApiOkResponse({ description: 'Export des feedbacks en format CSV' })
   async exportFeedbacks(
