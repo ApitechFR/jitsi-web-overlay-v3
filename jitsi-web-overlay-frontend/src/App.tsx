@@ -55,6 +55,9 @@ type errorObj = {
 
 
 function AppInner() {
+
+  const cfg = useRuntimeConfig();
+
   const [roomName, setRoomName] = useState('');
   const [jwt, setJwt] = useState<string | undefined>(undefined);
   const [error, setError] = useState<errorObj>({
@@ -71,8 +74,14 @@ function AppInner() {
   const { authenticated } = useAuth();
 
   /* === LIT LA CONFIG RUNTIME AU LIEU DE import.meta.env === */
-  const cfg = useRuntimeConfig();
+
   const AppTemplate = (cfg.VITE_APP_TEMPLATE as string) || 'joona';
+
+  useEffect(() => {
+    if (cfg?.VITE_APP_TITLE) {
+      document.title = cfg.VITE_APP_TITLE;
+    }
+  }, [cfg?.VITE_APP_TITLE]);
 
   const sendEmail = (room: string) => {
     api
@@ -113,7 +122,7 @@ function AppInner() {
     } else {
       document.body.classList.remove("no-iframe-style");
     }
-    
+
     if (AppTemplate === 'webconf') {
       api
         .get('/stats/homePage')
