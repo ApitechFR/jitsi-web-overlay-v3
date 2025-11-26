@@ -49,6 +49,7 @@ services:
       - -c
       - addgroup --gid 101 -S jibri-k8s-record;
         adduser --uid 1000 jibri-k8s-record -G jibri-k8s-record;
+        chown -R jibri-k8s-record:jibri-k8s-record /data/visioreplay;
         echo 'jibri-k8s-record:SuperlonguCledeplusde50charDeLutilisateurquinutiliserajamaissonmotdepasse' | chpasswd;
         apk add rsync;
         apk add --no-cache openssh;
