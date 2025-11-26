@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useAlertModal } from '@/features/visiobyapitech/components/Modals/useAlertModal';
 import { ReplayService, useApi } from '@/api';
 import styles from './ReplayList.module.css';
 import { useParams } from 'react-router-dom';
@@ -26,8 +25,6 @@ const ReplayList: React.FC = () => {
     if (loading) return <p>Chargement...</p>;
     if (error) return <p>Erreur : {error.message}</p>;
 
-    const [showModal, AlertModal] = useAlertModal();
-
     return (
         <>
             <div className={styles.replayList}>
@@ -47,7 +44,7 @@ const ReplayList: React.FC = () => {
                                     try {
                                         await ReplayService.downloadReplay(replay.uid);
                                     } catch (e: any) {
-                                        showModal(e.message || 'Erreur lors du téléchargement');
+                                        alert(e.message || 'Erreur lors du téléchargement');
                                     }
                                 }}
                             >
@@ -57,7 +54,7 @@ const ReplayList: React.FC = () => {
                     ))
                 )}
             </div>
-            <AlertModal />
+
         </>
     );
 };

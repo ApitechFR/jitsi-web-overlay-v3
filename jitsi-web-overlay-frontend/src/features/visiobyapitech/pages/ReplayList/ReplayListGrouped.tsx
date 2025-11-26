@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useAlertModal } from '@/features/visiobyapitech/components/Modals/useAlertModal';
 import { useApi, ReplayService } from '@/api';
 import styles from './ReplayList.module.css';
 import Button from '@codegouvfr/react-dsfr/Button';
@@ -23,8 +22,6 @@ const ReplayListGrouped: React.FC = () => {
 
     const groups = Object.entries(groupedReplays);
 
-    const [showModal, AlertModal] = useAlertModal();
-
     return (
         <>
             <div className={styles.replayList}>
@@ -47,7 +44,7 @@ const ReplayListGrouped: React.FC = () => {
                                             try {
                                                 await ReplayService.downloadReplay(replay.uid);
                                             } catch (e: any) {
-                                                showModal(e.message || 'Erreur lors du téléchargement');
+                                                alert(e.message || 'Erreur lors du téléchargement');
                                             }
                                         }}
                                     >
@@ -59,7 +56,6 @@ const ReplayListGrouped: React.FC = () => {
                     ))
                 )}
             </div>
-            <AlertModal />
         </>
     );
 };
