@@ -83,7 +83,7 @@ export default function HeaderJoona() {
         className: 'fr-btn--icon-right',
       },
       iconId: 'fr-icon-external-link-fill',
-      text: 'Foire Aux Questions',
+      text: 'Documentation',
     },
     {
       buttonProps: {

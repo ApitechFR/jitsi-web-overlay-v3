@@ -35,7 +35,16 @@ function Dashboard() {
   }
 
   return (
-    <div className='fr-container'>
+    <div className={styles.contentDashboard}>
+      <div className={styles.breadcrumbContainer}>
+        <Breadcrumb
+            currentPageLabel="Dashboard"
+            homeLinkProps={{
+              href: '/'
+            }}
+            segments={[]}
+          />
+      </div>
       <section className={styles.content}>
         <aside
           className={styles.asideContainer}
@@ -82,13 +91,6 @@ function Dashboard() {
           />
         </aside>
         <main className={styles.mainDashboardContent}>
-          <Breadcrumb
-            currentPageLabel="Dashboard"
-            homeLinkProps={{
-              href: '/'
-            }}
-            segments={[]}
-          />
           <h1 className={styles.title}>Dashboard</h1>
           <div className={styles.dashboardComponent}>
             {renderDashboardComponent()}
