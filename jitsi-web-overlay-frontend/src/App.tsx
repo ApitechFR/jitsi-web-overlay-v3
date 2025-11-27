@@ -241,7 +241,7 @@ function AppInner() {
                   </PrivateRoute>
                 }
               />
-              <Route path="visioreplay/:conference_uid" element={<ReplayList />} />
+              <Route path="visioreplay/:conference_uid" element={<PrivateRoute><ReplayList /></PrivateRoute>} />
 
               <Route
                 path="replays"
