@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import docUtilisateur from '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf';
 
 import styles from './HeaderJoona.module.css';
@@ -18,16 +18,9 @@ const modal = createModal({
 });
 
 export default function HeaderVisio() {
-  const [modalContent, setModalContent] = useState<string | null>(
-    dataChangelog.submenu.items.length > 0
-      ? dataChangelog.submenu.items[0].id
-      : null
-  );
-  const [currentModalId, setCurrentModalId] = useState<string | null>(
-    dataChangelog.submenu.items.length > 0
-      ? dataChangelog.submenu.items[0].id
-      : null
-  );
+  const [dataChangelog, setDataChangelog] = useState<any>(null);
+  const [modalContent, setModalContent] = useState<any>(null);
+  const [currentModalId, setCurrentModalId] = useState<string | null>(null);
 
   const cfg = useRuntimeConfig();
   const VisioLogo = (cfg.VITE_APP_LIGHTVISIOLOGOHEADER as string) || '/assets/visiobyapitech-creme.png';
@@ -35,19 +28,35 @@ export default function HeaderVisio() {
   const HeaderServiceTitle = (cfg.VITE_APP_HEADERSERVICETITLE as string) || '';
   const HeaderServiceTagline = (cfg.VITE_APP_HEADERSERVICETAGLINE as string) || '';
 
+  useEffect(() => {
+    const changelogUrl = cfg.VITE_APP_CHANGELOG_URL || '/infos.json';
+    fetch(changelogUrl)
+      .then((res) => res.json())
+      .then((data) => {
+        setDataChangelog(data);
+        if (data?.submenu?.items?.length > 0) {
+          setModalContent(data.submenu.items[0].id);
+          setCurrentModalId(data.submenu.items[0].id);
+        }
+      });
+  }, [cfg]);
+
+  const faqUrl = cfg.VITE_APP_FAQ_URL || '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf';
   const openPdf = () => {
-    window.open(docUtilisateur, '_blank', 'noopener,noreferrer');
+    window.open(faqUrl, '_blank', 'noopener,noreferrer');
   };
 
   const renderModalContent = () => {
+    if (!dataChangelog) return null;
     const currentItem = dataChangelog.submenu.items.find(
       (item: Item) => item.id === modalContent
     );
-
     if (currentItem) {
-      return <ChangelogContent content={currentItem.content} />
+      return <ChangelogContent content={currentItem.content} />;
     }
+    return null;
   };
+
   let roomName = localStorage.getItem("conferenceName") || "";
   const quickAccessItems = [
     {
@@ -66,7 +75,7 @@ export default function HeaderVisio() {
         className: 'fr-btn--icon-right',
       },
       iconId: 'fr-icon-external-link-fill',
-      text: 'Foire Aux Questions',
+      text: 'Documentation',
     },
     {
       buttonProps: {
@@ -109,28 +118,30 @@ export default function HeaderVisio() {
         quickAccessItems={quickAccessItems as any}
       />
 
-      <modal.Component title={dataChangelog.submenu.title} size="large">
-        <div className={styles.modalContainer}>
-          <SideMenu
-            align="left"
-            burgerMenuButtonText=""
-            title=""
-            items={dataChangelog.submenu.items.map((item: Item) => ({
-              isActive: item.id === currentModalId,
-              linkProps: {
-                href: '#',
-                onClick: (e: React.MouseEvent) => {
-                  e.preventDefault()
-                  setCurrentModalId(item.id)
-                  setModalContent(item.id)
-                },
-              },
-              text: item.label,
-            }))}
-          />
-          <div className={styles.secondFlexBox}>{renderModalContent()}</div>
-        </div>
-      </modal.Component>
+      <modal.Component title={dataChangelog?.submenu?.title || ''} size="large">
+          <div className={styles.modalContainer}>
+            {dataChangelog && (
+              <SideMenu
+                align="left"
+                burgerMenuButtonText=""
+                title=""
+                items={dataChangelog.submenu.items.map((item: Item) => ({
+                  isActive: item.id === currentModalId,
+                  linkProps: {
+                    href: '#',
+                    onClick: (e: React.MouseEvent) => {
+                      e.preventDefault();
+                      setCurrentModalId(item.id);
+                      setModalContent(item.id);
+                    },
+                  },
+                  text: item.label,
+                }))}
+              />
+            )}
+            <div className={styles.secondFlexBox}>{renderModalContent()}</div>
+          </div>
+        </modal.Component>
     </>
   );
 }
