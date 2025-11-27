@@ -36,11 +36,9 @@ export class StatsService {
           mergedData.part += data[i].total_participants;
         }
         this.logger.log('stats récupérés' + mergedData);
-        console.log({ mergedData });
         return mergedData;
       } else {
         this.logger.log('stats récupérés' + data[0]);
-        console.log('data[0] : ', data[0]);
         return data[0];
       }
     } catch (error) {

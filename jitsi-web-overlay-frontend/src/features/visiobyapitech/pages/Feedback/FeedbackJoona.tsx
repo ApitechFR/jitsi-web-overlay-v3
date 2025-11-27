@@ -4,7 +4,7 @@ import { useRuntimeConfig } from '../../../../config/ConfigProvider';
 
 import styles from './FeedbackJoona.module.css';
 import { useEffect, useMemo, useState } from 'react';
-import { FieldComponent } from '../../components/feedbacks/FieldComponent';
+import { FieldComponent } from '../../components/Feedbacks/FieldComponent';
 import { FeedbackService, useApi } from '@/api';
 import type { FeedbackTemplate } from '@/api';
 import { useLocation, useNavigate } from 'react-router';
@@ -137,7 +137,7 @@ function FeedbackJoona() {
                     <>
                         <span>
                             Il n&apos;y a actuellement pas de feedback à afficher pour cette
-                            organisation
+                            organisation.
                         </span>
                         <p>
                             Retour à la page d&apos;accueil ici : <a href="/">Accueil</a>
@@ -150,7 +150,7 @@ function FeedbackJoona() {
                     <p>
                         Vous pouvez désormais retourner à votre visioconférence et fermer
                         cette fenêtre, celle-ci sera automatiquement fermée d&apos;ici
-                        quelques secondes
+                        quelques secondes.
                     </p>
                     {isAlertVisible && (
                         <div className={styles.alertContainer}>
@@ -167,7 +167,7 @@ function FeedbackJoona() {
                 <>
                     <span>
                         Merci pour votre retour ! Vous allez être redirigé automatiquement
-                        vers la page d&apos;accueil
+                        vers la page d&apos;accueil.
                     </span>
                     <p>
                         Si ce n&apos;est pas le cas au bout de quelques secondes, vous

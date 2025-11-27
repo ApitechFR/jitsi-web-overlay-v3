@@ -27,13 +27,13 @@ import MuiDsfrThemeProvider from '@codegouvfr/react-dsfr/mui';
 import PlanDuSite from './features/webconf/pages/PlanDuSite/PlanDuSite';
 import Profile from './features/visiobyapitech/pages/Profile/Profile';
 import Dashboard from './features/visiobyapitech/pages/Dashboard/Dashboard';
-import LayoutJoona from './features/visiobyapitech/components/layout/LayoutJoona';
-import HomeJoona from './features/visiobyapitech/pages/home/HomeJoona';
-import JitsiMeet from './features/visiobyapitech/pages/jitsi_meet/jitsi_meet';
+import LayoutJoona from './features/visiobyapitech/components/Layout/LayoutJoona';
+import HomeJoona from './features/visiobyapitech/pages/Home/HomeJoona';
+import JitsiMeet from './features/visiobyapitech/pages/Jitsi_meet/jitsi_meet';
 import Admin from './features/visiobyapitech/pages/Admin/Admin';
 import FeedbackJoona from './features/visiobyapitech/pages/Feedback/FeedbackJoona';
-import ReplayList from './features/visiobyapitech/pages/replayList/ReplayList';
-import ReplayListGrouped from './features/visiobyapitech/pages/replayList/ReplayListGrouped';
+import ReplayList from './features/visiobyapitech/pages/ReplayList/ReplayList';
+import ReplayListGrouped from './features/visiobyapitech/pages/ReplayList/ReplayListGrouped';
 import PrivateRoute from './auth/PrivateRoute';
 import AdminRoute from './auth/AdminRoute';
 import { useAuth } from './auth/useAuth';
@@ -55,6 +55,9 @@ type errorObj = {
 
 
 function AppInner() {
+
+  const cfg = useRuntimeConfig();
+
   const [roomName, setRoomName] = useState('');
   const [jwt, setJwt] = useState<string | undefined>(undefined);
   const [error, setError] = useState<errorObj>({
@@ -71,8 +74,23 @@ function AppInner() {
   const { authenticated } = useAuth();
 
   /* === LIT LA CONFIG RUNTIME AU LIEU DE import.meta.env === */
-  const cfg = useRuntimeConfig();
+
   const AppTemplate = (cfg.VITE_APP_TEMPLATE as string) || 'joona';
+
+  useEffect(() => {
+    if (cfg?.VITE_APP_TITLE) {
+      document.title = cfg.VITE_APP_TITLE;
+    }
+    if (cfg?.VITE_APP_FAVICON_URL) {
+      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null;
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+      }
+      link.href = cfg.VITE_APP_FAVICON_URL;
+    }
+  }, [cfg?.VITE_APP_TITLE, cfg?.VITE_APP_FAVICON_URL]);
 
   const sendEmail = (room: string) => {
     api
@@ -113,7 +131,7 @@ function AppInner() {
     } else {
       document.body.classList.remove("no-iframe-style");
     }
-    
+
     if (AppTemplate === 'webconf') {
       api
         .get('/stats/homePage')
@@ -223,7 +241,7 @@ function AppInner() {
                   </PrivateRoute>
                 }
               />
-              <Route path="visioreplay/:conference_uid" element={<ReplayList />} />
+              <Route path="visioreplay/:conference_uid" element={<PrivateRoute><ReplayList /></PrivateRoute>} />
 
               <Route
                 path="replays"

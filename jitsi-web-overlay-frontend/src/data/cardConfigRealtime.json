@@ -1,0 +1,17 @@
+[
+    {
+        "key": "totalParticipants",
+        "label": "NbSimultParticipant",
+        "description": "Nombre de participants simultanés"
+    },
+    {
+        "key": "totalConferences",
+        "label": "NbConferencesSimult",
+        "description": "Nombre conférences simultanées"
+    },
+    {
+        "key": "MoyParticipantsPerConf",
+        "label": "MoyPartByConference",
+        "description": "Moy nombre de participants par conf"
+    }
+]

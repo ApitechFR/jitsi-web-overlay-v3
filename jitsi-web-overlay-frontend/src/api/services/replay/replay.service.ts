@@ -52,6 +52,25 @@ export const ReplayService = {
         } catch (error) {
             throw toApiError(error, 'Erreur lors du téléchargement');
         }
+    },
+
+    async downloadReplay(replay_uid: string, filename?: string) {
+        const url = await this.getDownloadUrl(replay_uid);
+        const response = await fetch(url, {
+            credentials: 'include',
+        });
+        if (!response.ok) {
+            throw new Error('Erreur lors du téléchargement : ' + response.statusText);
+        }
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = (filename || replay_uid) + '.mp4';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(downloadUrl);
     }
 
 };

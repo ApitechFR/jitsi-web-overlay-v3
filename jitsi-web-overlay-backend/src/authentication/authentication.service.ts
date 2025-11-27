@@ -11,6 +11,9 @@ import { HttpsProxyAgent } from 'https-proxy-agent';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { AuthCookieUtil } from './utils/auth-cookie.util';
+import { UsersService } from '../users/users.service';
+import { User, AuthProvider } from '../users/entities/users.entity';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AuthenticationService {
@@ -21,8 +24,81 @@ export class AuthenticationService {
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    private readonly usersService: UsersService,
   ) {
     this.cookieUtil = new AuthCookieUtil(this.configService);
+  }
+
+  /**
+   * Crée ou met à jour un utilisateur OIDC dans la base users
+   */
+  async upsertOidcUser(userinfo: any): Promise<User> {
+    if (!userinfo?.email) return null;
+    const existing = await this.usersService.findByEmail(userinfo.email);
+
+    // Récupère le rôle depuis OIDC si présent
+    let oidcRole: string | null = null;
+    if (userinfo?.realm_access?.roles?.length) {
+      oidcRole = userinfo.realm_access.roles[0];
+    } else if (userinfo?.resource_access?.account?.roles?.length) {
+      oidcRole = userinfo.resource_access.account.roles[0];
+    } else if (userinfo?.role) {
+      oidcRole = userinfo.role;
+    }
+
+    // Récupère admin depuis OIDC si présent (booléen ou string 'true')
+    let oidcAdmin: boolean | undefined = undefined;
+    if (typeof userinfo?.admin === 'boolean') {
+      oidcAdmin = userinfo.admin;
+    } else if (typeof userinfo?.admin === 'string') {
+      oidcAdmin = userinfo.admin === 'true';
+    } else if (Array.isArray(userinfo?.realm_access?.roles) || Array.isArray(userinfo?.resource_access?.account?.roles)) {
+      // Si le rôle OIDC contient 'admin', on considère admin = true
+      const roles = [
+        ...(userinfo?.realm_access?.roles ?? []),
+        ...(userinfo?.resource_access?.account?.roles ?? [])
+      ].map((r: any) => String(r).toLowerCase());
+      oidcAdmin = roles.includes('admin');
+    }
+
+    const userData: Partial<User> = {
+      email: userinfo.email,
+      username: userinfo.preferred_username || userinfo.name || userinfo.email,
+      displayName: userinfo.name || userinfo.preferred_username || userinfo.email,
+      provider: AuthProvider.OIDC,
+      externalId: userinfo.sub || userinfo.external_id || null,
+      avatarUrl: userinfo.picture || null,
+      isActive: true,
+      role: oidcRole || undefined,
+      admin: oidcAdmin !== undefined ? oidcAdmin : existing?.admin ?? false,
+      // phone, etc. peuvent être ajoutés ici si présents dans userinfo
+    };
+
+    if (!existing) {
+      userData.uid = uuidv4();
+      return this.usersService.createUser(userData);
+    } else {
+      if (!existing.uid) {
+        userData.uid = uuidv4();
+      }
+      // Si OIDC fournit un rôle ou admin défini et différent de la base, on met à jour
+      let changed = false;
+      for (const key of Object.keys(userData)) {
+        if (userData[key] !== undefined && existing[key] !== userData[key]) changed = true;
+      }
+      // Si OIDC n'a pas de rôle, on garde celui de la base
+      if (!oidcRole && existing.role) {
+        userData.role = existing.role;
+      }
+      // Si OIDC n'a pas admin, on garde celui de la base
+      if (oidcAdmin === undefined && typeof existing.admin === 'boolean') {
+        userData.admin = existing.admin;
+      }
+      if (changed) {
+        return this.usersService.update(existing.id, { ...userData });
+      }
+      return existing;
+    }
   }
 
   loginAuthorize(

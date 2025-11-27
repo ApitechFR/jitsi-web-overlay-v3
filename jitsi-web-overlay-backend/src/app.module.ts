@@ -15,11 +15,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { RoomNameValidator } from './common/validators/room-name.validator';
 import { JwtOidcMiddleware } from './authentication/utils/jwt-oidc.middleware';
 import { ScheduleModule } from '@nestjs/schedule';
+import { OriginMiddleware } from './common/middleware/origin.middleware';
 
 
 import { ReplayModule } from './replay/replay.module';
 import { RoomModule } from './room/room.module';
 import { dataSourceOptions } from '../db/datasource';
+import { ParticipantModule } from './participant/participant.module';
 
 
 @Module({
@@ -85,6 +87,7 @@ import { dataSourceOptions } from '../db/datasource';
     ProsodyModule,
     ReplayModule,
     RoomModule,
+    ParticipantModule,
   ],
   controllers: [AppController],
   providers: [AppService, RoomNameValidator],
@@ -95,5 +98,40 @@ export class AppModule implements NestModule {
     consumer
       .apply(JwtOidcMiddleware)
       .forRoutes({ path: 'conferences/*', method: RequestMethod.ALL });
+    consumer
+      .apply(OriginMiddleware)
+      .forRoutes({ path: 'conferences*', method: RequestMethod.GET });
+
+    //particcipants endpoint
+    consumer
+      .apply(OriginMiddleware)
+      .forRoutes({ path: 'participants*', method: RequestMethod.GET });
+
+    //feedback endpoint  
+    consumer
+      .apply(OriginMiddleware)
+      .forRoutes({ path: 'feedback*', method: RequestMethod.GET });
+
+    // replay endpoints
+    consumer
+      .apply(OriginMiddleware)
+      .forRoutes({ path: 'replays*', method: RequestMethod.GET });
+
+    //user
+    consumer
+      .apply(OriginMiddleware)
+      .forRoutes({ path: 'users*', method: RequestMethod.GET });
+
+    //rooms
+    consumer
+      .apply(OriginMiddleware)
+      .forRoutes({ path: 'rooms*', method: RequestMethod.GET });
+
+    //stats
+    consumer
+      .apply(OriginMiddleware)
+      .forRoutes({ path: 'stats*', method: RequestMethod.GET });
+
+
   }
 }

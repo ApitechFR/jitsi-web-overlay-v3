@@ -1,0 +1,71 @@
+{
+    "modalId": "services-versions",
+    "submenu": {
+        "title": "Version des services",
+        "items": [
+            {
+                "id": "web-overlay",
+                "label": "Version Web Overlay",
+                "content": {
+                    "title": "Nouvelles version 25/09/2025",
+                    "version": "v3.0.0",
+                    "releaseDate": "2025-09-25",
+                    "blocks": [
+                        {
+                            "description": "La dernière version 1.6.3 du 15 avril 2025 apporte des correctifs. Cette nouvelle version apporte notamment :",
+                            "features": {
+                                "ameliorations": []
+                            },
+                            "fix": {
+                                "bugs": []
+                            },
+                            "link": [
+                                {
+                                    "label": "Voir plus",
+                                    "href": null
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "jitsi",
+                "label": "Version Jitsi",
+                "content": {
+                    "title": "Nouvelles fonctionnalités du 10/04/2025",
+                    "releaseDate": "2025-04-10",
+                    "version": "v2.0.10184",
+                    "blocks": [
+                        {
+                            "description": "La dernière version stable du 10 avril 2025 apporte des nouvelles améliorations. Cette nouvelle version apporte notamment :",
+                            "features": {
+                                "ameliorations": [
+                                    "L'état 'startMuted' est désormais converti en métadonnées pour une meilleure gestion des participants qui démarrent leur session en mode muet.",
+                                    "Ajout de nouveaux tests, notamment pour vérifier la présence des participants et leur identification via l'ID utilisateur et le client",
+                                    "Le support des WebSockets est désormais activé par défaut pour une meilleure gestion de la communication en temps réel.",
+                                    "Ajout d'une vérification des occupants sur la configuration Disco-Info dans le protocole Prosody.",
+                                    "Ajout de tests pour vérifier le bon fonctionnement des transcriptions."
+                                ]
+                            },
+                            "fix": {
+                                "bugs": [
+                                    "Suppression d'une configuration de websocket par défaut, afin d'assurer une meilleure compatibilité.",
+                                    "Ajout de vérifications pour éviter des erreurs nil et améliorer la stabilité de Prosody.",
+                                    "Correction d'un problème où les fonctionnalités étaient vérifiées sans JWT, garantissant ainsi un fonctionnement même en l'absence de ce token.",
+                                    "Correction des problèmes d'initialisation des périphériques multimédias, empêchant des événements inutiles.",
+                                    "Mise à jour de l'ordre de préférence des codecs pour améliorer la qualité des appels et des transmissions.",
+                                    "Permet une reconfiguration de la résolution de l'écran partagé, mais uniquement lorsqu'un mode de test est activé.",
+                                    "Amélioration de la gestion de la qualité de la connexion en traitant les statistiques de bande passante sur le canal de pont.",
+                                    "Mise à jour des cibles TypeScript pour améliorer la compatibilité et la performance du système.",
+                                    "Ajout d'un rôle d'accessibilité sur le bouton de téléchargement d'images pour rendre l'interface plus inclusive."
+                                ]
+                            },
+                            "link": []
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}

@@ -3,4 +3,5 @@ export interface Props {
     conferenceName: string;
     jwt?: string;
     displayName?: string;
+    user?: any;
 }

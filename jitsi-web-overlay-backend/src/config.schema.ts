@@ -18,11 +18,14 @@ export const configValidationSchema = joi.object({
   EMAIL_SMTP_POOL: joi.boolean().default(true).optional(),
   EMAIL_SMTP_PORT: joi.number().default(587).optional(),
   EMAIL_SMTP_SECURE: joi.boolean().default(false).optional(),
-  EMAIL_SMTP_TLS_REJECTUNAUTHORIZED: joi.boolean(). default(false).optional(),
+  EMAIL_SMTP_TLS_REJECTUNAUTHORIZED: joi.boolean().default(false).optional(),
   EMAIL_SUBJECT: joi.string().required(),
   //frontconf
-  FRONTCONF_ROOMNAMECONSTRAINT_LENGTH: joi.number().optional(),
   FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS: joi.number().optional(),
+  FRONTCONF_ROOMNAMECONSTRAINT_MINLENGTH: joi.number().optional(),
+  FRONTCONF_ROOMNAMECONSTRAINT_MAXLENGTH: joi.number().optional(),
+  FRONTCONF_ROOMNAMECONSTRAINT_GENMINLENGTH: joi.number().optional(),
+  FRONTCONF_ROOMNAMECONSTRAINT_GENMAXLENGTH: joi.number().optional(),
   //jitsi
   JITSI_JITSIJWT_AUD: joi.string().required(),
   JITSI_JITSIJWT_EXPIRESAFTER: joi.number().required(),
@@ -85,7 +88,5 @@ export const configValidationSchema = joi.object({
   TOKEN_ENDPOINT: joi.string().uri().optional(),
   OIDC_END_SESSION_ENDPOINT: joi.string().uri().optional(),
   OIDC_LOGOUT_REDIRECT_URL: joi.string().uri().optional(),
-  
-  
 
 });

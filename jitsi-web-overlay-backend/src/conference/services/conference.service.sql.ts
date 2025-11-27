@@ -3,7 +3,8 @@ import {
   NotFoundException,
   UnauthorizedException,
   Logger,
-  InternalServerErrorException
+  InternalServerErrorException,
+  BadRequestException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
@@ -19,7 +20,10 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ProsodyService } from '../../prosody/prosody.service';
 import { ProsodyRuntimeService } from '../../prosody/prosody-runtime.service';
+import { JitsiJwtService } from '../../common/services/jitsi-jwt.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { ParticipantService } from '../../participant/participant.service';
+import { Participant } from '../../participant/entities/participant.entity';
 
 @Injectable()
 export class ConferenceServiceSQL implements IConferenceService {
@@ -29,10 +33,15 @@ export class ConferenceServiceSQL implements IConferenceService {
     private readonly conferenceRepo: Repository<Conference>,
     @InjectRepository(Room)
     private readonly roomRepo: Repository<Room>,
+    @InjectRepository(Participant)
+    private readonly participantRepo: Repository<Participant>,
+
+    private readonly participantService: ParticipantService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly prosodyService: ProsodyService,
-    private readonly prosodyRuntimeService: ProsodyRuntimeService
+    private readonly prosodyRuntimeService: ProsodyRuntimeService,
+    private readonly jitsiJwtService: JitsiJwtService
   ) { }
 
   async create(data: CreateConferenceDTO): Promise<Conference> {
@@ -47,7 +56,7 @@ export class ConferenceServiceSQL implements IConferenceService {
       await this.roomRepo.save(room);
     }
 
-    // Vérifier s'il existe déjà une conférence active pour cette room
+    // check if there is already an active conference for this room
     const existingConference = await this.conferenceRepo.findOne({
       where: {
         room: { uid: room.uid },
@@ -85,6 +94,14 @@ export class ConferenceServiceSQL implements IConferenceService {
     });
   }
 
+
+  async findByName(name: string): Promise<Conference | null> {
+    return await this.conferenceRepo.findOne({
+      where: { name },
+      order: { start_time: 'DESC' },
+    });
+  }
+
   async update(
     id: string,
     data: Partial<CreateConferenceDTO>,
@@ -110,13 +127,12 @@ export class ConferenceServiceSQL implements IConferenceService {
 
   private async countByDateRange(start: Date, end: Date): Promise<number> {
     return this.conferenceRepo.count({
-      where: { created_at: Between(start, end) }
+      where: { start_time: Between(start, end) }
     });
   }
 
-  async getStatisticsByFilter(filter: ConferenceFilter): Promise<{ filter: string; total: number }> {
+  private getDateRangeByFilter(filter: ConferenceFilter): { start: Date; end: Date } {
     const now = new Date();
-
     let start: Date;
     let end: Date;
 
@@ -154,6 +170,12 @@ export class ConferenceServiceSQL implements IConferenceService {
         throw new NotFoundException(`Invalid filter: ${filter}`);
     }
 
+    return { start, end };
+  }
+
+  async getStatisticsByFilter(filter: ConferenceFilter): Promise<{ filter: string; total: number }> {
+    const { start, end } = this.getDateRangeByFilter(filter);
+
     const total = await this.countByDateRange(start, end);
     return { filter, total };
   }
@@ -166,6 +188,77 @@ export class ConferenceServiceSQL implements IConferenceService {
       month: (await this.getStatisticsByFilter(ConferenceFilter.MONTH)).total,
       year: (await this.getStatisticsByFilter(ConferenceFilter.YEAR)).total
     };
+  }
+
+  async getHistoricSummary(filter?: ConferenceFilter, start_time?: Date, end_time?: Date) {
+    let start: Date | undefined, end: Date | undefined;
+
+    if (filter) {
+      ({ start, end } = this.getDateRangeByFilter(filter));
+
+    } else if (start_time && end_time) {
+      start = new Date(start_time);
+      end = new Date(end_time);
+    }
+
+    const confNb = await this.countByDateRange(start, end);
+    const maxSimult = await this.getMaxSimultConferences(start, end);
+    const confMoyTime = await this.getAverageDuration(start, end);
+    const confMoyPart = await this.getAverageParticipants(start, end);
+    const users = await this.participantService.countParticipantsByDateRange(start, end);
+    const partMaxSimult = await this.getMaxSimultParticipants(start, end);
+
+    return { confNb, maxSimult, confMoyTime, confMoyPart, users, partMaxSimult };
+  }
+
+  async getAverageParticipants(start?: Date, end?: Date): Promise<number> {
+    const conferences = await this.conferenceRepo.find({
+      where: {
+        status: ConferenceStatus.COMPLETED,
+        ...(start && end ? { start_time: Between(start, end) } : {}),
+      },
+      relations: ['participants'],
+    });
+
+    if (conferences.length === 0) return 0;
+
+    const totalParticipants = conferences.reduce(
+      (sum, conf) => sum + (conf.participants?.length || 0),
+      0,
+    );
+
+    const avg = totalParticipants / conferences.length;
+
+    return Number(avg.toFixed(2));
+  }
+
+  async getAverageDuration(
+    start?: Date,
+    end?: Date,
+  ): Promise<string> {
+
+
+    let query = `
+    SELECT AVG(TIMESTAMPDIFF(SECOND, start_time, end_time)) AS avg_seconds
+    FROM conferences
+    WHERE status = 'completed'
+  `;
+
+    const params: any[] = [];
+    if (start && end) {
+      query += ` AND start_time BETWEEN ? AND ?`;
+      params.push(start, end);
+    }
+
+    const result = await this.conferenceRepo.query(query, params);
+
+    const avgSeconds = Math.floor(result[0]?.avg_seconds || 0);
+    const hours = Math.floor(avgSeconds / 3600);
+    const minutes = Math.floor((avgSeconds % 3600) / 60);
+    const seconds = avgSeconds % 60;
+
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
   }
 
   async getDuration(uid: string): Promise<string> {
@@ -190,6 +283,95 @@ export class ConferenceServiceSQL implements IConferenceService {
 
     const pad = (n: number) => n.toString().padStart(2, '0');
     return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  }
+
+  async getMaxSimultConferences(
+    start?: Date,
+    end?: Date,
+  ): Promise<number> {
+
+    // Récupération des conférences dans l'intervalle
+    let query = `
+    SELECT start_time, end_time
+    FROM conferences
+    WHERE status = 'completed'
+  `;
+    const params: any[] = [];
+    if (start && end) {
+      query += ` AND start_time <= ? AND end_time >= ?`;
+      params.push(end, start);
+    }
+
+    const conferences = await this.conferenceRepo.query(query, params);
+
+    const events: { time: Date; type: 'start' | 'end' }[] = [];
+    for (const conf of conferences) {
+      events.push({ time: new Date(conf.start_time), type: 'start' });
+      events.push({ time: new Date(conf.end_time), type: 'end' });
+    }
+
+    events.sort((a, b) => a.time.getTime() - b.time.getTime() || (a.type === 'end' ? -1 : 1));
+
+    let simult = 0;
+    let maxsimult = 0;
+    for (const event of events) {
+      if (event.type === 'start') {
+        simult++;
+        if (simult > maxsimult) maxsimult = simult;
+      } else {
+        simult--;
+      }
+    }
+
+    return maxsimult;
+  }
+
+  async getMaxSimultParticipants(start?: Date, end?: Date): Promise<number> {
+
+    if (!start || !end) {
+      throw new BadRequestException('Specify start and end date for max simultaneous participants');
+    }
+
+    const query = `
+    SELECT p.created_at AS join_time, c.end_time AS leave_time
+    FROM participants p
+    JOIN conferences c ON c.uid = p.conference_uid
+    WHERE p.created_at <= ? AND (c.end_time IS NULL OR c.end_time >= ?)
+  `;
+
+    const rows = await this.participantRepo.query(query, [end, start]);
+
+    if (!rows.length) return 0;
+
+    const events: { time: Date; type: "join" | "leave" }[] = [];
+
+    for (const r of rows) {
+      events.push({ time: new Date(r.join_time), type: "join" });
+
+      if (r.leave_time) {
+        events.push({ time: new Date(r.leave_time), type: "leave" });
+      }
+    }
+
+    events.sort(
+      (a, b) =>
+        a.time.getTime() - b.time.getTime() ||
+        (a.type === "leave" ? -1 : 1)
+    );
+
+    let simult = 0;
+    let maxSimult = 0;
+
+    for (const ev of events) {
+      if (ev.type === "join") {
+        simult++;
+        if (simult > maxSimult) maxSimult = simult;
+      } else {
+        simult--;
+      }
+    }
+
+    return maxSimult;
   }
 
   async delete(id: string): Promise<void> {
@@ -268,68 +450,8 @@ export class ConferenceServiceSQL implements IConferenceService {
     return true;
   }
 
-  async generateJitsiJwt(user: any, moderator: boolean, roomName: string) {
-    try {
-      const aud = this.configService.get('JITSI_JITSIJWT_AUD') ?? 'jitsi';
-      const iss = this.configService.get('JITSI_JITSIJWT_ISS');
-      const sub = this.configService.get('JITSI_JITSIJWT_SUB');
-      const minutes = Number(this.configService.get('JITSI_JITSIJWT_EXPIRESAFTER') ?? 60);
-
-      if (!iss || !sub) {
-        throw new InternalServerErrorException('Jitsi JWT config missing (iss/sub)');
-      }
-      if (!minutes || minutes <= 0) {
-        throw new InternalServerErrorException('Invalid Jitsi JWT expiration');
-      }
-
-      const first = user?.given_name || user?.firstName || user?.prenom || '';
-      const last = user?.family_name || user?.lastName || user?.nom || '';
-      const full = [first, last].filter(Boolean).join(' ').trim();
-
-      const displayName = full || user?.name || user?.email || 'Invité';
-      const email = user?.email || '';
-
-      const now = Math.floor(Date.now() / 1000);
-      const exp = now + minutes * 60;
-      const nbf = now - 10; // tolérance 10s
-
-      const payload: any = {
-        context: {
-          user: {
-            avatar: user?.avatar ?? '',
-            name: displayName,
-            email,
-            moderator: Boolean(moderator),
-          },
-        },
-        aud, iss, sub,
-        room: roomName,
-        iat: now,
-        nbf,
-        exp,
-      };
-
-      const secret = this.configService.get('JITSI_JITSIJWT_SECRET');
-      let token: string;
-
-      if (secret) {
-        token = this.jwtService.sign(payload, {
-          secret,
-          algorithm: 'HS256',
-        });
-      } else {
-        // Fallback: token pré-signé 
-        token = this.configService.get('JITSI_JWT');
-        if (!token) {
-          throw new InternalServerErrorException('No signing secret or fallback token configured');
-        }
-      }
-
-      return { token, exp };
-    } catch (error) {
-      this.logger.error('Erreur lors de la création du token Jitsi', error);
-      throw new UnauthorizedException('Impossible de générer le token');
-    }
+  generateJitsiJwt(user: any, moderator: boolean, roomName: string) {
+    return this.jitsiJwtService.generateJitsiJwt(user, moderator, roomName);
   }
 
   /**

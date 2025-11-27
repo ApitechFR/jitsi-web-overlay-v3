@@ -1,3 +1,4 @@
+import { JitsiJwtService } from '../common/services/jitsi-jwt.service';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
@@ -20,12 +21,14 @@ import { User } from '../users/entities/users.entity';
 import { RoomModule } from '../room/room.module';
 import { Room } from '../room/entities/room.entity';
 import { ProsodyRuntimeService } from '../prosody/prosody-runtime.service';
+import { ParticipantModule } from '../participant/participant.module';
 
 @Module({
   imports: [
     HttpModule,
     ProsodyModule,
     RoomModule,
+    ParticipantModule,
     ...(process.env.DB_TYPE === 'mongodb'
       ? [
         MongooseModule.forFeature([
@@ -36,6 +39,7 @@ import { ProsodyRuntimeService } from '../prosody/prosody-runtime.service';
   ],
   controllers: [ConferenceController],
   providers: [
+    JitsiJwtService,
     RoomNameValidator,
     ProsodyRuntimeService,
     ...(process.env.DB_TYPE === 'mongodb'

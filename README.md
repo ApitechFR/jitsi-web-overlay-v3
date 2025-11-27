@@ -11,7 +11,7 @@ Variables principales :
 - `PROSODY_ENDPOINT_ROOM` : endpoint pour obtenir la liste des participants d'une salle.
 - `PROSODY_ENDPOINT_ROOM_SIZE` : endpoint pour obtenir le nombre de participants dans une salle.
 - `PROSODY_ENDPOINT_SESSIONS` : endpoint pour accéder au nombre total de sessions actives.
-- `PROSODY_SERVICE_TOKEN` : token d'accès au service Prosody.
+
 
 ##### Endpoints Prosody utilisés
 
@@ -59,12 +59,17 @@ Variables principales :
 		 ```
 	 - **Réponse** :
 		 ```json
+		### Dossier `client` pour les assets dynamiques
+
+		Le dossier `client` à la racine du projet permet de déposer des fichiers statiques (images, logos, documents, etc.) qui seront exposés par Nginx dans le conteneur frontend. Ce dossier est monté en lecture seule dans le conteneur à l’emplacement `/usr/share/nginx/html/assets/client` grâce à la configuration Docker Compose :
+
+		```yaml
+			- ./client:/usr/share/nginx/html/assets/client:ro
+		```
+
+		Vous pouvez ainsi ajouter, modifier ou remplacer des fichiers dans `client` sans avoir à reconstruire l’image Docker du frontend. Ces fichiers seront accessibles publiquement via l’URL du frontend.
 		 42
 		 ```
-#### Jitsi
-- Jitsi est la plateforme de visioconférence utilisée par l’application.
-- Variables principales :
-	- `JITSI_JITSIJWT_ISS`, `JITSI_JITSIJWT_AUD`, `JITSI_JITSIJWT_SUB`, `JITSI_JITSIJWT_SECRET`, `JITSI_JITSIJWT_EXPIRESAFTER` : servent à générer et vérifier les tokens JWT pour l’authentification et la sécurisation des conférences.
 	- `JITSI_DOMAIN` (frontend) : permet au client de se connecter au bon serveur Jitsi Meet.
 - Dans le backend, les variables JWT sont utilisées pour signer les tokens transmis aux clients et valider leur accès aux conférences. Dans le frontend, le domaine Jitsi est utilisé pour initialiser l’iframe ou le composant Jitsi Meet.
 
@@ -89,14 +94,13 @@ Les variables d'environnement permettent de configurer le comportement du backen
 - Consultez le code source (backend : `src/config.schema.ts`, frontend : fichiers dans `src/config/` et `vite.config.ts`) pour voir comment chaque variable est utilisée.
 
 
-### Backend
+### Variables
 | Variable | Description | Exemple | Obligatoire | Valeur par défaut |
 |----------|-------------|---------|-------------|-------------------|
 | PROSODY_API_PREFIX | Préfixe d'API Prosody | `/` | Optionnelle | `/` |
 | PROSODY_ENDPOINT_ROOM | Endpoint pour les salles | `/room` | Optionnelle | `/room` |
 | PROSODY_ENDPOINT_ROOM_SIZE | Endpoint pour la taille des salles | `/room-size` | Optionnelle | `/room-size` |
 | PROSODY_ENDPOINT_SESSIONS | Endpoint pour les sessions | `/sessions` | Optionnelle | `/sessions` |
-| PROSODY_SERVICE_TOKEN | Token d'accès au service Prosody Elle est optionnelle, mais doit être renseignée si le serveur Prosody requiert un token d'accès pour les requêtes API. | `token_example` | Optionnelle | (aucune) |
 | JITSI_MUC_DOMAIN | Domaine MUC utilisé par Jitsi | `conference.prosody.example.com` | Optionnelle | (aucune) |
 | BACKEND_PORT | Port d'écoute du backend | `3030` | Optionnelle | 3030 |
 | AGENTCONNECT_PROXYURL | URL du proxy AgentConnect | `https://proxy.example.com` | Optionnelle | (aucune) |
@@ -111,8 +115,8 @@ Les variables d'environnement permettent de configurer le comportement du backen
 | JITSI_JITSIJWT_SECRET | Secret JWT Jitsi | `jwt_secret_example` | Obligatoire | (aucune) |
 | JITSI_JITSIJWT_EXPIRESAFTER | Durée de validité du token | `60` | Obligatoire | (aucune) |
 | PROSODY_DOMAIN | Domaine Prosody | `prosody.example.com` | Obligatoire | (aucune) |
-| PROSODY_AVAILABLE_INSTANCES | Instances Prosody (séparées par un espace) | `prosody1.example.com prosody2.example.com` | Obligatoire | (aucune) |
-| JICOFO_AVAILABLE_INSTANCES | Instances Jicofo (séparées par un espace) | `jicofo1.example.com jicofo2.example.com` | Obligatoire | (aucune) |
+| PROSODY_AVAILABLE_INSTANCES | Instances Prosody (séparées par une virgule) | `prosody1.example.com prosody2.example.com` | Obligatoire | (aucune) |
+| JICOFO_AVAILABLE_INSTANCES | Instances Jicofo (séparées par une virgule) | `jicofo1.example.com jicofo2.example.com` | Obligatoire | (aucune) |
 | MONGO_URI | URI MongoDB | `mongodb://user:pass@host:port/dbname` | Obligatoire si DB_TYPE=mongodb | (aucune) |
 | EMAIL_FROM | Adresse email d'envoi | `noreply@example.com` | Optionnelle | (aucune) |
 | EMAIL_SUBJECT | Sujet de l'email | `Invitation à la réunion` | Obligatoire | (aucune) |
@@ -124,8 +128,11 @@ Les variables d'environnement permettent de configurer le comportement du backen
 | EMAIL_SMTP_AUTH_PASS | Mot de passe SMTP | `smtp_password` | Optionnelle | (aucune) |
 | EMAIL_SMTP_TLS_REJECTUNAUTHORIZED | Rejeter les certificats non autorisés | `false` | Optionnelle | `false` |
 | JMMC_URL | URL du service JMMC | `https://jmmc.example.com` | Optionnelle | (aucune) |
-| FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS | Nombre min de chiffres dans le nom de salle | `2` | Optionnelle | 3 |
-| FRONTCONF_ROOMNAMECONSTRAINT_LENGTH | Longueur du nom de salle | `8` | Optionnelle | 10 |
+| FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS | Nombre minimum de chiffres requis dans le nom de salle | `3` | Optionnelle | 3 |
+| FRONTCONF_ROOMNAMECONSTRAINT_MINLENGTH | Longueur minimale du nom de salle | `3` | Optionnelle | 3 |
+| FRONTCONF_ROOMNAMECONSTRAINT_MAXLENGTH| Longueur maximale du nom de salle | `10` | Optionnelle | 10 |
+| FRONTCONF_ROOMNAMECONSTRAINT_GENMINLENGTH| Longueur minimale générée pour le nom de salle | `3` (ou MINLENGTH si non défini) | Optionnelle | 3 |
+| FRONTCONF_ROOMNAMECONSTRAINT_GENMAXLENGTH| Longueur maximale générée pour le nom de salle | `10` (ou MAXLENGTH si non défini) | Optionnelle | 10 |
 | COOKIE_SECRET | Secret pour les cookies | `cookie_secret_example` | Obligatoire | (aucune) |
 | CORS_ORIGIN | Origine autorisée pour CORS | `https://frontend.example.com` | Optionnelle | (aucune) |
 | DB_TYPE | Type de base de données | `mongodb` ou `mariadb` | Obligatoire | (aucune) |
@@ -165,8 +172,10 @@ Les variables d'environnement permettent de configurer le comportement du backen
 | ENABLE_JIBRI_APITECH_API | Active l'API Jibri Apitech | `false` | Optionnelle | false |
 | JIBRI_APITECH_API_DOMAIN | Domaine de l'API Jibri Apitech | `jibri.example.com` | Optionnelle | (aucune) |
 | REPLAY_CHECK_TIMEOUT_MS | Timeout pour le check replay | `10000` | Optionnelle | 600000 |
-| FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS | Nombre min de chiffres dans le nom de salle | `2` | Optionnelle | (aucune) |
-| FRONTCONF_ROOMNAMECONSTRAINT_LENGTH | Longueur du nom de salle | `8` | Optionnelle | (aucune) |
+| APP_CHANGELOG_URL | Chemin du changelog (JSON) | `/infos.json` | Non | `/infos.json` |
+| APP_FAQ_URL | Chemin du PDF de la FAQ | `/doc/Documentation_utilisateur_Visio_By_Apitech.pdf` | Non | `/doc/Documentation_utilisateur_Visio_By_Apitech.pdf` |
+| APP_TITLE | Titre dynamique de l'application | `Visio By Apitech` | Non | `Visio By Apitech` |
+| APP_FAVICON_URL | Chemin du favicon dynamique | `/joona/Icone_produits_V.svg` | Non | `/joona/Icone_produits_V.svg` |
 
 ## Exemple de fichier `.env`
 
@@ -207,6 +216,53 @@ Adaptez les variables d'environnement et les volumes selon vos besoins.
 ### 5. Arrêt des services
 ```bash
 docker-compose down
+```
+
+### Dossier `client-resources` pour les assets dynamiques
+
+
+Le dossier `client-resources` à la racine du projet permet de déposer des fichiers statiques (images, logos, documents, etc.) qui seront exposés par Nginx dans le conteneur frontend. Ce dossier est monté en lecture seule dans le conteneur à l’emplacement `/usr/share/nginx/html/assets/client-resources` grâce à la configuration Docker Compose :
+
+```yaml
+	- ./client-resources:/usr/share/nginx/html/assets/client-resources:ro
+```
+
+#### Création et utilisation du dossier `client-resources`
+
+1. Créez le dossier à la racine du projet si besoin :
+   ```bash
+   mkdir client-resources
+   ```
+2. Placez-y vos fichiers statiques personnalisés (ex : images, logos, PDF, etc.).
+3. Au lancement de Docker Compose, tout le contenu de ce dossier sera accessible dans le conteneur à `/usr/share/nginx/html/assets/client-resources`.
+4. Ces fichiers seront accessibles publiquement via l’URL du frontend, par exemple :
+   - `/assets/client-resources/mon-image.png`
+   - `/assets/client-resources/mon-doc.pdf`
+
+
+#### Variables d'environnement pour les ressources dynamiques
+
+Vous pouvez configurer les variables suivantes pour pointer vers des fichiers placés dans `client-resources` :
+
+- `APP_FAQ_URL` : chemin du PDF de la FAQ (ex : `/assets/client-resources/Documentation_utilisateur.pdf`)
+- `APP_FAVICON_URL` : chemin du favicon (ex : `/assets/client-resources/favicon.svg`)
+- `APP_LIGHTVISIOLOGOHEADER` : logo clair pour le header
+- `APP_DARKVISIOLOGOHEADER` : logo sombre pour le header
+- `APP_LIGHTVISIOLOGOFOOTER` : logo clair pour le footer
+- `APP_DARKVISIOLOGOFOOTER` : logo sombre pour le footer
+- `APP_CHANGELOG_URL` : chemin du changelog (ex : `/assets/client-resources/infos.json`)
+- `APP_TITLE` : titre dynamique de l’application
+- `APP_HEADERSERVICETITLE` : titre principal du header
+- `APP_HEADERSERVICETAGLINE` : sous-titre du header
+- `APP_FOOTERDESCRIPTION` : texte du footer
+- `APP_FOOTERLINKS` : liens du footer
+
+Exemple dans `.env` :
+
+```env
+APP_FAQ_URL=/assets/client-resources/Documentation_utilisateur.pdf
+APP_FAVICON_URL=/assets/client-resources/favicon.svg
+APP_LIGHTVISIOLOGOHEADER=/assets/client-resources/logo-header-light.png
 ```
 
 ### 6. Conseils
