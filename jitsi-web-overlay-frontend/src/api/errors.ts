@@ -13,6 +13,7 @@ export const toApiError = (
     error: unknown,
     defaultMessage = 'Le serveur a rencontré une erreur'
 ) => {
+    let apiError: ApiError;
     if (
         typeof error === 'object' &&
         error !== null &&
@@ -20,15 +21,21 @@ export const toApiError = (
         typeof (error as any).response === 'object'
     ) {
         const response = (error as any).response;
-        return new ApiError(
+        apiError = new ApiError(
             defaultMessage,
             response?.status,
             response?.data ?? (error as any).message
         );
+    } else {
+        apiError = new ApiError(
+            defaultMessage,
+            undefined,
+            (error as any)?.message
+        );
     }
-    return new ApiError(
-        defaultMessage,
-        undefined,
-        (error as any)?.message
-    );
+    if (apiError.message === 'Le serveur a rencontré une erreur') {
+        // Déconnexion immédiate de l'utilisateur
+        window.location.href = '/login';
+    }
+    return apiError;
 };
