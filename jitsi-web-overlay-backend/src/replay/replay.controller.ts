@@ -228,8 +228,9 @@ export class ReplayController {
         };
     }
 
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('admin')
+    @UseGuards(JwtAuthGuard)
+    //RolesGuard)
+    // @Roles('admin')
     @Get(':conference_name')
     @ApiOperation({ summary: 'Obtenir un replay par nom de conférence' })
     async findReplayByConfName(@Param('conference_name') conference_name: string): Promise<Replay> {
