@@ -58,12 +58,12 @@ export class AuthenticationController {
     * Return user information from the JWT.
     */
   @Get('authentication/userinfo')
-  @ApiOkResponse({ description: 'Retourne les infos utilisateur du JWT + synchronisées avec la base' })
-  @ApiUnauthorizedResponse({ description: 'Utilisateur non authentifié' })
+  @ApiOkResponse({ description: 'Returns user info from the JWT (access token)' })
+  @ApiUnauthorizedResponse({ description: 'User not authenticated' })
   async userinfo(@Req() request: Request) {
     const accessToken = request.signedCookies?.accessToken;
     if (!accessToken) {
-      throw new UnauthorizedException('Utilisateur non authentifié');
+      throw new UnauthorizedException('User not authenticated');
     }
     try {
       const decoded = this.jwtService.verify(accessToken, {
@@ -71,18 +71,16 @@ export class AuthenticationController {
         algorithms: ['HS256'],
       });
       if (!decoded) {
-        throw new UnauthorizedException('JWT invalide');
+        throw new UnauthorizedException('Invalid JWT');
       }
-      // eslint-disable-next-line no-console
-      console.log('[AUTH] /authentication/userinfo →', decoded);
       return decoded;
     } catch {
-      throw new UnauthorizedException('JWT invalide');
+      throw new UnauthorizedException('Invalid JWT');
     }
   }
 
   @Get('authentication/whereami')
-  @ApiOkResponse({ description: "retoune 'RIE' ou 'INTERNET' " })
+  @ApiOkResponse({ description: "returns 'RIE' or 'INTERNET' " })
   whereami(@Headers('webconf-user-region') userAgent: string) {
     return userAgent;
   }
@@ -90,7 +88,7 @@ export class AuthenticationController {
   @Get('authentication/login_authorize')
   @Redirect('', 302)
   @ApiOkResponse({
-    description: "retourne l'url de redirection",
+    description: "returns the redirect URL",
   })
   loginAuthorize(
     @Res({ passthrough: true }) response: Response,
@@ -119,7 +117,7 @@ export class AuthenticationController {
   ) {
     const { code, state } = query;
 
-    // Garde: paramètres manquants → retour front
+    // Guard: missing parameters → redirect to frontend
     if (!code || !state) {
       return response.redirect(302, this.getFrontRedirectTarget(request));
     }
@@ -131,10 +129,10 @@ export class AuthenticationController {
           secret: this.configService.get('JWT_SECRET'),
           algorithms: ['HS256'],
         });
-        // Token encore valide → ok, déjà loggé
+        // Token still valid → already logged in
         return response.redirect(302, this.getFrontRedirectTarget(request));
       } catch {
-        //console.log('Token présent mais expiré/invalide');
+        //console.log('Token present but expired/invalid');
       }
     }
 
@@ -146,10 +144,10 @@ export class AuthenticationController {
     const { userinfo, idToken } =
       await this.authenticationService.loginCallback(code, state, sendedState);
 
-    // Enregistre ou met à jour l'utilisateur OIDC dans la base
+    // Create or update the OIDC user in the database
     const user = await this.authenticationService.upsertOidcUser(userinfo);
 
-    // Utilise toujours la valeur admin de la base
+    // Always use the admin value from the database
     const userInfos = this.authenticationService.extractUserInfos(userinfo);
 
     const baseClaims = {
@@ -169,7 +167,7 @@ export class AuthenticationController {
       idToken,
     });
 
-    // Pose les cookies de session
+    // Set session cookies
     this.authenticationService.setAuthCookie(response, 'accessToken', accessToken, {
       maxAge: 2 * 60 * 60 * 1000, // 2h
     });
@@ -177,11 +175,11 @@ export class AuthenticationController {
       maxAge: 12 * 60 * 60 * 1000, // 12h
     });
 
-    // Nettoyage ciblé des cookies temporaires
+    // Targeted cleanup of temporary cookies
     this.authenticationService.clearAuthCookie(response, 'state');
     this.authenticationService.clearAuthCookie(response, 'roomName');
 
-    // Redirection finale (home ou /:roomName)
+    // Final redirection (home or /:roomName)
     return response.redirect(302, this.getFrontRedirectTarget(request, roomName));
   }
 
@@ -189,7 +187,7 @@ export class AuthenticationController {
 
   @Get('authentication/logout')
   @Redirect('', 302)
-  @ApiResponse({ status: 302, description: 'redirection vers cerbère' })
+  @ApiResponse({ status: 302, description: 'redirect to Cerbère' })
   logout(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
@@ -210,7 +208,7 @@ export class AuthenticationController {
   @ApiOkResponse({ description: "retourne l'url /" })
   @ApiUnauthorizedResponse({
     description:
-      "le state de retour n'est pas la meme que celle qui a été envoyé",
+      "the returned state is not the same as the one that was sent",
   })
   logoutCallback(
     @Query() query: LogoutCallbackDTO,
@@ -222,7 +220,7 @@ export class AuthenticationController {
 
     if (state !== sendedState) {
       throw new UnauthorizedException(
-        "Le state de retour n'est pas le même que celui envoyé",
+        "The returned state is not the same as the one that was sent",
       );
     }
 
@@ -237,21 +235,21 @@ export class AuthenticationController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    // Appelle la méthode existante
+    // Call the existing method
     return this.logoutCallback(query, request, response);
   }
 
 
   @Get('authentication/refreshToken')
-  @ApiOkResponse({ description: 'retourne { accessToken }' })
-  @ApiUnauthorizedResponse({ description: 'veuillez vous authentifier' })
+  @ApiOkResponse({ description: 'returns { accessToken }' })
+  @ApiUnauthorizedResponse({ description: 'please authenticate' })
   async refreshToken(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
     const refreshToken = request.signedCookies?.refreshToken;
     if (!refreshToken) {
-      throw new UnauthorizedException('Veuillez vous authentifier');
+      throw new UnauthorizedException('Please authenticate');
     }
 
     try {
@@ -291,7 +289,7 @@ export class AuthenticationController {
       return { accessToken };
     } catch (error) {
       this.authenticationService.clearAllCookies(response);
-      throw new UnauthorizedException('Veuillez vous authentifier');
+      throw new UnauthorizedException('Please authenticate');
     }
   }
 }
