@@ -70,8 +70,9 @@ export class AuthenticationService {
       avatarUrl: userinfo.picture || null,
       isActive: true,
       role: oidcRole || undefined,
-      admin: oidcAdmin !== undefined ? oidcAdmin : existing?.admin ?? false,
-      // phone, etc. peuvent être ajoutés ici si présents dans userinfo
+
+      // admin is true if either OIDC or the database value is true
+      admin: (oidcAdmin === true) || (typeof existing?.admin === 'boolean' && existing.admin === true),
     };
 
     if (!existing) {
@@ -81,19 +82,16 @@ export class AuthenticationService {
       if (!existing.uid) {
         userData.uid = uuidv4();
       }
-      // Si OIDC fournit un rôle ou admin défini et différent de la base, on met à jour
+      // Update if OIDC or admin value has changed compared to the database
       let changed = false;
       for (const key of Object.keys(userData)) {
         if (userData[key] !== undefined && existing[key] !== userData[key]) changed = true;
       }
-      // Si OIDC n'a pas de rôle, on garde celui de la base
+      // If OIDC does not provide a role, keep the one from the database
       if (!oidcRole && existing.role) {
         userData.role = existing.role;
       }
-      // Si OIDC n'a pas admin, on garde celui de la base
-      if (oidcAdmin === undefined && typeof existing.admin === 'boolean') {
-        userData.admin = existing.admin;
-      }
+      // admin is true if OIDC OR the database value is true (see calculation above)
       if (changed) {
         return this.usersService.update(existing.id, { ...userData });
       }
