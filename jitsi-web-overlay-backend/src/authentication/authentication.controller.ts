@@ -142,12 +142,14 @@ export class AuthenticationController {
     const sendedState = request.signedCookies?.state;
     const roomName = request.signedCookies?.roomName;
 
+
     const { userinfo, idToken } =
       await this.authenticationService.loginCallback(code, state, sendedState);
 
     // Enregistre ou met à jour l'utilisateur OIDC dans la base
     const user = await this.authenticationService.upsertOidcUser(userinfo);
 
+    // Utilise toujours la valeur admin de la base
     const userInfos = this.authenticationService.extractUserInfos(userinfo);
 
     const baseClaims = {
@@ -156,6 +158,8 @@ export class AuthenticationController {
       sub: this.configService.get('JITSI_JITSIJWT_SUB'),
       email: this.authenticationService.extractEmail(userinfo),
       ...userInfos,
+      admin: user.admin, // force la valeur de la base
+      role: user.role,   // force la valeur de la base
       uid: user.uid,
     };
 
