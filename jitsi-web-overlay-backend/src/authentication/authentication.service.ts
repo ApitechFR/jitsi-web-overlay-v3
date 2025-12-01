@@ -35,7 +35,8 @@ export class AuthenticationService {
   * @param existingAdmin Optional: current admin value from DB
   */
   private isAdmin(userinfo: any, existingAdmin?: boolean): boolean {
-    let oidcAdmin = false;
+    // TRUE always wins: if either OIDC or DB is true, return true
+    let oidcAdmin: boolean | undefined = undefined;
     if (typeof userinfo?.admin === 'boolean') {
       oidcAdmin = userinfo.admin;
     } else if (typeof userinfo?.admin === 'string') {
@@ -50,7 +51,8 @@ export class AuthenticationService {
       ].map((r: any) => String(r).toLowerCase());
       oidcAdmin = roles.includes('admin');
     }
-    return oidcAdmin === true || existingAdmin === true;
+    // If either is true, return true
+    return Boolean(oidcAdmin) || Boolean(existingAdmin);
   }
 
 
