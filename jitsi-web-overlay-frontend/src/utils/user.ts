@@ -11,15 +11,7 @@ export function getFirstStringProp(obj: Record<string, unknown>, props: string[]
 
 export function isUserAdmin(userInfos: UserInfos | null): boolean {
   if (!userInfos) return false;
-  if (userInfos.isAdmin || userInfos.admin) return true;
-
-  const roles =
-    userInfos.roles ??
-    userInfos.realm_access?.roles ??
-    ([] as string[]);
-
-  const normalized = roles.map(r => r.toLowerCase());
-  return normalized.includes('admin') || normalized.includes('role_admin');
+  return userInfos.isAdmin === true || userInfos.admin === true;
 }
 
 export function getUserName(userInfos: UserInfos | null): string {
