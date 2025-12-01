@@ -9,6 +9,10 @@ export default function AdminRoute({ children }: { children: ReactNode }) {
   const { authenticated, status, user } = useAuth();
   const location = useLocation();
 
+  // DEBUG LOGS
+  console.log('ADMIN ROUTE - user:', user);
+  console.log('ADMIN ROUTE - isUserAdmin:', isUserAdmin(user));
+
   if (status === 'unknown') {
     return (
       <div >
@@ -16,7 +20,6 @@ export default function AdminRoute({ children }: { children: ReactNode }) {
       </div>
     );
   }
-
 
   if (!authenticated) {
     return <Navigate to="/" replace state={{ from: location }} />;
