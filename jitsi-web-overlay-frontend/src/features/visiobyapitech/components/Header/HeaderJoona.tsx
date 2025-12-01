@@ -42,9 +42,6 @@ export default function HeaderJoona() {
 
   const { user, authenticated, login, logout } = useAuth();
 
-  let adminDebug = isUserAdmin(user);
-  console.log({ user, authenticated, adminDebug });
-
   const faqUrl = cfg.VITE_APP_FAQ_URL || '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf';
   const openPdf = () => {
     window.open(faqUrl, '_blank', 'noopener,noreferrer');

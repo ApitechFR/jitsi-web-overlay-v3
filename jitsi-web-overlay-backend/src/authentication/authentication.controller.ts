@@ -73,8 +73,6 @@ export class AuthenticationController {
       if (!decoded) {
         throw new UnauthorizedException('JWT invalide');
       }
-      // eslint-disable-next-line no-console
-      console.log('[AUTH] /authentication/userinfo →', decoded);
       return decoded;
     } catch {
       throw new UnauthorizedException('JWT invalide');
@@ -119,7 +117,7 @@ export class AuthenticationController {
   ) {
     const { code, state } = query;
 
-    // Garde: paramètres manquants → retour front
+    // Guard: missing parameters → redirect to frontend
     if (!code || !state) {
       return response.redirect(302, this.getFrontRedirectTarget(request));
     }
@@ -131,10 +129,10 @@ export class AuthenticationController {
           secret: this.configService.get('JWT_SECRET'),
           algorithms: ['HS256'],
         });
-        // Token encore valide → ok, déjà loggé
+        // Token still valid → already logged in
         return response.redirect(302, this.getFrontRedirectTarget(request));
       } catch {
-        //console.log('Token présent mais expiré/invalide');
+        //console.log('Token present but expired/invalid');
       }
     }
 
@@ -146,10 +144,10 @@ export class AuthenticationController {
     const { userinfo, idToken } =
       await this.authenticationService.loginCallback(code, state, sendedState);
 
-    // Enregistre ou met à jour l'utilisateur OIDC dans la base
+    // Create or update the OIDC user in the database
     const user = await this.authenticationService.upsertOidcUser(userinfo);
 
-    // Utilise toujours la valeur admin de la base
+    // Always use the admin value from the database
     const userInfos = this.authenticationService.extractUserInfos(userinfo);
 
     const baseClaims = {
@@ -169,7 +167,7 @@ export class AuthenticationController {
       idToken,
     });
 
-    // Pose les cookies de session
+    // Set session cookies
     this.authenticationService.setAuthCookie(response, 'accessToken', accessToken, {
       maxAge: 2 * 60 * 60 * 1000, // 2h
     });
@@ -177,11 +175,11 @@ export class AuthenticationController {
       maxAge: 12 * 60 * 60 * 1000, // 12h
     });
 
-    // Nettoyage ciblé des cookies temporaires
+    // Targeted cleanup of temporary cookies
     this.authenticationService.clearAuthCookie(response, 'state');
     this.authenticationService.clearAuthCookie(response, 'roomName');
 
-    // Redirection finale (home ou /:roomName)
+    // Final redirection (home or /:roomName)
     return response.redirect(302, this.getFrontRedirectTarget(request, roomName));
   }
 
@@ -237,7 +235,7 @@ export class AuthenticationController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    // Appelle la méthode existante
+    // Call the existing method
     return this.logoutCallback(query, request, response);
   }
 
