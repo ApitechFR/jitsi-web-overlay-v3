@@ -73,18 +73,6 @@ export class AuthenticationController {
       if (!decoded) {
         throw new UnauthorizedException('JWT invalide');
       }
-      // Synchronise avec la base si possible (par email)
-      if (decoded.email) {
-        const user = await this.usersService.findByEmail(decoded.email);
-        if (user) {
-          // On renvoie les infos du JWT + admin et role de la base
-          return {
-            ...decoded,
-            admin: user.admin,
-            role: user.role,
-          };
-        }
-      }
       return decoded;
     } catch {
       throw new UnauthorizedException('JWT invalide');
@@ -129,7 +117,7 @@ export class AuthenticationController {
   ) {
     const { code, state } = query;
 
-    // Garde: paramètres manquants → retour front
+    // Guard: missing parameters → redirect to frontend
     if (!code || !state) {
       return response.redirect(302, this.getFrontRedirectTarget(request));
     }
@@ -141,10 +129,10 @@ export class AuthenticationController {
           secret: this.configService.get('JWT_SECRET'),
           algorithms: ['HS256'],
         });
-        // Token encore valide → ok, déjà loggé
+        // Token still valid → already logged in
         return response.redirect(302, this.getFrontRedirectTarget(request));
       } catch {
-        //console.log('Token présent mais expiré/invalide');
+        //console.log('Token present but expired/invalid');
       }
     }
 
@@ -152,12 +140,14 @@ export class AuthenticationController {
     const sendedState = request.signedCookies?.state;
     const roomName = request.signedCookies?.roomName;
 
+
     const { userinfo, idToken } =
       await this.authenticationService.loginCallback(code, state, sendedState);
 
-    // Enregistre ou met à jour l'utilisateur OIDC dans la base
+    // Create or update the OIDC user in the database
     const user = await this.authenticationService.upsertOidcUser(userinfo);
 
+    // Always use the admin value from the database
     const userInfos = this.authenticationService.extractUserInfos(userinfo);
 
     const baseClaims = {
@@ -166,6 +156,8 @@ export class AuthenticationController {
       sub: this.configService.get('JITSI_JITSIJWT_SUB'),
       email: this.authenticationService.extractEmail(userinfo),
       ...userInfos,
+      admin: user.admin, // force la valeur de la base
+      role: user.role,   // force la valeur de la base
       uid: user.uid,
     };
 
@@ -175,7 +167,7 @@ export class AuthenticationController {
       idToken,
     });
 
-    // Pose les cookies de session
+    // Set session cookies
     this.authenticationService.setAuthCookie(response, 'accessToken', accessToken, {
       maxAge: 2 * 60 * 60 * 1000, // 2h
     });
@@ -183,11 +175,11 @@ export class AuthenticationController {
       maxAge: 12 * 60 * 60 * 1000, // 12h
     });
 
-    // Nettoyage ciblé des cookies temporaires
+    // Targeted cleanup of temporary cookies
     this.authenticationService.clearAuthCookie(response, 'state');
     this.authenticationService.clearAuthCookie(response, 'roomName');
 
-    // Redirection finale (home ou /:roomName)
+    // Final redirection (home or /:roomName)
     return response.redirect(302, this.getFrontRedirectTarget(request, roomName));
   }
 
@@ -243,7 +235,7 @@ export class AuthenticationController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    // Appelle la méthode existante
+    // Call the existing method
     return this.logoutCallback(query, request, response);
   }
 

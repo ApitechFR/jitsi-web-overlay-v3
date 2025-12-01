@@ -17,7 +17,6 @@ export default function AdminRoute({ children }: { children: ReactNode }) {
     );
   }
 
-
   if (!authenticated) {
     return <Navigate to="/" replace state={{ from: location }} />;
   }
