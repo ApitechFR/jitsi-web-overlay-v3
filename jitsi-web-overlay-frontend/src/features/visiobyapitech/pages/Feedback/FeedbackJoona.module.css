@@ -27,6 +27,14 @@
   animation: slideUpFade 0.8s ease-out;
 }
 
+.alertContainer :global(.fr-alert) {
+    background-color: #ffffffb5;
+}
+
+.alertContainer :global(.fr-alert__title) {
+    color: black;
+}
+
 @media (max-width: 850px) {
     .contentFeedback {
         width: 100%;
