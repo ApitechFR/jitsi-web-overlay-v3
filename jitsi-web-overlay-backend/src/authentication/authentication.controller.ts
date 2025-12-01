@@ -73,23 +73,9 @@ export class AuthenticationController {
       if (!decoded) {
         throw new UnauthorizedException('JWT invalide');
       }
-      // Synchronise avec la base si possible (par email)
-      let userInfosToReturn = decoded;
-      if (decoded.email) {
-        const user = await this.usersService.findByEmail(decoded.email);
-        if (user) {
-          // On renvoie les infos du JWT + admin et role de la base
-          userInfosToReturn = {
-            ...decoded,
-            admin: user.admin,
-            role: user.role,
-          };
-        }
-      }
-      // Ajout du log
       // eslint-disable-next-line no-console
-      console.log('[AUTH] /authentication/userinfo →', userInfosToReturn);
-      return userInfosToReturn;
+      console.log('[AUTH] /authentication/userinfo →', decoded);
+      return decoded;
     } catch {
       throw new UnauthorizedException('JWT invalide');
     }
