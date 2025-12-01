@@ -58,12 +58,12 @@ export class AuthenticationController {
     * Return user information from the JWT.
     */
   @Get('authentication/userinfo')
-  @ApiOkResponse({ description: 'Returns user info from the JWT (access token)' })
-  @ApiUnauthorizedResponse({ description: 'User not authenticated' })
+  @ApiOkResponse({ description: 'Retourne les infos utilisateur du JWT + synchronisées avec la base' })
+  @ApiUnauthorizedResponse({ description: 'Utilisateur non authentifié' })
   async userinfo(@Req() request: Request) {
     const accessToken = request.signedCookies?.accessToken;
     if (!accessToken) {
-      throw new UnauthorizedException('User not authenticated');
+      throw new UnauthorizedException('Utilisateur non authentifié');
     }
     try {
       const decoded = this.jwtService.verify(accessToken, {
@@ -71,16 +71,16 @@ export class AuthenticationController {
         algorithms: ['HS256'],
       });
       if (!decoded) {
-        throw new UnauthorizedException('Invalid JWT');
+        throw new UnauthorizedException('JWT invalide');
       }
       return decoded;
     } catch {
-      throw new UnauthorizedException('Invalid JWT');
+      throw new UnauthorizedException('JWT invalide');
     }
   }
 
   @Get('authentication/whereami')
-  @ApiOkResponse({ description: "returns 'RIE' or 'INTERNET' " })
+  @ApiOkResponse({ description: "retoune 'RIE' ou 'INTERNET' " })
   whereami(@Headers('webconf-user-region') userAgent: string) {
     return userAgent;
   }
@@ -88,7 +88,7 @@ export class AuthenticationController {
   @Get('authentication/login_authorize')
   @Redirect('', 302)
   @ApiOkResponse({
-    description: "returns the redirect URL",
+    description: "retourne l'url de redirection",
   })
   loginAuthorize(
     @Res({ passthrough: true }) response: Response,
@@ -187,7 +187,7 @@ export class AuthenticationController {
 
   @Get('authentication/logout')
   @Redirect('', 302)
-  @ApiResponse({ status: 302, description: 'redirect to Cerbère' })
+  @ApiResponse({ status: 302, description: 'redirection vers cerbère' })
   logout(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
@@ -208,7 +208,7 @@ export class AuthenticationController {
   @ApiOkResponse({ description: "retourne l'url /" })
   @ApiUnauthorizedResponse({
     description:
-      "the returned state is not the same as the one that was sent",
+      "le state de retour n'est pas la meme que celle qui a été envoyé",
   })
   logoutCallback(
     @Query() query: LogoutCallbackDTO,
@@ -220,7 +220,7 @@ export class AuthenticationController {
 
     if (state !== sendedState) {
       throw new UnauthorizedException(
-        "The returned state is not the same as the one that was sent",
+        "Le state de retour n'est pas le même que celui envoyé",
       );
     }
 
@@ -241,15 +241,15 @@ export class AuthenticationController {
 
 
   @Get('authentication/refreshToken')
-  @ApiOkResponse({ description: 'returns { accessToken }' })
-  @ApiUnauthorizedResponse({ description: 'please authenticate' })
+  @ApiOkResponse({ description: 'retourne { accessToken }' })
+  @ApiUnauthorizedResponse({ description: 'veuillez vous authentifier' })
   async refreshToken(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
     const refreshToken = request.signedCookies?.refreshToken;
     if (!refreshToken) {
-      throw new UnauthorizedException('Please authenticate');
+      throw new UnauthorizedException('Veuillez vous authentifier');
     }
 
     try {
@@ -289,7 +289,7 @@ export class AuthenticationController {
       return { accessToken };
     } catch (error) {
       this.authenticationService.clearAllCookies(response);
-      throw new UnauthorizedException('Please authenticate');
+      throw new UnauthorizedException('Veuillez vous authentifier');
     }
   }
 }
