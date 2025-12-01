@@ -30,6 +30,31 @@ export class AuthenticationService {
   }
 
   /**
+  * Returns true if the user is admin according to OIDC info or the database value.
+  * @param userinfo OIDC userinfo object
+  * @param existingAdmin Optional: current admin value from DB
+  */
+  private isAdmin(userinfo: any, existingAdmin?: boolean): boolean {
+    let oidcAdmin = false;
+    if (typeof userinfo?.admin === 'boolean') {
+      oidcAdmin = userinfo.admin;
+    } else if (typeof userinfo?.admin === 'string') {
+      oidcAdmin = userinfo.admin === 'true';
+    } else if (
+      Array.isArray(userinfo?.realm_access?.roles) ||
+      Array.isArray(userinfo?.resource_access?.account?.roles)
+    ) {
+      const roles = [
+        ...(userinfo?.realm_access?.roles ?? []),
+        ...(userinfo?.resource_access?.account?.roles ?? [])
+      ].map((r: any) => String(r).toLowerCase());
+      oidcAdmin = roles.includes('admin');
+    }
+    return oidcAdmin === true || existingAdmin === true;
+  }
+
+
+  /**
    * Crée ou met à jour un utilisateur OIDC dans la base users
    */
   async upsertOidcUser(userinfo: any): Promise<User> {
@@ -46,20 +71,6 @@ export class AuthenticationService {
       oidcRole = userinfo.role;
     }
 
-    // Récupère admin depuis OIDC si présent (booléen ou string 'true')
-    let oidcAdmin: boolean | undefined = undefined;
-    if (typeof userinfo?.admin === 'boolean') {
-      oidcAdmin = userinfo.admin;
-    } else if (typeof userinfo?.admin === 'string') {
-      oidcAdmin = userinfo.admin === 'true';
-    } else if (Array.isArray(userinfo?.realm_access?.roles) || Array.isArray(userinfo?.resource_access?.account?.roles)) {
-      // Si le rôle OIDC contient 'admin', on considère admin = true
-      const roles = [
-        ...(userinfo?.realm_access?.roles ?? []),
-        ...(userinfo?.resource_access?.account?.roles ?? [])
-      ].map((r: any) => String(r).toLowerCase());
-      oidcAdmin = roles.includes('admin');
-    }
 
     const userData: Partial<User> = {
       email: userinfo.email,
@@ -70,9 +81,8 @@ export class AuthenticationService {
       avatarUrl: userinfo.picture || null,
       isActive: true,
       role: oidcRole || undefined,
-
       // admin is true if either OIDC or the database value is true
-      admin: (oidcAdmin === true) || (typeof existing?.admin === 'boolean' && existing.admin === true),
+      admin: this.isAdmin(userinfo, typeof existing?.admin === 'boolean' ? existing.admin : false),
     };
 
     if (!existing) {
