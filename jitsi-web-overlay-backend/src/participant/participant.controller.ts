@@ -39,6 +39,7 @@ export class ParticipantController {
         return this.participantService.findOne(uid);
     }
 
+    @UseGuards(JwtAuthGuard)
     @Patch(':uid')
     update(
         @Param('uid') uid: string,

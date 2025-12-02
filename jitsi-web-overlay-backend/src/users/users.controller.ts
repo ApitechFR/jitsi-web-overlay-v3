@@ -39,6 +39,8 @@ export class UsersController {
   }
 
   //delete user
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Delete(":id")
   async delete(@Param("id") id: number): Promise<void> {
     return this.userService.delete(id);

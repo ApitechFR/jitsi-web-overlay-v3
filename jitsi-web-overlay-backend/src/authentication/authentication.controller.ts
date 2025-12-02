@@ -79,6 +79,7 @@ export class AuthenticationController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('authentication/whereami')
   @ApiOkResponse({ description: "retoune 'RIE' ou 'INTERNET' " })
   whereami(@Headers('webconf-user-region') userAgent: string) {
