@@ -14,13 +14,13 @@ export const ParticipantService = {
         }
     },
 
-    async getById(id: number): Promise<Participant> {
+    async getByUID(uid: number): Promise<Participant> {
         try {
             const http = await getHttp();
-            const { data } = await http.get(`/participants/${id}`);
+            const { data } = await http.get(`/participants/${uid}`);
             return data;
         } catch (error) {
-            throw toApiError(error, `Erreur lors de la récupération du participant #${id}`);
+            throw toApiError(error, `Erreur lors de la récupération du participant #${uid}`);
         }
     },
 
@@ -34,13 +34,13 @@ export const ParticipantService = {
         }
     },
 
-    async update(id: number, payload: UpdateParticipantDto): Promise<Participant> {
+    async update(uid: number, payload: UpdateParticipantDto): Promise<Participant> {
         try {
             const http = await getHttp();
-            const { data } = await http.patch(`/participants/${id}`, payload);
+            const { data } = await http.patch(`/participants/${uid}`, payload);
             return data;
         } catch (error) {
-            throw toApiError(error, `Erreur lors de la mise à jour du participant #${id}`);
+            throw toApiError(error, `Erreur lors de la mise à jour du participant #${uid}`);
         }
     },
 };
