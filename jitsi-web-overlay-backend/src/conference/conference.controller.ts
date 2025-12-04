@@ -28,12 +28,12 @@ import { CreateConferenceDTO, EndConferenceDTO } from './DTOs/conference.dto';
 import { ByEmailDTO } from './DTOs/byEmail.dto';
 import { JwtDTO } from './DTOs/jwt.dto';
 import { RoomNameDto } from './DTOs/room-name.dto';
-import { ConferenceFilter } from './enum/conference_filter.enum';
-import { ParseConferenceFilterPipe } from './utils/ParseConferenceFilterPipe';
 import { ProsodyRuntimeService } from '../prosody/prosody-runtime.service';
 import { JwtAuthGuard } from '../authentication/jwt-auth.guard';
 import { Roles } from '../authentication/roles.decorator';
 import { RolesGuard } from '../authentication/roles.guard';
+import { ParseDashboardFilterPipe } from '../common/utils/ParseDashboardFilterPipe';
+import { DashboardFilter } from '../common/enum/dashboard_filter.enum';
 
 interface AuthenticatedRequest extends Request {
   user?: any;
@@ -78,7 +78,7 @@ export class ConferenceController {
   @ApiOkResponse({ description: "Statistiques des conférences" })
   @ApiBadRequestResponse({ description: "Filtre invalide" })
   async getSummary(
-    @Query("filter", new ParseConferenceFilterPipe()) filter?: ConferenceFilter,
+    @Query("filter", new ParseDashboardFilterPipe()) filter?: DashboardFilter,
     @Query("start") start?: Date,
     @Query("end") end?: Date,
   ) {

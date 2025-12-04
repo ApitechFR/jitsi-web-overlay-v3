@@ -1,4 +1,4 @@
-export enum ConferenceFilter {
+export enum DashboardFilter {
   TODAY = 'today',
   WEEK = 'week',
   MONTH = 'month',

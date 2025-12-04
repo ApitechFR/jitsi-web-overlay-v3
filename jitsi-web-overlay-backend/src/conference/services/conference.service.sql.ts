@@ -3,7 +3,6 @@ import {
   NotFoundException,
   UnauthorizedException,
   Logger,
-  InternalServerErrorException,
   BadRequestException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,7 +13,6 @@ import { Conference } from '../entities/conference.entity';
 import { ConferenceStatus } from '../enum/conference_status.enum';
 import { Room } from '../../room/entities/room.entity';
 import { v4 as uuidv4 } from 'uuid';
-import { ConferenceFilter } from '../enum/conference_filter.enum';
 import * as moment from 'moment';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -24,6 +22,8 @@ import { JitsiJwtService } from '../../common/services/jitsi-jwt.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ParticipantService } from '../../participant/participant.service';
 import { Participant } from '../../participant/entities/participant.entity';
+import { getDateRangeByFilter } from '../../common/utils/GetDateRangeByFilter';
+import { DashboardFilter } from '../../common/enum/dashboard_filter.enum';
 
 @Injectable()
 export class ConferenceServiceSQL implements IConferenceService {
@@ -44,6 +44,11 @@ export class ConferenceServiceSQL implements IConferenceService {
     private readonly jitsiJwtService: JitsiJwtService
   ) { }
 
+  /**
+  * creation d'une conférence si elle n'existe pas déjà en actif pour la salle
+  * @param data
+  * @returns Conference
+  */
   async create(data: CreateConferenceDTO): Promise<Conference> {
 
     let room = await this.roomRepo.findOne({ where: { uid: data.room_uid } });
@@ -110,6 +115,13 @@ export class ConferenceServiceSQL implements IConferenceService {
     return this.findOne(id);
   }
 
+  /**
+   * Met à jour l'end_time de la conférence active correspondant au nom donné.
+   * @param confName Le nom de la conférence à mettre à jour.
+   * @param endTime La nouvelle date de fin de la conférence.
+   * @returns La conférence mise à jour.
+   * @throws NotFoundException Si aucune conférence active n'est trouvée pour le nom donné.
+   */
   async updateEndTimeConferenceByName(confName: string, endTime: Date) {
     const conf = await this.conferenceRepo.findOne({
       where: { name: confName, end_time: null },
@@ -125,76 +137,56 @@ export class ConferenceServiceSQL implements IConferenceService {
     return this.conferenceRepo.save(conf);
   }
 
+  /**
+   * Compte le nombre de conférences dans une plage de dates donnée.
+   * @param start La date de début de la plage.
+   * @param end La date de fin de la plage.
+   * @returns Le nombre de conférences dans la plage de dates.
+   */
   private async countByDateRange(start: Date, end: Date): Promise<number> {
     return this.conferenceRepo.count({
       where: { start_time: Between(start, end) }
     });
   }
 
-  private getDateRangeByFilter(filter: ConferenceFilter): { start: Date; end: Date } {
-    const now = new Date();
-    let start: Date;
-    let end: Date;
-
-    switch (filter) {
-      case ConferenceFilter.TODAY:
-        start = new Date(now);
-        start.setHours(0, 0, 0, 0);
-        end = new Date(now);
-        end.setHours(23, 59, 59, 999);
-        break;
-
-      case ConferenceFilter.WEEK:
-        const day = now.getDay();
-        const diffToMonday = day === 0 ? -6 : 1 - day;
-        start = new Date(now);
-        start.setDate(now.getDate() + diffToMonday);
-        start.setHours(0, 0, 0, 0);
-
-        end = new Date(start);
-        end.setDate(start.getDate() + 6);
-        end.setHours(23, 59, 59, 999);
-        break;
-
-      case ConferenceFilter.MONTH:
-        start = new Date(now.getFullYear(), now.getMonth(), 1);
-        end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-        break;
-
-      case ConferenceFilter.YEAR:
-        start = new Date(now.getFullYear(), 0, 1);
-        end = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
-        break;
-
-      default:
-        throw new NotFoundException(`Invalid filter: ${filter}`);
-    }
-
-    return { start, end };
-  }
-
-  async getStatisticsByFilter(filter: ConferenceFilter): Promise<{ filter: string; total: number }> {
-    const { start, end } = this.getDateRangeByFilter(filter);
+  /**
+   * Récupère les statistiques de conférences selon un filtre de Dashboard.
+   * @param filter Le filtre de Dashboard (aujourd'hui, semaine, mois, année).
+   * @returns Un objet contenant le filtre et le total des conférences.
+   */
+  async getStatisticsByFilter(filter: DashboardFilter): Promise<{ filter: string; total: number }> {
+    const { start, end } = getDateRangeByFilter(filter);
 
     const total = await this.countByDateRange(start, end);
     return { filter, total };
   }
 
+  /**
+   * Récupère les statistiques globales des conférences.
+   * @returns Un objet contenant le total des conférences et les totaux pour aujourd'hui, cette semaine, ce mois et cette année.
+   */
   async getGlobalStatistics() {
     return {
       total: await this.conferenceRepo.count(),
-      today: (await this.getStatisticsByFilter(ConferenceFilter.TODAY)).total,
-      week: (await this.getStatisticsByFilter(ConferenceFilter.WEEK)).total,
-      month: (await this.getStatisticsByFilter(ConferenceFilter.MONTH)).total,
-      year: (await this.getStatisticsByFilter(ConferenceFilter.YEAR)).total
+      today: (await this.getStatisticsByFilter(DashboardFilter.TODAY)).total,
+      week: (await this.getStatisticsByFilter(DashboardFilter.WEEK)).total,
+      month: (await this.getStatisticsByFilter(DashboardFilter.MONTH)).total,
+      year: (await this.getStatisticsByFilter(DashboardFilter.YEAR)).total
     };
   }
 
-  async getHistoricSummary(filter?: ConferenceFilter, start_time?: Date, end_time?: Date) {
+  /**
+   * Récupère le résumé historique des conférences selon un filtre ou une plage de dates.
+   * @param filter Le filtre de Dashboard (optionnel).
+   * @param start_time La date de début de la plage (optionnelle).
+   * @param end_time La date de fin de la plage (optionnelle).
+   * @returns Un objet contenant diverses statistiques sur les conférences.
+   */
+  async getHistoricSummary(filter?: DashboardFilter, start_time?: Date, end_time?: Date) {
     let start: Date | undefined, end: Date | undefined;
 
     if (filter) {
-      ({ start, end } = this.getDateRangeByFilter(filter));
+      ({ start, end } = getDateRangeByFilter(filter));
 
     } else if (start_time && end_time) {
       start = new Date(start_time);
@@ -211,6 +203,12 @@ export class ConferenceServiceSQL implements IConferenceService {
     return { confNb, maxSimult, confMoyTime, confMoyPart, users, partMaxSimult };
   }
 
+  /**
+   * Calcule le nombre moyen de participants par conférence dans une plage de dates donnée.
+   * @param start La date de début de la plage (optionnelle).
+   * @param end La date de fin de la plage (optionnelle).
+   * @returns Le nombre moyen de participants par conférence.
+   */
   async getAverageParticipants(start?: Date, end?: Date): Promise<number> {
     const conferences = await this.conferenceRepo.find({
       where: {
@@ -232,6 +230,12 @@ export class ConferenceServiceSQL implements IConferenceService {
     return Number(avg.toFixed(2));
   }
 
+  /**
+   * Calcule la durée moyenne des conférences dans une plage de dates donnée.
+   * @param start La date de début de la plage (optionnelle).
+   * @param end La date de fin de la plage (optionnelle).
+   * @returns La durée moyenne des conférences au format HH:MM:SS.
+   */
   async getAverageDuration(
     start?: Date,
     end?: Date,
@@ -261,6 +265,11 @@ export class ConferenceServiceSQL implements IConferenceService {
     return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
   }
 
+  /**
+   * Récupère la durée d'une conférence donnée par son UID.
+   * @param uid L'UID de la conférence.
+   * @returns La durée de la conférence au format HH:MM:SS.
+   */
   async getDuration(uid: string): Promise<string> {
     const conference = await this.conferenceRepo.findOne({
       where: { uid },
@@ -285,6 +294,12 @@ export class ConferenceServiceSQL implements IConferenceService {
     return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
   }
 
+  /**
+   * Calcule le nombre maximum de conférences simultanées dans une plage de dates donnée.
+   * @param start La date de début de la plage (optionnelle).
+   * @param end La date de fin de la plage (optionnelle).
+   * @returns Le nombre maximum de conférences simultanées.
+   */
   async getMaxSimultConferences(
     start?: Date,
     end?: Date,
@@ -326,6 +341,12 @@ export class ConferenceServiceSQL implements IConferenceService {
     return maxsimult;
   }
 
+  /**
+   * Calcule le nombre maximum de participants simultanés dans une plage de dates donnée.
+   * @param start La date de début de la plage.
+   * @param end La date de fin de la plage.
+   * @returns Le nombre maximum de participants simultanés.
+   */
   async getMaxSimultParticipants(start?: Date, end?: Date): Promise<number> {
 
     if (!start || !end) {
@@ -387,6 +408,11 @@ export class ConferenceServiceSQL implements IConferenceService {
     throw new NotFoundException("La conférence n'existe pas !");
   }
 
+  /**
+   * Récupère le nombre de participants dans une salle donnée.
+   * @param roomName Le nom de la salle.
+   * @returns Le nombre de participants dans la salle.
+   */
   async getRoomSize(roomName: string) {
     return this.prosodyRuntimeService.getRoomSizeV2(roomName);
   }

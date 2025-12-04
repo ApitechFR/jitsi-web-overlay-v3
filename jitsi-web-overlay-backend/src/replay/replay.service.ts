@@ -40,6 +40,11 @@ export class ReplayService {
         return this.replayRepository.findOne({ where: { uid } });
     }
 
+    /**
+     * Récupère les replays associés à une conférence spécifique identifiée par son UID.
+     * @param conference_uid L'UID de la conférence.
+     * @returns Une liste de replays associés à la conférence.
+     */
     async findByLatestConferenceUID(conference_uid: string): Promise<Replay[]> {
         try {
             return await this.replayRepository.find({
@@ -95,6 +100,12 @@ export class ReplayService {
         }
     }
 
+    /**
+     * Met à jour un replay en cours en utilisant le nom de la conférence.
+     * @param conference_name Le nom de la conférence associée au replay.
+     * @param data Les données de mise à jour pour le replay.
+     * @returns Le replay mis à jour.
+     */
     async updateReplayByConfName(conference_name: string, data: UpdateReplayDto): Promise<Replay> {
         try {
             const replay = await this.replayRepository.findOne({
@@ -124,6 +135,12 @@ export class ReplayService {
         }
     }
 
+    /**
+     * Met à jour un replay en cours en utilisant son UID.
+     * @param uid L'UID du replay à mettre à jour.
+     * @param data Les données de mise à jour pour le replay.
+     * @returns Le replay mis à jour.
+     */
     async updateReplayByUID(uid: string, data: UpdateReplayDto): Promise<Replay> {
         try {
             const replay = await this.replayRepository.findOne({ where: { uid } });
@@ -165,6 +182,11 @@ export class ReplayService {
         }
     }
 
+    /**
+     * Récupère un replay par le nom de la conférence.
+     * @param conference_name Le nom de la conférence.
+     * @returns Le replay correspondant ou null s'il n'existe pas.
+     */
     async findReplayByConfName(conference_name: string): Promise<Replay | null> {
         return await this.replayRepository.findOne({
             where: { conference_name },
@@ -173,6 +195,11 @@ export class ReplayService {
         });
     }
 
+    /**
+     * Récupère un registerEvent par le nom de la conférence.
+     * @param confname Le nom de la conférence.
+     * @returns Le registerEvent correspondant ou null s'il n'existe pas.
+     */
     async findRegisterEventByConfname(confname: string): Promise<RegisterEvent | null> {
         try {
             const registerEvent = await this.registerEventRepository.findOne({
@@ -215,6 +242,11 @@ export class ReplayService {
         return await this.registerEventRepository.save(event);
     }
 
+    /**
+     * Télécharge le fichier vidéo à partir du chemin fourni.
+     * @param rawPath Le chemin brut du fichier vidéo.
+     * @returns Un objet contenant le chemin, les statistiques du fichier et un nom de fichier sécurisé.
+     */
     downloadVideoFile(rawPath: string): { path: string; stat: fs.Stats; safeFilename: string; } {
         const decodedPath = decodeURIComponent(rawPath || '').trim();
 

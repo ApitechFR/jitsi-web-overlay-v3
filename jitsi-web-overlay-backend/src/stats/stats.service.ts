@@ -26,6 +26,10 @@ export class StatsService {
     }
   }
 
+  /**
+   * Récupère les statistiques de Dashboard en temps réel.
+   * @returns Les statistiques agrégées des conférences et des participants.
+   */
   async dashboardStats() {
     try {
       const data = await this.prosodyService.getRealTimeStats();

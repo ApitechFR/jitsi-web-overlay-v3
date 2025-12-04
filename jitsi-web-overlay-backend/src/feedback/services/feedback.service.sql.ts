@@ -5,11 +5,12 @@ import { Feedback } from '../entities/feedback.entity';
 import { FeedbackTemplate } from '../entities/feedback_template.entity';
 import { CreateFeedbackDto } from '../DTOs/feedback.dto';
 import { IFeedbackService } from '../interfaces/feedback-service.interface';
-import { FeedbackFilter } from '../enums/feedback_filter.enum';
 import { Conference } from '../../conference/entities/conference.entity';
 import { Parser } from 'json2csv';
 import * as moment from 'moment';
 import { PaginationDto } from '../DTOs/pagination.dto';
+import { getDateRangeByFilter } from '../../common/utils/GetDateRangeByFilter';
+import { DashboardFilter } from '../../common/enum/dashboard_filter.enum';
 
 @Injectable()
 export class FeedbackServiceSQL implements IFeedbackService {
@@ -44,7 +45,11 @@ export class FeedbackServiceSQL implements IFeedbackService {
 
     return this.feedbackRepo.save(feedback);
   }
-  // Create multiple feedbacks in bulk
+  /**
+   * craetion de multiples feedbacks
+   * @param dtos CreateFeedbackDto[]
+   * @returns les feedbacks créés
+   */
   async createFeedbackBulk(dtos: CreateFeedbackDto[]): Promise<Feedback[]> {
     const feedbacks: Feedback[] = [];
     for (const dto of dtos) {
@@ -70,13 +75,20 @@ export class FeedbackServiceSQL implements IFeedbackService {
     return this.feedbackRepo.save(feedbacks);
   }
 
-  // Retrieve all feedbacks for a conference
-  async findByConference(uuid: string, filter?: FeedbackFilter, start_time?: Date, end_time?: Date): Promise<Feedback[]> {
+  /**
+   * Récupère les feedbacks d'une conférence donnée avec des options de filtrage.
+   * @param uuid L'UUID de la conférence.
+   * @param filter Le filtre de Dashboard (optionnel).
+   * @param start_time La date de début de la plage (optionnelle).
+   * @param end_time La date de fin de la plage (optionnelle).
+   * @returns Une liste de feedbacks correspondant aux critères spécifiés.
+   */
+  async findByConference(uuid: string, filter?: DashboardFilter, start_time?: Date, end_time?: Date): Promise<Feedback[]> {
     let start: Date;
     let end: Date;
 
     if (filter) {
-      ({ start, end } = this.getDateRangeByFilter(filter));
+      ({ start, end } = getDateRangeByFilter(filter));
     } else if (start_time && end_time) {
       start = new Date(start_time);
       end = new Date(end_time);
@@ -95,6 +107,11 @@ export class FeedbackServiceSQL implements IFeedbackService {
     });
   }
 
+  /**
+   * Calcule les statistiques des feedbacks pour une conférence donnée.
+   * @param uuid L'UUID de la conférence.
+   * @returns Un objet contenant les statistiques des feedbacks.
+   */
   async getStats(uuid: string): Promise<any> {
     const feedbacks = await this.findByConference(uuid);
 
@@ -118,11 +135,21 @@ export class FeedbackServiceSQL implements IFeedbackService {
     return stats;
   }
 
+  /**
+   * Récupère les feedbacks de type text pour une organisation donnée avec pagination et filtrage.
+   * @param organization L'organisation pour laquelle récupérer les commentaires.
+   * @param label Le label du feedback template.
+   * @param param2 Les options de pagination.
+   * @param filter Le filtre de Dashboard (optionnel).
+   * @param start_time La date de début de la plage (optionnelle).
+   * @param end_time La date de fin de la plage (optionnelle).
+   * @returns Un objet contenant les commentaires textuels et les informations de pagination.
+   */
   async getTextCommentsByOrganization(
     organization: string,
     label: string,
     { page = 1, limit = 20 }: PaginationDto,
-    filter?: FeedbackFilter,
+    filter?: DashboardFilter,
     start_time?: Date,
     end_time?: Date,
   ) {
@@ -130,7 +157,7 @@ export class FeedbackServiceSQL implements IFeedbackService {
     let end: Date;
 
     if (filter) {
-      ({ start, end } = this.getDateRangeByFilter(filter));
+      ({ start, end } = getDateRangeByFilter(filter));
     } else if (start_time && end_time) {
       start = new Date(start_time);
       end = new Date(end_time);
@@ -169,9 +196,17 @@ export class FeedbackServiceSQL implements IFeedbackService {
   }
 
 
+  /**
+   * Récupère les statistiques des feedbacks pour une organisation donnée avec des options de filtrage.
+   * @param organization L'organisation pour laquelle récupérer les statistiques.
+   * @param filter Le filtre de Dashboard (optionnel).
+   * @param start_time La date de début de la plage (optionnelle).
+   * @param end_time La date de fin de la plage (optionnelle).
+   * @returns Un objet contenant les statistiques des feedbacks.
+   */
   async getStatsByOrganization(
     organization: string,
-    filter?: FeedbackFilter,
+    filter?: DashboardFilter,
     start_time?: Date,
     end_time?: Date,
   ): Promise<any> {
@@ -179,7 +214,7 @@ export class FeedbackServiceSQL implements IFeedbackService {
     let end: Date;
 
     if (filter) {
-      ({ start, end } = this.getDateRangeByFilter(filter));
+      ({ start, end } = getDateRangeByFilter(filter));
     } else if (start_time && end_time) {
       start = new Date(start_time);
       end = new Date(end_time);
@@ -216,6 +251,11 @@ export class FeedbackServiceSQL implements IFeedbackService {
     };
   }
 
+  /**
+   * Calcule les statistiques des feedbacks de type text.
+   * @param feedbacks La liste des feedbacks à analyser.
+   * @returns Un objet contenant les statistiques des feedbacks textuels.
+   */
   private textStatsMeta(feedbacks: Feedback[]) {
     const textFeedbacks = feedbacks.filter(
       f => f.feedbackTemplate?.type?.name === 'text',
@@ -238,6 +278,11 @@ export class FeedbackServiceSQL implements IFeedbackService {
     return stats;
   }
 
+  /**
+   * Calcule les statistiques des feedbacks de type rating.
+   * @param feedbacks La liste des feedbacks à analyser.
+   * @returns Un objet contenant les statistiques des feedbacks de type rating.
+   */
   private ratingStats(feedbacks: Feedback[]) {
     const ratingFeedbacks = feedbacks.filter(
       (f) => f.feedbackTemplate?.type?.name === 'rating',
@@ -268,6 +313,11 @@ export class FeedbackServiceSQL implements IFeedbackService {
     return stats;
   }
 
+  /**
+   * Calcule les statistiques des feedbacks de type radio.
+   * @param feedbacks La liste des feedbacks à analyser.
+   * @returns Un objet contenant les statistiques des feedbacks de type radio.
+   */
   private radioStats(feedbacks: Feedback[]) {
     const radioFeedbacks = feedbacks.filter(
       (f) => f.feedbackTemplate?.type?.name?.toLowerCase() === 'radio',
@@ -307,61 +357,19 @@ export class FeedbackServiceSQL implements IFeedbackService {
     return stats;
   }
 
-  private textStats(feedbacks: Feedback[], page = 1, limit = 20) {
-    const textFeedbacks = feedbacks.filter(
-      (f) => f.feedbackTemplate?.type?.name === 'text',
-    );
-
-    const stats = {};
-
-    for (const f of textFeedbacks) {
-      const label = f.feedbackTemplate.label;
-
-      if (!stats[label]) {
-        stats[label] = {
-          count: 0,
-          responses: [],
-          pagination: {
-            page,
-            limit,
-            totalPages: 1,
-            total: 0,
-          },
-        };
-      }
-
-      stats[label].count++;
-      stats[label].responses.push(f.reponse);
-    }
-
-    for (const label of Object.keys(stats)) {
-      const allResponses = stats[label].responses;
-
-      const total = allResponses.length;
-      const totalPages = Math.ceil(total / limit);
-
-      const start = (page - 1) * limit;
-      const end = start + limit;
-
-      stats[label].responses = allResponses.slice(start, end);
-
-      stats[label].pagination = {
-        page,
-        limit,
-        totalPages,
-        total,
-      };
-    }
-
-    return stats;
-  }
-
-  async exportFeedbacksToCSV(filter?: FeedbackFilter, start_time?: Date, end_time?: Date): Promise<Buffer> {
+  /**
+   * Exporte les feedbacks au format CSV avec des options de filtrage.
+   * @param filter Le filtre de Dashboard (optionnel).
+   * @param start_time La date de début de la plage (optionnelle).
+   * @param end_time La date de fin de la plage (optionnelle).
+   * @returns Un buffer contenant les données CSV.
+   */
+  async exportFeedbacksToCSV(filter?: DashboardFilter, start_time?: Date, end_time?: Date): Promise<Buffer> {
     let start: Date;
     let end: Date;
 
     if (filter) {
-      ({ start, end } = this.getDateRangeByFilter(filter));
+      ({ start, end } = getDateRangeByFilter(filter));
     } else if (start_time && end_time) {
       start = new Date(start_time);
       end = new Date(end_time);
@@ -406,49 +414,6 @@ export class FeedbackServiceSQL implements IFeedbackService {
     const bom = '\ufeff';
 
     return Buffer.from(bom + csv, 'utf-8');
-  }
-
-
-  private getDateRangeByFilter(filter: FeedbackFilter): { start: Date; end: Date } {
-    const now = new Date();
-    let start: Date;
-    let end: Date;
-
-    switch (filter) {
-      case FeedbackFilter.TODAY:
-        start = new Date(now);
-        start.setHours(0, 0, 0, 0);
-        end = new Date(now);
-        end.setHours(23, 59, 59, 999);
-        break;
-
-      case FeedbackFilter.WEEK:
-        const day = now.getDay();
-        const diffToMonday = day === 0 ? -6 : 1 - day;
-        start = new Date(now);
-        start.setDate(now.getDate() + diffToMonday);
-        start.setHours(0, 0, 0, 0);
-
-        end = new Date(start);
-        end.setDate(start.getDate() + 6);
-        end.setHours(23, 59, 59, 999);
-        break;
-
-      case FeedbackFilter.MONTH:
-        start = new Date(now.getFullYear(), now.getMonth(), 1);
-        end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-        break;
-
-      case FeedbackFilter.YEAR:
-        start = new Date(now.getFullYear(), 0, 1);
-        end = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
-        break;
-
-      default:
-        throw new NotFoundException(`Invalid filter: ${filter}`);
-    }
-
-    return { start, end };
   }
 
 }

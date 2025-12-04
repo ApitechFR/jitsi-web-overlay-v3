@@ -1,5 +1,5 @@
+import { DashboardFilter } from 'src/common/enum/dashboard_filter.enum';
 import { CreateConferenceDTO } from '../DTOs/conference.dto';
-import { ConferenceFilter } from '../enum/conference_filter.enum';
 
 export const IConferenceService = Symbol('IConferenceService');
 
@@ -9,7 +9,7 @@ export interface IConferenceService<T = any> {
   getDuration?(uid: string): Promise<T>;
   getAverageDuration?(start_time?: Date, end_time?: Date): Promise<T>;
   getMaxSimultConferences?(start_time?: Date, end_time?: Date): Promise<T>;
-  getHistoricSummary?(filter?: ConferenceFilter, start?: Date, end?: Date): Promise<T>;
+  getHistoricSummary?(filter?: DashboardFilter, start?: Date, end?: Date): Promise<T>;
   updateEndTimeConferenceByName?(confName: string, end_time: Date): Promise<T>;
   create?(data: CreateConferenceDTO): Promise<T>;
   findAll?(): Promise<T[]>;

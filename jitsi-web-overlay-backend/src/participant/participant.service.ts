@@ -115,6 +115,12 @@ export class ParticipantService {
         return await this.participantRepo.save(participant);
     }
 
+    /**
+     * Récupère les participants pour une organisation donnée avec des options de filtrage.
+     * @param conferenceUid L'UID de la conférence.
+     * @param paginationDto Les options de pagination.
+     * @returns Une liste paginée de participants.
+     */
     async getParticipantByConfUID(conferenceUid: string, paginationDto: PaginationDto): Promise<{ data: Participant[]; total: number; page: number; pageCount: number; }> {
         const { page = 1, limit = 20 } = paginationDto
         const conference = await this.conferenceRepo.findOne({
@@ -137,6 +143,12 @@ export class ParticipantService {
         return { data, total, page, pageCount: Math.ceil(total / limit) };
     }
 
+    /**
+     * Compte le nombre de participants créés dans une plage de dates donnée.
+     * @param start La date de début de la plage.
+     * @param end La date de fin de la plage.
+     * @returns Le nombre de participants créés dans la plage de dates.
+     */
     async countParticipantsByDateRange(start: Date, end: Date): Promise<number> {
         return this.participantRepo.count({
             where: {

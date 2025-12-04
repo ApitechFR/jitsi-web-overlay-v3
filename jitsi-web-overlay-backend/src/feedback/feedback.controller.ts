@@ -27,13 +27,13 @@ import { FeedbackTypeService } from './services/feedback_type.service';
 import { CreateFeedbackTypeDto, UpdateFeedbackTypeDto } from './DTOs/feedback_type.dto';
 import { FeedbackTemplateService } from './services/feedback_template.service';
 import { CreateFeedbackTemplateDto, UpdateFeedbackTemplateDto } from './DTOs/feedback_template.dto';
-import { FeedbackFilter } from './enums/feedback_filter.enum';
-import { ParseFeedbackFilterPipe } from './utils/ParseFeedbackFilterPipe';
 import { PaginationDto } from './DTOs/pagination.dto';
 import { plainToInstance } from 'class-transformer';
 import { JwtAuthGuard } from '../authentication/jwt-auth.guard';
 import { Roles } from '../authentication/roles.decorator';
 import { RolesGuard } from '../authentication/roles.guard';
+import { DashboardFilter } from '../common/enum/dashboard_filter.enum';
+import { ParseDashboardFilterPipe } from '../common/utils/ParseDashboardFilterPipe';
 
 @Controller('feedback')
 export class FeedbackController {
@@ -100,7 +100,7 @@ export class FeedbackController {
   @ApiBadRequestResponse({ description: 'Filtre ou dates invalides' })
   async getFeedbackStatsByOrganization(
     @Param('organization') organization: string,
-    @Query('filter', new ParseFeedbackFilterPipe()) filter?: FeedbackFilter,
+    @Query('filter', new ParseDashboardFilterPipe()) filter?: DashboardFilter,
     @Query('start') start?: Date,
     @Query('end') end?: Date,
   ) {
@@ -120,7 +120,7 @@ export class FeedbackController {
     @Param('organization') organization: string,
     @Query('label') label: string,
     @Query() query: any,
-    @Query('filter', new ParseFeedbackFilterPipe()) filter?: FeedbackFilter,
+    @Query('filter', new ParseDashboardFilterPipe()) filter?: DashboardFilter,
     @Query('start') start?: Date,
     @Query('end') end?: Date,
   ) {
@@ -142,7 +142,7 @@ export class FeedbackController {
   @ApiOkResponse({ description: 'Export des feedbacks en format CSV' })
   async exportFeedbacks(
     @Res() res: Response,
-    @Query('filter', new ParseFeedbackFilterPipe()) filter?: FeedbackFilter,
+    @Query('filter', new ParseDashboardFilterPipe()) filter?: DashboardFilter,
     @Query('start') start?: Date,
     @Query('end') end?: Date,
   ) {
@@ -165,7 +165,7 @@ export class FeedbackController {
   @Get('conference/:uuid')
   getFeedbackByConference(
     @Param('uuid') uuid: string,
-    @Query('filter', new ParseFeedbackFilterPipe()) filter?: FeedbackFilter,
+    @Query('filter', new ParseDashboardFilterPipe()) filter?: DashboardFilter,
     @Query('start') start?: Date,
     @Query('end') end?: Date,
   ) {
