@@ -145,8 +145,7 @@ export class ReplayController {
         }
     }
 
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('admin')
+    @UseGuards(JwtAuthGuard)
     @Get('download/:uid')
     @ApiOperation({ summary: 'Télécharger la vidéo' })
     async downloadVideo(
