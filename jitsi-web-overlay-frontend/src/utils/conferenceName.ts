@@ -57,8 +57,8 @@ export function validateConferenceName(
 
 
 export function generateConferenceName(): string {
-  const { genMinLength, genMaxLength } = getConferenceNameConfig();
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const { genMinLength, genMaxLength, minDigits } = getConferenceNameConfig();
+  const chars = Number(minDigits) === 0 ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let name = '';
 
   do {
