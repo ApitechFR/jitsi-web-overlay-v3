@@ -30,7 +30,7 @@
                             "link": [
                                 {
                                     "label": "Voir plus",
-                                    "href": null
+                                    "href": "https://github.com/ApitechFR/jitsi-web-overlay-v3/releases/tag/v3.1.0"
                                 }
                             ]
                         }
@@ -70,6 +70,67 @@
                                 ]
                             },
                             "link": []
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "plugin-outlook",
+                "label": "Version Plugin Outlook",
+                "content": {
+                    "title": "Nouvelles fonctionnalités ",
+                    "version": "v1.1.0",
+                    "releaseDate": "2025-07-20",
+                    "blocks": [
+                        {
+                            "description": "Joona Meet est un Add-in pour Outlook qui facilite l'organisation de réunions sur notre plateforme (https://joona.fr). Lors de la planification d'un événement via l'Outlook Planner, il génère automatiquement des liens de visioconférence Joona Lorsque vous créez un nouvel événement dans votre calendrier Outlook. Plus besoin de copier-coller des liens manuellement, l'add-in s'occupe de tout pour vous.",
+                            "features": {
+                                "ameliorations": [
+                                    "Génération automatique des liens Joona et insertion dans le champ « Lieu » d'Outlook et dans le contenu de l'événement.",
+                                    "Variable ROOM_NAME_PREFIX pour choisir le format souhaité :",
+                                    "- Nom structuré (alea_name) – génère un nom lisible, par exemple : ChapelleVictorHugoAnalyser-5HJTXDLuHD",
+                                    "- Préfixe fixe – utilise un préfixe personnalisé, par exemple : Salle-A8X9Z12Yq pour ROOM_NAME_PREFIX=\"Salle\" et ROOM_NAME_LENGTH=15",
+                                    "- ID brut – génère un identifiant 100% alphanumérique, sans préfixe, par exemple : R8K2Q4Z1X9W3 pour ROOM_NAME_PREFIX=\"\" et ROOM_NAME_LENGTH=12",
+                                    "Variable ROOM_NAME_LENGTH pour définir la longueur totale du nom généré (préfixe + séparateur + suffixe alphanumérique)."
+                                ]
+                            },
+                            "link": [
+                                {
+                                    "label": "Voir plus",
+                                    "href": "https://joona.fr/plugin-outlook/changelog"
+                                },
+                                {
+                                    "label": "",
+                                    "link": ""
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "voxify",
+                "label": "Version Voxify",
+                "content": {
+                    "title": "Nouvelles fonctionnalités du 25/09/2024",
+                    "version": "v1.1.0",
+                    "releaseDate": "2024-09-25",
+                    "blocks": [
+                        {
+                            "description": "La dernière version 1.1.0 du 25 septembre 2024 apporte des nouvelles améliorations. Cette nouvelle version apporte notamment :",
+                            "features": {
+                                "ameliorations": [
+                                    "Des nouveaux messages audio vous aident à mieux suivre les étapes lors de la saisie du code de conférence",
+                                    "Le système réagit plus rapidement après vos actions",
+                                    "Si une conférence est introuvable, un message vocal spécifique vous en informe"
+                                ]
+                            },
+                            "link": [
+                                {
+                                    "label": "Voir plus",
+                                    "href": "https://joona.fr/WhatsNew_voxify/WhatsNew.html"
+                                }
+                            ]
                         }
                     ]
                 }
