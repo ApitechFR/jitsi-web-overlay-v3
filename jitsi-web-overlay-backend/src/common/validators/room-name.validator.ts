@@ -16,7 +16,7 @@ export class RoomNameValidator implements ValidatorConstraintInterface {
     const minDigits =
       this.configService.get<number>(
         'FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS',
-      ) || 3;
+      ) ?? 0;
 
     const minLength =
       this.configService.get<number>(
@@ -31,8 +31,8 @@ export class RoomNameValidator implements ValidatorConstraintInterface {
     // We assume the config regex is complete (with ^ and $)
     // Example: "^[a-zA-Z0-9_-]{3,10}$"
     const regexString =
-      this.configService.get<string>('CONFERENCE_NAME_REGEX') ||
-      '^[a-zA-Z0-9_-]{3,10}$';
+      this.configService.get<string>('CONFERENCE_NAME_REGEX') ??
+      '^[a-zA-Z0-9_-]';
 
     if (!minDigits || !minLength || !maxLength) return false;
 

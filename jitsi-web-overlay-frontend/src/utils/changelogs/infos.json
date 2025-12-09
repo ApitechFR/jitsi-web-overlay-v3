@@ -8,13 +8,21 @@
         "label": "Version Web Overlay",
         "content": {
           "title": "Nouvelles version 25/09/2025",
-          "version": "v3.0.0",
+          "version": "v3.1.4",
           "releaseDate": "2025-09-25",
           "blocks": [
             {
               "description": "La dernière version 1.6.3 du 15 avril 2025 apporte des correctifs. Cette nouvelle version apporte notamment :",
               "features": {
-                "ameliorations": []
+                "ameliorations": [
+                  "Dashboard complet avec 3 sections : statistiques temps réel, historiques et résultats de sondage.",
+                  "Statistiques temps réel : participants simultanés, conférences simultanées, moyenne participants/conférence.",
+                  "Statistiques historiques avec filtres rapides (aujourd’hui/semaine/mois/année) et période personnalisée.",
+                  "Affichage des données clés : utilisateurs actifs, total conférences, durée moyenne, maxima simultanés.",
+                  "Gestion des sondages : total réponses, tableau QCM, commentaires utilisateurs, filtres par période.",
+                  "Refonte complète du générateur de noms de conférence (longueurs configurables, chiffres minimum, fallback…).",
+                  "Refactoring global du frontend : structure harmonisée, imports nettoyés, architecture clarifiée."
+                ]
               },
               "fix": {
                 "bugs": []
@@ -22,7 +30,7 @@
               "link": [
                 {
                   "label": "Voir plus",
-                  "href": null
+                  "href": "https://github.com/ApitechFR/jitsi-web-overlay-v3/releases/tag/v3.1.0"
                 }
               ]
             }
@@ -61,12 +69,7 @@
                   "Ajout d'un rôle d'accessibilité sur le bouton de téléchargement d'images pour rendre l'interface plus inclusive."
                 ]
               },
-              "link": [
-                {
-                  "label": "Voir plus",
-                  "href": "https://version.joona.fr/changelogs/jitsi/WhatsNew.html"
-                }
-              ]
+              "link": []
             }
           ]
         }
@@ -76,25 +79,29 @@
         "label": "Version Plugin Outlook",
         "content": {
           "title": "Nouvelles fonctionnalités ",
-          "version": "v1.0.0",
-          "releaseDate": "2025-02-20",
+          "version": "v1.1.0",
+          "releaseDate": "2025-07-20",
           "blocks": [
             {
               "description": "Joona Meet est un Add-in pour Outlook qui facilite l'organisation de réunions sur notre plateforme (https://joona.fr). Lors de la planification d'un événement via l'Outlook Planner, il génère automatiquement des liens de visioconférence Joona Lorsque vous créez un nouvel événement dans votre calendrier Outlook. Plus besoin de copier-coller des liens manuellement, l'add-in s'occupe de tout pour vous.",
               "features": {
                 "ameliorations": [
                   "Génération automatique des liens Joona et insertion dans le champ « Lieu » d'Outlook et dans le contenu de l'événement.",
-                  "Génération automatique des coordonnées téléphoniques directement dans l'événement planifié."
+                  "Variable ROOM_NAME_PREFIX pour choisir le format souhaité :",
+                  "- Nom structuré (alea_name) – génère un nom lisible, par exemple : ChapelleVictorHugoAnalyser-5HJTXDLuHD",
+                  "- Préfixe fixe – utilise un préfixe personnalisé, par exemple : Salle-A8X9Z12Yq pour ROOM_NAME_PREFIX=\"Salle\" et ROOM_NAME_LENGTH=15",
+                  "- ID brut – génère un identifiant 100% alphanumérique, sans préfixe, par exemple : R8K2Q4Z1X9W3 pour ROOM_NAME_PREFIX=\"\" et ROOM_NAME_LENGTH=12",
+                  "Variable ROOM_NAME_LENGTH pour définir la longueur totale du nom généré (préfixe + séparateur + suffixe alphanumérique)."
                 ]
               },
               "link": [
                 {
                   "label": "Voir plus",
-                  "href": "https://joona.fr/WhatsNew_plugin_outlook/WhatsNew.html"
+                  "href": "https://joona.fr/plugin-outlook/changelog"
                 },
                 {
-                  "label": "Télécharger XML complement Outlook",
-                  "link": "lien vers le fichier pour téléchargement /public/fichier_html_a_telecharger par exemple"
+                  "label": "",
+                  "link": ""
                 }
               ]
             }
