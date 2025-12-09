@@ -8,13 +8,21 @@
                 "label": "Version Web Overlay",
                 "content": {
                     "title": "Nouvelles version 25/09/2025",
-                    "version": "v3.0.0",
+                    "version": "v3.1.4",
                     "releaseDate": "2025-09-25",
                     "blocks": [
                         {
                             "description": "La dernière version 1.6.3 du 15 avril 2025 apporte des correctifs. Cette nouvelle version apporte notamment :",
                             "features": {
-                                "ameliorations": []
+                                "ameliorations": [
+                                    "Dashboard complet avec 3 sections : statistiques temps réel, historiques et résultats de sondage.",
+                                    "Statistiques temps réel : participants simultanés, conférences simultanées, moyenne participants/conférence.",
+                                    "Statistiques historiques avec filtres rapides (aujourd’hui/semaine/mois/année) et période personnalisée.",
+                                    "Affichage des données clés : utilisateurs actifs, total conférences, durée moyenne, maxima simultanés.",
+                                    "Gestion des sondages : total réponses, tableau QCM, commentaires utilisateurs, filtres par période.",
+                                    "Refonte complète du générateur de noms de conférence (longueurs configurables, chiffres minimum, fallback…).",
+                                    "Refactoring global du frontend : structure harmonisée, imports nettoyés, architecture clarifiée."
+                                ]
                             },
                             "fix": {
                                 "bugs": []
