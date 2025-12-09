@@ -19,6 +19,8 @@ export class StatsController {
     return this.statsService.homePageStats();
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Get('/realtime')
   @ApiResponse({
     status: 200,

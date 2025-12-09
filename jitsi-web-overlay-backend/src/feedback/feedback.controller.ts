@@ -195,12 +195,15 @@ export class FeedbackController {
     return this.feedbackTypeService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Put('types/:id')
   updateType(@Param('id') id: number, @Body() dto: UpdateFeedbackTypeDto) {
     return this.feedbackTypeService.update(id, dto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Delete('types/:id')
   deleteType(@Param('id') id: number) {
     return this.feedbackTypeService.remove(id);
@@ -228,12 +231,15 @@ export class FeedbackController {
     return this.templateService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Put('templates/:id')
   updateTemplate(@Param('id') id: number, @Body() dto: UpdateFeedbackTemplateDto) {
     return this.templateService.update(id, dto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Delete('templates/:id')
   deleteTemplate(@Param('id') id: number) {
     return this.templateService.softDelete(id);

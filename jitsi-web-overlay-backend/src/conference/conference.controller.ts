@@ -86,6 +86,7 @@ export class ConferenceController {
   }
 
 
+  @UseGuards(JwtAuthGuard)
   @Get('conferences/:uid/duration')
   async getDuration(
     @Param('uid') uid: string): Promise<{ duration: string }> {
@@ -101,13 +102,15 @@ export class ConferenceController {
     return this.conferenceService.findOne(uid);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Delete('conferences/:id')
   @ApiOkResponse({ description: 'Conférence supprimée' })
   async delete(@Param('id') id: string) {
     return this.conferenceService.delete(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put('conferences/:id')
   @ApiOkResponse({ description: 'Conférence mise à jour' })
   async update(
@@ -133,16 +136,6 @@ export class ConferenceController {
     return this.conferenceService.updateEndTimeConferenceByName(confName, dto.end_time);
   }
 
-  //TODO : to remove Old name /roomExists/:roomName
-  @UseGuards(JwtAuthGuard)
-  @Get('/roomExists/:roomName')
-  @ApiOkResponse({ description: 'retourne roomName si la conférence existe' })
-  @ApiNotFoundResponse({
-    description: "retourne 404 si la conférence n'existe pas",
-  })
-  async roomExists(@Param() params: RoomNameDto) {
-    return this.conferenceService.roomExists(params.roomName);
-  }
 
   @Get('/conferences/:roomName/state')
   @ApiOkResponse({ description: 'retourne l\'état de la conférence' })
@@ -184,13 +177,13 @@ export class ConferenceController {
   }
 
   // Check JWT token validity
-  @UseGuards(JwtAuthGuard)
-  @Post('verify-token')
-  @ApiOkResponse({ description: 'JWT vérifié avec succès' })
-  @ApiUnauthorizedResponse({ description: 'JWT invalide ou expiré' })
-  async verifyToken(@Body() dto: JwtDTO) {
-    return this.conferenceService.verifyToken(dto.jwt);
-  }
+  // @UseGuards(JwtAuthGuard)
+  // @Post('verify-token')
+  // @ApiOkResponse({ description: 'JWT vérifié avec succès' })
+  // @ApiUnauthorizedResponse({ description: 'JWT invalide ou expiré' })
+  // async verifyToken(@Body() dto: JwtDTO) {
+  //   return this.conferenceService.verifyToken(dto.jwt);
+  // }
 
   //TODO update new name :old name /:roomName
   @UseGuards(JwtAuthGuard)
