@@ -10,6 +10,7 @@ import {
   Headers,
   UnauthorizedException,
   Inject,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { Request, Response } from 'express';
@@ -25,6 +26,7 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { IConferenceService } from '../conference/interfaces/conference-service.interface';
+import { JwtAuthGuard } from './jwt-auth.guard';
 
 @Controller()
 export class AuthenticationController {
