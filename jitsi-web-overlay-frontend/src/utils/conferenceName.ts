@@ -4,7 +4,7 @@ function getConferenceNameConfig() {
   const cfg = getCachedRuntimeConfig();
 
   const minDigits =
-    cfg?.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS || 3;
+    cfg?.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS ?? 0;
 
   const minLength =
     cfg?.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINLENGTH ?? 3;
@@ -21,8 +21,8 @@ function getConferenceNameConfig() {
 
 
   const regexString =
-    cfg?.VITE_CONFERENCE_NAME_REGEX ||
-    '^[A-Z0-9]{3,10}$';
+    cfg?.VITE_CONFERENCE_NAME_REGEX ??
+    '^[A-Z0-9]';
 
   return {
     regex: new RegExp(regexString),
