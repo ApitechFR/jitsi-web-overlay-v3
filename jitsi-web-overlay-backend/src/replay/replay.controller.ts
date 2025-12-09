@@ -185,8 +185,7 @@ export class ReplayController {
         return grouped;
     }
 
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('admin')
+    @UseGuards(JwtAuthGuard)
     @Get('conference/:conference_uid')
     @ApiOperation({ summary: 'Obtenir un replay par UID de conférence' })
     async getByLatestConfUID(@Param('conference_uid') conference_uid: string) {
