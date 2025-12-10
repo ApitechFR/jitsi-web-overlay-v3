@@ -142,8 +142,8 @@ export class ConferenceController {
   @ApiNotFoundResponse({
     description: "retourne 404 si la conférence n'existe pas",
   })
-  async getConferenceState(@Param() params: RoomNameDto) {
-    return this.conferenceService.roomExists(params.roomName);
+  async getConferenceState(@Param('roomName') roomName: string) {
+    return this.conferenceService.roomExists(roomName);
   }
 
 
