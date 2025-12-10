@@ -6,6 +6,7 @@
 
 .homeContent {
   width: 100%;
+  margin-bottom: 30px;
 }
 
 .firstContainer {
@@ -31,9 +32,36 @@
   object-fit: contain;
 }
 
+.homepageDispositionSideBlocks {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .joinPart {
   display: flex;
   margin-bottom: 12px;
+  width: 100%;
+}
+
+.joinInput {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  width: 100%;
+}
+
+.buttonsSection {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  width: 100%;
+}
+
+.joinPart {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   width: 100%;
 }
 
@@ -43,12 +71,31 @@
   gap: 12px;
 }
 
-
 .plusButton {
   display: inline-block;
   height: 10px;
   min-width: 60px;
   text-align: center;
+}
+
+.dropdownButton {
+  height: 10px;
+  min-width: 60px;
+  border-radius: 0 0.25rem 0 0;
+  /* font-weight: bold;
+  font-size: 1.2rem;
+  display: flex; */ /* Override dsfr si changement souhaité ici */
+  justify-content: center;
+}
+
+.hiddenDropdownButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hiddenDropdownButtons :global(.fr-btn) {
+  width: 100%;
 }
 
 .joinButton {
@@ -58,6 +105,19 @@
 .joinButton span {
   text-align: center;
   width: 100%;
+}
+
+.switchModeBlock {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.buttonSwitchMode {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
 }
 
 .alertContainer {
@@ -70,6 +130,11 @@
 
 .contentModal {
   text-align: center;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes slideUpFade {
