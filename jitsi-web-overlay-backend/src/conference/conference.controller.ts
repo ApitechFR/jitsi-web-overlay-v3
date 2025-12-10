@@ -142,14 +142,15 @@ export class ConferenceController {
   @ApiNotFoundResponse({
     description: "retourne 404 si la conférence n'existe pas",
   })
-  async getConferenceState(@Param('roomName') roomName: string) {
+  async getConferenceState(@Param('roomName') roomName: RoomNameDto['roomName']) {
     return this.conferenceService.roomExists(roomName);
   }
 
 
   @Get('/conferences/:roomName/room-size')
-  async getRoomSize(@Param() params: RoomNameDto) {
-    return this.conferenceService.getRoomSize(params.roomName);
+  async getRoomSize(@Param('roomName') roomName: RoomNameDto['roomName']) {
+
+    return this.conferenceService.getRoomSize(roomName);
   }
 
   //send token by email
@@ -204,13 +205,13 @@ export class ConferenceController {
   @ApiBody({ type: RoomNameDto })
   @ApiBearerAuth()
   async getRoomAccessToken(
-    @Param() params: RoomNameDto,
+    @Param('roomName') roomName: RoomNameDto['roomName'],
     @Headers('webconf-user-region') webconfUserRegion: string,
     @Headers('authorization') accessToken: string,
   ) {
     accessToken = accessToken?.split(' ')[1];
     return this.conferenceService.getRoomAccessToken(
-      params.roomName,
+      roomName,
       webconfUserRegion,
       accessToken,
     );
