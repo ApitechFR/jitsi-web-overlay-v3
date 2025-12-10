@@ -95,9 +95,9 @@ import { ParticipantModule } from './participant/participant.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(JwtOidcMiddleware)
-      .forRoutes({ path: 'conferences/*', method: RequestMethod.ALL });
+    // consumer
+    //   .apply(JwtOidcMiddleware)
+    //   .forRoutes({ path: 'conferences/*', method: RequestMethod.ALL });
     consumer
       .apply(OriginMiddleware)
       .forRoutes({ path: 'conferences*', method: RequestMethod.GET });
