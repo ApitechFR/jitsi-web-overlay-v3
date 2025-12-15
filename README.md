@@ -97,6 +97,7 @@ Les variables d'environnement permettent de configurer le comportement du backen
 ### Variables
 | Variable | Description | Exemple | Obligatoire | Valeur par défaut |
 |----------|-------------|---------|-------------|-------------------|
+| IS_WEBINAR_ENABLED | Active ou désactive la fonctionnalité webinaire | `true` | Optionnelle | `false` |
 | PROSODY_API_PREFIX | Préfixe d'API Prosody | `/` | Optionnelle | `/` |
 | PROSODY_ENDPOINT_ROOM | Endpoint pour les salles | `/room` | Optionnelle | `/room` |
 | PROSODY_ENDPOINT_ROOM_SIZE | Endpoint pour la taille des salles | `/room-size` | Optionnelle | `/room-size` |
