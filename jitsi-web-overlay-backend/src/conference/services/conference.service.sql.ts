@@ -450,8 +450,8 @@ export class ConferenceServiceSQL implements IConferenceService {
     return true;
   }
 
-  generateJitsiJwt(user: any, moderator: boolean, roomName: string) {
-    return this.jitsiJwtService.generateJitsiJwt(user, moderator, roomName);
+  generateJitsiJwt(user: any, moderator: boolean, roomName: string, isWebinar?: boolean) {
+    return this.jitsiJwtService.generateJitsiJwt(user, moderator, roomName, isWebinar);
   }
 
   /**

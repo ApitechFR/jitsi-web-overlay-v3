@@ -228,14 +228,28 @@ export class ConferenceController {
   @Header('Cache-Control', 'no-store')
   async createJitsiToken(
     @Param('roomName') roomName: RoomNameDto['roomName'],
-    @Req() req: AuthenticatedRequest
+    @Req() req: AuthenticatedRequest,
+    @Body('isWebinar') isWebinar?: boolean
   ) {
-
     const user = req.user;
     const isModerator = this.conferenceService.isUserModerator(user, roomName);
-
-    const { token, exp } = await this.conferenceService.generateJitsiJwt(user, isModerator, roomName);
-
+    const { token, exp } = await this.conferenceService.generateJitsiJwt(user, isModerator, roomName, isWebinar);
     return { token, exp, moderator: isModerator };
+  }
+
+  /**
+ * Génère un JWT Jitsi pour un spectateur (visitor) sans authentification
+ * Accessible publiquement pour générer un lien spectateur
+ */
+  @Post('conferences/:roomName/tokens/jitsi-visitor')
+  @Header('Cache-Control', 'no-store')
+  async createJitsiVisitorToken(
+    @Param('roomName') roomName: RoomNameDto['roomName'],
+    @Body() body: any
+  ) {
+    // Pas d'utilisateur authentifié, on passe user = undefined
+    // On force isWebinar = true pour générer un JWT visitor
+    const { token, exp } = await this.conferenceService.generateJitsiJwt(undefined, false, roomName, true);
+    return { token, exp, moderator: false };
   }
 }

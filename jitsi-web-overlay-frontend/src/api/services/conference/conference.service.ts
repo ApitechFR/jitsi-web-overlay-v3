@@ -75,12 +75,12 @@ export const ConferenceService = {
         }
     },
 
-    async jitsiJwt(confName: string): Promise<JitsiJwtResponse> {
+    async jitsiJwt(confName: string, isWebinar?: boolean): Promise<JitsiJwtResponse> {
         try {
             const http = await getHttp();
             const { data } = await http.post(
                 `/conferences/${encodeURIComponent(confName)}/tokens/jitsi`,
-                {},
+                { isWebinar },
                 { withCredentials: true }
             );
 
@@ -100,6 +100,30 @@ export const ConferenceService = {
     },
 
 
+    /**
+     * Récupère un JWT visitor (spectateur) pour une conférence
+     */
+    async jitsiVisitorJwt(confName: string): Promise<JitsiJwtResponse> {
+        try {
+            const http = await getHttp();
+            const { data } = await http.post(
+                `/conferences/${encodeURIComponent(confName)}/tokens/jitsi-visitor`,
+                {},
+                { withCredentials: false }
+            );
+            const token = data?.token ?? data?.jwt;
+            if (!token) {
+                throw new Error('Réponse JWT visitor invalide (champ "token" ou "jwt" manquant)');
+            }
+            return {
+                token,
+                exp: data?.exp,
+                moderator: false,
+            };
+        } catch (e) {
+            throw toApiError(e, "Échec de récupération du JWT visitor");
+        }
+    },
     async getStats() {
         try {
             const http = await getHttp();

@@ -37,6 +37,6 @@ export interface IConferenceService<T = any> {
   verifyToken?(jwt: string): { jwt: string } | void;
   isInternalUser?(webconfUserRegion: string): boolean;
   sendToken?(roomName: string): { roomName: string; jwt: string };
-  generateJitsiJwt?(user: any, moderator: boolean, roomName: string): any;
+  generateJitsiJwt?(user: any, moderator: boolean, roomName: string, isWebinar?: boolean): any;
   isUserModerator?(user: any, roomName: string): boolean;
 }
