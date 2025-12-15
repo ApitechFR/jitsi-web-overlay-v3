@@ -194,90 +194,82 @@ function HomeJoona(props: HomeJoonaProps) {
 
   /*********** Fonction verif regex Webconf *************/
 
-  // const verifyAndSetVAlue = React.useCallback(
-  //     (value: string) => {
-  //       if (value) {
-  //         // console.log("value", value)
-  //         if (isValidConferenceName(value)) {
-  //           props.setConferenceName(value);
-  //           setMessage(
-  //             <div className={styles.message}>
-  //               <Badge className={styles.badge} severity="success">
-  //                 Au moins 3 chiffres
-  //               </Badge>
-  //               <Badge className={styles.badge} severity="success">
-  //                 Un minimum de 10 caractères
-  //               </Badge>
-  //               <Badge className={styles.badge} severity="success">
-  //                 Des chiffres et des lettres sans accents
-  //               </Badge>
-  //             </div>
-  //           );
-  //           // console.log("1er test quand valide", getCountOfDigits(value))
-  //           // console.log("2nd testquand valide", getCountCaracters(value))
-  //           // console.log("3eme test quand valide", isAlphaNumeric(value))
-  //           // console.log("regardons la fonction qui pose problème quand valider visiblement", isValidConferenceName(value))
-  //         } else {
-  //           props.setConferenceName(value);
-  //           const message = (
-  //             <div className={styles.message}>
-  //               {getCountOfDigits(value) >= 3 ? (
-  //                 <Badge className={styles.badge} severity="success">
-  //                   Au moins 3 chiffres
-  //                 </Badge>
-  //               ) : (
-  //                 <Badge className={styles.badge} severity="error">
-  //                   Au moins 3 chiffres
-  //                 </Badge>
-  //               )}
-  //               {getCountCaracters(value) >= 10 ? (
-  //                 <Badge className={styles.badge} severity="success">
-  //                   Un minimum de 10 caractères
-  //                 </Badge>
-  //               ) : (
-  //                 <Badge className={styles.badge} severity="error">
-  //                   Un minimum de 10 caractères
-  //                 </Badge>
-  //               )}
-  //               {isAlphaNumeric(value) ? (
-  //                 <Badge className={styles.badge} severity="success">
-  //                   Des chiffres et des lettres sans accents
-  //                 </Badge>
-  //               ) : (
-  //                 <Badge className={styles.badge} severity="error">
-  //                   Des chiffres et des lettres sans accents
-  //                 </Badge>
-  //               )}
-  //             </div>
-  //           );
-  //           setMessage(message);
-  //           // console.log("1er test", getCountOfDigits(value))
-  //           // console.log("2nd test", getCountCaracters(value))
-  //           // console.log("3eme test", isAlphaNumeric(value))
-  //           // console.log("blabla fonction pose pb", isValidConferenceName(value))
-  //         }
-  //       } else {
-  //         props.setConferenceName(value);
-  //         setMessage('');
-  //       }
-  //     },
-  //     [props, setMessage]
-  //   );
+  const verifyAndSetVAlue = React.useCallback(
+      (value: string) => {
+        if (value) {
+          // console.log("value", value)
+          if (isValidConferenceName(value)) {
+            props.setConferenceName(value);
+            setMessage(
+              <div className={styles.message}>
+                <Badge className={styles.badge} severity="success">
+                  Au moins 3 chiffres
+                </Badge>
+                <Badge className={styles.badge} severity="success">
+                  Un minimum de 10 caractères
+                </Badge>
+                <Badge className={styles.badge} severity="success">
+                  Des chiffres et des lettres sans accents
+                </Badge>
+              </div>
+            );
+          } else {
+            props.setConferenceName(value);
+            const message = (
+              <div className={styles.message}>
+                {getCountOfDigits(value) >= 3 ? (
+                  <Badge className={styles.badge} severity="success">
+                    Au moins 3 chiffres
+                  </Badge>
+                ) : (
+                  <Badge className={styles.badge} severity="error">
+                    Au moins 3 chiffres
+                  </Badge>
+                )}
+                {getCountCaracters(value) >= 10 ? (
+                  <Badge className={styles.badge} severity="success">
+                    Un minimum de 10 caractères
+                  </Badge>
+                ) : (
+                  <Badge className={styles.badge} severity="error">
+                    Un minimum de 10 caractères
+                  </Badge>
+                )}
+                {isAlphaNumeric(value) ? (
+                  <Badge className={styles.badge} severity="success">
+                    Des chiffres et des lettres sans accents
+                  </Badge>
+                ) : (
+                  <Badge className={styles.badge} severity="error">
+                    Des chiffres et des lettres sans accents
+                  </Badge>
+                )}
+              </div>
+            );
+            setMessage(message);
+          }
+        } else {
+          props.setConferenceName(value);
+          setMessage('');
+        }
+      },
+      [props, setMessage]
+    );
   
-    // const change = (e: string) => {
-    //   verifyAndSetVAlue(e);
-    // };
+    const change = (e: string) => {
+      verifyAndSetVAlue(e);
+    };
   
-    // useEffect(() => {
-    //   verifyAndSetVAlue(props.conferenceName);
-    // }, [props.conferenceName, verifyAndSetVAlue]);
+    useEffect(() => {
+      verifyAndSetVAlue(props.conferenceName);
+    }, [props.conferenceName, verifyAndSetVAlue]);
 
     // function webconf pour random confName ? 
-    // const onclickGenerateRoomName = () => {
-    //   // handleGenerateRoomName()
-    //   verifyAndSetVAlue(props.conferenceName);
-    //   console.log("test valid conference name regex", verifyAndSetVAlue(props.conferenceName))
-    // }; 
+    const onclickGenerateRoomName = () => {
+      verifyAndSetVAlue(props.conferenceName);
+    }; 
+
+    /********************************************************/
 
     const displayInputs = () => {
       setIsInputsVisible(prev => !prev);
