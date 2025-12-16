@@ -247,6 +247,10 @@ export class ConferenceController {
     @Param('roomName') roomName: RoomNameDto['roomName'],
     @Body() body: any
   ) {
+    // Contrôle du flag IS_WEBINAR_ENABLED
+    if (process.env.IS_WEBINAR_ENABLED !== 'true') {
+      return { error: 'Webinar mode is disabled' };
+    }
     // Pas d'utilisateur authentifié, on passe user = undefined
     // On force isWebinar = true pour générer un JWT visitor
     const { token, exp } = await this.conferenceService.generateJitsiJwt(undefined, false, roomName, true);
