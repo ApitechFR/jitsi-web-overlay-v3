@@ -21,15 +21,12 @@
 .secondContainer {
   width: 45%;
   height: auto;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 .secondContainer img {
   max-width: 100%;
-  height: auto;
   object-fit: contain;
+  padding-top: 20px;
 }
 
 .homepageDispositionSideBlocks {
@@ -192,6 +189,12 @@
   }
 }
 
+@media (max-width: 1000px) and (min-width: 800.99px) {
+  .secondContainer {
+    padding-top: 80px;
+  }
+}
+
 @media (max-width: 800px) {
   .homeContainer {
     flex-direction: column-reverse;
@@ -204,6 +207,7 @@
 
   .secondContainer {
     width: 90%;
+    padding-top: 0px;
   }
 }
 

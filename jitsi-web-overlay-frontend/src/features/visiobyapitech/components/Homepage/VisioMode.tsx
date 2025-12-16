@@ -80,7 +80,7 @@ function VisioMode (props: VisioModeProps) {
                   </div>
                   {isInputsVisible && (
                     <div className={styles.hiddenDropdownButtons}>
-                      <Button className={styles.joinButton} onClick={function noRefCheck(){}} priority="tertiary">
+                      <Button className={styles.joinButton} onClick={function noRefCheck(){}} priority="tertiary" disabled>
                         <span>Planifier une réunion</span>
                       </Button>
                       <Button className={styles.joinButton} onClick={props.onCopyLink} priority="tertiary">
@@ -96,7 +96,7 @@ function VisioMode (props: VisioModeProps) {
                 </div>
                 <div>
                   <Button className={styles.dropdownButton} onClick={displayInputs} type="button">
-                    +
+                    {isInputsVisible ? "--" : "+"}
                   </Button>
                 </div>
               </div>
