@@ -4,10 +4,7 @@ import { generateConferenceName, validateConferenceName } from '../../../../util
 import React, { useState, useRef, FormEvent, useEffect, useMemo } from 'react';
 import styles from './HomeJoona.module.css';
 import { Button } from '@apitechfr/react-dsapitech/Button';
-import { Input } from '@apitechfr/react-dsapitech/Input';
-import ShuffleIcon from '@mui/icons-material/Shuffle';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Alert } from '@apitechfr/react-dsapitech/Alert';
 import { Badge } from '@apitechfr/react-dsapitech/Badge';
 import { Tooltip } from "@apitechfr/react-dsapitech/Tooltip";
 import { createModal } from '@apitechfr/react-dsapitech/Modal';
@@ -16,6 +13,8 @@ import { useAuth } from '../../../../auth/useAuth';
 import { useRuntimeConfig } from '../../../../config/ConfigProvider';
 import { useConferencePolling } from '../../hooks/useConferencePolling';
 import { ConferenceWaitingModal } from './ConferenceWaitingModal';
+import VisioMode from '../../components/Homepage/VisioMode';
+import WebinaireMode from '../../components/Homepage/WebinaireMode';
 
 interface HomeJoonaProps {
   readonly conferenceName: string;
@@ -30,6 +29,8 @@ interface HomeJoonaProps {
   readonly participantNumber: number;
 }
 
+type Mode = "visio" | "webinaire";
+
 const POLLING_INTERVAL = 2000; // 2s
 
 function HomeJoona(props: HomeJoonaProps) {
@@ -40,7 +41,7 @@ function HomeJoona(props: HomeJoonaProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isError, setIsError] = useState(false);
   const [isAlertVisible, setIsAlertVisible] = useState(false);
-  const [isInputsVisible, setIsInputsVisible] = useState(false);
+  const [mode, setMode] = useState<Mode>("visio");
 
   const [message, setMessage] = useState<JSX.Element | string>(<></>);
   
@@ -192,12 +193,15 @@ function HomeJoona(props: HomeJoonaProps) {
     props.setConferenceName(generateConferenceName());
   };
 
+  const switchMode = () => {
+    setMode(mode === "visio" ? "webinaire" : "visio")
+  }
+
   /*********** Fonction verif regex Webconf *************/
 
   const verifyAndSetVAlue = React.useCallback(
       (value: string) => {
         if (value) {
-          // console.log("value", value)
           if (isValidConferenceName(value)) {
             props.setConferenceName(value);
             setMessage(
@@ -271,10 +275,6 @@ function HomeJoona(props: HomeJoonaProps) {
 
     /********************************************************/
 
-    const displayInputs = () => {
-      setIsInputsVisible(prev => !prev);
-    }
-
   return (
     <div className={styles.homeContainer}>
 
@@ -309,83 +309,41 @@ function HomeJoona(props: HomeJoonaProps) {
       />
 
       <div className={styles.firstContainer}>
-        <div className={styles.homeContent}>
-          <h1 className={styles.homeTitle}>Rejoindre une visioconférence</h1>
-          <div className={styles.homepageDispositionSideBlocks}>
-            <div className={styles.inputsBlock}>
-              <div className={styles.inputsRoom}>
-                <div className={styles.joinPart}>
-                  <Input
-                    label=""
-                    id="conferenceName"
-                    state={isError ? 'error' : 'default'}
-                    nativeInputProps={{
-                      placeholder: 'Saisissez votre nom de conférence',
-                      value: props.conferenceName,
-                      onChange: e => {
-                        // change(e.target.value);
 
-                        // MIT EN COMM EN ATTENTE DE MODIF REGEX
+        {mode === 'visio' && (
+          <VisioMode 
+            isError={isError}
+            setIsError={setIsError}
+            isAlertVisible={isAlertVisible}
+            conferenceName={props.conferenceName}
+            setConferenceName={props.setConferenceName}
+            onclickGenerateRoomName={onclickGenerateRoomName}
+            handleGenerateRoomName={handleGenerateRoomName}
+            onSubmit={onSubmit}
+            isValidConferenceName={isValidConferenceName}
+            onCopyLink={onCopyLink}
+            AppTemplate={AppTemplate}
+            inputRef={inputRef}
+          />
+        )}
+        {mode === 'webinaire' && (
+          <WebinaireMode
+            isError={isError}
+            setIsError={setIsError}
+            conferenceName={props.conferenceName}
+            setConferenceName={props.setConferenceName}
+            onclickGenerateRoomName={onclickGenerateRoomName}
+            handleGenerateRoomName={handleGenerateRoomName}
+            onSubmit={onSubmit}
+            isValidConferenceName={isValidConferenceName}
+            AppTemplate={AppTemplate}
+            inputRef={inputRef}
+          />
+        )}
 
-                        const value = e.currentTarget.value;
-                        props.setConferenceName(value);
-                        setIsError(!isValidConferenceName(value));
-                      },
-                      ref: inputRef,
-                    }}
-                    stateRelatedMessage={
-                      isError && (cfg.VITE_CONFERENCE_NAME_REGEX_MESSAGE || 'Nom de conférence invalide.')
-                    }
-                    style={{ width: '100%' }}
-                    addon={
-                      <Button className={styles.plusButton} onClick={AppTemplate === 'webconf' ? onclickGenerateRoomName : handleGenerateRoomName} type="button">
-                        <ShuffleIcon />
-                      </Button>
-                    }
-                  />
-                </div>
-              </div>
-            
-              <div className={styles.buttonsSection}>
-                <div className={styles.joinPart}>
-                  <div className={styles.joinInput}>
-                    <Button onClick={onSubmit} className={styles.joinButton} style={{ width: '100%' }}>
-                      <span>Rejoindre ou créer</span>
-                    </Button>
-                  </div>
-                  {isInputsVisible && (
-                    <div className={styles.hiddenDropdownButtons}>
-                      <Button className={styles.joinButton} onClick={onCopyLink} priority="tertiary">
-                        <span>Planifier une réunion</span>
-                      </Button>
-                      <Button className={styles.joinButton} onClick={onCopyLink} priority="tertiary">
-                        <span>Copier le lien</span>
-                      </Button>
-                    </div>
-                  )}
-                  {isAlertVisible && (
-                    <div className={styles.alertContainer}>
-                      <Alert severity="success" title="Lien copié avec succès !" description="" small />
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <Button className={styles.dropdownButton} onClick={displayInputs} type="button">
-                    +
-                  </Button>
-                </div>
-              </div>
-            </div>
-            {/* <div>{message}</div> */}
-            {/* <Badge severity="info">
-              Actuellement, il y a {props.conferenceNumber} conférences et{' '}
-              {props.participantNumber} participants.
-            </Badge> */}
-          </div>
-        </div>
         <div className={styles.switchModeBlock}>
-          <Button className={`${styles.joinButton} ${styles.buttonSwitchMode}`} onClick={onCopyLink} priority="tertiary">
-            <span>Passer en mode webinaire</span>
+          <Button className={`${styles.joinButton} ${styles.buttonSwitchMode}`} onClick={switchMode} priority="tertiary">
+            <span>{mode === "visio" ? "Passer en mode webinaire" : "Passer en mode visioconférence"}</span>
             <i className="ri-live-line"></i>
           </Button>
           <Tooltip

@@ -14,7 +14,7 @@
 }
 
 .homeTitle {
-  margin-bottom: 80px;
+  margin-bottom: 60px;
   font-size: 2.2em;
 }
 
@@ -136,6 +136,49 @@
   display: flex;
   flex-direction: column;
 }
+
+/*** Modal Webinaire Style ***/
+.webinaireModal :global(.fr-modal__content) {
+  margin-bottom: 2rem;
+}
+
+.modalContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.modalWebinaireTitle {
+  font-size: 1.3em;
+}
+
+.mainButtonsBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  padding: 0px 30px;
+}
+
+.mainButtonsBlock .joinButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.bottomButtonBlock {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  justify-content: end;
+  padding: 30px 0px;
+  /* border-top: solid 1px grey; */
+}
+
+
+/*****************************/
 
 @keyframes slideUpFade {
   from {
