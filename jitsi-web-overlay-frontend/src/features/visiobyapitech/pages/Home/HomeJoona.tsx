@@ -39,7 +39,7 @@ function HomeJoona(props: HomeJoonaProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [isError, setIsError] = useState(false);
+  const [isError, setIsError] = useState(true);
   const [isAlertVisible, setIsAlertVisible] = useState(false);
   const [mode, setMode] = useState<Mode>("visio");
 
@@ -105,7 +105,10 @@ function HomeJoona(props: HomeJoonaProps) {
 
   // Met à jour l'état d'erreur dès que le nom change (affiche l'erreur si invalide, la retire si valide)
   useEffect(() => {
-    setIsError(!!props.conferenceName && !isValidConferenceName(props.conferenceName));
+    const hasConferenceName = props.conferenceName.trim() != "";
+    const isInvalidFormat = !isValidConferenceName(props.conferenceName);
+
+    setIsError(!hasConferenceName || isInvalidFormat);
   }, [props.conferenceName, isValidConferenceName]);
 
   // MIT EN COMM EN ATTENTE DE MODIF REGEX

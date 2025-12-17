@@ -44,7 +44,7 @@ function WebinaireMode (props: WebinaireMode) {
                   <Input
                     label=""
                     id="conferenceName"
-                    state={props.isError ? 'error' : 'default'}
+                    state={props.isError && props.conferenceName ? 'error' : 'default'}
                     nativeInputProps={{
                       placeholder: 'Saisissez votre nom de conférence',
                       value: props.conferenceName,
@@ -60,7 +60,7 @@ function WebinaireMode (props: WebinaireMode) {
                       ref: props.inputRef,
                     }}
                     stateRelatedMessage={
-                      props.isError && (cfg.VITE_CONFERENCE_NAME_REGEX_MESSAGE || 'Nom de conférence invalide.')
+                      props.isError && props.conferenceName && (cfg.VITE_CONFERENCE_NAME_REGEX_MESSAGE || 'Nom de conférence invalide.')
                     }
                     style={{ width: '100%' }}
                     addon={
