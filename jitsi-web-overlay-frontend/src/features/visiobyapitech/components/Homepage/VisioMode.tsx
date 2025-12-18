@@ -10,14 +10,13 @@ import styles from "../../pages/Home/HomeJoona.module.css"
 
 interface VisioModeProps {
   readonly isError: boolean;
-  readonly setIsError: (isError: boolean) => void;
+  readonly showError: boolean;
   readonly isAlertVisible: boolean;
   readonly conferenceName: string;
   readonly setConferenceName: (conferenceName: string) => void;
   readonly onclickGenerateRoomName: () => void;
   readonly handleGenerateRoomName: () => void;
   readonly onSubmit: (e: FormEvent) => void;
-  readonly isValidConferenceName: (name: string) => boolean;
   readonly onCopyLink: () => void;
   readonly AppTemplate: string;
   readonly inputRef: React.RefObject<HTMLInputElement>;
@@ -43,7 +42,7 @@ function VisioMode (props: VisioModeProps) {
                   <Input
                     label=""
                     id="conferenceName"
-                    state={props.isError && props.conferenceName ? 'error' : 'default'}
+                    state={props.showError ? 'error' : 'default'}
                     nativeInputProps={{
                       placeholder: 'Saisissez votre nom de conférence',
                       value: props.conferenceName,
@@ -59,7 +58,7 @@ function VisioMode (props: VisioModeProps) {
                       ref: props.inputRef,
                     }}
                     stateRelatedMessage={
-                      props.isError && props.conferenceName && (cfg.VITE_CONFERENCE_NAME_REGEX_MESSAGE || 'Nom de conférence invalide.')
+                      props.showError && (cfg.VITE_CONFERENCE_NAME_REGEX_MESSAGE || 'Nom de conférence invalide.')
                     }
                     style={{ width: '100%' }}
                     addon={

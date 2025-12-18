@@ -103,15 +103,15 @@ function HomeJoona(props: HomeJoonaProps) {
   }, [modal]);
 
 
-  // Met à jour l'état d'erreur dès que le nom change (affiche l'erreur si invalide, la retire si valide)
-  useEffect(() => {
-    const hasConferenceName = props.conferenceName.trim() != "";
-    const isInvalidFormat = !isValidConferenceName(props.conferenceName);
+  // Met à jour l'état d'erreur (pas général, seulement pour l'input de la homepage) dès que le nom change (affiche l'erreur si invalide, la retire si valide)
+  const isConferenceNameInvalid = (value: string) =>
+    value.trim() !== "" && !isValidConferenceName(value);
 
-    setIsError(!hasConferenceName || isInvalidFormat);
-  }, [props.conferenceName, isValidConferenceName]);
+  const hasValue = props.conferenceName.trim() !== "";
+  const isInvalid = isConferenceNameInvalid(props.conferenceName);
 
-  // MIT EN COMM EN ATTENTE DE MODIF REGEX
+  const isErrorConfName = !hasValue || isInvalid;
+  const showError = isInvalid;
 
   const stopWaitingAndPoll = (byModalClose?: boolean) => {
     stopPolling();
@@ -193,6 +193,7 @@ function HomeJoona(props: HomeJoonaProps) {
   }
 
   const handleGenerateRoomName = () => {
+    debugger
     props.setConferenceName(generateConferenceName());
   };
 
@@ -315,15 +316,14 @@ function HomeJoona(props: HomeJoonaProps) {
 
         {mode === 'visio' && (
           <VisioMode 
-            isError={isError}
-            setIsError={setIsError}
+            isError={isErrorConfName}
+            showError={showError}
             isAlertVisible={isAlertVisible}
             conferenceName={props.conferenceName}
             setConferenceName={props.setConferenceName}
             onclickGenerateRoomName={onclickGenerateRoomName}
             handleGenerateRoomName={handleGenerateRoomName}
             onSubmit={onSubmit}
-            isValidConferenceName={isValidConferenceName}
             onCopyLink={onCopyLink}
             AppTemplate={AppTemplate}
             inputRef={inputRef}
@@ -331,14 +331,13 @@ function HomeJoona(props: HomeJoonaProps) {
         )}
         {mode === 'webinaire' && (
           <WebinaireMode
-            isError={isError}
-            setIsError={setIsError}
+            isError={isErrorConfName}
+            showError={showError}
             conferenceName={props.conferenceName}
             setConferenceName={props.setConferenceName}
             onclickGenerateRoomName={onclickGenerateRoomName}
             handleGenerateRoomName={handleGenerateRoomName}
             onSubmit={onSubmit}
-            isValidConferenceName={isValidConferenceName}
             AppTemplate={AppTemplate}
             inputRef={inputRef}
           />
