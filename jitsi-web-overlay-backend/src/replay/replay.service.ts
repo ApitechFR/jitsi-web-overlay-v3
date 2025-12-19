@@ -227,4 +227,38 @@ export class ReplayService {
 
         return { path: decodedPath, stat, safeFilename };
     }
+
+    async deleteReplaysByDeactivatedConferences(date: Date): Promise<{ totalDeleted: number; deletedConferenceUids: string[]; }> {
+        const conferences = await this.replayRepository.query(
+            `
+            SELECT DISTINCT c.uid
+            FROM conferences c
+            JOIN replay r ON r.conference_uid = c.uid
+            WHERE c.is_active = 0
+            AND c.desactivated_at < ?
+            `,
+            [date],
+        );
+
+        const conferenceUids = conferences.map((c: any) => c.uid);
+
+        if (!conferenceUids.length) {
+            return {
+                totalDeleted: 0,
+                deletedConferenceUids: [],
+            };
+        }
+
+        // Supprimer les replays des conferences désactivées
+        const result = await this.replayRepository
+            .createQueryBuilder()
+            .delete()
+            .where('conference_uid IN (:...uids)', { uids: conferenceUids })
+            .execute();
+
+        return {
+            totalDeleted: result.affected || 0,
+            deletedConferenceUids: conferenceUids,
+        };
+    }
 }

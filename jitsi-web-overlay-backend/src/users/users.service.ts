@@ -5,14 +5,14 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/users.entity';
-import { Repository } from 'typeorm';
+import { LessThan, Repository } from 'typeorm';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-  ) {}
+  ) { }
 
   // Create user
   async createUser(userData: Partial<User>): Promise<User> {
@@ -73,5 +73,53 @@ export class UsersService {
     } catch (error) {
       throw new InternalServerErrorException('Cannot delete user');
     }
+  }
+
+  async deleteDeactivatedUsers(date: Date): Promise<{ totalDeleted: number; deletedUserUids: string[]; }> {
+
+    const users = await this.userRepository.find({
+      where: {
+        isActive: false,
+        desactivated_at: LessThan(date),
+      },
+      select: ['uid'],
+    });
+
+    if (!users.length) {
+      return { totalDeleted: 0, deletedUserUids: [] };
+    }
+
+    const uids = users.map(u => u.uid);
+
+    const result = await this.userRepository
+      .createQueryBuilder()
+      .delete()
+      .where('uid IN (:...uids)', { uids })
+      .execute();
+
+    return {
+      totalDeleted: result.affected || 0,
+      deletedUserUids: uids,
+    };
+  }
+
+
+  async deactivateUser(uid: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { uid },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!user.isActive) {
+      return user;
+    }
+
+    user.isActive = false;
+    user.desactivated_at = new Date();
+
+    return await this.userRepository.save(user);
   }
 }

@@ -12,6 +12,7 @@ import {
   Query,
   Header,
   UseGuards,
+  Patch,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -131,6 +132,12 @@ export class ConferenceController {
     @Body() dto: EndConferenceDTO,
   ) {
     return this.conferenceService.updateEndTimeConferenceByName(confName, dto.end_time);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':uid/activate')
+  activate(@Param('uid') uid: string) {
+    return this.conferenceService.activateConference(uid);
   }
 
   //TODO : to remove Old name /roomExists/:roomName

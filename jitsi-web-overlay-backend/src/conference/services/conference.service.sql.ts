@@ -7,7 +7,7 @@ import {
   BadRequestException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Repository } from 'typeorm';
+import { Between, In, Repository } from 'typeorm';
 import { IConferenceService } from '../interfaces/conference-service.interface';
 import { CreateConferenceDTO } from '../DTOs/conference.dto';
 import { Conference } from '../entities/conference.entity';
@@ -454,11 +454,77 @@ export class ConferenceServiceSQL implements IConferenceService {
     return this.jitsiJwtService.generateJitsiJwt(user, moderator, roomName);
   }
 
+  async activateConference(uid: string): Promise<Conference> {
+    const conference = await this.conferenceRepo.findOne({
+      where: { uid },
+    });
+
+    if (!conference) {
+      throw new NotFoundException('Conference not found');
+    }
+
+    if (conference.isActive) {
+      return conference; // Déjà active
+    }
+
+    conference.isActive = true;
+    conference.desactivated_at = null;
+
+    return await this.conferenceRepo.save(conference);
+  }
+
   /**
-  * Cron job : toutes les minutes, on vérifie les conférences actives.
-  * Si participants = 0, on met end_time et on termine la conférence.
-  */
-  @Cron(CronExpression.EVERY_MINUTE)
+   * Trouver les conférences actives
+   * où TOUS les utilisateurs (userUid ≠ null)
+   * sont désactivés (isActive = false)
+ */
+  async findConferencesWithOnlyInactiveUsers(): Promise<string[]> {
+    const rows = await this.conferenceRepo.query(`
+      SELECT c.uid FROM conferences c
+      LEFT JOIN participants p ON p.conference_uid = c.uid AND p.user_uid IS NOT NULL
+      LEFT JOIN users u ON u.uid = p.user_uid
+      WHERE c.is_active = 1
+      GROUP BY c.uid
+      HAVING SUM(CASE WHEN u.is_active = 1 THEN 1 ELSE 0 END) = 0;
+    `); // Compter le nombre d’utilisateurs ACTIFS dans la conférence
+
+    return rows.map(r => r.uid);
+  }
+
+  /**
+   * Désactiver toutes les conférences trouvées
+   */
+  async disableConferences(uids: string[]): Promise<number> {
+    if (!uids.length) return 0;
+
+    await this.conferenceRepo
+      .createQueryBuilder()
+      .update()
+      .set({
+        isActive: false,
+        desactivated_at: () => 'NOW()',
+      })
+      .where('uid IN (:...uids)', { uids })
+      .andWhere('desactivated_at IS NULL')
+      .execute();
+
+    return uids.length;
+  }
+
+  /**
+   * Fonction principale :
+   * Trouver + désactiver
+   */
+  async disableAllInactiveUserConferences() {
+    const uids = await this.findConferencesWithOnlyInactiveUsers();
+    const disabledCount = await this.disableConferences(uids);
+
+    return {
+      totalDisabled: disabledCount,
+      disabledConferences: uids,
+    };
+  }
+
   async closeEmptyConferences() {
     const activeConfs = await this.conferenceRepo.find({
       where: {
