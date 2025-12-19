@@ -36,6 +36,7 @@ const POLLING_INTERVAL = 2000; // 2s
 function HomeJoona(props: HomeJoonaProps) {
   const cfg = useRuntimeConfig();
   const AppTemplate = (cfg.VITE_APP_TEMPLATE as string) || 'joona';
+  const isWebinarEnabled = cfg.VITE_IS_WEBINAR_ENABLED === true || cfg.VITE_IS_WEBINAR_ENABLED === 'true';
   const navigate = useNavigate();
   const location = useLocation();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -44,7 +45,7 @@ function HomeJoona(props: HomeJoonaProps) {
   const [mode, setMode] = useState<Mode>("visio");
 
   const [message, setMessage] = useState<JSX.Element | string>(<></>);
-  
+
   // Timer pour le délai supplémentaire de 2s avant d’ouvrir le modal
   const extraDelayTimerRef = useRef<number | null>(null);
 
@@ -103,7 +104,7 @@ function HomeJoona(props: HomeJoonaProps) {
   }, [modal]);
 
 
-  // Met à jour l'état d'erreur (pas général, seulement pour l'input de la homepage) dès que le nom change (affiche l'erreur si invalide, la retire si valide)
+  // Met à jour l'état d'erreur dès que le nom change (affiche l'erreur si invalide, la retire si valide)
   const isConferenceNameInvalid = (value: string) =>
     value.trim() !== "" && !isValidConferenceName(value);
 
@@ -193,91 +194,91 @@ function HomeJoona(props: HomeJoonaProps) {
   }
 
   const handleGenerateRoomName = () => {
-    debugger
     props.setConferenceName(generateConferenceName());
   };
 
   const switchMode = () => {
+    if (!isWebinarEnabled && mode === 'visio') return; // n'autorise pas le passage en mode webinaire si désactivé
     setMode(mode === "visio" ? "webinaire" : "visio")
   }
 
   /*********** Fonction verif regex Webconf *************/
 
   const verifyAndSetVAlue = React.useCallback(
-      (value: string) => {
-        if (value) {
-          if (isValidConferenceName(value)) {
-            props.setConferenceName(value);
-            setMessage(
-              <div className={styles.message}>
+    (value: string) => {
+      if (value) {
+        if (isValidConferenceName(value)) {
+          props.setConferenceName(value);
+          setMessage(
+            <div className={styles.message}>
+              <Badge className={styles.badge} severity="success">
+                Au moins 3 chiffres
+              </Badge>
+              <Badge className={styles.badge} severity="success">
+                Un minimum de 10 caractères
+              </Badge>
+              <Badge className={styles.badge} severity="success">
+                Des chiffres et des lettres sans accents
+              </Badge>
+            </div>
+          );
+        } else {
+          props.setConferenceName(value);
+          const message = (
+            <div className={styles.message}>
+              {getCountOfDigits(value) >= 3 ? (
                 <Badge className={styles.badge} severity="success">
                   Au moins 3 chiffres
                 </Badge>
+              ) : (
+                <Badge className={styles.badge} severity="error">
+                  Au moins 3 chiffres
+                </Badge>
+              )}
+              {getCountCaracters(value) >= 10 ? (
                 <Badge className={styles.badge} severity="success">
                   Un minimum de 10 caractères
                 </Badge>
+              ) : (
+                <Badge className={styles.badge} severity="error">
+                  Un minimum de 10 caractères
+                </Badge>
+              )}
+              {isAlphaNumeric(value) ? (
                 <Badge className={styles.badge} severity="success">
                   Des chiffres et des lettres sans accents
                 </Badge>
-              </div>
-            );
-          } else {
-            props.setConferenceName(value);
-            const message = (
-              <div className={styles.message}>
-                {getCountOfDigits(value) >= 3 ? (
-                  <Badge className={styles.badge} severity="success">
-                    Au moins 3 chiffres
-                  </Badge>
-                ) : (
-                  <Badge className={styles.badge} severity="error">
-                    Au moins 3 chiffres
-                  </Badge>
-                )}
-                {getCountCaracters(value) >= 10 ? (
-                  <Badge className={styles.badge} severity="success">
-                    Un minimum de 10 caractères
-                  </Badge>
-                ) : (
-                  <Badge className={styles.badge} severity="error">
-                    Un minimum de 10 caractères
-                  </Badge>
-                )}
-                {isAlphaNumeric(value) ? (
-                  <Badge className={styles.badge} severity="success">
-                    Des chiffres et des lettres sans accents
-                  </Badge>
-                ) : (
-                  <Badge className={styles.badge} severity="error">
-                    Des chiffres et des lettres sans accents
-                  </Badge>
-                )}
-              </div>
-            );
-            setMessage(message);
-          }
-        } else {
-          props.setConferenceName(value);
-          setMessage('');
+              ) : (
+                <Badge className={styles.badge} severity="error">
+                  Des chiffres et des lettres sans accents
+                </Badge>
+              )}
+            </div>
+          );
+          setMessage(message);
         }
-      },
-      [props, setMessage]
-    );
-  
-    const change = (e: string) => {
-      verifyAndSetVAlue(e);
-    };
-  
-    useEffect(() => {
-      verifyAndSetVAlue(props.conferenceName);
-    }, [props.conferenceName, verifyAndSetVAlue]);
+      } else {
+        props.setConferenceName(value);
+        setMessage('');
+      }
+    },
+    [props, setMessage]
+  );
 
-    // function webconf pour random confName ? 
-    const onclickGenerateRoomName = () => {
-      verifyAndSetVAlue(props.conferenceName);
-    }; 
+  const change = (e: string) => {
+    verifyAndSetVAlue(e);
+  };
 
-    /********************************************************/
+  useEffect(() => {
+    verifyAndSetVAlue(props.conferenceName);
+  }, [props.conferenceName, verifyAndSetVAlue]);
+
+  // function webconf pour random confName ? 
+  const onclickGenerateRoomName = () => {
+    verifyAndSetVAlue(props.conferenceName);
+  };
+
+  /********************************************************/
 
   return (
     <div className={styles.homeContainer}>
@@ -315,7 +316,7 @@ function HomeJoona(props: HomeJoonaProps) {
       <div className={styles.firstContainer}>
 
         {mode === 'visio' && (
-          <VisioMode 
+          <VisioMode
             isError={isErrorConfName}
             showError={showError}
             isAlertVisible={isAlertVisible}
@@ -329,7 +330,7 @@ function HomeJoona(props: HomeJoonaProps) {
             inputRef={inputRef}
           />
         )}
-        {mode === 'webinaire' && (
+        {isWebinarEnabled && mode === 'webinaire' && (
           <WebinaireMode
             isError={isErrorConfName}
             showError={showError}
@@ -338,23 +339,26 @@ function HomeJoona(props: HomeJoonaProps) {
             onclickGenerateRoomName={onclickGenerateRoomName}
             handleGenerateRoomName={handleGenerateRoomName}
             onSubmit={onSubmit}
+            isValidConferenceName={isValidConferenceName}
             AppTemplate={AppTemplate}
             inputRef={inputRef}
           />
         )}
 
-        <div className={styles.switchModeBlock}>
-          <Button className={`${styles.joinButton} ${styles.buttonSwitchMode}`} onClick={switchMode} priority="tertiary">
-            <span>{mode === "visio" ? "Passer en mode webinaire" : "Passer en mode visioconférence"}</span>
-            <i className="ri-live-line"></i>
-          </Button>
-          <Tooltip
-            kind="hover"
-            title="Il est recommandé de ne pas dépasser 75 participants par conférence. Si vous êtes plus nombreux, passez en mode webinaire. "
-          >
-            <i className="ri-question-line"></i>
-          </Tooltip>
-        </div>
+        {isWebinarEnabled && (
+          <div className={styles.switchModeBlock}>
+            <Button className={`${styles.joinButton} ${styles.buttonSwitchMode}`} onClick={switchMode} priority="tertiary">
+              <span>{mode === "visio" ? "Passer en mode webinaire" : "Passer en mode visioconférence"}</span>
+              <i className="ri-live-line"></i>
+            </Button>
+            <Tooltip
+              kind="hover"
+              title="Il est recommandé de ne pas dépasser 75 participants par conférence. Si vous êtes plus nombreux, passez en mode webinaire. "
+            >
+              <i className="ri-question-line"></i>
+            </Tooltip>
+          </div>
+        )}
       </div>
 
       <div className={styles.secondContainer}>
@@ -382,5 +386,3 @@ function isAlphaNumeric(str: string) {
   const isAlphaNum = new RegExp('^(?=.*[0-9])(?=.*[a-zA-Z])([a-zA-Z0-9]+)$');
   return isAlphaNum.test(str);
 }
-
-/*********************************************/

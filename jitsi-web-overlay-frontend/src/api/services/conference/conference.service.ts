@@ -1,3 +1,4 @@
+
 import { getHttp } from '../../http';
 import { toApiError } from '@/api/errors';
 import type { CreateByEmailRes, JitsiJwtResponse, JoinRes } from './conference.types';
@@ -100,30 +101,6 @@ export const ConferenceService = {
     },
 
 
-    /**
-     * Récupère un JWT visitor (spectateur) pour une conférence
-     */
-    async jitsiVisitorJwt(confName: string): Promise<JitsiJwtResponse> {
-        try {
-            const http = await getHttp();
-            const { data } = await http.post(
-                `/conferences/${encodeURIComponent(confName)}/tokens/jitsi-visitor`,
-                {},
-                { withCredentials: false }
-            );
-            const token = data?.token ?? data?.jwt;
-            if (!token) {
-                throw new Error('Réponse JWT visitor invalide (champ "token" ou "jwt" manquant)');
-            }
-            return {
-                token,
-                exp: data?.exp,
-                moderator: false,
-            };
-        } catch (e) {
-            throw toApiError(e, "Échec de récupération du JWT visitor");
-        }
-    },
     async getStats() {
         try {
             const http = await getHttp();
@@ -132,6 +109,32 @@ export const ConferenceService = {
         } catch (error) {
             throw toApiError(error, 'Erreur lors de la récupération des statistiques');
         }
-    }
+    },
 
+    /**
+     * Récupère un JWT visitor (spectateur) pour une conférence
+     */
+    async jitsiVisitorJwt(confName: string): Promise<JitsiJwtResponse & { invitationToken?: string }> {
+        try {
+            const http = await getHttp();
+            const { data } = await http.post(
+                `/conferences/${encodeURIComponent(confName)}/tokens/jitsi-visitor`,
+                {},
+                { withCredentials: false }
+            );
+            const invitationToken = data?.invitationToken;
+            const token = invitationToken ?? data?.token ?? data?.jwt;
+            if (!token) {
+                throw new Error('Réponse JWT visitor invalide (champ "invitationToken", "token" ou "jwt" manquant)');
+            }
+            return {
+                token,
+                invitationToken,
+                exp: data?.exp,
+                moderator: false,
+            };
+        } catch (e) {
+            throw toApiError(e, "Échec de récupération du JWT visitor");
+        }
+    },
 }

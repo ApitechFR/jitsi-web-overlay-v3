@@ -12,6 +12,7 @@ import {
   Query,
   Header,
   UseGuards,
+  Inject as NestInject,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -35,6 +36,8 @@ import { JwtAuthGuard } from '../authentication/jwt-auth.guard';
 import { Roles } from '../authentication/roles.decorator';
 import { RolesGuard } from '../authentication/roles.guard';
 
+import { WebinarService } from '../webinar/webinar.service';
+
 interface AuthenticatedRequest extends Request {
   user?: any;
 }
@@ -45,7 +48,9 @@ export class ConferenceController {
   constructor(
     @Inject(IConferenceService)
     private readonly conferenceService: IConferenceService,
-    private readonly prosodyRuntimeService: ProsodyRuntimeService
+    private readonly prosodyRuntimeService: ProsodyRuntimeService,
+    @NestInject(WebinarService)
+    private readonly webinarService: WebinarService,
   ) { }
 
   @UseGuards(JwtAuthGuard)
@@ -251,9 +256,11 @@ export class ConferenceController {
     if (process.env.IS_WEBINAR_ENABLED !== 'true') {
       return { error: 'Webinar mode is disabled' };
     }
-    // Pas d'utilisateur authentifié, on passe user = undefined
-    // On force isWebinar = true pour générer un JWT visitor
-    const { token, exp } = await this.conferenceService.generateJitsiJwt(undefined, false, roomName, true);
-    return { token, exp, moderator: false };
+    // Génère le JWT visitor
+    const { token: jwt, exp } = await this.conferenceService.generateJitsiJwt(undefined, false, roomName, true);
+    // Crée une invitation courte
+    const invitation = await this.webinarService.createInvitation(roomName, jwt, 'visitor');
+    // Retourne le short token (pas le JWT)
+    return { invitationToken: invitation.token, expiresAt: invitation.expiresAt };
   }
 }

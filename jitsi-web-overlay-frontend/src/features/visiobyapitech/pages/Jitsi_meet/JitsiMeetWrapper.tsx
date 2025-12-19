@@ -14,24 +14,33 @@ type JwtResponse =
   | { token: string; exp?: number; moderator: boolean }
   | { error: string };
 
-const JitsiMeetWrapper: React.FC = () => {
-  const { conferenceName } = useParams();
+
+interface JitsiMeetWrapperProps {
+  conferenceName?: string;
+  jwt?: string;
+  displayName?: string;
+  user?: any;
+  isWebinarInvite?: boolean;
+}
+
+const JitsiMeetWrapper: React.FC<JitsiMeetWrapperProps> = (props) => {
+  // If props.conferenceName is provided, use it; else fallback to route param
+  const routeParams = useParams();
+  const conferenceName = props.conferenceName || routeParams.conferenceName;
   const navigate = useNavigate();
   const location = useLocation() as { state?: any };
-  const { authenticated, status, user } = useAuth();
-
-  const [jwtToken, setJwtToken] = useState<string | undefined>(undefined);
+  const { authenticated, status, user: authUser } = useAuth();
+  const [jwtToken, setJwtToken] = useState<string | undefined>(props.jwt);
   const [jwtError, setJwtError] = useState<string | null>(null);
   const { run: fetchJitsiJwt, loading: loadingJitsiJwt, error: errorJitsiJwt } = useApi(ConferenceService.jitsiJwt);
-
   const [isHeaderOpen, setIsHeaderOpen] = useState(true);
-
   const cfg = useRuntimeConfig();
   const domain = cfg.VITE_JITSI_DOMAIN as string;
-
   const validRoom = !!conferenceName && validateConferenceName(conferenceName);
 
+  // If props.jwt is not provided, fetch JWT as before (classic mode)
   useEffect(() => {
+    if (props.jwt || props.isWebinarInvite) return;
     if (!validRoom) return;
     if (status === 'unknown') return;
     if (!authenticated) {
@@ -43,14 +52,13 @@ const JitsiMeetWrapper: React.FC = () => {
         });
       }
     }
-  }, [validRoom, status, authenticated, conferenceName, navigate, location.state]);
+  }, [validRoom, status, authenticated, conferenceName, navigate, location.state, props.jwt, props.isWebinarInvite]);
 
-  // Récup JWT uniquement si connecté
   useEffect(() => {
+    if (props.jwt || props.isWebinarInvite) return;
     if (!validRoom) return;
     if (status === 'unknown') return;
     if (!authenticated) return;
-
     setJwtError(null);
     fetchJitsiJwt(conferenceName!)
       .then(resp => {
@@ -60,64 +68,59 @@ const JitsiMeetWrapper: React.FC = () => {
         setJwtToken(undefined);
         setJwtError(e?.message || 'Impossible de récupérer le JWT pour cette conférence.');
       });
-  }, [authenticated, status, conferenceName, validRoom, fetchJitsiJwt]);
+  }, [authenticated, status, conferenceName, validRoom, fetchJitsiJwt, props.jwt, props.isWebinarInvite]);
 
-  // displayName : on privilégie prénom/nom/email si présents
+  // displayName : on privilégie prénom/nom/email si présents, else use props.displayName
   const displayName = useMemo<string>(() => {
+    if (props.displayName) return props.displayName;
     if (authenticated) {
       const first =
-        (user as any)?.given_name ||
-        (user as any)?.firstName ||
-        (user as any)?.prenom ||
+        (authUser as any)?.given_name ||
+        (authUser as any)?.firstName ||
+        (authUser as any)?.prenom ||
         '';
       const last =
-        (user as any)?.family_name ||
-        (user as any)?.lastName ||
-        (user as any)?.nom ||
+        (authUser as any)?.family_name ||
+        (authUser as any)?.lastName ||
+        (authUser as any)?.nom ||
         '';
       const full = [first, last].filter(Boolean).join(' ').trim();
       if (full) return full;
-      if (typeof (user as any)?.name === 'string' && (user as any)?.name) return (user as any).name;
-      if (typeof (user as any)?.email === 'string' && (user as any)?.email) return (user as any).email;
+      if (typeof (authUser as any)?.name === 'string' && (authUser as any)?.name) return (authUser as any).name;
+      if (typeof (authUser as any)?.email === 'string' && (authUser as any)?.email) return (authUser as any).email;
       if (jwtToken) return 'Utilisateur connecté';
     }
     return 'Invité';
-  }, [authenticated, user, jwtToken]);
+  }, [authenticated, authUser, jwtToken, props.displayName]);
 
   // GARDES
   if (!validRoom) return null;
-  if (status === 'unknown') {
+  if (status === 'unknown' && !props.isWebinarInvite) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-
         <CircularProgress style={{ height: '150px', width: '150px' }} />
       </div>
     );
   }
 
-  // Si non-auth SANS allowGuest, l’effet ci-dessus a renvoyé vers la Home.
-  // Si non-auth AVEC allowGuest, on rend Jitsi sans JWT (invité).
-  // Si auth, on rend Jitsi avec ou sans JWT (selon fetch en cours).
-
-  if (authenticated && loadingJitsiJwt && !jwtToken) {
-    console.log('Loading Jitsi JWT...');
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-
-        <CircularProgress style={{ height: '150px', width: '150px' }} />
-      </div>
-    );
-  }
-
-  if (authenticated && (jwtError || errorJitsiJwt) && !jwtToken) {
-    return (
-      <div style={{ color: 'red', padding: '2rem', textAlign: 'center' }}>
-        {jwtError || errorJitsiJwt?.message}
-        <div style={{ marginTop: 8, color: '#666' }}>
-          Si le problème persiste, contactez l’administrateur de la conférence.
+  if (!props.jwt && !props.isWebinarInvite) {
+    if (authenticated && loadingJitsiJwt && !jwtToken) {
+      return (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+          <CircularProgress style={{ height: '150px', width: '150px' }} />
         </div>
-      </div>
-    );
+      );
+    }
+    if (authenticated && (jwtError || errorJitsiJwt) && !jwtToken) {
+      return (
+        <div style={{ color: 'red', padding: '2rem', textAlign: 'center' }}>
+          {jwtError || errorJitsiJwt?.message}
+          <div style={{ marginTop: 8, color: '#666' }}>
+            Si le problème persiste, contactez l’administrateur de la conférence.
+          </div>
+        </div>
+      );
+    }
   }
 
   return (
@@ -129,9 +132,9 @@ const JitsiMeetWrapper: React.FC = () => {
         <JitsiMeetingView
           domain={domain}
           conferenceName={conferenceName!}
-          jwt={jwtToken}          // undefined => invité
+          jwt={jwtToken || props.jwt}
           displayName={displayName}
-          user={user}
+          user={props.user !== undefined ? props.user : authUser}
         />
       </div>
     </>

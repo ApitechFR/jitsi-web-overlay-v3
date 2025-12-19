@@ -13,12 +13,12 @@ export * from './services/authentication/auth.service';
 export * from './services/authentication/auth.types';
 export * from './services/dashboard/dashboard.service';
 export * from './services/dashboard/dashboard.types';
-// export * from './services/participants/participants.service';
-// export * from './services/participants/participants.types';
-// export * from './services/participants/participants.service';
-// export * from './services/participants/participants.types';
-// export * from './services/participants/participants.service';
-// export * from './services/participants/participants.types';
+export * from './services/participants/participant.service';
+export * from './services/participants/participants.types';
+export * from './services/participants/participants.types';
+export * from './services/participants/participants.types';
+export * from './services/webinar/webinar.service';
+//export * from './services/webinar/webinar.types';
 
 
 
