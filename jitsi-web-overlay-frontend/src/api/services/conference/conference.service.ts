@@ -76,12 +76,35 @@ export const ConferenceService = {
         }
     },
 
-    async jitsiJwt(confName: string, isWebinar?: boolean): Promise<JitsiJwtResponse> {
+    // async jitsiJwt(confName: string, isWebinar?: boolean): Promise<JitsiJwtResponse> {
+    //     try {
+    //         const http = await getHttp();
+    //         const { data } = await http.post(
+    //             `/conferences/${encodeURIComponent(confName)}/tokens/jitsi`,
+    //             { isWebinar },
+    //             { withCredentials: true }
+    //         );
+
+    //         const token = data?.token ?? data?.jwt;
+    //         if (!token) {
+    //             throw new Error('Réponse JWT invalide (champ "token" ou "jwt" manquant)');
+    //         }
+
+    //         return {
+    //             token,
+    //             exp: data?.exp,
+    //             moderator: Boolean(data?.moderator),
+    //         };
+    //     } catch (e) {
+    //         throw toApiError(e, "Échec de récupération du JWT Jitsi");
+    //     }
+    // },
+    async jitsiJwt(confName: string): Promise<JitsiJwtResponse> {
         try {
             const http = await getHttp();
             const { data } = await http.post(
                 `/conferences/${encodeURIComponent(confName)}/tokens/jitsi`,
-                { isWebinar },
+                {},
                 { withCredentials: true }
             );
 

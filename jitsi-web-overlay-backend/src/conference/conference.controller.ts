@@ -229,22 +229,35 @@ export class ConferenceController {
   }
 
   // @UseGuards(JwtAuthGuard)
+  // @Post('conferences/:roomName/tokens/jitsi')
+  // @Header('Cache-Control', 'no-store')
+  // async createJitsiToken(
+  //   @Param('roomName') roomName: RoomNameDto['roomName'],
+  //   @Req() req: AuthenticatedRequest,
+  //   @Body('isWebinar') isWebinar?: boolean
+  // ) {
+  //   const user = req.user;
+  //   const isModerator = this.conferenceService.isUserModerator(user, roomName);
+  //   const { token, exp } = await this.conferenceService.generateJitsiJwt(user, isModerator, roomName, isWebinar);
+  //   console.log({ user, roomName, isWebinar, isModerator, token, exp });
+  //   return { token, exp, moderator: isModerator };
+  // }
   @Post('conferences/:roomName/tokens/jitsi')
   @Header('Cache-Control', 'no-store')
   async createJitsiToken(
     @Param('roomName') roomName: RoomNameDto['roomName'],
-    @Req() req: AuthenticatedRequest,
-    @Body('isWebinar') isWebinar?: boolean
+    @Req() req: AuthenticatedRequest
   ) {
+
     const user = req.user;
     const isModerator = this.conferenceService.isUserModerator(user, roomName);
-    const { token, exp } = await this.conferenceService.generateJitsiJwt(user, isModerator, roomName, isWebinar);
+    const { token, exp } = await this.conferenceService.generateJitsiJwt(user, isModerator, roomName);
     return { token, exp, moderator: isModerator };
   }
 
   /**
- * Génère un JWT Jitsi pour un spectateur (visitor) sans authentification
- * Accessible publiquement pour générer un lien spectateur
+ * Generate a Jitsi JWT for a visitor (unauthenticated)
+ * Publicly accessible to generate a visitor link
  */
   @Post('conferences/:roomName/tokens/jitsi-visitor')
   @Header('Cache-Control', 'no-store')
@@ -252,15 +265,16 @@ export class ConferenceController {
     @Param('roomName') roomName: RoomNameDto['roomName'],
     @Body() body: any
   ) {
-    // Contrôle du flag IS_WEBINAR_ENABLED
+    // Check if webinar mode is enabled
     if (process.env.IS_WEBINAR_ENABLED !== 'true') {
       return { error: 'Webinar mode is disabled' };
     }
-    // Génère le JWT visitor
+
+    // Generate a Jitsi JWT for a visitor (no user, no moderator)
     const { token: jwt, exp } = await this.conferenceService.generateJitsiJwt(undefined, false, roomName, true);
-    // Crée une invitation courte
+    // Create a short invitation
     const invitation = await this.webinarService.createInvitation(roomName, jwt, 'visitor');
-    // Retourne le short token (pas le JWT)
+    // Return the invitation token and expiration
     return { invitationToken: invitation.token, expiresAt: invitation.expiresAt };
   }
 }
