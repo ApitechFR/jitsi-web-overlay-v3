@@ -78,6 +78,15 @@ export default function HeaderJoona() {
 
   const quickAccessItems = [
     {
+      linkProps: {
+        href: '/browser_test',
+        className: 'fr-btn--icon-right',
+      },
+      iconId: 'fr-icon-pulse-line',
+      text: 'Test matériel',
+    },
+    {
+
       buttonProps: {
         onClick: openPdf,
         className: 'fr-btn--icon-right',

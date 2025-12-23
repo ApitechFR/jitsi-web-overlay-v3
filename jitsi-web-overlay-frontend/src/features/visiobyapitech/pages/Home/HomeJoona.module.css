@@ -81,7 +81,8 @@
   border-radius: 0 0.25rem 0 0;
   /* font-weight: bold;
   font-size: 1.2rem;
-  display: flex; */ /* Override dsfr si changement souhaité ici */
+  display: flex; */
+  /* Override dsfr si changement souhaité ici */
   justify-content: center;
 }
 
@@ -97,6 +98,10 @@
 
 .joinButton {
   width: 100%;
+}
+
+.joinInput :global(.fr-btn) {
+  border-radius: 0.25rem;
 }
 
 .joinButton span {
