@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Joona Meet – Documentation</title>
+    <link rel="icon" href="/assets/icon-64.png" />
+    <style>
+      html,
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f4f6f9;
+        margin: 0;
+        padding: 2rem;
+        color: #333;
+        max-width: 800px;
+        margin-inline: auto;
+      }
+      h1 {
+        color: #005a9e;
+        font-size: 2rem;
+        margin-bottom: 1rem;
+      }
+      h2 {
+        margin-top: 2rem;
+        color: #003366;
+      }
+      p,
+      li {
+        line-height: 1.6;
+      }
+      code {
+        background: #eef;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: monospace;
+      }
+      .back {
+        display: inline-block;
+        margin-bottom: 1.5rem;
+        color: #0066cc;
+        text-decoration: none;
+      }
+      .back:hover {
+        text-decoration: underline;
+      }
+      footer {
+        margin-top: 3rem;
+        text-align: center;
+        color: #777;
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="back">
+      <a href="./">← Retour à l'accueil</a>
+    </div>
+    <div>
+      <h1>Joona Meet</h1>
+    </div>
+    <div>
+      <h2>🔍 Présentation</h2>
+      <p>
+        Joona Meet un Add-in pour Outlook qui facilite l'organisation de réunions sur notre plateforme
+        <a href="https://joona.fr">Joona</a>. Lors de la planification d'un événement via l'Outlook Planner, il génère
+        automatiquement des liens de visioconférence Joona lorsque vous créez un nouvel événement dans votre calendrier
+        Outlook. Une solution simple, rapide, et sécurisée pour vos réunions en ligne. Plus besoin de copier-coller des
+        liens manuellement, l'add-in s'occupe de tout pour vous.
+      </p>
+    </div>
+
+    <div>
+      <h2>⚙️ Fonctionnalités</h2>
+      <ul>
+        <li>Génération automatique de liens de réunion</li>
+        <li>Intégration dans le panneau Outlook (Web & Desktop)</li>
+        <li>UI réactive et légère</li>
+      </ul>
+    </div>
+
+    <div>
+      <h2>🔗 Installation</h2>
+      <p>Pour installer le complément, suivez les étapes ci-dessous :</p>
+      <p>
+        <strong>Étape 1 :</strong> Cliquez sur le lien "<a target="_blank" href="https://aka.ms/olksideload"
+          >https://aka.ms/olksideload</a
+        >". Cela ouvre <em>Outlook</em> sur le Web, puis charge la boîte de dialogue Compléments pour Outlook après
+        quelques secondes.
+      </p>
+      <img
+        src="../../readme_resources/images/popUp_complements.png"
+        alt="Compléments Outlook"
+        style="max-width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); margin: 1rem 0"
+      />
+
+      <p>
+        <strong>Étape 2 :</strong> Cliquez sur <strong>« Mes compléments »</strong> dans le menu de droite, puis sur
+        <strong>« Ajouter un complément personnalisé »</strong> → <em>« À partir d’une URL… »</em> ou
+        <em>« À partir d’un fichier… »</em>.
+      </p>
+      <img
+        src="../../readme_resources/images/add_from_file.png"
+        alt="Ajouter un complément personnalisé"
+        style="max-width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); margin: 1rem 0"
+      />
+
+      <p>
+        <strong>Étape 3 :</strong> Collez l’URL suivante ou importez le fichier manifest si vous l’avez téléchargé :
+      </p>
+      <p style="background: #eef; padding: 10px; border-radius: 6px; overflow-x: auto">
+        <a id="base_url" target="_blank" href="#">[link]</a>
+      </p>
+
+      <p>
+        <strong>Étape 4 :</strong> Créez un nouvel événement dans Outlook. Le complément ajoutera automatiquement un
+        lien <strong>Joona</strong> dans le corps de l'invitation :
+      </p>
+      <img
+        src="../../readme_resources/images/new_event.png"
+        alt="Nouvel événement Outlook avec Joona"
+        style="max-width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); margin: 1rem 0"
+      />
+      <p>🎉 Vous êtes prêt à organiser vos réunions avec Joona directement depuis Outlook !</p>
+    </div>
+
+    <div>
+      <h2>❓ FAQ</h2>
+      <p>
+        <strong>Q : Je ne vois pas le lien de réunion dans mon événement ?</strong><br />
+        A : Vérifiez que le complément est bien activé et que vous êtes sur un événement compatible (lecture ou
+        création).
+      </p>
+
+      <p>
+        <strong>Q : Est-ce que cela fonctionne hors ligne ?</strong><br />
+        A : Non, une connexion Internet est nécessaire pour accéder à Jitsi Meet.
+      </p>
+    </div>
+    <div>
+      <h2>📬 Support</h2>
+      <p>Contact : <a href="mailto:support@apitech.fr">support@apitech.fr</a></p>
+    </div>
+
+    <footer>© 2025 Apitech – Joona Meet</footer>
+  </body>
+</html>

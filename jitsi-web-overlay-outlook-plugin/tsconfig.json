@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "baseUrl": ".",
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "jsx": "react",
+    "noEmitOnError": true,
+    "outDir": "lib",
+    "sourceMap": true,
+    "target": "es5",
+    "lib": ["es2015", "dom"],
+    "moduleResolution": "node", // Ajout pour Node.js
+    "types": ["node", "office-js", "jest"], // Ajout pour inclure les types Node.js et Jest
+    "skipLibCheck": true, // Facultatif, pour éviter des erreurs sur les fichiers types
+    "forceConsistentCasingInFileNames": true
+  },
+  "exclude": ["node_modules", "dist", "lib", "lib-amd"],
+  "ts-node": {
+    "files": true
+  }
+}
