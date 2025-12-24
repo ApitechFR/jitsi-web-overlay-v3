@@ -1,0 +1,13 @@
+{
+    "name": "jitsi-web-overlay-v3-root",
+    "version": "1.0.0",
+    "description": "Racine du projet jitsi-web-overlay-v3",
+    "private": true,
+    "license": "UNLICENSED",
+    "scripts": {
+        "semantic-release": "semantic-release"
+    },
+    "devDependencies": {
+        "semantic-release": "^23.0.5"
+    }
+}
