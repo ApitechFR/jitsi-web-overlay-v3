@@ -1,15 +1,15 @@
-# workflow:
-#   rules:
-#     - if: '$CI_COMMIT_TAG'
-#     - if: '$CI_COMMIT_BRANCH =~ /^release\/.+$/'
-#     - if: '$CI_COMMIT_BRANCH == "main"'
-#     - when: never
+workflow:
+  rules:
+    - if: '$CI_COMMIT_TAG'
+    - if: '$CI_COMMIT_BRANCH == "release"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - when: never
 
 variables:
   DOCKER_CONFIG: /kaniko/.docker/
 
 stages:
-  - release
+  # - release
   - build
 
 release_outlook_plugin:
@@ -67,10 +67,10 @@ release_global:
 docker-build-backend:
   extends: .kaniko-build
   needs: []
-  # rules:
-  #   - if: '$CI_COMMIT_TAG'
-  #   - if: '$CI_COMMIT_BRANCH =~ /^release\/.+$/'
-  #   - if: '$CI_COMMIT_BRANCH == "main"'
+  rules:
+    - if: '$CI_COMMIT_TAG'
+    - if: '$CI_COMMIT_BRANCH == "release"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
   script:
     - |
       SHA_TAG="sha-${CI_COMMIT_SHORT_SHA}"
@@ -81,7 +81,7 @@ docker-build-backend:
           --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-backend:${VERSION} \
           --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-backend:latest \
           --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-backend:${SHA_TAG}"
-      elif echo "$CI_COMMIT_BRANCH" | grep -q '^release/'; then
+      elif echo "$CI_COMMIT_BRANCH" | grep -q 'release'; then
         VERSION="${CI_COMMIT_BRANCH#release/}"
         DESTINATIONS="\
           --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-backend:${VERSION}-rc \
@@ -104,11 +104,10 @@ docker-build-backend:
 docker-build-frontend:
   extends: .kaniko-build
   needs: []
-  # rules:
-  #   - if: '$CI_COMMIT_TAG'
-  #   - if: '$CI_COMMIT_BRANCH =~ /^release\/.+$/'
-  #   - if: '$CI_COMMIT_BRANCH =~ /^hotfix\/.+$/'
-  #   - if: '$CI_COMMIT_BRANCH == "main"'
+  rules:
+    - if: '$CI_COMMIT_TAG'
+    - if: '$CI_COMMIT_BRANCH == "release"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
   script:
     - |
       SHA_TAG="sha-${CI_COMMIT_SHORT_SHA}"
@@ -119,7 +118,7 @@ docker-build-frontend:
           --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-frontend:${VERSION} \
           --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-frontend:latest \
           --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-frontend:${SHA_TAG}"
-      elif echo "$CI_COMMIT_BRANCH" | grep -q '^release/'; then
+      elif echo "$CI_COMMIT_BRANCH" | grep -q 'release'; then
         VERSION="${CI_COMMIT_BRANCH#release/}"
         DESTINATIONS="\
           --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-frontend:${VERSION}-rc \
