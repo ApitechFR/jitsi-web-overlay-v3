@@ -9,7 +9,35 @@ variables:
   DOCKER_CONFIG: /kaniko/.docker/
 
 stages:
+  - release
   - build
+
+release_outlook_plugin:
+  stage: release
+  image: node:20
+  before_script:
+    - cd jitsi-web-overlay-outlook-plugin
+    - npm ci
+  script:
+    - npx semantic-release
+  only:
+    - release
+    - main
+  variables:
+    GITLAB_TOKEN: $CI_JOB_TOKEN
+
+release_global:
+  stage: release
+  image: node:20
+  before_script:
+    - npm ci
+  script:
+    - npx semantic-release
+  only:
+    - release
+    - main
+  variables:
+    GITLAB_TOKEN: $CI_JOB_TOKEN
 
 # --------------------------------------------------
 # Template Kaniko commun
