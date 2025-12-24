@@ -28,6 +28,16 @@ services:
     volumes:
     - ./client-resources:/usr/share/nginx/html/assets/client-resources:ro
 
+  jitsi-web-overlay-outlook-plugin:
+    build:
+      context: ./jitsi-web-overlay-outlook-plugin
+      dockerfile: Dockerfile
+    ports:
+      - "${PLUGIN_PORT}:80"
+    env_file:
+      - ./.env
+    restart: always
+
 
   mariadb:
     image: mariadb:11
@@ -58,10 +68,6 @@ services:
         echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config;
         echo 'PermitRootLogin no' >> /etc/ssh/sshd_config;
         ssh-keygen -A;
-        /usr/sbin/sshd -D -d -p 22;
-    volumes:
-      - ./jibri-k8s-record_home:/home/jibri-k8s-record
-      - visioreplay_data:/data/visioreplay
 
 volumes:
   visioreplay_data:

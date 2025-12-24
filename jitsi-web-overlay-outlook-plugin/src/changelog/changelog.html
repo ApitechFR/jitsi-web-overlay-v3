@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Joona Meet – Changelog</title>
+    <link rel="icon" href="/assets/icon-64.png" />
+    <style>
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f4f6f9;
+        margin: 0;
+        padding: 0;
+        color: #333;
+        display: flex;
+        flex-direction: row;
+        max-width: 1200px;
+        margin-inline: auto;
+        min-height: 100vh;
+      }
+
+      .menu {
+        width: 220px;
+        background-color: #ffffff;
+        border-right: 1px solid #ddd;
+        padding: 2rem 1rem;
+        position: sticky;
+        top: 0;
+        align-self: flex-start;
+        display: none;
+      }
+
+      .menu h3 {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+        color: #003366;
+      }
+
+      .menu ul {
+        list-style: none;
+        padding-left: 0;
+      }
+
+      .menu li {
+        margin-bottom: 0.75rem;
+      }
+
+      .menu a {
+        color: #0066cc;
+        text-decoration: none;
+        font-size: 0.95rem;
+      }
+
+      .menu a:hover {
+        text-decoration: underline;
+      }
+
+      @media (min-width: 1024px) {
+        .menu {
+          display: block;
+        }
+      }
+
+      .content {
+        flex: 1;
+        padding: 2rem;
+      }
+
+      h1 {
+        color: #005a9e;
+        font-size: 2rem;
+        margin-bottom: 1rem;
+      }
+
+      h2 {
+        color: #003366;
+        margin-top: 2rem;
+      }
+
+      ul {
+        padding-left: 1.5rem;
+      }
+
+      .back {
+        display: inline-block;
+        margin-bottom: 1.5rem;
+        color: #0066cc;
+        text-decoration: none;
+      }
+
+      .back:hover {
+        text-decoration: underline;
+      }
+
+      .page {
+        display: flex;
+        flex-direction: row;
+        min-height: 100vh;
+      }
+
+      .content-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 2rem;
+      }
+
+      footer {
+        margin-top: auto;
+        text-align: center;
+        font-size: 0.9rem;
+        color: #777;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <aside class="menu">
+        <a href="./" class="back">← Retour à l'accueil</a>
+        <h3>📋 Versions</h3>
+        <ul>
+          <li><a href="#v1.1.0">1.1.0 – Juillet 2025</a></li>
+          <li><a href="#v1.0.4">1.0.4 – Juin 2025</a></li>
+          <li><a href="#v1.0.3">1.0.3 – Avril 2025</a></li>
+          <li><a href="#v1.0.0">1.0.0 – Février 2025</a></li>
+          <li><a href="#v0.9.0">0.9.0 – Novembre 2024</a></li>
+        </ul>
+      </aside>
+      <div class="content-wrapper">
+        <div class="content">
+          <h1>📦 Changelog – Joona Meet</h1>
+          <div id="v1.1.0">
+            <h2>🆕 Version 1.1.0 – Juillet 2025</h2>
+            <ul>
+              <li>
+                <strong>Nouveau :</strong> Ajout d'une logique flexible pour la génération des noms de réunions :
+                <ul>
+                  <li>
+                    Variable <code>ROOM_NAME_PREFIX</code> pour choisir le format souhaité :
+                    <ul>
+                      <li>
+                        <strong>Nom structuré</strong> (<code>alea_name</code>) – génère un nom lisible, par exemple :
+                        <code>ChapelleVictorHugoAnalyser-5HJTXDLuHD</code>
+                      </li>
+                      <li>
+                        <strong>Préfixe fixe</strong> – utilise un préfixe personnalisé, par exemple :
+                        <code>Salle-A8X9Z12Yq</code> pour <code>ROOM_NAME_PREFIX="Salle"</code> et
+                        <code>ROOM_NAME_LENGTH=15</code>
+                      </li>
+                      <li>
+                        <strong>ID brut</strong> – génère un identifiant 100 % alphanumérique, sans préfixe, par exemple
+                        : <code>R8K2Q4Z1X9W3</code> pour <code>ROOM_NAME_PREFIX=""</code> et
+                        <code>ROOM_NAME_LENGTH=12</code>
+                      </li>
+                    </ul>
+                  </li>
+                  <li>
+                    Variable <code>ROOM_NAME_LENGTH</code> pour définir la longueur totale du nom généré (préfixe +
+                    séparateur + suffixe alphanumérique).
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+
+          <div id="v1.0.4">
+            <h2>🛠️ Version 1.0.4 – Juin 2025</h2>
+            <ul>
+              <li>
+                Retrait temporaire de la fonctionnalité d'affichage automatique du numéro Voxify et du code PIN En
+                raison d'incompatibilités techniques liées à Axios sur certaines plateformes, cette fonctionnalité a été
+                désactivée afin d'assurer une stabilité optimale de l'application. Elle sera réintégrée une fois le
+                problème résolu.
+              </li>
+            </ul>
+          </div>
+          <div id="v1.0.3">
+            <h2>🛠️ Version 1.0.3 – Avril 2025</h2>
+            <ul>
+              <li>
+                Fix de l'affichage automatique du <strong>numéro Voxify</strong> et du <strong>code PIN</strong> pour
+                rejoindre la réunion par téléphone
+              </li>
+              <li>Intégration directe des informations dans le corps du message Outlook</li>
+            </ul>
+          </div>
+          <div id="v1.0.0">
+            <h2>🔧 Version 1.0.0 – Avril 2025</h2>
+            <ul>
+              <li>Ajout de la génération de lien Jitsi dans Outlook</li>
+              <li>Interface utilisateur moderne avec Webpack + Docker</li>
+              <li>Déploiement via NGINX et reverse proxy</li>
+              <li>Ajout des pages : Accueil, Documentation, Changelog</li>
+            </ul>
+          </div>
+          <div id="v0.9.0">
+            <h2>🔧 Version 0.9.0 – Mars 2025</h2>
+            <ul>
+              <li>Structure initiale du projet avec Webpack</li>
+              <li>Première version du `manifest.xml`</li>
+              <li>Ajout du panneau `taskpane.html`</li>
+            </ul>
+          </div>
+        </div>
+        <footer>© 2025 Apitech – Tous droits réservés</footer>
+      </div>
+    </div>
+  </body>
+</html>

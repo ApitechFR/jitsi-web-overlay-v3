@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Joona Meet-dev – Accueil</title>
+    <link rel="icon" href="/assets/icon-64.png" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", sans-serif;
+        background: linear-gradient(to right, #f9fbfd, #eef2f5);
+      }
+      .wrapper {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      .content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2rem;
+      }
+      .logo {
+        width: 64px;
+        margin-bottom: 1rem;
+      }
+      h1 {
+        color: #005a9e;
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+      }
+      p {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        color: #555;
+      }
+      .buttons a {
+        display: inline-block;
+        margin: 0.5rem;
+        padding: 0.8rem 1.6rem;
+        text-decoration: none;
+        border-radius: 6px;
+        background-color: #0066cc;
+        color: white;
+        font-weight: 500;
+        transition: background-color 0.3s;
+      }
+      .buttons a:hover {
+        background-color: #004c99;
+      }
+      footer {
+        text-align: center;
+        padding: 1rem;
+        font-size: 0.9rem;
+        color: #777;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="content">
+        <div>
+          <img src="../../assets/icon-64.png" alt="Logo Joona" class="logo" />
+          <h1>Joona Meet</h1>
+          <p>Votre complément Outlook pour générer des réunions Jitsi en un clic.</p>
+          <p>Dernière version <em id="version"></em></p>
+        </div>
+
+        <div class="buttons">
+          <a id="meet">Lancer une réunion</a>
+          <a href="help">Documentation</a>
+          <a href="changelog">Changelog</a>
+        </div>
+      </div>
+      <footer>© 2025 Apitech – Tous droits réservés</footer>
+    </div>
+  </body>
+</html>

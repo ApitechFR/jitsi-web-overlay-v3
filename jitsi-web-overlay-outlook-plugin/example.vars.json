@@ -1,0 +1,11 @@
+{
+  "DIALINNUMBER_URL": "https://example.com",
+  "DIALINCONF_CODEURL": "https://example.com",
+  "ENABLED_PHONE_ACCESS": "true",
+  "JITSI_DOMAIN": "example.com",
+  "PHONE_NUMBER_FORMAT": "%phone_number%",
+  "ENABLE_MODERATOR_OPTIONS": "false",
+  "TITLE_MEETING_DETAILS": "Exemple_test",
+  "ROOM_NAME_PREFIX": "",
+  "ROOM_NAME_LENGTH": 10
+}
