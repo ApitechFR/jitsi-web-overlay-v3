@@ -13,10 +13,6 @@ stages:
   - build
 
 release_outlook_plugin:
-  rules:
-    - if: '$CI_COMMIT_TAG'
-    - if: '$CI_COMMIT_BRANCH == "release"'
-    - when: never
   stage: release
   image: node:20
   before_script:
@@ -26,15 +22,10 @@ release_outlook_plugin:
     - npx semantic-release
   only:
     - release
-    - main
   variables:
     GITLAB_TOKEN: $CI_JOB_TOKEN
 
 release_global:
-  rules:
-    - if: '$CI_COMMIT_TAG'
-    - if: '$CI_COMMIT_BRANCH == "release"'
-    - when: never
   stage: release
   image: node:20
   before_script:
@@ -43,7 +34,6 @@ release_global:
     - npx semantic-release
   only:
     - release
-    - main
   variables:
     GITLAB_TOKEN: $CI_JOB_TOKEN
 
