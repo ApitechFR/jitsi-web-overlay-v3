@@ -1,13 +1,14 @@
-import { Inject, Injectable, Logger, LoggerService } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { IConferenceService } from '../conference/interfaces/conference-service.interface';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { UsersService } from '../users/users.service';
 import { ReplayService } from '../replay/replay.service';
 import { ConfigService } from '@nestjs/config';
+import { AutomationTraceService } from './automation-trace.service';
+import { WinstonLoggerService } from '../common/services/winston-logger.service';
 
 @Injectable()
 export class AutomationService {
-    private readonly logger = new Logger(AutomationService.name);
 
     constructor(
         @Inject(IConferenceService)
@@ -15,6 +16,8 @@ export class AutomationService {
         private readonly userService: UsersService,
         private readonly replayService: ReplayService,
         private readonly configService: ConfigService,
+        private readonly traceService: AutomationTraceService,
+        private readonly logger: WinstonLoggerService,
     ) { }
 
     /**
@@ -29,12 +32,8 @@ export class AutomationService {
 
 
     /**
-     * CRON : tous les jours à 18h
-     * Expression : "0 18 * * *"
+     * Désactivation des conférences des utilisateurs inactifs
     */
-    // @Cron('0 18 * * *')
-    // @Cron(CronExpression.EVERY_DAY_AT_6PM)
-    // @Cron(CronExpression.EVERY_MINUTE)
     async runDeactivateConferences() {
         this.logger.log('[Conference] Deactivation started');
 
@@ -42,7 +41,6 @@ export class AutomationService {
 
         if (result.totalDisabled === 0) {
             this.logger.log('[Conference] No conferences to deactivate');
-            return;
         }
 
         this.logger.log(`[Conference] Deactivated count=${result.totalDisabled}`);
@@ -52,12 +50,10 @@ export class AutomationService {
     }
 
 
-    /**  * CRON : tous les jours à 18h00
-     * Expression : "0 18 * * *"
+    /**
      * Suppression des utilisateurs désactivés depuis plus de RETENTION_DAYS
      * Suppression des replays liés aux conférences des utilisateurs désactivés depuis plus de RETENTION_DAYS
     */
-    // @Cron(CronExpression.EVERY_MINUTE)
     async applyRetention() {
         const retentionDays = Number(
             this.configService.get('RETENTION_DAYS', 90),
@@ -66,9 +62,8 @@ export class AutomationService {
         const limitDate = new Date();
         limitDate.setDate(limitDate.getDate() - retentionDays);
 
-        this.logger.log(
-            `[Retention] Start – retentionDays=${retentionDays} limitDate=${limitDate.toISOString()}`,
-        );
+        this.logger.log(`[Retention] Start – retention days = ${retentionDays}`);
+        this.logger.log(`[Retention] deactivation limite date = ${limitDate.toLocaleString('fr-FR', {timeZone: 'Europe/Paris'})}`);
 
         const usersResult = await this.userService.deleteDeactivatedUsers(limitDate);
 
@@ -79,15 +74,16 @@ export class AutomationService {
         const replaysResult = await this.replayService.deleteReplaysByDeactivatedConferences(limitDate);
 
         this.logger.log(
-            `[Retention][Replays] deleted=${replaysResult.totalDeleted} conferences=${replaysResult.deletedConferenceUids.join(', ')}`,
+            `[Retention][Replays] totalDeleted=${replaysResult.totalDeleted} details=` +
+            replaysResult.byConference
+                .map(c => `${c.conferenceUid}:${c.count}`)
+                .join(', '),
         );
 
         this.logger.log('[Retention] Finished');
     }
 
-
-
-    // @Cron('0 18 * * *')
+    @Cron('0 18 * * *')
     // @Cron(CronExpression.EVERY_MINUTE)
     async dailyAutomation() {
         this.logger.log('=== DAILY AUTOMATION START ===');
@@ -95,6 +91,39 @@ export class AutomationService {
         await this.runDeactivateConferences();
         await this.applyRetention();
 
-        this.logger.log('=== DAILY AUTOMATION END ===');
+        this.logger.log('=== DAILY AUTOMATION END ===\n');
     }
+
+    // @Cron('0 18 * * *')
+    // @Cron(CronExpression.EVERY_MINUTE)
+    // async dailyAutomation() {
+    //     this.logger.log('=== DAILY AUTOMATION START ===');
+
+        // const executionDate = new Date();
+
+        // const confResult = await this.runDeactivateConferences();
+
+        // const retentionDays = Number(
+        //     this.configService.get('RETENTION_DAYS', 90),
+        // );
+
+        // const limitDate = new Date();
+        // limitDate.setDate(limitDate.getDate() - retentionDays);
+
+        // const { users, replays } = await this.applyRetention();
+
+        // await this.runDeactivateConferences();
+        // await this.applyRetention();
+
+        // this.traceService.writeTraceIfNeeded({
+        //     executionDate,
+        //     retentionDays,
+        //     retentionLimitDate: limitDate,
+        //     disabledConferences: confResult.disabledConferences,
+        //     deletedUsers: users.deletedUserUids,
+        //     deletedReplaysByConference: replays.byConference,
+        // });
+
+    //     this.logger.log('=== DAILY AUTOMATION END ===\n');
+    // }
 }

@@ -228,37 +228,45 @@ export class ReplayService {
         return { path: decodedPath, stat, safeFilename };
     }
 
-    async deleteReplaysByDeactivatedConferences(date: Date): Promise<{ totalDeleted: number; deletedConferenceUids: string[]; }> {
-        const conferences = await this.replayRepository.query(
+    async deleteReplaysByDeactivatedConferences(date: Date): Promise<{ totalDeleted: number; byConference: { conferenceUid: string; count: number }[]; }> {
+        const rows = await this.replayRepository.query(
             `
-            SELECT DISTINCT c.uid
-            FROM conferences c
-            JOIN replay r ON r.conference_uid = c.uid
+            SELECT r.conference_uid AS conferenceUid, COUNT(*) AS count
+            FROM replay r
+            JOIN conferences c ON c.uid = r.conference_uid
             WHERE c.is_active = 0
-            AND c.desactivated_at < ?
+              AND c.desactivated_at < ?
+            GROUP BY r.conference_uid
             `,
             [date],
         );
 
-        const conferenceUids = conferences.map((c: any) => c.uid);
-
-        if (!conferenceUids.length) {
+        if (!rows.length) {
             return {
                 totalDeleted: 0,
-                deletedConferenceUids: [],
+                byConference: [],
             };
         }
 
-        // Supprimer les replays des conferences désactivées
-        const result = await this.replayRepository
+        const conferenceUids = rows.map(r => r.conferenceUid);
+
+        await this.replayRepository
             .createQueryBuilder()
             .delete()
             .where('conference_uid IN (:...uids)', { uids: conferenceUids })
             .execute();
 
+        const totalDeleted = rows.reduce(
+            (sum, r) => sum + Number(r.count),
+            0,
+        );
+
         return {
-            totalDeleted: result.affected || 0,
-            deletedConferenceUids: conferenceUids,
+            totalDeleted,
+            byConference: rows.map(r => ({
+                conferenceUid: r.conferenceUid,
+                count: Number(r.count),
+            })),
         };
     }
 }
