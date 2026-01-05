@@ -6,6 +6,7 @@ const dotenv = require("dotenv");
 const webpack = require("webpack");
 
 dotenv.config(); // Charger les variables d'environnement depuis .env
+console.log("ADDIN_BASE_URL lu par Webpack:", process.env.ADDIN_BASE_URL);
 
 const urlDev = "https://localhost:3000/";
 const urlProd = process.env.ADDIN_BASE_URL;
@@ -107,6 +108,17 @@ module.exports = async (env, options) => {
       new webpack.DefinePlugin({
         "process.env": JSON.stringify({
           ADDIN_BASE_URL: process.env.ADDIN_BASE_URL,
+          ROOM_NAME_LENGTH: process.env.ROOM_NAME_LENGTH,
+          ROOM_NAME_PREFIX: process.env.ROOM_NAME_PREFIX,
+          ROOM_NAME_MODE: process.env.ROOM_NAME_MODE,
+          DIALINNUMBER_URL: process.env.DIALINNUMBER_URL,
+          DIALINCONFCODE_URL: process.env.DIALINCONFCODE_URL,
+          ENABLE_PHONE_ACCESS: process.env.ENABLE_PHONE_ACCESS,
+          JITSI_DOMAIN: process.env.JITSI_DOMAIN,
+          PHONE_NUMBER_FORMAT: process.env.PHONE_NUMBER_FORMAT,
+          ENABLE_MODERATOR_OPTIONS: process.env.ENABLE_MODERATOR_OPTIONS,
+          TITLE_MEETING_DETAILS: process.env.TITLE_MEETING_DETAILS,
+          DEBUG: process.env.DEBUG,
         }),
       }),
     ],

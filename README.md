@@ -272,6 +272,81 @@ APP_LIGHTVISIOLOGOHEADER=/assets/client-resources/logo-header-light.png
 - Consultez la documentation des variables pour adapter votre configuration.
 
 ---
+## Convention de nommage Git (tous modules)
+
+Ce monorepo utilise [semantic-release](https://semantic-release.gitbook.io/semantic-release/) pour l'automatisation des versions et des changelogs. Les conventions de nommage des commits et branches sont donc importantes pour garantir un versionnement cohérent dans tous les dossiers (backend, frontend, plugin Outlook, etc.).
+
+### Convention de nommage des commits (Conventional Commits)
+
+Les messages de commit doivent suivre la spécification [Conventional Commits](https://www.conventionalcommits.org/fr/v1.0.0/), basée sur le preset **Angular** :
+
+- **Format général** :
+	```
+	<type>[optional scope]: <description>
+	[optional body]
+	[optional footer(s)]
+	```
+
+- **Types principaux** :
+	- `feat` : ajout d'une nouvelle fonctionnalité
+	- `fix` : correction de bug
+	- `docs` : documentation uniquement
+	- `style` : changements de formatage (indentation, espaces, etc.) sans modification du code
+	- `refactor` : refactoring du code sans ajout de fonctionnalité ni correction de bug
+	- `perf` : amélioration des performances
+	- `test` : ajout ou modification de tests
+	- `chore` : tâches diverses (build, outils, dépendances, etc.)
+
+- **Scope recommandé** :
+	- Pour le plugin Outlook, utilisez le scope `plugin` pour les changements spécifiques à l'add-in Outlook (ex : `feat(plugin): ...`).
+	- Pour les autres modules, utilisez un scope pertinent (`auth`, `conference`, etc.)
+
+- **Exemples** :
+	- `feat(auth): ajout de l'authentification OIDC`
+	- `fix(conference): correction du bug d'affichage`
+	- `feat(plugin): ajout de la génération automatique de lien (Outlook)`
+	- `fix(plugin): correction du bug d'affichage du bouton (Outlook)`
+	- `docs: mise à jour du README`
+	- `chore(deps): mise à jour des dépendances`
+
+- **Breaking change** :
+	Ajouter un bloc `BREAKING CHANGE:` dans le corps ou le pied du commit pour signaler une modification majeure.
+	```
+	feat(api): changement de l'endpoint d'authentification
+
+	BREAKING CHANGE: l'ancien endpoint /login n'est plus supporté
+	```
+
+### Convention de nommage des branches
+
+- **Backend/Frontend**
+	- Branches principales :
+		- `main` : production
+		- `release` : pré-release (rc)
+	- Branches de développement :
+		- `feat/<sujet>` pour une nouvelle fonctionnalité
+		- `fix/<sujet>` pour une correction de bug
+		- `chore/<sujet>` pour une tâche technique
+	- Exemples :
+		- `feat/auth-oidc`
+		- `fix/affichage-conference`
+		- `chore/maj-deps`
+
+- **Plugin Outlook**
+	- Branches principales :
+		- `main` : production
+		- `dev` : développement
+		- `master` : (supportée pour compatibilité)
+	- Branches de développement :
+		- `feat/<sujet>` pour une nouvelle fonctionnalité
+		- `fix/<sujet>` pour une correction de bug
+		- `chore/<sujet>` pour une tâche technique
+	- Exemples :
+		- `feat/generation-lien-automatique`
+		- `fix/affichage-bouton`
+		- `chore/maj-deps`
+
+Respecter ces conventions permet d'automatiser la génération du changelog et la gestion des versions via semantic-release dans tous les modules du projet.
 
 
 ## Notes

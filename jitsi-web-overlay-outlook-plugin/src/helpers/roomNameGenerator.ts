@@ -1,6 +1,16 @@
 
+
 import roomData from "../utils/roomData.json";
 const vars = require("../../vars.json");
+
+// Charger dotenv si disponible (utile pour tests ou exécution directe Node)
+try {
+  require('dotenv').config();
+} catch (e) { }
+
+function getEnvOrVar(key, fallback) {
+  return process.env[key] || vars[key] || fallback;
+}
 
 function randomAlphanumString(length) {
   return _randomString(length, roomData.ALPHANUM);
@@ -24,8 +34,8 @@ function randomElementFlush(arr) {
 
 // Génération classique (frontend/backend)
 function generateClassicRoomName() {
-  const minLength = Number(vars.ROOM_NAME_LENGTH) || 10;
-  const maxLength = Number(vars.ROOM_NAME_LENGTH) || 10;
+  const minLength = Number(getEnvOrVar('ROOM_NAME_LENGTH', 10));
+  const maxLength = Number(getEnvOrVar('ROOM_NAME_LENGTH', 10));
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   let name = "";
   do {
@@ -37,8 +47,8 @@ function generateClassicRoomName() {
 
 // Génération plugin (structurée)
 function generatePluginRoomName() {
-  const prefix = vars.ROOM_NAME_PREFIX ?? "alea_name";
-  const totalSize = Number(vars.ROOM_NAME_LENGTH) || 30;
+  const prefix = getEnvOrVar('ROOM_NAME_PREFIX', 'alea_name');
+  const totalSize = Number(getEnvOrVar('ROOM_NAME_LENGTH', 30));
   if (prefix === "alea_name" || !prefix) {
     const place = randomElementFlush(roomData.PLACE);
     const noun = randomElementFlush(roomData.PLURALNOUN);
@@ -58,7 +68,7 @@ function generatePluginRoomName() {
 
 // Fonction principale avec choix du mode
 export function generateRoomName() {
-  const mode = vars.ROOM_NAME_MODE || "plugin";
+  const mode = getEnvOrVar('ROOM_NAME_MODE', 'plugin');
   if (mode === "classic") {
     return generateClassicRoomName();
   }
