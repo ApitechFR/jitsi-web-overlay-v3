@@ -26,6 +26,7 @@ import Error from './features/webconf/pages/Error/Error';
 import MuiDsfrThemeProvider from '@codegouvfr/react-dsfr/mui';
 import PlanDuSite from './features/webconf/pages/PlanDuSite/PlanDuSite';
 import Profile from './features/visiobyapitech/pages/Profile/Profile';
+import WebinarInvitePage from './features/visiobyapitech/pages/webinar/WebinarInvitePage';
 import Dashboard from './features/visiobyapitech/pages/Dashboard/Dashboard';
 import LayoutJoona from './features/visiobyapitech/components/Layout/LayoutJoona';
 import HomeJoona from './features/visiobyapitech/pages/Home/HomeJoona';
@@ -194,6 +195,7 @@ function AppInner() {
     <MuiDsfrThemeProvider>
       <RouteThemeController />
       <Routes>
+        <Route path="/webinar/invite/:token" element={<WebinarInvitePage />} />
         {AppTemplate === 'joona' && (
           <>
             <Route
@@ -296,6 +298,7 @@ function AppInner() {
             <Route path="/logout/callback" element={<LogoutCallback />} />
 
             <Route path="/" element={<Layout />}>
+
               <Route
                 index
                 element={

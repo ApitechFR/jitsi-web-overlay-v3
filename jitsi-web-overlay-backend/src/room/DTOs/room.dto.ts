@@ -2,15 +2,15 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class CreateRoomDTO {
-    @ApiProperty()
-    @IsString()
-    @IsNotEmpty()
-    name: string;
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  name: string;
 
-    @ApiProperty()
-    @IsOptional()
-    @IsUUID()
-    created_by: string;
+  @ApiProperty()
+  @IsOptional()
+  @IsUUID()
+  created_by?: string;
 }
 
 export class UpdateRoomDTO {

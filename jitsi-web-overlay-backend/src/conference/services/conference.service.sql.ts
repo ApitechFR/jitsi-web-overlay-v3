@@ -450,13 +450,22 @@ export class ConferenceServiceSQL implements IConferenceService {
     return true;
   }
 
-  generateJitsiJwt(user: any, moderator: boolean, roomName: string) {
+  generateJitsiJwt(user: any, moderator: boolean, roomName: string, isWebinar?: boolean) {
+
+    if (isWebinar && !moderator) {
+      // spectateur webinar
+      console.log("service generateJitsiJwt - isWebinar true & !moderator (visitor)", { user, moderator, roomName, isWebinar });
+      return this.jitsiJwtService.generateWebinarViewerJwt(user, roomName);
+    }
+    // Speaker or normal user
+    console.log("service generateJitsiJwt - moderator or not webinar", { user, moderator, roomName, isWebinar });
     return this.jitsiJwtService.generateJitsiJwt(user, moderator, roomName);
+
   }
 
   /**
-  * Cron job : toutes les minutes, on vérifie les conférences actives.
-  * Si participants = 0, on met end_time et on termine la conférence.
+  * Cron job: every minute, check active conferences.
+  * If participants = 0, set end_time and close the conference.
   */
   @Cron(CronExpression.EVERY_MINUTE)
   async closeEmptyConferences() {

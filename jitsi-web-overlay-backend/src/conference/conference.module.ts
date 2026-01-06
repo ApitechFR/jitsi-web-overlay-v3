@@ -22,6 +22,7 @@ import { RoomModule } from '../room/room.module';
 import { Room } from '../room/entities/room.entity';
 import { ProsodyRuntimeService } from '../prosody/prosody-runtime.service';
 import { ParticipantModule } from '../participant/participant.module';
+import { WebinarModule } from '../webinar/webinar.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { ParticipantModule } from '../participant/participant.module';
     ProsodyModule,
     RoomModule,
     ParticipantModule,
+    WebinarModule,
     ...(process.env.DB_TYPE === 'mongodb'
       ? [
         MongooseModule.forFeature([

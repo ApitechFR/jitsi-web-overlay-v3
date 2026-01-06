@@ -12,7 +12,7 @@ export class Room {
     @Column()
     name: string;
 
-    @Column()
+    @Column({ nullable: true })
     created_by: string;
 
     @UpdateDateColumn()

@@ -26,6 +26,7 @@ export type FrontConfig = {
     VITE_APP_FAQ_URL?: string;
     VITE_APP_TITLE?: string;
     VITE_APP_FAVICON_URL?: string;
+    VITE_IS_WEBINAR_ENABLED?: boolean | string;
 };
 
 let cached: FrontConfig | null = null;

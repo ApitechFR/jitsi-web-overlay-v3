@@ -22,6 +22,7 @@ import { ReplayModule } from './replay/replay.module';
 import { RoomModule } from './room/room.module';
 import { dataSourceOptions } from '../db/datasource';
 import { ParticipantModule } from './participant/participant.module';
+import { WebinarModule } from './webinar/webinar.module';
 
 
 @Module({
@@ -88,6 +89,7 @@ import { ParticipantModule } from './participant/participant.module';
     ReplayModule,
     RoomModule,
     ParticipantModule,
+    WebinarModule,
   ],
   controllers: [AppController],
   providers: [AppService, RoomNameValidator],

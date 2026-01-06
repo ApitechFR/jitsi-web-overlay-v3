@@ -12,6 +12,7 @@ import {
   Query,
   Header,
   UseGuards,
+  Inject as NestInject,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -35,6 +36,8 @@ import { JwtAuthGuard } from '../authentication/jwt-auth.guard';
 import { Roles } from '../authentication/roles.decorator';
 import { RolesGuard } from '../authentication/roles.guard';
 
+import { WebinarService } from '../webinar/webinar.service';
+
 interface AuthenticatedRequest extends Request {
   user?: any;
 }
@@ -45,10 +48,12 @@ export class ConferenceController {
   constructor(
     @Inject(IConferenceService)
     private readonly conferenceService: IConferenceService,
-    private readonly prosodyRuntimeService: ProsodyRuntimeService
+    private readonly prosodyRuntimeService: ProsodyRuntimeService,
+    @NestInject(WebinarService)
+    private readonly webinarService: WebinarService,
   ) { }
 
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   @Post('conferences')
   @ApiOkResponse({ description: 'Conférence créée avec succès' })
   async create(@Body() dto: CreateConferenceDTO) {
@@ -218,6 +223,19 @@ export class ConferenceController {
   }
 
   // @UseGuards(JwtAuthGuard)
+  // @Post('conferences/:roomName/tokens/jitsi')
+  // @Header('Cache-Control', 'no-store')
+  // async createJitsiToken(
+  //   @Param('roomName') roomName: RoomNameDto['roomName'],
+  //   @Req() req: AuthenticatedRequest,
+  //   @Body('isWebinar') isWebinar?: boolean
+  // ) {
+  //   const user = req.user;
+  //   const isModerator = this.conferenceService.isUserModerator(user, roomName);
+  //   const { token, exp } = await this.conferenceService.generateJitsiJwt(user, isModerator, roomName, isWebinar);
+  //   console.log({ user, roomName, isWebinar, isModerator, token, exp });
+  //   return { token, exp, moderator: isModerator };
+  // }
   @Post('conferences/:roomName/tokens/jitsi')
   @Header('Cache-Control', 'no-store')
   async createJitsiToken(
@@ -227,9 +245,30 @@ export class ConferenceController {
 
     const user = req.user;
     const isModerator = this.conferenceService.isUserModerator(user, roomName);
-
     const { token, exp } = await this.conferenceService.generateJitsiJwt(user, isModerator, roomName);
-
     return { token, exp, moderator: isModerator };
+  }
+
+  /**
+ * Generate a Jitsi JWT for a visitor (unauthenticated)
+ * Publicly accessible to generate a visitor link
+ */
+  @Post('conferences/:roomName/tokens/jitsi-visitor')
+  @Header('Cache-Control', 'no-store')
+  async createJitsiVisitorToken(
+    @Param('roomName') roomName: RoomNameDto['roomName'],
+    @Body() body: any
+  ) {
+    // Check if webinar mode is enabled
+    if (process.env.IS_WEBINAR_ENABLED !== 'true') {
+      return { error: 'Webinar mode is disabled' };
+    }
+
+    // Generate a Jitsi JWT for a visitor (no user, no moderator)
+    const { token: jwt, exp } = await this.conferenceService.generateJitsiJwt(undefined, false, roomName, true);
+    // Create a short invitation
+    const invitation = await this.webinarService.createInvitation(roomName, jwt, 'visitor');
+    // Return the invitation token and expiration
+    return { invitationToken: invitation.token, expiresAt: invitation.expiresAt };
   }
 }

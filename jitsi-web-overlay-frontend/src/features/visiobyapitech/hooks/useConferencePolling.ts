@@ -41,7 +41,7 @@ export function useConferencePolling({
         }
     }, []);
 
-    const pollRoomUntilStarted = useCallback(async (room: string) => {
+    const pollRoomUntilStarted = useCallback(async (room: string, isWebinar?: boolean) => {
         if (cancelledRef.current) return;
         const isActive = await getRoomStateFromBackend(room);
         if (isActive) {
@@ -52,12 +52,18 @@ export function useConferencePolling({
             return;
         }
         backoffRef.current = Math.min(backoffRef.current + 2000, 30000);
-        timerRef.current = window.setTimeout(() => pollRoomUntilStarted(room), backoffRef.current) as unknown as number;
+        timerRef.current = window.setTimeout(() => pollRoomUntilStarted(room, isWebinar), backoffRef.current) as unknown as number;
     }, [clearTimer, getRoomStateFromBackend, onConferenceStarted]);
 
-    const runFirstCheckThenMaybeWait = useCallback(async (room: string) => {
+    const runFirstCheckThenMaybeWait = useCallback(async (room: string, isWebinar?: boolean) => {
         if (phase !== 'idle') return;
         if (!isValidConferenceName(room)) return;
+        // Si mode webinaire, skipper l'attente
+        if (isWebinar) {
+            setPhase('idle');
+            onConferenceStarted(room);
+            return;
+        }
         cancelledRef.current = true;
         clearTimer();
         setIsWaiting(false);
@@ -72,7 +78,7 @@ export function useConferencePolling({
         setPhase('waiting');
         setIsWaiting(true);
         if (onWaitingStart) onWaitingStart();
-        pollRoomUntilStarted(room);
+        pollRoomUntilStarted(room, isWebinar);
     }, [phase, isValidConferenceName, clearTimer, getRoomStateFromBackend, onConferenceStarted, onWaitingStart, pollRoomUntilStarted]);
 
     const stopPolling = useCallback(() => {
