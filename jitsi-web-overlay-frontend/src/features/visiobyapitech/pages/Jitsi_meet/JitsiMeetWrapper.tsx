@@ -6,8 +6,7 @@ import { validateConferenceName } from '../../../../utils/conferenceName';
 import CircularProgress from '@mui/material/CircularProgress';
 import Header from '../../components/Header/HeaderVisio';
 import styles from './JitsiMeetWrapper.module.css';
-import { useApi } from '@/api';
-import { ConferenceService } from '@/api';
+import { ConferenceService, useApi } from '@/api';
 import { useRuntimeConfig } from '../../../../config/ConfigProvider';
 
 type JwtResponse =
@@ -45,14 +44,14 @@ const JitsiMeetWrapper: React.FC = () => {
     }
   }, [validRoom, status, authenticated, conferenceName, navigate, location.state]);
 
-  // Récup JWT uniquement si connecté
+  // Get Jitsi JWT for authenticated users
   useEffect(() => {
     if (!validRoom) return;
     if (status === 'unknown') return;
     if (!authenticated) return;
 
     setJwtError(null);
-    fetchJitsiJwt(conferenceName!)
+    fetchJitsiJwt(conferenceName)
       .then(resp => {
         setJwtToken(resp.token);
       })
@@ -62,7 +61,6 @@ const JitsiMeetWrapper: React.FC = () => {
       });
   }, [authenticated, status, conferenceName, validRoom, fetchJitsiJwt]);
 
-  // displayName : on privilégie prénom/nom/email si présents
   const displayName = useMemo<string>(() => {
     if (authenticated) {
       const first =
@@ -128,7 +126,7 @@ const JitsiMeetWrapper: React.FC = () => {
       <div className={styles.jitsiMeetingContainer}>
         <JitsiMeetingView
           domain={domain}
-          conferenceName={conferenceName!}
+          conferenceName={conferenceName}
           jwt={jwtToken}          // undefined => invité
           displayName={displayName}
           user={user}

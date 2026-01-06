@@ -1,35 +1,49 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import { useNavigate } from 'react-router';
 
-import { handleRecordingStatus } from '@/api/services/jitsi/jitsi-recording.service';
-import { handleJibriApitechApi } from '@/api/services/jitsi/jibri.service';
-import { ConferenceService, RoomService, useApi } from '@/api';
 import type { Props } from '@/api';
+import { ConferenceService, useApi } from '@/api';
+
 import { useRuntimeConfig } from '../../../../config/ConfigProvider';
-import { ParticipantService } from '@/api/services/participants/participant.service';
-import { cleanupExpiredGuests, getStoredGuestParticipant, saveGuestParticipant } from '@/api/services/participants/participants.guests';
+import { cleanupExpiredGuests } from '@/api/services/participants/participants.guests';
+import { handleJibriApitechApi } from '@/api/services/jitsi/jibri.service';
+
+import { useJitsiModules } from '../../hooks/useJitsiModules';
+import { useConditionalJitsiToolbar } from '../../hooks/useConditionalJitsiToolbar';
+import { useConferenceJoinSync } from '../../hooks/useConferenceJoinSync';
+
+type JitsiApiLike = {
+  on: (event: string, handler: (...args: any[]) => void) => void;
+  off?: (event: string, handler: (...args: any[]) => void) => void;
+};
 
 const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displayName, user }) => {
-  const participantCountRef = useRef(0);
-  const conferenceRef = useRef<any>(null);
-  const checkVideoInterval = useRef<ReturnType<typeof setInterval> | null>(null);
-  const checkTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const myRole = useRef('');
   const navigate = useNavigate();
   const cfg = useRuntimeConfig();
 
-  // wrap des appels API avec useApi (gestion erreur/chargement centralisée)
+  const checkVideoIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const checkTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const apiRef = useRef<any>(null);
+  const handlersRegisteredRef = useRef<boolean>(false);
+
   const { run: getConfSize } = useApi(ConferenceService.getConfSize);
   const { run: setEnd } = useApi(ConferenceService.setEnd);
-  const { run: getRoomByName } = useApi(RoomService.getByName);
-  const { run: createRoom } = useApi(RoomService.create);
-  const { run: createConf } = useApi(ConferenceService.create);
-  const { run: createParticipant } = useApi(ParticipantService.create);
+
+  const { modules, loading, error } = useJitsiModules();
+  const { apply: applyToolbar } = useConditionalJitsiToolbar();
+
+  const { onVideoConferenceJoined, participantCountRef } = useConferenceJoinSync({
+    conferenceName,
+    user,
+    checkVideoIntervalRef,
+    checkTimeoutRef
+  });
 
   const enableJibriApitechApi = cfg.VITE_ENABLE_JIBRI_APITECH_API ?? '';
   const jibriApitechApiDomain = cfg.VITE_JIBRI_APITECH_API_DOMAIN ?? '';
-  const jitsiAPIOptions = (window as any).jitsiAPIOptions;
+  const jitsiAPIOptions = (globalThis as any).jitsiAPIOptions;
 
   useEffect(() => {
     cleanupExpiredGuests();
@@ -37,141 +51,97 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
 
   const onClose = () => {
     navigate('/feedback', { state: { room: conferenceName } });
-    localStorage.removeItem("conferenceName");
+    localStorage.removeItem('conferenceName');
   };
-  console.info('JitsiMeetingView render with conference:', conferenceName);
+
+  const configOverwrite = useMemo(() => {
+
+    return {
+      startWithAudioMuted: true,
+      startWithVideoMuted: true,
+      prejoinConfig: { enabled: true },
+
+      // IMPORTANT: when a module is disabled here, we also need to disable it in the backend
+      etherpad_base: modules?.etherpad ? undefined : '',
+      dialInNumbersUrl: modules?.voxify ? undefined : '',
+      dialInConfCodeUrl: modules?.voxify ? undefined : '',
+
+      transcription: { enabled: !!modules?.transcription },
+      recordingService: { enabled: !!modules?.recording },
+      whiteboard: { enabled: !!modules?.excalidraw }
+    };
+  }, [modules]);
+
+  // if modules change, re-apply toolbar
+  useEffect(() => {
+    if (apiRef.current && modules) {
+      applyToolbar(apiRef.current, modules);
+    }
+  }, [applyToolbar, modules]);
+
+  if (loading) return null;
+  if (error) return <div>Erreur chargement options Jitsi : {error}</div>;
+  if (!modules) return <div>Options Jitsi non disponibles</div>;
   return (
     <JitsiMeeting
       domain={domain}
       roomName={conferenceName}
       jwt={jwt}
       userInfo={{ displayName: displayName ?? 'Display Name', email: '' }}
-      configOverwrite={{
-        startWithAudioMuted: true,
-        startWithVideoMuted: true,
-        prejoinConfig: { enabled: true },
-      }}
-      interfaceConfigOverwrite={{}}
+      configOverwrite={configOverwrite}
       getIFrameRef={(iframeRef) => {
         iframeRef.style.width = '100%';
         iframeRef.style.height = '100%';
       }}
       onApiReady={(api) => {
-        console.info('[Jitsi] API prête');
-        localStorage.setItem("conferenceName", conferenceName);
+        apiRef.current = api;
+        localStorage.setItem('conferenceName', conferenceName);
 
+        // Merge toolbar + overwrites custom Jitsi modules
+        applyToolbar(api, modules);
+
+        // Jibri Apitech hook
         if (enableJibriApitechApi === 'true') {
           handleJibriApitechApi(jitsiAPIOptions, enableJibriApitechApi, jibriApitechApiDomain);
         }
 
-        // fin de réunion
-        api.on('readyToClose', async () => {
+        // Event handlers registration 
+        if (handlersRegisteredRef.current) return;
+        handlersRegisteredRef.current = true;
+
+        // End call
+        const onReadyToClose = async () => {
           try {
             const count = await getConfSize(conferenceName);
             participantCountRef.current = count ?? 0;
+
             if (participantCountRef.current === 0) {
               await setEnd(conferenceName, new Date().toISOString());
             }
           } catch (e) {
             console.error('[Jitsi] readyToClose error:', e);
           }
-        });
+        };
 
-        // rejoint la conf
-        api.on('videoConferenceJoined', async (evt: any) => {
-          const myId = evt.id;
+        // Join meeting
+        const onJoined = (evt: any) => {
+          onVideoConferenceJoined(api as any, evt);
+        };
 
-          // rôle du participant local
-          api.on('participantRoleChanged', (e: any) => {
-            if (e.id === myId) {
-              myRole.current = e.role;
-              handleRecordingStatus(
-                api,
-                conferenceName,
-                myRole.current,
-                checkVideoInterval.current,
-                checkTimeout.current
-              );
-            }
-          });
+        (api as JitsiApiLike).on('readyToClose', onReadyToClose);
+        (api as JitsiApiLike).on('videoConferenceJoined', onJoined);
 
-          try {
-            // si premier participant → créer la conf
-            const count = await getConfSize(conferenceName);
-            participantCountRef.current = count ?? 0;
-
-            if (participantCountRef.current === 1 && !conferenceRef.current) {
-              const room = await createRoom({ name: conferenceName, created_by: user?.uid });
-              const conf = await createConf({ room_uid: room.uid, name: conferenceName });
-
-              conferenceRef.current = conf;
-            }
-
-            //Participant connecté (user avec compte)
-            if (user?.uid) {
-              console.info('Creating participant for user:', user);
-              console.log("conferenceRef.current:", conferenceRef.current);
-              const participant = await createParticipant({
-                conferenceUid: conferenceRef.current.uid,
-                userUid: user.uid,
-                displayName: user.name,
-                role: myRole.current.toUpperCase(),
-                email: user.email,
-                phone: user.phone,
-                status: 'JOINED',
-              });
-              console.info('Participant created');
-            }
-
-            //Participant invité (pas de user compte)
-            else {
-
-              const participantsInfo = api.getParticipantsInfo();
-              const me = participantsInfo.find((p: any) => p.participantId === myId) as any;
-
-              //find conference
-              let conf = conferenceRef.current;
-              if (!conf) {
-                conf = await ConferenceService.getConferenceByName(conferenceName);
-                // if (!conf) {
-                //   const room = await createRoom({ name: conferenceName, created_by: user?.uid });
-                //   conf = await createConf({ room_uid: room.uid, name: conferenceName });
-                // }
-                conferenceRef.current = conf;
-              }
-
-              const existing = getStoredGuestParticipant(conf.uid);
-
-              if (existing) {
-                console.info('Guest already exists');
-                return;
-              }
-
-              console.log("conferenceRef.current (guest):", conferenceRef.current);
-
-              const guestName = me?.displayName + "_" + me?.participantId || 'Invité';
-              const guestEmail = me?.email || "";
-
-              const guestParticipant = await createParticipant({
-                conferenceUid: conferenceRef.current.uid,
-                displayName: guestName,
-                email: guestEmail,
-                role: myRole.current?.toUpperCase() || 'ATTENDEE',
-                status: 'INVITED',
-              });
-
-              if (guestParticipant?.uid) {
-                saveGuestParticipant(conferenceRef.current.uid, guestParticipant.uid, 24);
-                console.info("Guest participant stored in localStorage");
-              }
-
-              console.info('Participant (guest) created');
-            }
-
-          } catch (e) {
-            console.error('[Jitsi] join flow error:', e);
+        // Best-effort cleanup if the API supports off()
+        // (we cannot guarantee this callback will be called again at unmount, but it's better than nothing)
+        const tryCleanup = () => {
+          if ((api as JitsiApiLike).off) {
+            (api as JitsiApiLike).off!('readyToClose', onReadyToClose);
+            (api as JitsiApiLike).off!('videoConferenceJoined', onJoined);
           }
-        });
+        };
+
+
+        (api as any).__cleanup = tryCleanup;
       }}
       onReadyToClose={onClose}
     />

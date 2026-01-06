@@ -1,5 +1,5 @@
 import { useRef, useState, useCallback } from 'react';
-import { ConferenceService } from '../../../api/services/conference/conference.service';
+import { ConferenceService } from '@/api';
 
 export type PollingPhase = 'idle' | 'first-check' | 'waiting';
 

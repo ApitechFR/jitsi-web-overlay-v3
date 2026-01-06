@@ -1,10 +1,17 @@
 
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
+import { ConfigService } from '@nestjs/config';
+
+
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) { }
+  constructor(
+    private readonly appService: AppService,
+    private readonly configService: ConfigService
+  ) { }
+
 
   @Get('/config')
   getFrontendConfig() {
@@ -38,8 +45,22 @@ export class AppController {
     };
   }
 
+
   @Get('/health')
   getHealth() {
     return { status: 'ok' };
   }
+
+
+  @Get('/jitsi/modules')
+  getJitsiModules() {
+    return {
+      etherpad: this.configService.get('JITSI_MOD_ETHERPAD', 'false') === 'true',
+      transcription: this.configService.get('JITSI_MOD_TRANSCRIPTION', 'false') === 'true',
+      recording: this.configService.get('JITSI_MOD_RECORDING', 'false') === 'true',
+      excalidraw: this.configService.get('JITSI_MOD_EXCALIDRAW', 'false') === 'true',
+      voxify: this.configService.get('JITSI_MOD_VOXIFY', 'false') === 'true',
+    };
+  }
 }
+
