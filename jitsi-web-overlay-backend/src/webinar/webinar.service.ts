@@ -11,8 +11,9 @@ export class WebinarService {
         private readonly invitationRepo: Repository<WebinarInvitation>,
     ) { }
 
-    async createInvitation(roomName: string, jwt: string, type: string = 'visitor', expiresInMinutes = 60): Promise<WebinarInvitation> {
-        // Génère un token court unique (8 caractères hex)
+    // 1 year = 525600 minutes
+    async createInvitation(roomName: string, jwt: string, type: string = 'visitor', expiresInMinutes = 525600): Promise<WebinarInvitation> {
+        // Generate a unique token 
         let token: string;
         do {
             token = randomBytes(4).toString('hex');

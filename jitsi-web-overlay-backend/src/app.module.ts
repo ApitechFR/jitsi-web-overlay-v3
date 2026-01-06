@@ -97,6 +97,13 @@ import { WebinarModule } from './webinar/webinar.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
+    //  config et jitsi/modules
+    consumer
+      .apply(OriginMiddleware)
+      .forRoutes(
+        { path: 'config', method: RequestMethod.GET },
+        { path: 'jitsi/modules', method: RequestMethod.GET }
+      );
     consumer
       .apply(JwtOidcMiddleware)
       .forRoutes({ path: 'conferences/*', method: RequestMethod.ALL });
