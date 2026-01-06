@@ -1,9 +1,8 @@
-import React from 'react';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 /**
  * Generic hook for making API calls with loading and error management.
- * @param fetcher Asynchronous function that returns the data (e.g., () => fetch(...))
+ * @param fetcher Asynchronous function that returns the data to fetch
  * @param immediate If true, triggers the fetch on mount
  */
 export function useApiFetch<T = any>(
@@ -31,7 +30,7 @@ export function useApiFetch<T = any>(
     }, [fetcher]);
 
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (immediate) {
             execute();
         }
