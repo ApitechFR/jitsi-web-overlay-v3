@@ -18,7 +18,13 @@ export * from './services/participants/participants.types';
 export * from './services/participants/participants.types';
 export * from './services/participants/participants.types';
 export * from './services/webinar/webinar.service';
+export * from './services/jitsi/jitsi-modules.service';
+export * from './services/jitsi/jitsi.types';
 //export * from './services/webinar/webinar.types';
+
+
+
+
 
 
 
