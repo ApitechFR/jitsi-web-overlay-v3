@@ -4,7 +4,6 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { UsersService } from '../users/users.service';
 import { ReplayService } from '../replay/replay.service';
 import { ConfigService } from '@nestjs/config';
-import { AutomationTraceService } from './automation-trace.service';
 import { WinstonLoggerService } from '../common/services/winston-logger.service';
 
 @Injectable()
@@ -16,7 +15,6 @@ export class AutomationService {
         private readonly userService: UsersService,
         private readonly replayService: ReplayService,
         private readonly configService: ConfigService,
-        private readonly traceService: AutomationTraceService,
         private readonly logger: WinstonLoggerService,
     ) { }
 
@@ -93,37 +91,4 @@ export class AutomationService {
 
         this.logger.log('=== DAILY AUTOMATION END ===\n');
     }
-
-    // @Cron('0 18 * * *')
-    // @Cron(CronExpression.EVERY_MINUTE)
-    // async dailyAutomation() {
-    //     this.logger.log('=== DAILY AUTOMATION START ===');
-
-        // const executionDate = new Date();
-
-        // const confResult = await this.runDeactivateConferences();
-
-        // const retentionDays = Number(
-        //     this.configService.get('RETENTION_DAYS', 90),
-        // );
-
-        // const limitDate = new Date();
-        // limitDate.setDate(limitDate.getDate() - retentionDays);
-
-        // const { users, replays } = await this.applyRetention();
-
-        // await this.runDeactivateConferences();
-        // await this.applyRetention();
-
-        // this.traceService.writeTraceIfNeeded({
-        //     executionDate,
-        //     retentionDays,
-        //     retentionLimitDate: limitDate,
-        //     disabledConferences: confResult.disabledConferences,
-        //     deletedUsers: users.deletedUserUids,
-        //     deletedReplaysByConference: replays.byConference,
-        // });
-
-    //     this.logger.log('=== DAILY AUTOMATION END ===\n');
-    // }
 }
