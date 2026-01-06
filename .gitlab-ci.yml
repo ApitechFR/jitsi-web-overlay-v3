@@ -91,7 +91,7 @@ docker-build-backend:
           --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-backend:${SHA_TAG}"
       else
         DESTINATIONS="\
-          --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-backend:main \
+          --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-backend:${CI_COMMIT_BRANCH} \
           --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-backend:${SHA_TAG}"
       fi
 
@@ -129,7 +129,7 @@ docker-build-frontend:
           --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-frontend:${SHA_TAG}"
       else
         DESTINATIONS="\
-          --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-frontend:main \
+          --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-frontend:${CI_COMMIT_BRANCH} \
           --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-frontend:${SHA_TAG}"
       fi
 
