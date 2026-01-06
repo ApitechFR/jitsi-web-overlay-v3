@@ -15,6 +15,7 @@ import { HttpModule } from '@nestjs/axios';
 import { ProsodyModule } from '../prosody/prosody.module';
 import { RoomModule } from '../room/room.module';
 import { ParticipantModule } from '../participant/participant.module';
+import { WinstonLoggerService } from '../common/services/winston-logger.service';
 
 
 @Module({
@@ -30,6 +31,7 @@ import { ParticipantModule } from '../participant/participant.module';
   ],
   providers: [
     AutomationService,
+    WinstonLoggerService,
   ]
 })
 export class AutomationModule { }
