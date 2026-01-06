@@ -6,8 +6,7 @@ import { validateConferenceName } from '../../../../utils/conferenceName';
 import CircularProgress from '@mui/material/CircularProgress';
 import Header from '../../components/Header/HeaderVisio';
 import styles from './JitsiMeetWrapper.module.css';
-import { useApi } from '@/api';
-import { ConferenceService } from '@/api';
+import { ConferenceService, useApi } from '@/api';
 import { useRuntimeConfig } from '../../../../config/ConfigProvider';
 
 type JwtResponse =
@@ -60,7 +59,7 @@ const JitsiMeetWrapper: React.FC<JitsiMeetWrapperProps> = (props) => {
     if (status === 'unknown') return;
     if (!authenticated) return;
     setJwtError(null);
-    fetchJitsiJwt(conferenceName!)
+    fetchJitsiJwt(conferenceName)
       .then(resp => {
         setJwtToken(resp.token);
       })

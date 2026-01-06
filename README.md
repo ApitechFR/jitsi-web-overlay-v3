@@ -75,6 +75,20 @@ Variables principales :
 
 Les variables d'environnement permettent de configurer le comportement du backend et du frontend sans modifier le code. Elles sont chargées au démarrage par le backend (NestJS) via la librairie dotenv et par le frontend (Vite) via le système `import.meta.env`.
 
+#### Modules Jitsi activables (JITSI_MOD_*)
+
+Les variables d'environnement commençant par `JITSI_MOD_` permettent d'activer ou de désactiver dynamiquement certains modules/fonctionnalités de Jitsi Meet dans l'application :
+
+- `JITSI_MOD_ETHERPAD` : Active le module Etherpad (document partagé collaboratif). Si désactivé, le bouton "Document partagé" n'apparaît pas.
+- `JITSI_MOD_TRANSCRIPTION` : Active la transcription automatique des conversations (si le service est disponible côté serveur).
+- `JITSI_MOD_RECORDING` : Active la possibilité d'enregistrer la réunion (Jibri ou service équivalent requis côté serveur).
+- `JITSI_MOD_EXCALIDRAW` : Active le tableau blanc collaboratif (Excalidraw).
+- `JITSI_MOD_VOXIFY` : Active l'intégration Voxify (numéros d'appel téléphonique).
+
+Chaque variable attend la valeur `true` (activé) ou `false` (désactivé). Par défaut, toutes sont à `false` pour éviter d'afficher des boutons ou options non fonctionnelles si le service n'est pas disponible côté serveur.
+
+Ces variables sont prises en compte côté backend (API) et frontend (UI) pour afficher ou masquer dynamiquement les fonctionnalités correspondantes dans l'interface Jitsi.
+
 #### Backend
 - Les variables sont accessibles dans le code via `process.env.<NOM>` ou via le service de configuration NestJS (`configService.get('<NOM>')`).
 	- `JITSI_JITSIJWT_ISS`, `JITSI_JITSIJWT_SECRET`, etc. sont utilisées pour générer et vérifier les tokens JWT pour Jitsi.
@@ -118,6 +132,11 @@ Les variables d'environnement permettent de configurer le comportement du backen
 | PROSODY_DOMAIN | Domaine Prosody | `prosody.example.com` | Obligatoire | (aucune) |
 | PROSODY_AVAILABLE_INSTANCES | Instances Prosody (séparées par une virgule) | `prosody1.example.com prosody2.example.com` | Obligatoire | (aucune) |
 | JICOFO_AVAILABLE_INSTANCES | Instances Jicofo (séparées par une virgule) | `jicofo1.example.com jicofo2.example.com` | Obligatoire | (aucune) |
+| JITSI_MOD_ETHERPAD | Active le module Etherpad (document partagé) | `true` ou `false` | Optionnelle | false |
+| JITSI_MOD_TRANSCRIPTION | Active le module de transcription | `true` ou `false` | Optionnelle | false |
+| JITSI_MOD_RECORDING | Active le module d'enregistrement | `true` ou `false` | Optionnelle | false |
+| JITSI_MOD_EXCALIDRAW | Active le module tableau blanc (Excalidraw) | `true` ou `false` | Optionnelle | false |
+| JITSI_MOD_VOXIFY | Active le module Voxify (numéros d'appel) | `true` ou `false` | Optionnelle | false |
 | MONGO_URI | URI MongoDB | `mongodb://user:pass@host:port/dbname` | Obligatoire si DB_TYPE=mongodb | (aucune) |
 | EMAIL_FROM | Adresse email d'envoi | `noreply@example.com` | Optionnelle | (aucune) |
 | EMAIL_SUBJECT | Sujet de l'email | `Invitation à la réunion` | Obligatoire | (aucune) |

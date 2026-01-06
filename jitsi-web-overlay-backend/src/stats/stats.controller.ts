@@ -1,6 +1,9 @@
 import { StatsService } from './stats.service';
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiResponse } from '@nestjs/swagger';
+import { Roles } from '../authentication/roles.decorator';
+import { JwtAuthGuard } from '../authentication/jwt-auth.guard';
+import { RolesGuard } from '../authentication/roles.guard';
 
 @Controller('stats')
 export class StatsController {
@@ -19,6 +22,8 @@ export class StatsController {
     return this.statsService.homePageStats();
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Get('/realtime')
   @ApiResponse({
     status: 200,
