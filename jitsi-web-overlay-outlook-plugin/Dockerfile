@@ -24,6 +24,10 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm ci && npm cache clean --force
 
+COPY . .
+
+RUN ls -lR /usr/src/app/src
+
 
 
 # Génère dynamiquement un .env minimal pour le build Webpack
@@ -41,7 +45,8 @@ RUN echo "ADDIN_BASE_URL=$ADDIN_BASE_URL" > .env \
     && echo "PLUGIN_PORT=$PLUGIN_PORT" >> .env
 
 
-RUN npm run build
+ENV ADDIN_BASE_URL=$ADDIN_BASE_URL
+RUN ADDIN_BASE_URL=$ADDIN_BASE_URL npm run build
 
 RUN npm prune --production && npm cache clean --force
 
