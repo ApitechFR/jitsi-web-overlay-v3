@@ -22,6 +22,8 @@ import { ReplayModule } from './replay/replay.module';
 import { RoomModule } from './room/room.module';
 import { dataSourceOptions } from '../db/datasource';
 import { ParticipantModule } from './participant/participant.module';
+import { AutomationModule } from './automation/automation.module';
+import { LdapModule } from './ldap/ldap.module';
 
 
 @Module({
@@ -88,6 +90,8 @@ import { ParticipantModule } from './participant/participant.module';
     ReplayModule,
     RoomModule,
     ParticipantModule,
+    AutomationModule,
+    LdapModule,
   ],
   controllers: [AppController],
   providers: [AppService, RoomNameValidator],

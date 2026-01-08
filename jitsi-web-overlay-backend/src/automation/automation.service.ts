@@ -81,7 +81,7 @@ export class AutomationService {
         this.logger.log('[Retention] Finished');
     }
 
-    @Cron(CronExpression.EVERY_DAY_AT_6PM)
+    @Cron(CronExpression.EVERY_DAY_AT_6PM, {timeZone: 'Europe/Paris'})
     // @Cron(CronExpression.EVERY_MINUTE)
     async dailyAutomation() {
         this.logger.log('=== DAILY AUTOMATION START ===');

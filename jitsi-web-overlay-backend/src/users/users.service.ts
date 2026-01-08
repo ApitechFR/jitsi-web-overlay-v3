@@ -5,13 +5,15 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/users.entity';
-import { LessThan, Repository } from 'typeorm';
+import { In, LessThan, Repository } from 'typeorm';
+import { LdapService } from '../ldap/ldap.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private readonly ldapService: LdapService,
   ) { }
 
   // Create user
@@ -122,4 +124,89 @@ export class UsersService {
 
     return await this.userRepository.save(user);
   }
+
+
+  //-------------------------------------------------------------------------
+
+  async findAllLDAP() {
+    const users = await this.ldapService.getAllUsers();
+    return users.map(u => ({
+      uid: u.uidNumber,
+      name: u.cn,
+      email: u.Email,
+    }));
+  }
+
+  async deactivateUsersWithExpiredPassword(
+    externalUsers: any[],
+  ): Promise<{ checked: number; deactivated: string[] }> {
+    const deactivatedUids: string[] = [];
+
+    for (const extUser of externalUsers) {
+      if (!this.hasExpiredPassword(extUser)) continue;
+
+      const user = await this.findByEmail(extUser.Email);
+      if (!user) continue;
+
+      const wasDeactivated = await this.deactivateUserIfNeeded(user.uid);
+      if (wasDeactivated) {
+        deactivatedUids.push(user.uid);
+      }
+    }
+
+    return {
+      checked: externalUsers.length,
+      deactivated: deactivatedUids,
+    };
+  }
+
+  private hasExpiredPassword(user: any): boolean {
+    return user.pwdEndTime !== null && user.pwdEndTime !== 0;
+  }
+
+  private async deactivateUserIfNeeded(userUid: string): Promise<boolean> {
+    const result = await this.userRepository
+      .createQueryBuilder()
+      .update()
+      .set({
+        isActive: false,
+        desactivated_at: () => 'NOW()',
+      })
+      .where('uid = :uid', { uid: userUid })
+      .andWhere('is_active = 1')
+      .andWhere('desactivated_at IS NULL')
+      .execute();
+
+    return (result.affected || 0) > 0;
+  }
+
+  async deactivateUsersByEmail(emails: string[]): Promise<{ deactivatedUids: string[] }> {
+    const users = await this.userRepository.find({
+      where: {
+        email: In(emails),
+        isActive: true,
+      },
+    });
+
+    if (!users.length) {
+      return { deactivatedUids: [] };
+    }
+
+    const deactivatedUids = users.map(u => u.uid);
+
+    await this.userRepository
+      .createQueryBuilder()
+      .update()
+      .set({
+        isActive: false,
+        desactivated_at: () => 'IFNULL(desactivated_at, NOW())',
+      })
+      .where('uid IN (:...uids)', { uids: deactivatedUids })
+      .execute();
+
+    return { deactivatedUids };
+  }
+
+
+
 }

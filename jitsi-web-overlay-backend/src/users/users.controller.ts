@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../authentication/jwt-auth.guard';
 import { Roles } from '../authentication/roles.decorator';
 import { RolesGuard } from '../authentication/roles.guard';
@@ -18,6 +18,18 @@ export class UsersController {
     @Body() userData: Partial<User>,
   ): Promise<User> {
     return this.userService.createUser(userData);
+  }
+  @Get('ldap/all')
+  async getAllUsersLDAP() {
+    return this.userService.findAllLDAP();
+  }
+
+  // Deactivate users with pwdEndTime
+  @Post('pwd-endtime/deactivate')
+  async deactivateExpiredPasswords(
+    @Body() users: any[],
+  ) {
+    return this.userService.deactivateUsersWithExpiredPassword(users);
   }
 
   // Get all user
@@ -42,5 +54,19 @@ export class UsersController {
   @Delete(":id")
   async delete(@Param("id") id: number): Promise<void> {
     return this.userService.delete(id);
+  }
+
+  @Patch(':uid/deactivate')
+  async deactivate(@Param('uid') uid: string) {
+    return this.userService.deactivateUser(uid);
+  }
+
+  @Post('deactivate/byemail')
+  async deactivateByEmail(@Body('emails') emails: string[]) {
+
+    if (!Array.isArray(emails) || emails.length === 0) {
+      throw new BadRequestException('emails must be a non-empty array');
+    }
+    return this.userService.deactivateUsersByEmail(emails);
   }
 }
