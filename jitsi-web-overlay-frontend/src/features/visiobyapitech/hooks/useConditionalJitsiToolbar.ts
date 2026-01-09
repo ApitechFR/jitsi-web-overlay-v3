@@ -36,7 +36,7 @@ export function useConditionalJitsiToolbar() {
 
         const mergedArr = Array.from(merged);
 
-        // signature => prevents re-applying in a loop
+        // sgnature to avoid re-applying the same configuration
         const signature = JSON.stringify({
             toolbar: mergedArr,
             etherpad: !!modules.etherpad,
@@ -46,10 +46,10 @@ export function useConditionalJitsiToolbar() {
         if (appliedSignatureRef.current === signature) return;
         appliedSignatureRef.current = signature;
 
-        // Préparer la configuration à appliquer
+        // Prepare the new configuration
         const overwrite: Record<string, any> = { toolbarButtons: mergedArr };
 
-        // Supprimer les propriétés si les modules sont désactivés
+        // Delete options related to disabled modules
         if (!modules.etherpad && 'etherpad_base' in currentCfg) {
             delete currentCfg.etherpad_base;
         }
@@ -58,7 +58,7 @@ export function useConditionalJitsiToolbar() {
             if ('dialInConfCodeUrl' in currentCfg) delete currentCfg.dialInConfCodeUrl;
         }
 
-        // Appliquer la configuration modifiée
+        // Apply the new configuration
         api.executeCommand('overwriteConfig', { ...overwrite, ...currentCfg });
     }, []);
 
