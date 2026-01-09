@@ -10,13 +10,19 @@ import { Item } from '../../../../utils/changelogs/Item';
 import ChangelogContent from '../IframePopup/ChangelogContent';
 import { useRuntimeConfig } from '../../../../config/ConfigProvider';
 
+import { useTranslation } from 'react-i18next';
+
 const modal = createModal({
   id: 'foo-modal',
   isOpenedByDefault: false,
 });
 
-
 export default function HeaderJoona() {
+
+  const { t, i18n } = useTranslation();
+
+  const isLangFrench = i18n.language === 'fr';
+
   const cfg = useRuntimeConfig();
   const VisioLogo = (cfg.VITE_APP_LIGHTVISIOLOGOHEADER as string) || '/assets/visiobyapitech-creme.png';
   const DarkVisioLogo = (cfg.VITE_APP_DARKVISIOLOGOHEADER as string) || '/assets/visiobyapitech-creme.png';
@@ -26,6 +32,7 @@ export default function HeaderJoona() {
   const [dataChangelog, setDataChangelog] = useState<any>(null);
   const [modalContent, setModalContent] = useState<string | null>(null);
   const [currentModalId, setCurrentModalId] = useState<string | null>(null);
+  const [currentLang, setCurrentLang] = useState<string | null>("FR");
 
   useEffect(() => {
     const changelogUrl = cfg.VITE_APP_CHANGELOG_URL || '/infos.json';
@@ -57,6 +64,10 @@ export default function HeaderJoona() {
     }
     return null;
   };
+
+  const switchLang = () => {
+    i18n.changeLanguage(isLangFrench ? 'en' : 'fr')
+  }
 
   const navItems = [
     ...(authenticated
@@ -101,6 +112,14 @@ export default function HeaderJoona() {
       },
       iconId: 'fr-icon-information-line',
       text: 'Informations',
+    },
+    {
+      buttonProps: {
+        onClick: switchLang,
+        className: 'fr-btn fr-btn--icon-left',
+      },
+      iconId: 'fr-icon-translate-2',
+      text: isLangFrench ? "FR" : "EN",
     },
     authenticated
       ? {

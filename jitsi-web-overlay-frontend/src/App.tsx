@@ -41,7 +41,8 @@ import { useAuth } from './auth/useAuth';
 import RouteThemeController from './RouteThemeController';
 import api from './axios/axios';
 
-
+/* === Import fichier de traduction === */
+import './config/i18n';
 
 /* === AJOUTS pour config runtime === */
 import { ConfigProvider, useRuntimeConfig } from './config/ConfigProvider';
