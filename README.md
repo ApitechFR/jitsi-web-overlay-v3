@@ -293,6 +293,111 @@ APP_LIGHTVISIOLOGOHEADER=/assets/client-resources/logo-header-light.png
 
 ---
 
+## 📅 Plugin Outlook (Joona Meet - Outlook Add-in)
+
+Le projet inclut un module complémentaire Outlook permettant de générer automatiquement des liens de visioconférence Joona lors de la création d'événements dans Outlook. Ce plugin est packagé dans le dossier `jitsi-web-overlay-outlook-plugin` et déployé via Docker/NGINX.
+
+### Fonctionnalités principales
+- Génération automatique de liens Jitsi dans Outlook
+- Configuration dynamique via variables d'environnement
+- Déploiement web-ready (NGINX + Docker)
+
+### Variables d'environnement spécifiques au plugin
+
+| Variable                | Description                                                                 | Exemple                                 | Obligatoire | Valeur par défaut |
+|-------------------------|-----------------------------------------------------------------------------|-----------------------------------------|-------------|-------------------|
+| ADDIN_BASE_URL          | URL de base du plugin (utilisée pour générer les liens)                      | https://localhost:8080                  | Oui         | (aucune)          |
+| PLUGIN_PORT             | Port d'exposition du plugin Outlook                                         | 5000                                    | Oui         | 5000              |
+| DIALINNUMBER_URL        | URL API pour le numéro d'appel (dial-in)                                    | https://api.voxify.joona.fr/api/v1/...  | Non         | (aucune)          |
+| DIALINCONFCODE_URL      | URL API pour le code de conférence téléphonique                              | https://api.voxify.joona.fr/api/v1/...  | Non         | (aucune)          |
+| ENABLE_PHONE_ACCESS     | Active l'accès téléphonique à la réunion                                     | true                                    | Non         | false             |
+| JITSI_DOMAIN            | Domaine principal du serveur Jitsi                                          | jitsi.dev.joona.fr                      | Oui         | (aucune)          |
+| PHONE_NUMBER_FORMAT     | Format d'affichage du numéro de téléphone                                   | +33 %phone_number%                      | Non         | (aucune)          |
+| ENABLE_MODERATOR_OPTIONS| Active les options modérateur                                                | true                                    | Non         | false             |
+| TITLE_MEETING_DETAILS   | Titre affiché au-dessus des détails de la réunion                           | Visio By Apitech                        | Non         | (aucune)          |
+| ROOM_NAME_PREFIX        | Préfixe pour le nom de salle généré                                         | alea_name                               | Non         | (aucune)          |
+| ROOM_NAME_LENGTH        | Longueur du nom de salle généré                                             | 10                                      | Non         | 10                |
+| ROOM_NAME_MODE          | Mode de génération du nom de salle                                          | plugin                                  | Non         | plugin            |
+
+> Pour plus de détails, voir le dossier [`jitsi-web-overlay-outlook-plugin`](./jitsi-web-overlay-outlook-plugin/README.md).
+
+---
+## Convention de nommage Git (tous modules)
+
+Ce monorepo utilise [semantic-release](https://semantic-release.gitbook.io/semantic-release/) pour l'automatisation des versions et des changelogs. Les conventions de nommage des commits et branches sont donc importantes pour garantir un versionnement cohérent dans tous les dossiers (backend, frontend, plugin Outlook, etc.).
+
+### Convention de nommage des commits (Conventional Commits)
+
+Les messages de commit doivent suivre la spécification [Conventional Commits](https://www.conventionalcommits.org/fr/v1.0.0/), basée sur le preset **Angular** :
+
+- **Format général** :
+	```
+	<type>[optional scope]: <description>
+	[optional body]
+	[optional footer(s)]
+	```
+
+- **Types principaux** :
+	- `feat` : ajout d'une nouvelle fonctionnalité
+	- `fix` : correction de bug
+	- `docs` : documentation uniquement
+	- `style` : changements de formatage (indentation, espaces, etc.) sans modification du code
+	- `refactor` : refactoring du code sans ajout de fonctionnalité ni correction de bug
+	- `perf` : amélioration des performances
+	- `test` : ajout ou modification de tests
+	- `chore` : tâches diverses (build, outils, dépendances, etc.)
+
+- **Scope recommandé** :
+	- Pour le plugin Outlook, utilisez le scope `plugin` pour les changements spécifiques à l'add-in Outlook (ex : `feat(plugin): ...`).
+	- Pour les autres modules, utilisez un scope pertinent (`auth`, `conference`, etc.)
+
+- **Exemples** :
+	- `feat(auth): ajout de l'authentification OIDC`
+	- `fix(conference): correction du bug d'affichage`
+	- `feat(plugin): ajout de la génération automatique de lien (Outlook)`
+	- `fix(plugin): correction du bug d'affichage du bouton (Outlook)`
+	- `docs: mise à jour du README`
+	- `chore(deps): mise à jour des dépendances`
+
+- **Breaking change** :
+	Ajouter un bloc `BREAKING CHANGE:` dans le corps ou le pied du commit pour signaler une modification majeure.
+	```
+	feat(api): changement de l'endpoint d'authentification
+
+	BREAKING CHANGE: l'ancien endpoint /login n'est plus supporté
+	```
+
+### Convention de nommage des branches
+
+- **Backend/Frontend**
+	- Branches principales :
+		- `main` : production
+		- `release` : pré-release (rc)
+	- Branches de développement :
+		- `feat/<sujet>` pour une nouvelle fonctionnalité
+		- `fix/<sujet>` pour une correction de bug
+		- `chore/<sujet>` pour une tâche technique
+	- Exemples :
+		- `feat/auth-oidc`
+		- `fix/affichage-conference`
+		- `chore/maj-deps`
+
+- **Plugin Outlook**
+	- Branches principales :
+		- `main` : production
+		- `dev` : développement
+		- `master` : (supportée pour compatibilité)
+	- Branches de développement :
+		- `feat/<sujet>` pour une nouvelle fonctionnalité
+		- `fix/<sujet>` pour une correction de bug
+		- `chore/<sujet>` pour une tâche technique
+	- Exemples :
+		- `feat/generation-lien-automatique`
+		- `fix/affichage-bouton`
+		- `chore/maj-deps`
+
+Respecter ces conventions permet d'automatiser la génération du changelog et la gestion des versions via semantic-release dans tous les modules du projet.
+
 
 ## Notes
 
@@ -300,3 +405,5 @@ APP_LIGHTVISIOLOGOHEADER=/assets/client-resources/logo-header-light.png
 - Les valeurs par défaut indiquées sont celles définies dans le code ou la documentation : vérifiez toujours dans le code source (`src/config.schema.ts`, etc.) pour confirmation.
 - Toute variable non listée dans la documentation ou non utilisée dans le code peut être ignorée.
 - Les secrets, tokens et mots de passe ne doivent jamais être versionnés ou partagés publiquement.
+
+

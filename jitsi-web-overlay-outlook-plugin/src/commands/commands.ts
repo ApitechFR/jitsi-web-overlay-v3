@@ -3,7 +3,10 @@ import { generateRoomName } from "../helpers/roomNameGenerator";
 //import axios from "axios";
 //import axios from "axios";
 
+
 /* global Office */
+
+
 
 Office.onReady(() => {
   // If needed, Office.js is ready to be called.
@@ -26,6 +29,40 @@ Office.onReady(() => {
 //     return null;
 //   }
 // }
+
+/**
+ * Fonction utilitaire compatible Outlook (desktop/web) pour requête HTTP GET.
+ * @param {string} url - URL à interroger.
+ * @returns {Promise<any|null>} - Réponse JSON ou null en cas d'échec.
+ */
+export function load(url) {
+  return new Promise((resolve, reject) => {
+    try {
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              resolve(JSON.parse(xhr.responseText));
+            } catch (e) {
+              console.error("{Meet Plugin} Failed to parse JSON response:", e);
+              resolve(xhr.responseText);
+            }
+          } else {
+            resolve(null);
+          }
+        }
+      };
+      xhr.onerror = function () {
+        resolve(null);
+      };
+      xhr.send();
+    } catch (err) {
+      resolve(null);
+    }
+  });
+}
 /**
  * Shows a notification when the add-in command is executed.
  * @param event
@@ -96,8 +133,59 @@ Office.actions.associate("action", action);
  * Génère les détails de la réunion et les ajoute au corps de l'invitation.
  * @param {Office.AddinCommands.Event} event - Événement de la commande Office.
  */
+/**
+ * Récupère les numéros de téléphone et le code PIN pour la conférence.
+ * @param {string} roomName - Nom de la salle.
+ * @returns {Promise<object>} - Contient les numéros de téléphone et le code PIN.
+ */
+async function getPhoneDetails(roomName) {
+  const phoneNumbers = [];
+  let pinCode = "";
+  if (configs.ENABLE_PHONE_ACCESS) {
+    try {
+      const phoneResult = await load(
+        `${configs.dialInNumbersUrl}?conference=${roomName}@conference.${configs.JITSI_DOMAIN}`
+      );
+      if (phoneResult && phoneResult.numbers) {
+        Object.keys(phoneResult.numbers).forEach((key) => {
+          phoneResult.numbers[key].forEach((number) => {
+            phoneNumbers.push(
+              configs.PHONE_NUMBER_FORMAT.replace("%phone_number%", number).replace("%phone_country%", key)
+            );
+          });
+        });
+      }
+    } catch (error) {
+      // Silencieux
+    }
+    try {
+      const pinResult = await load(
+        `${configs.dialInConfCodeUrl}?conference=${roomName}@conference.${configs.JITSI_DOMAIN}`
+      );
+      if (pinResult && pinResult.id) {
+        pinCode = pinResult.id;
+      }
+    } catch (error) {
+      // Silencieux
+    }
+  }
+  return { phoneNumbers, pinCode };
+}
+
 async function generateMeeting(event) {
   const roomName = generateRoomName();
+  // Récupération des numéros et code PIN
+  const { phoneNumbers, pinCode } = await getPhoneDetails(roomName);
+  // Exemple d'utilisation :
+  // Ajoute les infos dans le corps de l'invitation (adapter selon ton template)
+  let invitationBody = `Rejoignez la réunion : ${roomName}`;
+  if (phoneNumbers.length > 0) {
+    invitationBody += `\nNuméros d'appel :\n- ` + phoneNumbers.join("\n- ");
+  }
+  if (pinCode) {
+    invitationBody += `\nCode PIN : ${pinCode}`;
+  }
+  // ... Insérer invitationBody dans l'invitation Outlook ...
   //const { phoneNumbers, pinCode } = await getPhoneDetails(roomName);
 
   const meetingIdentifier = "joona-meeting-details";
