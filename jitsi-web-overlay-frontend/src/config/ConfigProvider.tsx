@@ -26,7 +26,7 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
                 <CircularProgress style={{ height: '150px', width: '150px' }} />
             </div>
         );
-
+    // Return the provider with the loaded config
     return <ConfigCtx.Provider value={cfg}>{children}</ConfigCtx.Provider>;
 }
 
