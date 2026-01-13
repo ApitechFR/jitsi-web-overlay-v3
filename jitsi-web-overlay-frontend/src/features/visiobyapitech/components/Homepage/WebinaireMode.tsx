@@ -12,6 +12,7 @@ import { createModal } from '@apitechfr/react-dsapitech/Modal';
 
 import styles from "../../pages/Home/HomeJoona.module.css"
 import { ConferenceService } from '@/api';
+import { t } from 'i18next';
 
 interface WebinaireMode {
   readonly isError: boolean;
@@ -71,8 +72,8 @@ function WebinaireMode(props: WebinaireMode) {
   return (
     <>
       <div className={styles.homeContent}>
-        <h1 className={styles.homeTitle}>Rejoindre un webinaire</h1>
-        <p>Audio, vidéo, chat, partage d'écran et de documents</p>
+        <h1 className={styles.homeTitle}>{t('webinar_home_title')}</h1>
+        <p>{t('webinar_home_paragraph')}</p>
         <div className={styles.homepageDispositionSideBlocks}>
           <div className={styles.inputsBlock}>
             <div className={styles.inputsRoom}>
@@ -82,7 +83,7 @@ function WebinaireMode(props: WebinaireMode) {
                   id="conferenceName"
                   state={props.showError ? 'error' : 'default'}
                   nativeInputProps={{
-                    placeholder: 'Saisissez votre nom de conférence',
+                    placeholder: t('webinar_input_room'),
                     value: props.conferenceName,
                     onChange: e => {
                       // change(e.target.value);
@@ -111,7 +112,7 @@ function WebinaireMode(props: WebinaireMode) {
               <div className={styles.joinPart}>
                 <div className={styles.joinInput}>
                   <Button onClick={() => modal.open()} className={styles.joinButton} style={{ width: '100%' }} disabled={props.isError}>
-                    <span>Créer et partager un webinaire</span>
+                    <span>{t('webinar_join_button')}</span>
                   </Button>
                 </div>
               </div>
@@ -124,15 +125,15 @@ function WebinaireMode(props: WebinaireMode) {
             </Badge> */}
         </div>
       </div>
-      <modal.Component title="Créer et partager un webinaire" size="large" className={styles.webinaireModal}>
+      <modal.Component title={t('modal_webinar_name')} size="large" className={styles.webinaireModal}>
         <div className={styles.modalContainer}>
-          <h1 className={styles.modalWebinaireTitle}>Nom du webinaire : <span>{props.conferenceName}</span></h1>
+          <h1 className={styles.modalWebinaireTitle}>{t('modal_webinar_title')}<span>{props.conferenceName}</span></h1>
           <div className={styles.mainButtonsBlock}>
             <Button onClick={handleCopyParticipant} className={styles.joinButton}>
-              Copier le lien participant pour le partager aux animateurs
+              {t('copy_webinar_link_participant')}
             </Button>
             <Button onClick={handleCopyVisitor} className={styles.joinButton}>
-              Copier le lien visiteur pour le partager aux spectateurs
+              {t('copy_webinar_link_visitor')}
             </Button>
           </div>
           {showAlert && (
@@ -154,10 +155,10 @@ function WebinaireMode(props: WebinaireMode) {
               priority="tertiary"
               disabled={props.isError}
             >
-              Entrer dans le webinaire maintenant
+              {t('modal_webinar_button')}
             </Button>
             <Button onClick={function noRefCheck() { }} className={styles.joinButton}>
-              Terminer
+              {t('modal_webinar_button_finish')}
             </Button>
           </div>
         </div>

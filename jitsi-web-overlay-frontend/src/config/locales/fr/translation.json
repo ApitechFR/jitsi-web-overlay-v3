@@ -1,6 +1,27 @@
 {
+  "--------------HomePage--------------": "",
+  "webinair_mode": "Passer en mode webinaire",
+  "visio_mode": "Passer en mode visioconférence",
+  "tooltip": "Il est recommandé de ne pas dépasser 75 participants par conférence. Si vous êtes plus nombreux, passez en mode webinaire. ",
+
+  "-------------VisioMode-------------": "",
   "home_title": "Rejoindre une visioconférence",
+  "home_paragraph": "Audio, vidéo, chat, partage d'écran et de documents",
   "join_button": "Rejoindre ou créer",
   "input_room": "Saisissez votre nom de conférence",
-  "copy_link": "Copier le lien"
+  "copy_link": "Copier le lien",
+  "success_copy_link": "Lien copié avec succès !",
+  "schedule_button": "Planifier une réunion",
+
+  "-------------WebinaireMode-------------": "",
+  "webinar_home_title": "Rejoindre un webinaire",
+  "webinar_home_paragraph": "Audio, vidéo, chat, partage d'écran et de documents",
+  "webinar_join_button": "Créer et partager un webinaire",
+  "webinar_input_room": "Saisissez votre nom de conférence",
+  "modal_webinar_name": "Créer et partager un webinaire",
+  "modal_webinar_title": "Nom du webinaire : ",
+  "copy_webinar_link_participant": "Copier le lien participant pour le partager aux animateurs",
+  "copy_webinar_link_visitor": "Copier le lien visiteur pour le partager aux spectateurs",
+  "modal_webinar_button": "Entrer dans le webinaire maintenant",
+  "modal_webinar_button_finish": "Terminer"
 }

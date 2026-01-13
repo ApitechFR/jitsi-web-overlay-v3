@@ -1,6 +1,27 @@
 {
+  "--------------HomePage--------------": "",
+  "webinair_mode": "Switch to webinar mode",
+  "visio_mode": "Switch to video conferencing mode",
+  "tooltip": "It is recommended not to exceed 75 participants per conference. If you have more, switch to webinar mode. ",
+
+  "-------------VisioMode-------------": "",
   "home_title": "Join a video conference",
+  "home_paragraph": "Audio, video, chat, screen and document sharing",
   "join_button": "Join or create",
   "input_room": "Enter your conference name",
-  "copy_link": "Copy link"
+  "copy_link": "Copy link",
+  "success_copy_link": "Link copied successfully !",
+  "schedule_button": "Schedule a meeting",
+
+  "-------------WebinaireMode-------------": "",
+  "webinar_home_title": "Join a webinar",
+  "webinar_home_paragraph": "Audio, video, chat, screen and document sharing",
+  "webinar_join_button": "Create and share a webinar",
+  "webinar_input_room": "Enter your conference name",
+  "modal_webinar_name": "Create and share a webinar",
+  "modal_webinar_title": "Webinar name: ",
+  "copy_webinar_link_participant": "Copy participant link to share with hosts",
+  "copy_webinar_link_visitor": "Copy visitor link to share with visitors",
+  "modal_webinar_button": "Enter the webinar now",
+  "modal_webinar_button_finish": "Finish"
 }

@@ -7,6 +7,7 @@ import ShuffleIcon from '@mui/icons-material/Shuffle';
 import { useRuntimeConfig } from '@/config/ConfigProvider';
 
 import styles from "../../pages/Home/HomeJoona.module.css"
+import { useTranslation } from 'react-i18next';
 
 interface VisioModeProps {
   readonly isError: boolean;
@@ -27,14 +28,16 @@ function VisioMode(props: VisioModeProps) {
   const [isInputsVisible, setIsInputsVisible] = useState(false);
   const cfg = useRuntimeConfig();
 
+  const { t } = useTranslation();
+
   const displayInputs = () => {
     setIsInputsVisible(prev => !prev);
   }
 
   return (
     <div className={styles.homeContent}>
-      <h1 className={styles.homeTitle}>Rejoindre une visioconférence</h1>
-      <p>Audio, vidéo, chat, partage d'écran et de documents</p>
+      <h1 className={styles.homeTitle}>{t('home_title')}</h1>
+      <p>{t('home_paragraph')}</p>
       <div className={styles.homepageDispositionSideBlocks}>
         <div className={styles.inputsBlock}>
           <div className={styles.inputsRoom}>
@@ -44,7 +47,7 @@ function VisioMode(props: VisioModeProps) {
                 id="conferenceName"
                 state={props.showError ? 'error' : 'default'}
                 nativeInputProps={{
-                  placeholder: 'Saisissez votre nom de conférence',
+                  placeholder: t('input_room'),
                   value: props.conferenceName,
                   onChange: e => {
                     // change(e.target.value);
@@ -73,22 +76,22 @@ function VisioMode(props: VisioModeProps) {
             <div className={styles.joinPart}>
               <div className={styles.joinInput}>
                 <Button onClick={props.onSubmit} className={styles.joinButton} style={{ width: '100%' }} disabled={props.isError}>
-                  <span>Rejoindre ou créer</span>
+                  <span>{t('join_button')}</span>
                 </Button>
               </div>
               {isInputsVisible && (
                 <div className={styles.hiddenDropdownButtons}>
                   <Button className={styles.joinButton} onClick={function noRefCheck() { }} priority="tertiary" disabled>
-                    <span>Planifier une réunion</span>
+                    <span>{t('schedule_button')}</span>
                   </Button>
                   <Button className={styles.joinButton} onClick={props.onCopyLink} priority="tertiary">
-                    <span>Copier le lien</span>
+                    <span>{t('copy_link')}</span>
                   </Button>
                 </div>
               )}
               {props.isAlertVisible && (
                 <div className={styles.alertContainer}>
-                  <Alert severity="success" title="Lien copié avec succès !" description="" small />
+                  <Alert severity="success" title={t('success_copy_link')} description="" small />
                 </div>
               )}
             </div>

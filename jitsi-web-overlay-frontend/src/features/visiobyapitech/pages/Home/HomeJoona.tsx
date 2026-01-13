@@ -15,6 +15,7 @@ import { useConferencePolling } from '../../hooks/useConferencePolling';
 import { ConferenceWaitingModal } from './ConferenceWaitingModal';
 import VisioMode from '../../components/Homepage/VisioMode';
 import WebinaireMode from '../../components/Homepage/WebinaireMode';
+import { useTranslation } from 'react-i18next';
 
 interface HomeJoonaProps {
   readonly conferenceName: string;
@@ -52,6 +53,7 @@ function HomeJoona(props: HomeJoonaProps) {
   const isValidConferenceName = (name: string) => validateConferenceName(name);
 
   const { authenticated, login } = useAuth();
+  const { t } = useTranslation();
 
   // pour intercepter toute fermeture de modal
   const stopRef = useRef<null | ((byModalClose?: boolean) => void)>(null);
@@ -348,12 +350,12 @@ function HomeJoona(props: HomeJoonaProps) {
         {isWebinarEnabled && (
           <div className={styles.switchModeBlock}>
             <Button className={`${styles.joinButton} ${styles.buttonSwitchMode}`} onClick={switchMode} priority="tertiary">
-              <span>{mode === "visio" ? "Passer en mode webinaire" : "Passer en mode visioconférence"}</span>
+              <span>{mode === "visio" ? t('webinair_mode') : t('visio_mode')}</span>
               <i className="ri-live-line"></i>
             </Button>
             <Tooltip
               kind="hover"
-              title="Il est recommandé de ne pas dépasser 75 participants par conférence. Si vous êtes plus nombreux, passez en mode webinaire. "
+              title={t('tooltip')}
             >
               <i className="ri-question-line"></i>
             </Tooltip>
