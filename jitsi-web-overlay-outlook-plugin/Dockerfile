@@ -21,9 +21,30 @@ ARG PLUGIN_PORT
 WORKDIR /usr/src/app
 
 
+
+# Copie les fichiers package.json et lock, puis installe les dépendances
 COPY package*.json ./
 RUN npm ci && npm cache clean --force
 
+
+# Génère vars.json dynamiquement à partir des variables d'environnement
+RUN node -e "\
+    const fs = require('fs'); \
+    const vars = { \
+    DIALINNUMBER_URL: process.env.DIALINNUMBER_URL || '', \
+    DIALINCONFCODE_URL: process.env.DIALINCONFCODE_URL || '', \
+    ENABLE_PHONE_ACCESS: process.env.ENABLE_PHONE_ACCESS || false, \
+    JITSI_DOMAIN: process.env.JITSI_DOMAIN || '', \
+    PHONE_NUMBER_FORMAT: process.env.PHONE_NUMBER_FORMAT || '', \
+    ENABLE_MODERATOR_OPTIONS: process.env.ENABLE_MODERATOR_OPTIONS || false, \
+    TITLE_MEETING_DETAILS: process.env.TITLE_MEETING_DETAILS || '', \
+    ROOM_NAME_PREFIX: process.env.ROOM_NAME_PREFIX || '', \
+    ROOM_NAME_LENGTH: process.env.ROOM_NAME_LENGTH || 10 \
+    }; \
+    fs.writeFileSync('vars.json', JSON.stringify(vars, null, 2)); \
+    "
+
+# Copie tout le reste du projet
 COPY . .
 
 RUN ls -lR /usr/src/app/src
@@ -59,6 +80,10 @@ COPY --from=build /usr/src/app/dist/manifest.xml /usr/share/nginx/html/manifest.
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Copie le script d'entrée
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/entrypoint.sh"]

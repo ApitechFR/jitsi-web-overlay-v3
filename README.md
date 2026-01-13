@@ -272,6 +272,36 @@ APP_LIGHTVISIOLOGOHEADER=/assets/client-resources/logo-header-light.png
 - Consultez la documentation des variables pour adapter votre configuration.
 
 ---
+
+## 📅 Plugin Outlook (Joona Meet - Outlook Add-in)
+
+Le projet inclut un module complémentaire Outlook permettant de générer automatiquement des liens de visioconférence Joona lors de la création d'événements dans Outlook. Ce plugin est packagé dans le dossier `jitsi-web-overlay-outlook-plugin` et déployé via Docker/NGINX.
+
+### Fonctionnalités principales
+- Génération automatique de liens Jitsi dans Outlook
+- Configuration dynamique via variables d'environnement
+- Déploiement web-ready (NGINX + Docker)
+
+### Variables d'environnement spécifiques au plugin
+
+| Variable                | Description                                                                 | Exemple                                 | Obligatoire | Valeur par défaut |
+|-------------------------|-----------------------------------------------------------------------------|-----------------------------------------|-------------|-------------------|
+| ADDIN_BASE_URL          | URL de base du plugin (utilisée pour générer les liens)                      | https://localhost:8080                  | Oui         | (aucune)          |
+| PLUGIN_PORT             | Port d'exposition du plugin Outlook                                         | 5000                                    | Oui         | 5000              |
+| DIALINNUMBER_URL        | URL API pour le numéro d'appel (dial-in)                                    | https://api.voxify.joona.fr/api/v1/...  | Non         | (aucune)          |
+| DIALINCONFCODE_URL      | URL API pour le code de conférence téléphonique                              | https://api.voxify.joona.fr/api/v1/...  | Non         | (aucune)          |
+| ENABLE_PHONE_ACCESS     | Active l'accès téléphonique à la réunion                                     | true                                    | Non         | false             |
+| JITSI_DOMAIN            | Domaine principal du serveur Jitsi                                          | jitsi.dev.joona.fr                      | Oui         | (aucune)          |
+| PHONE_NUMBER_FORMAT     | Format d'affichage du numéro de téléphone                                   | +33 %phone_number%                      | Non         | (aucune)          |
+| ENABLE_MODERATOR_OPTIONS| Active les options modérateur                                                | true                                    | Non         | false             |
+| TITLE_MEETING_DETAILS   | Titre affiché au-dessus des détails de la réunion                           | Visio By Apitech                        | Non         | (aucune)          |
+| ROOM_NAME_PREFIX        | Préfixe pour le nom de salle généré                                         | alea_name                               | Non         | (aucune)          |
+| ROOM_NAME_LENGTH        | Longueur du nom de salle généré                                             | 10                                      | Non         | 10                |
+| ROOM_NAME_MODE          | Mode de génération du nom de salle                                          | plugin                                  | Non         | plugin            |
+
+> Pour plus de détails, voir le dossier [`jitsi-web-overlay-outlook-plugin`](./jitsi-web-overlay-outlook-plugin/README.md).
+
+---
 ## Convention de nommage Git (tous modules)
 
 Ce monorepo utilise [semantic-release](https://semantic-release.gitbook.io/semantic-release/) pour l'automatisation des versions et des changelogs. Les conventions de nommage des commits et branches sont donc importantes pour garantir un versionnement cohérent dans tous les dossiers (backend, frontend, plugin Outlook, etc.).
@@ -355,3 +385,5 @@ Respecter ces conventions permet d'automatiser la génération du changelog et l
 - Les valeurs par défaut indiquées sont celles définies dans le code ou la documentation : vérifiez toujours dans le code source (`src/config.schema.ts`, etc.) pour confirmation.
 - Toute variable non listée dans la documentation ou non utilisée dans le code peut être ignorée.
 - Les secrets, tokens et mots de passe ne doivent jamais être versionnés ou partagés publiquement.
+
+
