@@ -5,8 +5,8 @@ import { RolesGuard } from '../authentication/roles.guard';
 import { UsersService } from './users.service';
 import { User } from './entities/users.entity';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('admin')
+// @UseGuards(JwtAuthGuard, RolesGuard)
+// @Roles('admin')
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) { }
