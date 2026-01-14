@@ -164,7 +164,12 @@
       "copy_link_participant": "Copier le lien participant pour le partager aux animateurs",
       "copy_link_visitor": "Copier le lien visiteur pour le partager aux spectateurs",
       "modal_button": "Entrer dans le webinaire maintenant",
-      "modal_button_finish": "Terminer"
+      "modal_button_finish": "Terminer",
+      "copy_success_participant": "Lien participant copié !",
+      "copy_error": "Erreur lors de la copie",
+      "copy_success_visitor": "Lien spectateur copié !",
+      "copy_error_visitor": "Erreur lors de la génération du lien spectateur",
+      "invalid_conference_name": "Nom de conférence invalide."
     }
   },
   "dashboard": {

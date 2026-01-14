@@ -164,7 +164,12 @@
                     "copy_link_participant": "Copy participant link to share with hosts",
                     "copy_link_visitor": "Copy visitor link to share with visitors",
                     "modal_button": "Enter the webinar now",
-                    "modal_button_finish": "Finish"
+                    "modal_button_finish": "Finish",
+                    "copy_success_participant": "Participant link copied!",
+                    "copy_error": "Error while copying",
+                    "copy_success_visitor": "Spectator link copied!",
+                    "copy_error_visitor": "Error generating spectator link",
+                    "invalid_conference_name": "Invalid conference name."
                   }
                 },
                 "dashboard": {
