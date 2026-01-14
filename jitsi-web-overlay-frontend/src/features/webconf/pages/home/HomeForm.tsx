@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Input } from '@codegouvfr/react-dsfr/Input';
 import { Button } from '@codegouvfr/react-dsfr/Button';
 import { Badge } from '@codegouvfr/react-dsfr/Badge';
@@ -31,6 +32,7 @@ interface AuthModalProps {
 }
 
 function HomeForm(props: AuthModalProps) {
+  const { t } = useTranslation();
   const [message, setMessage] = useState<JSX.Element | string>(<></>);
   const [open, setOpen] = useState(false);
   const [openModal, setOpenModal] = useState(false);
@@ -75,12 +77,10 @@ function HomeForm(props: AuthModalProps) {
               }
               if (props.authenticated) {
                 props.joinConference();
-                return;
               }
             }
             if (res.data.toLowerCase() !== 'internet') {
               props.joinConference();
-              return;
             }
           });
         });
@@ -96,13 +96,13 @@ function HomeForm(props: AuthModalProps) {
           setMessage(
             <div className={styles.message}>
               <Badge className={styles.badge} severity="success">
-                Au moins 3 chiffres
+                {t('homeForm.atLeast3Digits')}
               </Badge>
               <Badge className={styles.badge} severity="success">
-                Un minimum de 10 caractères
+                {t('homeForm.min10Chars')}
               </Badge>
               <Badge className={styles.badge} severity="success">
-                Des chiffres et des lettres sans accents
+                {t('homeForm.digitsAndLetters')}
               </Badge>
             </div>
           );
@@ -112,29 +112,29 @@ function HomeForm(props: AuthModalProps) {
             <div className={styles.message}>
               {getCountOfDigits(value) >= 3 ? (
                 <Badge className={styles.badge} severity="success">
-                  Au moins 3 chiffres
+                  {t('homeForm.atLeast3Digits')}
                 </Badge>
               ) : (
                 <Badge className={styles.badge} severity="error">
-                  Au moins 3 chiffres
+                  {t('homeForm.atLeast3Digits')}
                 </Badge>
               )}
               {getCountCaracters(value) >= 10 ? (
                 <Badge className={styles.badge} severity="success">
-                  Un minimum de 10 caractères
+                  {t('homeForm.min10Chars')}
                 </Badge>
               ) : (
                 <Badge className={styles.badge} severity="error">
-                  Un minimum de 10 caractères
+                  {t('homeForm.min10Chars')}
                 </Badge>
               )}
               {isAlphaNumeric(value) ? (
                 <Badge className={styles.badge} severity="success">
-                  Des chiffres et des lettres sans accents
+                  {t('homeForm.digitsAndLetters')}
                 </Badge>
               ) : (
                 <Badge className={styles.badge} severity="error">
-                  Des chiffres et des lettres sans accents
+                  {t('homeForm.digitsAndLetters')}
                 </Badge>
               )}
             </div>
@@ -167,32 +167,12 @@ function HomeForm(props: AuthModalProps) {
     setOpen(false);
   };
 
-  // Déplacer AlertMui et les constantes up/down en dehors du composant pour éviter leur recréation à chaque rendu
-  const AlertMui = React.forwardRef<
-    HTMLDivElement,
-    React.ComponentProps<typeof MuiAlert>
-  >(function Alert(props, ref) {
-    return (
-      <MuiAlert
-        onClose={props.onClose}
-        severity="success"
-        sx={{ width: '100%' }}
-        elevation={6}
-        ref={ref}
-        variant="filled"
-        {...props}
-      >
-        Le lien a été copié
-      </MuiAlert>
-    );
-  });
-
   const up = '+';
   const down = '--';
   return (
     <div className={styles.HomeForm}>
-      <h3>La WebConférence de l'État pour tous les agents publics</h3>
-      <p>Audio, vidéo, chat, partage d'écran et de documents</p>
+      <h3>{t('homeForm.title')}</h3>
+      <p>{t('homeForm.subtitle')}</p>
       <form
         className={styles.form}
         onSubmit={e => {
@@ -207,13 +187,13 @@ function HomeForm(props: AuthModalProps) {
             hintText=""
             label={
               <span className={styles.hidden} id="input-desc-error">
-                Champ de saisi du nom de la conférence
+                {t('homeForm.inputDesc')}
               </span>
             }
             nativeInputProps={{
               id: 'input',
               value: props.roomName,
-              placeholder: 'Saisissez un nom de conférence...',
+              placeholder: t('homeForm.inputPlaceholder'),
               onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
                 change(e.target.value),
             }}
@@ -244,8 +224,7 @@ function HomeForm(props: AuthModalProps) {
       </form>
       <p>{message}</p>
       <Badge severity="info">
-        Actuellement, il y a {props.conferenceNumber} conférences et{' '}
-        {props.participantNumber} participants.
+        {t('homeForm.stats', { conferenceNumber: props.conferenceNumber, participantNumber: props.participantNumber })}
       </Badge>
       <hr />
       {/* <Alert
@@ -258,19 +237,13 @@ function HomeForm(props: AuthModalProps) {
       /> */}
       <br />
       <p>
-        En savoir plus sur la <strong>WebConf</strong> de l'Etat
+        {t('homeForm.learnMore')}
       </p>
       <div className={fr.cx('fr-accordions-group')}>
-        <Accordion label="Pré-requis">Content of the Accordion 1</Accordion>
-        <Accordion label="Démarrer avec la WebConf">
-          Content of the Accordion 2
-        </Accordion>
-        <Accordion label="Ressources supplémentaires">
-          Content of the Accordion 1
-        </Accordion>
-        <Accordion label="le MOOC de la WebConf">
-          Content of the Accordion 2
-        </Accordion>
+        <Accordion label={t('homeForm.accordionPrereq')}>{t('homeForm.accordionContent1')}</Accordion>
+        <Accordion label={t('homeForm.accordionStart')}>{t('homeForm.accordionContent2')}</Accordion>
+        <Accordion label={t('homeForm.accordionResources')}>{t('homeForm.accordionContent1')}</Accordion>
+        <Accordion label={t('homeForm.accordionMooc')}>{t('homeForm.accordionContent2')}</Accordion>
       </div>
       <Snackbar
         open={open}
@@ -278,14 +251,33 @@ function HomeForm(props: AuthModalProps) {
         onClose={handleClose}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       >
-        <AlertMui />
+        <AlertMui>{t('homeForm.linkCopied')}</AlertMui>
       </Snackbar>
     </div>
   );
 }
 
+const AlertMui = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<typeof MuiAlert>
+>(function Alert(props, ref) {
+  return (
+    <MuiAlert
+      onClose={props.onClose}
+      severity="success"
+      sx={{ width: '100%' }}
+      elevation={6}
+      ref={ref}
+      variant="filled"
+      {...props}
+    >
+      {props.children}
+    </MuiAlert>
+  );
+});
+
 function getCountOfDigits(str: string) {
-  return str.replace(/[^0-9]/g, '').length;
+  return str.replaceAll(/[^0-9]/g, '').length;
 }
 
 function getCountCaracters(str: string) {
