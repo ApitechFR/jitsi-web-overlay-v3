@@ -109,7 +109,7 @@ function HistoricTasks() {
                                     <Card
                                         background
                                         border
-                                        desc={card.description}
+                                        desc={t(card.description)}
                                         size="medium"
                                         title={card.valeur}
                                         titleAs="h2"

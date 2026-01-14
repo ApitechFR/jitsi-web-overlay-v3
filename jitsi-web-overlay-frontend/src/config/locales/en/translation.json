@@ -1,200 +1,248 @@
-              {
-                "jitsiMeetWrapper": {
-                  "connectedUser": "Connected user",
-                  "guest": "Guest",
-                  "contactAdmin": "If the problem persists, contact the conference administrator."
-                },
-                "jitsiMeetingView": {
-                  "errorLoadingOptions": "Error loading Jitsi options",
-                  "optionsUnavailable": "Jitsi options unavailable",
-                  "displayName": "Display Name"
-                },
-                "conferenceWaitingModal": {
-                  "authenticate": "Authenticate",
-                  "cancel": "Cancel waiting",
-                  "notStartedTitle": "The conference has not started yet",
-                  "notStartedMessage": {
-                    "part1": "If you have a ",
-                    "part2": " account you can authenticate, otherwise please wait. You will be connected automatically when it starts."
-                  }
-                },
-                "webinarInvite": {
-                  "invalidLink": "Invalid invitation link.",
-                  "expiredOrInvalid": "Invitation link expired or invalid.",
-                  "spectator": "Spectator"
-                },
-                "replayList": {
-                  "loading": "Loading...",
-                  "error": "Error",
-                  "title": "Video Recordings",
-                  "none": "No replay available for this conference",
-                  "download": "Download",
-                  "downloadError": "Error during download"
-                },
-                "replayListGrouped": {
-                  "loading": "Loading...",
-                  "error": "Error: {{message}}",
-                  "title": "Video Recordings by conference",
-                  "empty": "No replay available",
-                  "download": "Download",
-                  "downloadError": "Error during download"
-                },
-                "admin": {
-                  "title": "Administration",
-                  "headerTitle": "Header title",
-                  "timezone": "Time zone",
-                  "selectTimezone": "Select a time zone",
-                  "logoHint": "Add or edit the header logo",
-                  "logoValidation": "Validation or error explanation text",
-                  "logoLabel": "Header logo",
-                  "options": "Options",
-                  "videoRecording": "Video recording",
-                  "ownerOnlyStart": "Only the owner can start",
-                  "ownerOnlyDownload": "Only the owner can download",
-                  "roomOption": "Option editable in meeting rooms",
-                  "switchLabel": "Switch action label",
-                  "people": "People",
-                  "allowVisitors": "Allow visitors"
-                },
-                "profile": {
-                  "admin": "Administrator",
-                  "id": "ID",
-                  "fullName": "Full name",
-                  "email": "Email"
-                },
-                "browserTest": {
-                  "allowCamera": "Please allow the browser to use the camera.",
-                  "allowMic": "Please allow the browser to use the microphone.",
-                  "info": "Information",
-                  "confirmReceptionText": "Click the button to confirm reception.",
-                  "confirmReceptionButton": "I confirm the reception of the video"
-                },
-                "feedback": {
-                  "errorDetectOrigin": "Error detecting user origin",
-                  "qualityRequired": "Quality field is required!",
-                  "sendError": "Error sending data, please try again",
-                  "title": "State WebConference",
-                  "serviceQuality": "Service quality measurement",
-                  "qualityLabel": "How do you rate the quality of this web conference?",
-                  "invitationLabel": "How do you rate the ease of invitation/connection of participants?",
-                  "officeConnection": "Are you connected from your office?",
-                  "yes": "Yes",
-                  "no": "No",
-                  "commentLabel": "Additional information you could share about the context of use or your appreciation of the web conference quality:",
-                  "difficulties": "Did you encounter any difficulties?",
-                  "askSupport": "Click here to request support",
-                  "send": "Send",
-                  "loading": "Loading feedbacks…",
-                  "loadingError": "Error loading feedbacks",
-                  "sending": "Sending…",
-                  "sendErrorTitle": "Error while sending",
-                  "noFeedback": "There is currently no feedback to display for this organization.",
-                  "backHomeHere": "Back to the home page here",
-                  "thankYouShort": "Thank you for your feedback!",
-                  "closeWindow": "You can now return to your videoconference and close this window, it will be closed automatically in a few seconds.",
-                  "thankYouRedirect": "Thank you for your feedback! You will be automatically redirected to the home page.",
-                  "notRedirected": "If this is not the case after a few seconds, you can click here",
-                  "submitted": "Your feedback has been submitted, thank you!"
-                },
-                "footer": {
-                  "description": "Footer description",
-                  "legalNotice": "Legal notice",
-                  "accessibility": "Fully compliant"
-                },
-                "header": {
-                  "serviceTitle": "Service title",
-                  "serviceTagline": "Service tagline",
-                  "home": "Home",
-                  "account": "My account",
-                  "conferences": "Conferences",
-                  "admin": "Administration",
-                  "dashboard": "Dashboard",
-                  "hardwareTest": "Hardware test",
-                  "documentation": "Documentation",
-                  "information": "Information",
-                  "logout": "Logout",
-                  "login": "Login",
-                  "brandTopLine1": "OFFICIAL",
-                  "brandTopLine2": "TITLE",
-                  "homeTitle": "Home - Entity name (ministry, state secretariat, government)",
-                  "quickAccess": {
-                    "survey": "Quality survey",
-                    "documentation": "Documentation",
-                    "information": "Information"
-                  }
-                },
-                "homeForm": {
-                  "atLeast3Digits": "At least 3 digits",
-                  "min10Chars": "Minimum 10 characters",
-                  "digitsAndLetters": "Digits and letters without accents",
-                  "linkCopied": "Link copied",
-                  "title": "The State's WebConference for all public agents",
-                  "subtitle": "Audio, video, chat, screen and document sharing",
-                  "inputDesc": "Conference name input field",
-                  "inputPlaceholder": "Enter a conference name...",
-                  "stats": "Currently, there are {{conferenceNumber}} conferences and {{participantNumber}} participants.",
-                  "learnMore": "Learn more about the State's WebConf",
-                  "accordionPrereq": "Prerequisites",
-                  "accordionStart": "Getting started with WebConf",
-                  "accordionResources": "Additional resources",
-                  "accordionMooc": "the WebConf MOOC",
-                  "accordionContent1": "Accordion content 1.",
-                  "accordionContent2": "Accordion content 2."
-                },
-                "homeModes": {
-                  "webinair_mode": "Switch to webinar mode",
-                  "visio_mode": "Switch to video conferencing mode",
-                  "tooltip": "It is recommended not to exceed 75 participants per conference. If you have more, switch to webinar mode. ",
-                  "visio": {
-                    "title": "Join a video conference",
-                    "paragraph": "Audio, video, chat, screen and document sharing",
-                    "join_button": "Join or create",
-                    "input_room": "Enter your conference name",
-                    "copy_link": "Copy link",
-                    "success_copy_link": "Link copied successfully !",
-                    "schedule_button": "Schedule a meeting"
-                  },
-                  "webinar": {
-                    "title": "Join a webinar",
-                    "paragraph": "Audio, video, chat, screen and document sharing",
-                    "join_button": "Create and share a webinar",
-                    "input_room": "Enter your conference name",
-                    "modal_name": "Create and share a webinar",
-                    "modal_title": "Webinar name: ",
-                    "copy_link_participant": "Copy participant link to share with hosts",
-                    "copy_link_visitor": "Copy visitor link to share with visitors",
-                    "modal_button": "Enter the webinar now",
-                    "modal_button_finish": "Finish",
-                    "copy_success_participant": "Participant link copied!",
-                    "copy_error": "Error while copying",
-                    "copy_success_visitor": "Spectator link copied!",
-                    "copy_error_visitor": "Error generating spectator link",
-                    "invalid_conference_name": "Invalid conference name."
-                  }
-                },
-                "dashboard": {
-                  "realtimeTitle": "Real-time statistics",
-                  "loading": "Loading...",
-                  "errorLoading": "Error loading data.",
-                  "surveyResultsTitle": "Survey results",
-                  "historicStatsTitle": "Historic statistics",
-                  "today": "Today",
-                  "thisWeek": "This week",
-                  "thisMonth": "This month",
-                  "thisYear": "This year",
-                  "noDataForPeriod": "There is no data recorded for this period",
-                  "userComments": "User comments",
-                  "multipleChoiceAnswers": "Multiple choice question answers",
-                  "exportResults": "Export results",
-                  "breadcrumb": "Dashboard",
-                  "title": "Dashboard",
-                  "realtime": "Real-time statistics",
-                  "historic": "Historical statistics",
-                  "survey": "Survey results",
-                  "filtersLegend": "Filter by period",
-                  "useGivenPeriod": "Use custom period",
-                  "startDate": "Start date",
-                  "endDate": "End date",
-                  "validate": "Validate"
-                }
-              }
+{
+  "cards": {
+    "users": {
+      "label": "Active users",
+      "description": "Number of active users"
+    },
+    "confNb": {
+      "label": "Conferences started",
+      "description": "Total number of conferences started"
+    },
+    "confTime": {
+      "label": "Average duration",
+      "description": "Average duration of a conference"
+    },
+    "confMoyPart": {
+      "label": "Average participants",
+      "description": "Average participants per conference"
+    },
+    "confMaxSimult": {
+      "label": "Simultaneous conferences",
+      "description": "Maximum simultaneous conferences"
+    },
+    "partMaxSimult": {
+      "label": "Simultaneous participants",
+      "description": "Maximum simultaneous participants"
+    },
+    "nbAnswer": {
+      "label": "Number of answers",
+      "description": "Number of answers",
+      "question": ""
+    },
+    "moyNote": {
+      "label": "Average rating",
+      "description": "Average rating",
+      "question": "What did you think of the conference quality?"
+    },
+    "totalParticipants": {
+      "label": "Simultaneous participants",
+      "description": "Number of simultaneous participants"
+    },
+    "totalConferences": {
+      "label": "Simultaneous conferences",
+      "description": "Number of simultaneous conferences"
+    },
+    "MoyParticipantsPerConf": {
+      "label": "Average participants/conference",
+      "description": "Average number of participants per conference"
+    }
+  },
+  "jitsiMeetWrapper": {
+    "connectedUser": "Connected user",
+    "guest": "Guest",
+    "contactAdmin": "If the problem persists, contact the conference administrator."
+  },
+  "jitsiMeetingView": {
+    "errorLoadingOptions": "Error loading Jitsi options",
+    "optionsUnavailable": "Jitsi options unavailable",
+    "displayName": "Display Name"
+  },
+  "conferenceWaitingModal": {
+    "authenticate": "Authenticate",
+    "cancel": "Cancel waiting",
+    "notStartedTitle": "The conference has not started yet",
+    "notStartedMessage": {
+      "part1": "If you have a ",
+      "part2": " account you can authenticate, otherwise please wait. You will be connected automatically when it starts."
+    }
+  },
+  "webinarInvite": {
+    "invalidLink": "Invalid invitation link.",
+    "expiredOrInvalid": "Invitation link expired or invalid.",
+    "spectator": "Spectator"
+  },
+  "replayList": {
+    "loading": "Loading...",
+    "error": "Error",
+    "title": "Video Recordings",
+    "none": "No replay available for this conference",
+    "download": "Download",
+    "downloadError": "Error during download"
+  },
+  "replayListGrouped": {
+    "loading": "Loading...",
+    "error": "Error: {{message}}",
+    "title": "Video Recordings by conference",
+    "empty": "No replay available",
+    "download": "Download",
+    "downloadError": "Error during download"
+  },
+  "admin": {
+    "title": "Administration",
+    "headerTitle": "Header title",
+    "timezone": "Time zone",
+    "selectTimezone": "Select a time zone",
+    "logoHint": "Add or edit the header logo",
+    "logoValidation": "Validation or error explanation text",
+    "logoLabel": "Header logo",
+    "options": "Options",
+    "videoRecording": "Video recording",
+    "ownerOnlyStart": "Only the owner can start",
+    "ownerOnlyDownload": "Only the owner can download",
+    "roomOption": "Option editable in meeting rooms",
+    "switchLabel": "Switch action label",
+    "people": "People",
+    "allowVisitors": "Allow visitors"
+  },
+  "profile": {
+    "admin": "Administrator",
+    "id": "ID",
+    "fullName": "Full name",
+    "email": "Email"
+  },
+  "browserTest": {
+    "allowCamera": "Please allow the browser to use the camera.",
+    "allowMic": "Please allow the browser to use the microphone.",
+    "info": "Information",
+    "confirmReceptionText": "Click the button to confirm reception.",
+    "confirmReceptionButton": "I confirm the reception of the video"
+  },
+  "feedback": {
+    "errorDetectOrigin": "Error detecting user origin",
+    "qualityRequired": "Quality field is required!",
+    "sendError": "Error sending data, please try again",
+    "title": "State WebConference",
+    "serviceQuality": "Service quality measurement",
+    "qualityLabel": "How do you rate the quality of this web conference?",
+    "invitationLabel": "How do you rate the ease of invitation/connection of participants?",
+    "officeConnection": "Are you connected from your office?",
+    "yes": "Yes",
+    "no": "No",
+    "commentLabel": "Additional information you could share about the context of use or your appreciation of the web conference quality:",
+    "difficulties": "Did you encounter any difficulties?",
+    "askSupport": "Click here to request support",
+    "send": "Send",
+    "loading": "Loading feedbacks…",
+    "loadingError": "Error loading feedbacks",
+    "sending": "Sending…",
+    "sendErrorTitle": "Error while sending",
+    "noFeedback": "There is currently no feedback to display for this organization.",
+    "backHomeHere": "Back to the home page here",
+    "thankYouShort": "Thank you for your feedback!",
+    "closeWindow": "You can now return to your videoconference and close this window, it will be closed automatically in a few seconds.",
+    "thankYouRedirect": "Thank you for your feedback! You will be automatically redirected to the home page.",
+    "notRedirected": "If this is not the case after a few seconds, you can click here",
+    "submitted": "Your feedback has been submitted, thank you!"
+  },
+  "footer": {
+    "description": "Footer description",
+    "legalNotice": "Legal notice",
+    "accessibility": "Fully compliant"
+  },
+  "header": {
+    "serviceTitle": "Service title",
+    "serviceTagline": "Service tagline",
+    "home": "Home",
+    "account": "My account",
+    "conferences": "Conferences",
+    "admin": "Administration",
+    "dashboard": "Dashboard",
+    "hardwareTest": "Hardware test",
+    "documentation": "Documentation",
+    "information": "Information",
+    "logout": "Logout",
+    "login": "Login",
+    "brandTopLine1": "OFFICIAL",
+    "brandTopLine2": "TITLE",
+    "homeTitle": "Home - Entity name (ministry, state secretariat, government)",
+    "quickAccess": {
+      "survey": "Quality survey",
+      "documentation": "Documentation",
+      "information": "Information"
+    }
+  },
+  "homeForm": {
+    "atLeast3Digits": "At least 3 digits",
+    "min10Chars": "Minimum 10 characters",
+    "digitsAndLetters": "Digits and letters without accents",
+    "linkCopied": "Link copied",
+    "title": "The State's WebConference for all public agents",
+    "subtitle": "Audio, video, chat, screen and document sharing",
+    "inputDesc": "Conference name input field",
+    "inputPlaceholder": "Enter a conference name...",
+    "stats": "Currently, there are {{conferenceNumber}} conferences and {{participantNumber}} participants.",
+    "learnMore": "Learn more about the State's WebConf",
+    "accordionPrereq": "Prerequisites",
+    "accordionStart": "Getting started with WebConf",
+    "accordionResources": "Additional resources",
+    "accordionMooc": "the WebConf MOOC",
+    "accordionContent1": "Accordion content 1.",
+    "accordionContent2": "Accordion content 2."
+  },
+  "homeModes": {
+    "webinair_mode": "Switch to webinar mode",
+    "visio_mode": "Switch to video conferencing mode",
+    "tooltip": "It is recommended not to exceed 75 participants per conference. If you have more, switch to webinar mode. ",
+    "visio": {
+      "title": "Join a video conference",
+      "paragraph": "Audio, video, chat, screen and document sharing",
+      "join_button": "Join or create",
+      "input_room": "Enter your conference name",
+      "copy_link": "Copy link",
+      "success_copy_link": "Link copied successfully !",
+      "schedule_button": "Schedule a meeting"
+    },
+    "webinar": {
+      "title": "Join a webinar",
+      "paragraph": "Audio, video, chat, screen and document sharing",
+      "join_button": "Create and share a webinar",
+      "input_room": "Enter your conference name",
+      "modal_name": "Create and share a webinar",
+      "modal_title": "Webinar name: ",
+      "copy_link_participant": "Copy participant link to share with hosts",
+      "copy_link_visitor": "Copy visitor link to share with visitors",
+      "modal_button": "Enter the webinar now",
+      "modal_button_finish": "Finish",
+      "copy_success_participant": "Participant link copied!",
+      "copy_error": "Error while copying",
+      "copy_success_visitor": "Spectator link copied!",
+      "copy_error_visitor": "Error generating spectator link",
+      "invalid_conference_name": "Invalid conference name."
+    }
+  },
+  "dashboard": {
+    "realtimeTitle": "Real-time statistics",
+    "loading": "Loading...",
+    "errorLoading": "Error loading data.",
+    "surveyResultsTitle": "Survey results",
+    "historicStatsTitle": "Historic statistics",
+    "today": "Today",
+    "thisWeek": "This week",
+    "thisMonth": "This month",
+    "thisYear": "This year",
+    "noDataForPeriod": "There is no data recorded for this period",
+    "userComments": "User comments",
+    "multipleChoiceAnswers": "Multiple choice question answers",
+    "exportResults": "Export results",
+    "breadcrumb": "Dashboard",
+    "title": "Dashboard",
+    "realtime": "Real-time statistics",
+    "historic": "Historical statistics",
+    "survey": "Survey results",
+    "filtersLegend": "Filter by period",
+    "useGivenPeriod": "Use custom period",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "validate": "Validate"
+  }
+}
