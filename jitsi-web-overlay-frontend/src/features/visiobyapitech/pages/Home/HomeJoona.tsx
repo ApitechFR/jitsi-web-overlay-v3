@@ -151,7 +151,6 @@ function HomeJoona(props: HomeJoonaProps) {
       setIsError(!validateConferenceName(nm));
       setTimeout(() => inputRef.current?.focus(), 0);
       navigate('.', { replace: true, state: {} });
-      return;
     }
 
     if (st.waitForRoom) {
@@ -159,7 +158,6 @@ function HomeJoona(props: HomeJoonaProps) {
       if (props.conferenceName !== target) props.setConferenceName(target);
       runFirstCheckThenMaybeWait(target);
       navigate('.', { replace: true, state: {} });
-      return;
     }
 
     if (st.openAuthModal && !authenticated) {
@@ -167,7 +165,6 @@ function HomeJoona(props: HomeJoonaProps) {
       if (target && target !== props.conferenceName) props.setConferenceName(target);
       runFirstCheckThenMaybeWait(target);
       navigate('.', { replace: true, state: {} });
-      return;
     }
   }, [location.state, authenticated, navigate, props.conferenceName, props.setConferenceName]);
 
@@ -181,14 +178,12 @@ function HomeJoona(props: HomeJoonaProps) {
     e.preventDefault();
     if (!isValidConferenceName(props.conferenceName)) {
       setIsError(true);
-      return;
     }
     setIsError(false);
 
     if (authenticated) {
       stopWaitingAndPoll();
       navigate(`/${props.conferenceName}`);
-      return;
     }
 
     // invité : premier check via backend, puis éventuel waiting + poll
@@ -214,13 +209,13 @@ function HomeJoona(props: HomeJoonaProps) {
           setMessage(
             <div className={styles.message}>
               <Badge className={styles.badge} severity="success">
-                Au moins 3 chiffres
+                {t('homeForm.atLeast3Digits')}
               </Badge>
               <Badge className={styles.badge} severity="success">
-                Un minimum de 10 caractères
+                {t('homeForm.min10Chars')}
               </Badge>
               <Badge className={styles.badge} severity="success">
-                Des chiffres et des lettres sans accents
+                {t('homeForm.digitsAndLetters')}
               </Badge>
             </div>
           );
@@ -230,29 +225,29 @@ function HomeJoona(props: HomeJoonaProps) {
             <div className={styles.message}>
               {getCountOfDigits(value) >= 3 ? (
                 <Badge className={styles.badge} severity="success">
-                  Au moins 3 chiffres
+                  {t('homeForm.atLeast3Digits')}
                 </Badge>
               ) : (
                 <Badge className={styles.badge} severity="error">
-                  Au moins 3 chiffres
+                  {t('homeForm.atLeast3Digits')}
                 </Badge>
               )}
               {getCountCaracters(value) >= 10 ? (
                 <Badge className={styles.badge} severity="success">
-                  Un minimum de 10 caractères
+                  {t('homeForm.min10Chars')}
                 </Badge>
               ) : (
                 <Badge className={styles.badge} severity="error">
-                  Un minimum de 10 caractères
+                  {t('homeForm.min10Chars')}
                 </Badge>
               )}
               {isAlphaNumeric(value) ? (
                 <Badge className={styles.badge} severity="success">
-                  Des chiffres et des lettres sans accents
+                  {t('homeForm.digitsAndLetters')}
                 </Badge>
               ) : (
                 <Badge className={styles.badge} severity="error">
-                  Des chiffres et des lettres sans accents
+                  {t('homeForm.digitsAndLetters')}
                 </Badge>
               )}
             </div>
@@ -264,7 +259,7 @@ function HomeJoona(props: HomeJoonaProps) {
         setMessage('');
       }
     },
-    [props, setMessage]
+    [props, setMessage, t]
   );
 
   const change = (e: string) => {
@@ -350,12 +345,12 @@ function HomeJoona(props: HomeJoonaProps) {
         {isWebinarEnabled && (
           <div className={styles.switchModeBlock}>
             <Button className={`${styles.joinButton} ${styles.buttonSwitchMode}`} onClick={switchMode} priority="tertiary">
-              <span>{mode === "visio" ? t('webinair_mode') : t('visio_mode')}</span>
+              <span>{mode === "visio" ? t('homeModes.webinair_mode') : t('homeModes.visio_mode')}</span>
               <i className="ri-live-line"></i>
             </Button>
             <Tooltip
               kind="hover"
-              title={t('tooltip')}
+              title={t('homeModes.tooltip')}
             >
               <i className="ri-question-line"></i>
             </Tooltip>
@@ -366,7 +361,7 @@ function HomeJoona(props: HomeJoonaProps) {
       <div className={styles.secondContainer}>
         <img
           src="/assets/illustration_homepage_visio_by_apitech.svg"
-          alt="Image page d’accueil"
+          alt="Page d’accueil"
         />
       </div>
     </div>

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import { useNavigate } from 'react-router';
 
@@ -20,6 +21,7 @@ type JitsiApiLike = {
 
 const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displayName, user }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const cfg = useRuntimeConfig();
 
   const checkVideoIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -80,14 +82,14 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
   }, [applyToolbar, modules]);
 
   if (loading) return null;
-  if (error) return <div>Erreur chargement options Jitsi : {error}</div>;
-  if (!modules) return <div>Options Jitsi non disponibles</div>;
+  if (error) return <div>{t('jitsiMeetingView.errorLoadingOptions')}: {error}</div>;
+  if (!modules) return <div>{t('jitsiMeetingView.optionsUnavailable')}</div>;
   return (
     <JitsiMeeting
       domain={domain}
       roomName={conferenceName}
       jwt={jwt}
-      userInfo={{ displayName: displayName ?? 'Display Name', email: '' }}
+      userInfo={{ displayName: displayName ?? t('jitsiMeetingView.displayName'), email: '' }}
       configOverwrite={configOverwrite}
       getIFrameRef={(iframeRef) => {
         iframeRef.style.width = '100%';

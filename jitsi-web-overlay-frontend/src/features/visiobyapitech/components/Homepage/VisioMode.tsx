@@ -36,8 +36,8 @@ function VisioMode(props: VisioModeProps) {
 
   return (
     <div className={styles.homeContent}>
-      <h1 className={styles.homeTitle}>{t('home_title')}</h1>
-      <p>{t('home_paragraph')}</p>
+      <h1 className={styles.homeTitle}>{t('homeModes.visio.title')}</h1>
+      <p>{t('homeModes.visio.paragraph')}</p>
       <div className={styles.homepageDispositionSideBlocks}>
         <div className={styles.inputsBlock}>
           <div className={styles.inputsRoom}>
@@ -47,16 +47,11 @@ function VisioMode(props: VisioModeProps) {
                 id="conferenceName"
                 state={props.showError ? 'error' : 'default'}
                 nativeInputProps={{
-                  placeholder: t('input_room'),
+                  placeholder: t('homeModes.visio.input_room'),
                   value: props.conferenceName,
                   onChange: e => {
-                    // change(e.target.value);
-
-                    // MIT EN COMM EN ATTENTE DE MODIF REGEX
-
                     const value = e.currentTarget.value;
                     props.setConferenceName(value);
-                    // props.setIsError(!props.isValidConferenceName(value));
                   },
                   ref: props.inputRef,
                 }}
@@ -76,22 +71,22 @@ function VisioMode(props: VisioModeProps) {
             <div className={styles.joinPart}>
               <div className={styles.joinInput}>
                 <Button onClick={props.onSubmit} className={styles.joinButton} style={{ width: '100%' }} disabled={props.isError}>
-                  <span>{t('join_button')}</span>
+                  <span>{t('homeModes.visio.join_button')}</span>
                 </Button>
               </div>
               {isInputsVisible && (
                 <div className={styles.hiddenDropdownButtons}>
                   <Button className={styles.joinButton} onClick={function noRefCheck() { }} priority="tertiary" disabled>
-                    <span>{t('schedule_button')}</span>
+                    <span>{t('homeModes.visio.schedule_button')}</span>
                   </Button>
                   <Button className={styles.joinButton} onClick={props.onCopyLink} priority="tertiary">
-                    <span>{t('copy_link')}</span>
+                    <span>{t('homeModes.visio.copy_link')}</span>
                   </Button>
                 </div>
               )}
               {props.isAlertVisible && (
                 <div className={styles.alertContainer}>
-                  <Alert severity="success" title={t('success_copy_link')} description="" small />
+                  <Alert severity="success" title={t('homeModes.visio.success_copy_link')} description="" small />
                 </div>
               )}
             </div>

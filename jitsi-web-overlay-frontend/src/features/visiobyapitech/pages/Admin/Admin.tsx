@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import Breadcrumb from "@apitechfr/react-dsapitech/Breadcrumb";
 import Input from '@apitechfr/react-dsapitech/Input';
 import { Select } from "@apitechfr/react-dsapitech/Select";
@@ -9,6 +10,7 @@ import { useEffect, useMemo, useState } from 'react';
 import styles from './Admin.module.css'
 
 function Admin() {
+    const { t } = useTranslation();
 
     const [timeZones, setTimeZones] = useState<string[]>([]);
     // const [localTimeZone, setLocalTimeZone] = useState<string>('');
@@ -53,30 +55,30 @@ function Admin() {
     return (
         <div className={styles.content}>
             <Breadcrumb
-                currentPageLabel="Administration"
+                currentPageLabel={t('admin.title')}
                 homeLinkProps={{
                     href: '/'
                 }}
                 segments={[]}
             />
             <div className={styles.titleBlock}>
-                <h1>Administration</h1>
+                <h1>{t('admin.title')}</h1>
             </div>
             <div className={styles.contentBlock}>
                 <div className={styles.inputStyle}>
                     <Input
                         disabled
-                        label='Titre du header'
+                        label={t('admin.headerTitle')}
                     />
                 </div>
                 <div className={styles.inputStyle}>
                     <Select
-                        label="Fuseau horaire"
+                        label={t('admin.timezone')}
                         nativeSelectProps={{
                             name: "timezone",
                         }}
                     >
-                        <option value="" disabled hidden>Sélectionnez un fuseau horaire</option>
+                        <option value="" disabled hidden>{t('admin.selectTimezone')}</option>
                         {timeZonesWithOffsets.map(([tz, offset]) => (
                             <option key={tz} value={tz}>
                                 {`${tz} (${offset})`}
@@ -85,40 +87,40 @@ function Admin() {
                     </Select>
                 </div>
                 <Upload
-                    hint="Ajoutez ou modifier le logo header"
+                    hint={t('admin.logoHint')}
                     state="default"
-                    stateRelatedMessage="Text de validation / d'explication de l'erreur"
-                    label="Logo header"
+                    stateRelatedMessage={t('admin.logoValidation')}
+                    label={t('admin.logoLabel')}
                 />
                 <div></div>
                 <div className={styles.optionSection}>
-                    <h2>Options</h2>
+                    <h2>{t('admin.options')}</h2>
                     <div className={styles.toogleSwitchSection}>
                         <div className={styles.toogleSwitchBlock}>
-                            <span>Enregistrement vidéo</span>
+                            <span>{t('admin.videoRecording')}</span>
                             <div>
                                 <ToggleSwitch
-                                    // helperText="Texte d’aide pour clarifier l’action"
+                                    // helperText={t('admin.ownerOnlyHelp')}
                                     inputTitle="the-title"
-                                    label="Uniquement le propriétaire peut lancer"
+                                    label={t('admin.ownerOnlyStart')}
                                     labelPosition="right"
                                     showCheckedHint
                                 />
                                 <hr className={styles.hr} />
                                 <ToggleSwitch
                                     inputTitle="the-title"
-                                    label="Uniquement le propriétaire peut télécharger"
+                                    label={t('admin.ownerOnlyDownload')}
                                     labelPosition="right"
                                     showCheckedHint
                                 />
                             </div>
                         </div>
                         <div className={styles.toogleSwitchBlock}>
-                            <span>Option modifiable dans les salles de réunions</span>
+                            <span>{t('admin.roomOption')}</span>
                             <div>
                                 <ToggleSwitch
                                     inputTitle="the-title"
-                                    label="Label action interrupteur"
+                                    label={t('admin.switchLabel')}
                                     labelPosition="right"
                                     showCheckedHint
                                 />
@@ -132,11 +134,11 @@ function Admin() {
                             </div>
                         </div>
                         <div className={styles.toogleSwitchBlock}>
-                            <span>Personnes</span>
+                            <span>{t('admin.people')}</span>
                             <div>
                                 <ToggleSwitch
                                     inputTitle="the-title"
-                                    label="Autoriser les visiteurs"
+                                    label={t('admin.allowVisitors')}
                                     labelPosition="right"
                                     showCheckedHint
                                 />

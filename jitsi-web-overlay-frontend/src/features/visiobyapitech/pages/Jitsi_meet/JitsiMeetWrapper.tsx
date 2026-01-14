@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../../auth/useAuth';
 import JitsiMeetingView from './JitsiMeetingView';
@@ -23,6 +24,7 @@ interface JitsiMeetWrapperProps {
 }
 
 const JitsiMeetWrapper: React.FC<JitsiMeetWrapperProps> = (props) => {
+  const { t } = useTranslation();
   // If props.conferenceName is provided, use it; else fallback to route param
   const routeParams = useParams();
   const conferenceName = props.conferenceName || routeParams.conferenceName;
@@ -87,10 +89,10 @@ const JitsiMeetWrapper: React.FC<JitsiMeetWrapperProps> = (props) => {
       if (full) return full;
       if (typeof (authUser as any)?.name === 'string' && (authUser as any)?.name) return (authUser as any).name;
       if (typeof (authUser as any)?.email === 'string' && (authUser as any)?.email) return (authUser as any).email;
-      if (jwtToken) return 'Utilisateur connecté';
+      if (jwtToken) return t('jitsiMeetWrapper.connectedUser');
     }
-    return 'Invité';
-  }, [authenticated, authUser, jwtToken, props.displayName]);
+    return t('jitsiMeetWrapper.guest');
+  }, [authenticated, authUser, jwtToken, props.displayName, t]);
 
   // GARDES
   if (!validRoom) return null;
@@ -115,7 +117,7 @@ const JitsiMeetWrapper: React.FC<JitsiMeetWrapperProps> = (props) => {
         <div style={{ color: 'red', padding: '2rem', textAlign: 'center' }}>
           {jwtError || errorJitsiJwt?.message}
           <div style={{ marginTop: 8, color: '#666' }}>
-            Si le problème persiste, contactez l’administrateur de la conférence.
+            {t('jitsiMeetWrapper.contactAdmin')}
           </div>
         </div>
       );
@@ -130,10 +132,10 @@ const JitsiMeetWrapper: React.FC<JitsiMeetWrapperProps> = (props) => {
       <div className={styles.jitsiMeetingContainer}>
         <JitsiMeetingView
           domain={domain}
-          conferenceName={conferenceName!}
+          conferenceName={conferenceName}
           jwt={jwtToken || props.jwt}
           displayName={displayName}
-          user={props.user !== undefined ? props.user : authUser}
+          user={props.user === undefined ? authUser : props.user}
         />
       </div>
     </>

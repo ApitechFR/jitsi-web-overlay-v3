@@ -1,4 +1,5 @@
 import styles from './Dashboard.module.css';
+import { useTranslation } from 'react-i18next';
 import { Breadcrumb } from '@apitechfr/react-dsapitech/Breadcrumb';
 import { SideMenu } from "@apitechfr/react-dsapitech/SideMenu";
 
@@ -7,7 +8,9 @@ import RealTime from '../../components/Dashboard/RealTime';
 import HistoricTasks from '../../components/Dashboard/HistoricTasks';
 import SurveyResults from '../../components/Dashboard/SurveyResults';
 
+
 function Dashboard() {
+  const { t } = useTranslation();
 
   const [activeView, setActiveView] = useState<"realtime" | "historic" | "survey">("realtime");
 
@@ -38,12 +41,12 @@ function Dashboard() {
     <div className={styles.contentDashboard}>
       <div className={styles.breadcrumbContainer}>
         <Breadcrumb
-            currentPageLabel="Dashboard"
-            homeLinkProps={{
-              href: '/'
-            }}
-            segments={[]}
-          />
+          currentPageLabel={t('dashboard.breadcrumb')}
+          homeLinkProps={{
+            href: '/'
+          }}
+          segments={[]}
+        />
       </div>
       <section className={styles.content}>
         <aside
@@ -62,7 +65,7 @@ function Dashboard() {
                     handleDashboardChange('realtime');
                   }
                 },
-                text: 'Statistiques temps réel'
+                text: t('dashboard.realtime')
               },
               {
                 isActive: activeView === 'historic',
@@ -73,7 +76,7 @@ function Dashboard() {
                     handleDashboardChange('historic');
                   }
                 },
-                text: 'Statistiques historique'
+                text: t('dashboard.historic')
               },
               {
                 isActive: activeView === 'survey',
@@ -84,14 +87,14 @@ function Dashboard() {
                     handleDashboardChange('survey');
                   }
                 },
-                text: 'Résultats sondage'
+                text: t('dashboard.survey')
               },
             ]}
             title=""
           />
         </aside>
         <main className={styles.mainDashboardContent}>
-          <h1 className={styles.title}>Dashboard</h1>
+          <h1 className={styles.title}>{t('dashboard.title')}</h1>
           <div className={styles.dashboardComponent}>
             {renderDashboardComponent()}
           </div>

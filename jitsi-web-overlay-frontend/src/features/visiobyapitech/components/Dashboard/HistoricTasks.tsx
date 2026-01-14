@@ -15,8 +15,10 @@ import { DashboardService } from '@/api/services/dashboard/dashboard.service';
 import { mapHistoricStatsToCards } from '@/api/services/dashboard/dashboard.utils';
 
 import './DashboardComponent.css'
+import { useTranslation } from 'react-i18next';
 
 function HistoricTasks() {
+    const { t } = useTranslation();
 
     const [isToogleActive, setIsToogleActive] = useState(false);
     const [localData, setLocalData] = useState<CardData[]>(cardsData);
@@ -24,8 +26,6 @@ function HistoricTasks() {
     const {
         startDate,
         endDate,
-        setStartDate,
-        setEndDate,
         handleDashboardDateChange
     } = useDashboardDateFilters();
 
@@ -62,38 +62,38 @@ function HistoricTasks() {
 
     return (
         <>
-            <h2 className="dashboardComponentTitle">Statistiques historiques</h2>
+            <h2 className="dashboardComponentTitle">{t('dashboard.historicStatsTitle')}</h2>
             <div className="dashboardStructure">
                 <div className="dashboardSide">
                     <article className="dashboardContent">
                         <RadioButtons
                             disabled={isToogleActive}
-                            legend="Filtres"
+                            legend={t('dashboard.filtersLegend')}
                             name="radio"
                             options={[
                                 {
-                                    label: 'Aujourd\'hui',
+                                    label: t('dashboard.today'),
                                     nativeInputProps: {
                                         checked: value === "today",
                                         onChange: () => setValue("today"),
                                     }
                                 },
                                 {
-                                    label: 'Cette semaine',
+                                    label: t('dashboard.thisWeek'),
                                     nativeInputProps: {
                                         checked: value === "week",
                                         onChange: () => setValue("week"),
                                     }
                                 },
                                 {
-                                    label: 'Ce mois-ci',
+                                    label: t('dashboard.thisMonth'),
                                     nativeInputProps: {
                                         checked: value === "month",
                                         onChange: () => setValue("month"),
                                     }
                                 },
                                 {
-                                    label: 'Cette année',
+                                    label: t('dashboard.thisYear'),
                                     nativeInputProps: {
                                         checked: value === "year",
                                         onChange: () => setValue("year"),
@@ -124,7 +124,7 @@ function HistoricTasks() {
                 <aside className="periodBlock">
                     <ToggleSwitch
                         inputTitle="the-title"
-                        label="Utiliser une période donnée"
+                        label={t('dashboard.useGivenPeriod')}
                         labelPosition="left"
                         checked={isToogleActive}
                         onChange={handleToogleChange}
@@ -134,7 +134,7 @@ function HistoricTasks() {
                             <div className="separator" />
                             <div className="hiddenPeriodBlock">
                                 <Input
-                                    label="Date de début"
+                                    label={t('dashboard.startDate')}
                                     nativeInputProps={{
                                         type: 'date',
                                         value: startDate ? new Date(startDate).toISOString().split("T")[0] : "",
@@ -142,7 +142,7 @@ function HistoricTasks() {
                                     }}
                                 />
                                 <Input
-                                    label="Date de fin"
+                                    label={t('dashboard.endDate')}
                                     nativeInputProps={{
                                         type: 'date',
                                         value: endDate ? new Date(endDate).toISOString().split("T")[0] : "",
@@ -154,7 +154,7 @@ function HistoricTasks() {
                                 <Button
                                     onClick={applyDashboardDateChanges}
                                 >
-                                    <span>Valider</span>
+                                    <span>{t('dashboard.validate')}</span>
                                 </Button>
                             </div>
                         </div>

@@ -13,6 +13,7 @@ import './DashboardComponent.css'
 
 import type { CardDataFeedback, PeriodFilter, QuestionTextTableProps, DateFilters } from '@/api/services/dashboard/dashboard.types';
 import { mapSurveyStatsToCards } from '@/api/services/dashboard/mapSurveyStatsToCards';
+import { useTranslation } from 'react-i18next';
 
 function QuestionTextTable({
     question,
@@ -20,7 +21,7 @@ function QuestionTextTable({
     filter,
     limitPerPage,
     dateFilters
-}: QuestionTextTableProps) {
+}: Readonly<QuestionTextTableProps>) {
     const [page, setPage] = useState(1);
     const [responses, setResponses] = useState<string[]>([]);
     const [totalPages, setTotalPages] = useState(1);
@@ -84,6 +85,7 @@ function QuestionTextTable({
 }
 
 function SurveyResults() {
+    const { t } = useTranslation();
     const cfg = useRuntimeConfig();
     const AppTemplate = (cfg.VITE_APP_ORGANIZATION as string) || '';
 
@@ -145,38 +147,38 @@ function SurveyResults() {
 
     return (
         <>
-            <h2 className="dashboardComponentTitle">Résultats sondage</h2>
+            <h2 className="dashboardComponentTitle">{t('dashboard.surveyResultsTitle')}</h2>
             <div className="dashboardStructure">
                 <div className="dashboardSide">
                     <article className="dashboardContent">
                         <RadioButtons
                             disabled={isToogleActive}
-                            legend="Filtres"
+                            legend={t('dashboard.filtersLegend')}
                             name="radio"
                             options={[
                                 {
-                                    label: 'Aujourd\'hui',
+                                    label: t('dashboard.today'),
                                     nativeInputProps: {
                                         checked: value === "today",
                                         onChange: () => setValue("today"),
                                     }
                                 },
                                 {
-                                    label: 'Cette semaine',
+                                    label: t('dashboard.thisWeek'),
                                     nativeInputProps: {
                                         checked: value === "week",
                                         onChange: () => setValue("week"),
                                     }
                                 },
                                 {
-                                    label: 'Ce mois-ci',
+                                    label: t('dashboard.thisMonth'),
                                     nativeInputProps: {
                                         checked: value === "month",
                                         onChange: () => setValue("month"),
                                     }
                                 },
                                 {
-                                    label: 'Cette année',
+                                    label: t('dashboard.thisYear'),
                                     nativeInputProps: {
                                         checked: value === "year",
                                         onChange: () => setValue("year"),
@@ -204,13 +206,13 @@ function SurveyResults() {
                                         </div>
                                     ))
                                 ) : (
-                                    <p>Il n'y a pas de données enregistrée pour cette période</p>
+                                    <p>{t('dashboard.noDataForPeriod')}</p>
                                 )}
                             </div>
                         )}
 
                         <div className='table_commentary'>
-                            <h3>Commentaires utilisateurs</h3>
+                            <h3>{t('dashboard.userComments')}</h3>
                             <div className='table_commentary_content'>
                                 {Object.keys(localData.text ?? {}).length > 0 ? (
                                     Object.keys(localData.text ?? {}).map((question) => (
@@ -224,12 +226,12 @@ function SurveyResults() {
                                         />
                                     ))
                                 ) : (
-                                    <p>Il n'y a pas de données enregistrée pour cette période</p>
+                                    <p>{t('dashboard.noDataForPeriod')}</p>
                                 )}
                             </div>
                         </div>
 
-                        <h3>Réponses des questions à choix multiples</h3>
+                        <h3>{t('dashboard.multipleChoiceAnswers')}</h3>
                         <div className='table_commentary_content'>
                             {Object.keys(localData.radio ?? {}).length > 0 ? (
                                 Object.entries(localData.radio ?? {}).map(([answer, data]) => (
@@ -246,7 +248,7 @@ function SurveyResults() {
                                     />
                                 ))
                             ) : (
-                                <p>Il n'y a pas de données enregistrée pour cette période</p>
+                                <p>{t('dashboard.noDataForPeriod')}</p>
                             )}
                         </div>
 
@@ -261,7 +263,7 @@ function SurveyResults() {
                                     window.location.href = url;
                                 }}
                             >
-                                Exporter les résultats
+                                {t('dashboard.exportResults')}
                             </Button>
                         </div>
                     </article>
@@ -270,7 +272,7 @@ function SurveyResults() {
                 <aside className="periodBlock">
                     <ToggleSwitch
                         inputTitle="the-title"
-                        label="Utiliser une période donnée"
+                        label={t('dashboard.useGivenPeriod')}
                         labelPosition="left"
                         checked={isToogleActive}
                         onChange={handleToogleChange}
@@ -280,7 +282,7 @@ function SurveyResults() {
                             <div className="separator" />
                             <div className="hiddenPeriodBlock">
                                 <Input
-                                    label="Date de début"
+                                    label={t('dashboard.startDate')}
                                     nativeInputProps={{
                                         type: 'date',
                                         value: startDate ? new Date(startDate).toISOString().split("T")[0] : "",
@@ -288,7 +290,7 @@ function SurveyResults() {
                                     }}
                                 />
                                 <Input
-                                    label="Date de fin"
+                                    label={t('dashboard.endDate')}
                                     nativeInputProps={{
                                         type: 'date',
                                         value: endDate ? new Date(endDate).toISOString().split("T")[0] : "",
@@ -298,7 +300,7 @@ function SurveyResults() {
                             </div>
                             <div className="validButton">
                                 <Button onClick={applyDashboardDateChanges}>
-                                    <span>Valider</span>
+                                    <span>{t('dashboard.validate')}</span>
                                 </Button>
                             </div>
                         </div>

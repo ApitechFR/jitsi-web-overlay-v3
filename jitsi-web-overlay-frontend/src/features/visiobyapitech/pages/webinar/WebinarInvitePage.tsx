@@ -1,11 +1,13 @@
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { WebinarService } from '@/api/services/webinar/webinar.service';
 import CircularProgress from '@mui/material/CircularProgress';
 import JitsiMeetWrapper from '../Jitsi_meet/JitsiMeetWrapper';
 
 export default function WebinarInvitePage() {
+    const { t } = useTranslation();
     const { token } = useParams<{ token: string }>();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -14,7 +16,7 @@ export default function WebinarInvitePage() {
 
     useEffect(() => {
         if (!token) {
-            setError('Lien d’invitation invalide.');
+            setError(t('webinarInvite.invalidLink'));
             setLoading(false);
             return;
         }
@@ -25,10 +27,10 @@ export default function WebinarInvitePage() {
                 setLoading(false);
             })
             .catch((e) => {
-                setError(e.message || 'Lien d’invitation expiré ou invalide.');
+                setError(e.message || t('webinarInvite.expiredOrInvalid'));
                 setLoading(false);
             });
-    }, [token]);
+    }, [token, t]);
 
     if (loading) return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
@@ -43,7 +45,7 @@ export default function WebinarInvitePage() {
         <JitsiMeetWrapper
             conferenceName={roomName}
             jwt={jwt}
-            displayName={"Spectateur"}
+            displayName={t('webinarInvite.spectator')}
             user={undefined}
             isWebinarInvite={true}
         />

@@ -32,7 +32,6 @@ export default function HeaderJoona() {
   const [dataChangelog, setDataChangelog] = useState<any>(null);
   const [modalContent, setModalContent] = useState<string | null>(null);
   const [currentModalId, setCurrentModalId] = useState<string | null>(null);
-  const [currentLang, setCurrentLang] = useState<string | null>("FR");
 
   useEffect(() => {
     const changelogUrl = cfg.VITE_APP_CHANGELOG_URL || '/infos.json';
@@ -72,15 +71,14 @@ export default function HeaderJoona() {
   const navItems = [
     ...(authenticated
       ? [
-        { linkProps: { href: '/', target: '_self' }, text: 'Accueil' },
-        { linkProps: { href: '/profile', target: '_self' }, text: 'Mon compte' },
-        // { linkProps: { href: '#', target: '_self' }, text: 'Conférences' },
+        { linkProps: { href: '/', target: '_self' }, text: t('header.home') },
+        { linkProps: { href: '/profile', target: '_self' }, text: t('header.account') },
+        // { linkProps: { href: '#', target: '_self' }, text: t('header.conferences') },
         ...(isUserAdmin(user)
           ? [
-
-            //{ linkProps: { href: '/admin', target: '_self' }, text: 'Administration' },
-            { linkProps: { href: '/replays', target: '_self' }, text: 'Conférences' },
-            { linkProps: { href: '/dashboard', target: '_self' }, text: 'Dashboard' },
+            //{ linkProps: { href: '/admin', target: '_self' }, text: t('header.admin') },
+            { linkProps: { href: '/replays', target: '_self' }, text: t('header.conferences') },
+            { linkProps: { href: '/dashboard', target: '_self' }, text: t('header.dashboard') },
           ]
           : []),
       ]
@@ -94,7 +92,7 @@ export default function HeaderJoona() {
         className: 'fr-btn--icon-right',
       },
       iconId: 'fr-icon-pulse-line',
-      text: 'Test matériel',
+      text: t('header.hardwareTest'),
     },
     {
 
@@ -111,7 +109,7 @@ export default function HeaderJoona() {
         className: 'fr-btn fr-btn--icon-right',
       },
       iconId: 'fr-icon-information-line',
-      text: 'Informations',
+      text: t('header.information'),
     },
     {
       buttonProps: {
@@ -128,7 +126,7 @@ export default function HeaderJoona() {
           className: 'fr-btn--icon-right',
         },
         iconId: 'fr-icon-logout-box-r-line',
-        text: 'Se déconnecter',
+        text: t('header.logout'),
       }
       : {
         buttonProps: {
@@ -136,7 +134,7 @@ export default function HeaderJoona() {
           className: 'fr-btn fr-btn--icon-right',
         },
         iconId: 'fr-icon-account-circle-fill',
-        text: 'Connexion',
+        text: t('header.login'),
       },
   ];
 
@@ -157,8 +155,7 @@ export default function HeaderJoona() {
           }
           homeLinkProps={{
             href: '/',
-            title:
-              "Accueil - Nom de l’entité (ministère, secrétariat d‘état, gouvernement)",
+            title: t('header.homeTitle'),
           }}
           id="fr-header-header-with-quick-access-items"
           quickAccessItems={quickAccessItems as any}
