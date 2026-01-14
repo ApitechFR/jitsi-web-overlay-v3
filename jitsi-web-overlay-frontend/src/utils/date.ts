@@ -1,8 +1,11 @@
 export const formatDate = (isoString: string): string => {
-    const date = new Date(isoString);
-    return new Intl.DateTimeFormat('fr-FR', {
-        timeZone: 'Europe/Paris',
+    console.log('Formatting date:', isoString);
+    console.log('returned value:', new Intl.DateTimeFormat('fr-FR', {
         dateStyle: 'long',
         timeStyle: 'short',
-    }).format(date);
+    }).format(new Date(isoString)));
+    return new Intl.DateTimeFormat('fr-FR', {
+        dateStyle: 'long',
+        timeStyle: 'short',
+    }).format(new Date(isoString));
 };
