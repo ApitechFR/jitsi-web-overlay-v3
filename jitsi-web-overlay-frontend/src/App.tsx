@@ -1,5 +1,3 @@
-import Home from './features/webconf/pages/home/Home';
-import Layout from './features/webconf/components/layout/Layout';
 import { useState, useEffect } from 'react';
 import {
   Routes,
@@ -8,23 +6,14 @@ import {
   Navigate,
   useLocation,
 } from 'react-router-dom';
-import FAQ from './features/webconf/pages/FAQ/FAQ.md';
-import DonneesPerso from './features/webconf/pages/DonneesPerso/DonneesPerso.md';
-import Contact from './features/webconf/pages/Contact/Contact.md';
-import Cgu from './features/webconf/pages/Cgu/Cgu.md';
-import Apropos from './features/webconf/pages/Apropos/Apropos.md';
-import Accessibilite from './features/webconf/pages/Accessibilite/Accessibilite.md';
-import Mentionslegales from './features/webconf/pages/MentionsLegales/MentionsLegales.md';
+import Mentionslegales from './pages/MentionsLegales/MentionsLegales.md';
 import MentionslegalesVisioByApitech from './pages/staticPagesBuilder/MentionsLegales.md';
 import StaticPagesBuilder from './pages/staticPagesBuilder/StaticPagesBuilder';
-import Feedback from "./features/webconf/pages/feedback/Feedback";
-import BrowserTest from './features/webconf/pages/browserTest/BrowserTest';
 import BrowserTestJoona from './pages/browserTestJoona/BrowserTestJoona';
 import LoginCallback from './pages/login/LoginCallback';
 import LogoutCallback from './pages/login/LogoutCallback';
 import Error from './pages/Error/Error';
 import MuiDsfrThemeProvider from '@codegouvfr/react-dsfr/mui';
-import PlanDuSite from './features/webconf/pages/PlanDuSite/PlanDuSite';
 import Profile from './pages/Profile/Profile';
 import Dashboard from './pages/Dashboard/Dashboard';
 import LayoutJoona from './components/Layout/LayoutJoona';
@@ -194,7 +183,6 @@ function AppInner() {
     <MuiDsfrThemeProvider>
       <RouteThemeController />
       <Routes>
-        {/* {AppTemplate === 'joona' && ( */}
           <>
             <Route
               path=":conferenceName"
@@ -281,98 +269,10 @@ function AppInner() {
               />
             </Route>
           </>
-        {/* )} */}
 
         {AppTemplate === 'webconf' && (
           <>
-            <Route
-              path="/login_callback"
-              element={<LoginCallback />}
-            />
-            <Route
-              path="/login/callback"
-              element={<LoginCallback />}
-            />
-            <Route path="/logout/callback" element={<LogoutCallback />} />
-
-            <Route path="/" element={<Layout />}>
-              <Route
-                index
-                element={
-                  <Home
-                    roomName={roomName}
-                    setRoomName={setRoomName}
-                    setIsWhitelisted={setIsWhitelisted}
-                    isWhitelisted={isWhitelisted}
-                    email={email}
-                    setEmail={setEmail}
-                    sendEmail={sendEmail}
-                    joinConference={joinConference}
-                    authenticated={!!authenticated}
-                    conferenceNumber={conferenceNumber}
-                    participantNumber={participantsNumber}
-                  />
-                }
-              />
-
-              {/* Si VITE_API_URL est un chemin relatif, on redirige ; sinon on revient à la home */}
-              <Route
-                path="/wce-api/*"
-                element={
-                  <Navigate
-                    to={
-                      cfg.VITE_API_URL?.startsWith('/')
-                        ? cfg.VITE_API_URL
-                        : '/'
-                    }
-                    replace
-                  />
-                }
-              />
-
               <Route path="error" element={<Error error={error} />} />
-              <Route path="feedback" element={<Feedback setError={setError} />} />
-              <Route path="browser_test" element={<BrowserTest />} />
-              <Route
-                path="faq"
-                element={<StaticPagesBuilder markDown={FAQ} contentTable={true} />}
-              />
-              <Route
-                path="donneespersonnelles"
-                element={
-                  <StaticPagesBuilder
-                    markDown={DonneesPerso}
-                    contentTable={true}
-                  />
-                }
-              />
-              <Route
-                path="contact"
-                element={
-                  <StaticPagesBuilder markDown={Contact} contentTable={false} />
-                }
-              />
-              <Route
-                path="apropos"
-                element={
-                  <StaticPagesBuilder markDown={Apropos} contentTable={true} />
-                }
-              />
-              <Route
-                path="cgu"
-                element={
-                  <StaticPagesBuilder markDown={Cgu} contentTable={true} />
-                }
-              />
-              <Route
-                path="accessibilite"
-                element={
-                  <StaticPagesBuilder
-                    markDown={Accessibilite}
-                    contentTable={true}
-                  />
-                }
-              />
               <Route
                 path="mentionslegales"
                 element={
@@ -382,8 +282,6 @@ function AppInner() {
                   />
                 }
               />
-              <Route path="plan-du-site" element={<PlanDuSite />} />
-            </Route>
           </>
         )}
       </Routes>
