@@ -4,12 +4,6 @@
     mask-image: url("../../icons/system/arrow-right-line.svg");
 }
 
-.fr-icon-clipboard-line::before,
-.fr-icon-clipboard-line::after {
-    -webkit-mask-image: url("../../icons/document/clipboard-line.svg");
-    mask-image: url("../../icons/document/clipboard-line.svg");
-}
-
 .fr-icon-external-link-fill::before,
 .fr-icon-external-link-fill::after {
     -webkit-mask-image: url("../../icons/system/external-link-fill.svg");
@@ -58,6 +52,12 @@
     mask-image: url("../../icons/user/user-fill.svg");
 }
 
+.fr-icon-clipboard-line::before,
+.fr-icon-clipboard-line::after {
+    -webkit-mask-image: url("../../icons/document/clipboard-line.svg");
+    mask-image: url("../../icons/document/clipboard-line.svg");
+}
+
 .fr-icon-theme-fill::before,
 .fr-icon-theme-fill::after {
     -webkit-mask-image: url("../../icons/system/fr--theme-fill.svg");
@@ -68,11 +68,6 @@
     .fr-icon-arrow-right-line::before,
     .fr-icon-arrow-right-line::after {
         background-image: url("../../icons/system/arrow-right-line.svg");
-    }
-    
-    .fr-icon-clipboard-line::before,
-    .fr-icon-clipboard-line::after {
-        background-image: url("../../icons/document/clipboard-line.svg");
     }
     
     .fr-icon-external-link-fill::before,
@@ -113,6 +108,11 @@
     .fr-icon-user-fill::before,
     .fr-icon-user-fill::after {
         background-image: url("../../icons/user/user-fill.svg");
+    }
+    
+    .fr-icon-clipboard-line::before,
+    .fr-icon-clipboard-line::after {
+        background-image: url("../../icons/document/clipboard-line.svg");
     }
     
     .fr-icon-theme-fill::before,

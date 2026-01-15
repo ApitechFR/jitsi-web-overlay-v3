@@ -15,25 +15,25 @@ import Cgu from './features/webconf/pages/Cgu/Cgu.md';
 import Apropos from './features/webconf/pages/Apropos/Apropos.md';
 import Accessibilite from './features/webconf/pages/Accessibilite/Accessibilite.md';
 import Mentionslegales from './features/webconf/pages/MentionsLegales/MentionsLegales.md';
-import MentionslegalesVisioByApitech from './features/visiobyapitech/pages/staticPagesBuilder/MentionsLegales.md';
-import StaticPagesBuilder from './features/webconf/pages/staticPagesBuilder/StaticPagesBuilder';
+import MentionslegalesVisioByApitech from './pages/staticPagesBuilder/MentionsLegales.md';
+import StaticPagesBuilder from './pages/staticPagesBuilder/StaticPagesBuilder';
 import Feedback from "./features/webconf/pages/feedback/Feedback";
 import BrowserTest from './features/webconf/pages/browserTest/BrowserTest';
-import BrowserTestJoona from './features/visiobyapitech/pages/browserTestJoona/BrowserTestJoona';
-import LoginCallback from './features/webconf/pages/login/LoginCallback';
-import LogoutCallback from './features/webconf/pages/login/LogoutCallback';
-import Error from './features/webconf/pages/Error/Error';
+import BrowserTestJoona from './pages/browserTestJoona/BrowserTestJoona';
+import LoginCallback from './pages/login/LoginCallback';
+import LogoutCallback from './pages/login/LogoutCallback';
+import Error from './pages/Error/Error';
 import MuiDsfrThemeProvider from '@codegouvfr/react-dsfr/mui';
 import PlanDuSite from './features/webconf/pages/PlanDuSite/PlanDuSite';
-import Profile from './features/visiobyapitech/pages/Profile/Profile';
-import Dashboard from './features/visiobyapitech/pages/Dashboard/Dashboard';
-import LayoutJoona from './features/visiobyapitech/components/Layout/LayoutJoona';
-import HomeJoona from './features/visiobyapitech/pages/Home/HomeJoona';
-import JitsiMeet from './features/visiobyapitech/pages/Jitsi_meet/jitsi_meet';
-import Admin from './features/visiobyapitech/pages/Admin/Admin';
-import FeedbackJoona from './features/visiobyapitech/pages/Feedback/FeedbackJoona';
-import ReplayList from './features/visiobyapitech/pages/ReplayList/ReplayList';
-import ReplayListGrouped from './features/visiobyapitech/pages/ReplayList/ReplayListGrouped';
+import Profile from './pages/Profile/Profile';
+import Dashboard from './pages/Dashboard/Dashboard';
+import LayoutJoona from './components/Layout/LayoutJoona';
+import HomeJoona from './pages/Home/HomeJoona';
+import JitsiMeet from './pages/Jitsi_meet/jitsi_meet';
+import Admin from './pages/Admin/Admin';
+import FeedbackJoona from './pages/Feedback/FeedbackJoona';
+import ReplayList from './pages/ReplayList/ReplayList';
+import ReplayListGrouped from './pages/ReplayList/ReplayListGrouped';
 import PrivateRoute from './auth/PrivateRoute';
 import AdminRoute from './auth/AdminRoute';
 import { useAuth } from './auth/useAuth';
@@ -194,7 +194,7 @@ function AppInner() {
     <MuiDsfrThemeProvider>
       <RouteThemeController />
       <Routes>
-        {AppTemplate === 'joona' && (
+        {/* {AppTemplate === 'joona' && ( */}
           <>
             <Route
               path=":conferenceName"
@@ -281,7 +281,7 @@ function AppInner() {
               />
             </Route>
           </>
-        )}
+        {/* )} */}
 
         {AppTemplate === 'webconf' && (
           <>
