@@ -19,10 +19,10 @@ export class UsersController {
   ): Promise<User> {
     return this.userService.createUser(userData);
   }
-  @Get('ldap/all')
-  async getAllUsersLDAP() {
-    return this.userService.findAllLDAP();
-  }
+  // @Get('ldap/all')
+  // async getAllUsersLDAP() {
+  //   return this.userService.findAllLDAP();
+  // }
 
   
   @Get('oidc/users')

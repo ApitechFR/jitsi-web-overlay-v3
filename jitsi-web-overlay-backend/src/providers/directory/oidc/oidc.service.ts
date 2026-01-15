@@ -1,53 +1,19 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Client } from 'ldapts';
 import * as queryString from 'querystring';
+import { IDirectory } from '../directory.interface';
 
 @Injectable()
-export class LdapService implements OnModuleDestroy {
-    private readonly logger = new Logger(LdapService.name);
-    private readonly client: Client;
+export class OidcService implements IDirectory {
+    private readonly logger = new Logger(OidcService.name);
 
     constructor(
         private readonly configService: ConfigService,
         private readonly httpService: HttpService,
-    ) {
-        this.client = new Client({
-            url: this.configService.get<string>('LDAP_URL'),
-            timeout: 100000,
-            connectTimeout: 100000,
-        });
-    }
+    ) {}
 
-    async onModuleDestroy() {
-        await this.client.unbind();
-    }
-
-    async getAllLdapUsers(): Promise<any[]> {
-        const bindDN = this.configService.get<string>('LDAP_BIND_DN');
-        const bindPassword = this.configService.get<string>('LDAP_PASSWORD');
-        const baseDN = this.configService.get<string>('LDAP_BASE_DN');
-
-        try {
-            await this.client.bind(bindDN, bindPassword);
-
-            const { searchEntries } = await this.client.search(baseDN, {
-                scope: 'sub',
-                filter: '(objectClass=inetOrgPerson)',
-                attributes: ['uidNumber', 'sn', 'cn', 'Email', 'displayName'],
-            });
-
-            console.log('LDAP search entries:', searchEntries);
-
-            return searchEntries;
-        } catch (err) {
-            this.logger.error('LDAP error', err);
-            throw err;
-        }
-    }
-
-    async getAllOidcUsers(): Promise<any[]> {
+    async getDirectoryUsers(): Promise<any[]> {
 
         const usersEndpoint = this.configService.get<string>('OIDC_USERS_ENDPOINT');
         const tokenEndpoint = this.configService.get<string>('TOKEN_ENDPOINT');

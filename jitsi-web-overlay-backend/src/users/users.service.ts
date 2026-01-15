@@ -1,4 +1,5 @@
 import {
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -6,14 +7,15 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/users.entity';
 import { In, LessThan, Repository } from 'typeorm';
-import { LdapService } from '../ldap/ldap.service';
+import { IDirectory } from '../providers/directory/directory.interface';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-    private readonly ldapService: LdapService,
+    @Inject('IDirectory')
+    private readonly directoryService: IDirectory,
   ) { }
 
   // Create user
@@ -128,12 +130,13 @@ export class UsersService {
 
   //--------------------------OIDC-------------------------------------------
 
+  //juste pour tester
   async getAllOidcUsers() {
-    return this.ldapService.getAllOidcUsers();
+    return this.directoryService.getDirectoryUsers();
   }
 
   async getUsersWithPwdEndTime() {
-    const users = await this.ldapService.getAllOidcUsers();
+    const users = await this.directoryService.getDirectoryUsers();
     return users.filter(u => u.pwdEndTime === true || u.pwdEndTime === 1 || u.pwdEndTime === '1' || u.pwdEndTime === 'true');
   }
 
@@ -166,14 +169,14 @@ export class UsersService {
 
   //---------------------------LDAP------------------------------------------
 
-  async findAllLDAP() {
-    const users = await this.ldapService.getAllLdapUsers();
-    return users.map(u => ({
-      uid: u.uidNumber,
-      name: u.cn,
-      email: u.Email,
-    }));
-  }
+  // async findAllLDAP() {
+  //   const users = await this.ldapService.getAllLdapUsers();
+  //   return users.map(u => ({
+  //     uid: u.uidNumber,
+  //     name: u.cn,
+  //     email: u.Email,
+  //   }));
+  // }
 
   private async deactivateUserIfNeeded(userUid: string): Promise<boolean> {
     const result = await this.userRepository

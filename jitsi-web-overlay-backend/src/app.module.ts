@@ -23,7 +23,8 @@ import { RoomModule } from './room/room.module';
 import { dataSourceOptions } from '../db/datasource';
 import { ParticipantModule } from './participant/participant.module';
 import { AutomationModule } from './automation/automation.module';
-import { LdapModule } from './ldap/ldap.module';
+import { LdapModule } from './providers/directory/ldap/ldap.module';
+import { OidcModule } from './providers/directory/oidc/oidc.module';
 
 
 @Module({
@@ -92,6 +93,7 @@ import { LdapModule } from './ldap/ldap.module';
     ParticipantModule,
     AutomationModule,
     LdapModule,
+    OidcModule,
   ],
   controllers: [AppController],
   providers: [AppService, RoomNameValidator],

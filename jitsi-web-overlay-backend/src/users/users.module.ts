@@ -3,15 +3,17 @@ import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { User } from './entities/users.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { LdapModule } from '../ldap/ldap.module';
+import { DirectoryModule } from '../providers/directory/directory.module';
 
 @Module({
   imports: [
-    LdapModule,
+    DirectoryModule,
     TypeOrmModule.forFeature([User]),
   ],
-  providers: [UsersService],
+  providers: [
+    UsersService,
+  ],
   controllers: [UsersController],
   exports: [UsersService],
 })
-export class UsersModule {}
+export class UsersModule { }
