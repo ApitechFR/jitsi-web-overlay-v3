@@ -28,12 +28,25 @@ export class AutomationService {
     }
 
 
+    /**
+     * Désactivation des utilisateurs
+    */
+    async runDeactivateUsersWithExpiredPassword() {
+        this.logger.log('[Users] Deactivate ussers started');
+        
+        const result = await this.userService.deactivateUsersWithExpiredPassword();
+        this.logger.log(`[Users] Deactivated count=${result.checked}`);
+        this.logger.log(`[Users] Deactivated users uids=${result.deactivated.join(', ')}`);
+
+        this.logger.log('[Users] Deactivate users finished');
+    }
+
 
     /**
      * Désactivation des conférences des utilisateurs inactifs
     */
     async runDeactivateConferences() {
-        this.logger.log('[Conference] Deactivation started');
+        this.logger.log('[Conference] Deactivation conferences started');
 
         const result = await this.conferenceService.disableAllInactiveUserConferences();
 
@@ -44,7 +57,7 @@ export class AutomationService {
         this.logger.log(`[Conference] Deactivated count=${result.totalDisabled}`);
         this.logger.log(`[Conference] Deactivated conferences uids=${result.disabledConferences.join(', ')}`);
 
-        this.logger.log('[Conference] Deactivation finished');
+        this.logger.log('[Conference] Deactivation conferences finished');
     }
 
 
@@ -86,6 +99,7 @@ export class AutomationService {
     async dailyAutomation() {
         this.logger.log('=== DAILY AUTOMATION START ===');
 
+        await this.runDeactivateUsersWithExpiredPassword();
         await this.runDeactivateConferences();
         await this.applyRetention();
 

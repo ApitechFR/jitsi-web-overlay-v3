@@ -5,8 +5,8 @@ import { RolesGuard } from '../authentication/roles.guard';
 import { UsersService } from './users.service';
 import { User } from './entities/users.entity';
 
-// @UseGuards(JwtAuthGuard, RolesGuard)
-// @Roles('admin')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin')
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) { }
@@ -24,12 +24,10 @@ export class UsersController {
     return this.userService.findAllLDAP();
   }
 
-  // Deactivate users with pwdEndTime
-  @Post('pwd-endtime/deactivate')
-  async deactivateExpiredPasswords(
-    @Body() users: any[],
-  ) {
-    return this.userService.deactivateUsersWithExpiredPassword(users);
+  
+  @Get('oidc/users')
+  async getOidcUsers() {
+    return this.userService.getAllOidcUsers();
   }
 
   // Get all user

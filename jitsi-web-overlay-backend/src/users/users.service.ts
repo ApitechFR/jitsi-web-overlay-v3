@@ -126,24 +126,26 @@ export class UsersService {
   }
 
 
-  //-------------------------------------------------------------------------
+  //--------------------------OIDC-------------------------------------------
 
-  async findAllLDAP() {
-    const users = await this.ldapService.getAllUsers();
-    return users.map(u => ({
-      uid: u.uidNumber,
-      name: u.cn,
-      email: u.Email,
-    }));
+  async getAllOidcUsers() {
+    return this.ldapService.getAllOidcUsers();
   }
 
-  async deactivateUsersWithExpiredPassword(
-    externalUsers: any[],
-  ): Promise<{ checked: number; deactivated: string[] }> {
+  async getUsersWithPwdEndTime() {
+    const users = await this.ldapService.getAllOidcUsers();
+    return users.filter(u => u.pwdEndTime === true || u.pwdEndTime === 1 || u.pwdEndTime === '1' || u.pwdEndTime === 'true');
+  }
+
+  async deactivateUsersWithExpiredPassword(): Promise<{
+    checked: number;
+    deactivated: string[];
+  }> {
+    const expiredUsers = await this.getUsersWithPwdEndTime();
     const deactivatedUids: string[] = [];
 
-    for (const extUser of externalUsers) {
-      if (!this.hasExpiredPassword(extUser)) continue;
+    for (const extUser of expiredUsers) {
+      if (!extUser?.Email) continue;
 
       const user = await this.findByEmail(extUser.Email);
       if (!user) continue;
@@ -155,13 +157,22 @@ export class UsersService {
     }
 
     return {
-      checked: externalUsers.length,
+      checked: expiredUsers.length,
       deactivated: deactivatedUids,
     };
   }
 
-  private hasExpiredPassword(user: any): boolean {
-    return user.pwdEndTime !== null && user.pwdEndTime !== 0;
+
+
+  //---------------------------LDAP------------------------------------------
+
+  async findAllLDAP() {
+    const users = await this.ldapService.getAllLdapUsers();
+    return users.map(u => ({
+      uid: u.uidNumber,
+      name: u.cn,
+      email: u.Email,
+    }));
   }
 
   private async deactivateUserIfNeeded(userUid: string): Promise<boolean> {

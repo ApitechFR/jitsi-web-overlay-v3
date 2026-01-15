@@ -122,9 +122,9 @@ export class AppModule implements NestModule {
       .forRoutes({ path: 'replays*', method: RequestMethod.GET });
 
     //user
-    // consumer
-    //   .apply(OriginMiddleware)
-    //   .forRoutes({ path: 'users*', method: RequestMethod.GET });
+    consumer
+      .apply(OriginMiddleware)
+      .forRoutes({ path: 'users*', method: RequestMethod.GET });
 
     //rooms
     consumer
