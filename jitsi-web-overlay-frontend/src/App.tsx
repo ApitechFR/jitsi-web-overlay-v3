@@ -1,43 +1,29 @@
-import Home from './features/webconf/pages/home/Home';
-import Layout from './features/webconf/components/layout/Layout';
 import { useState, useEffect } from 'react';
 import {
   Routes,
   Route,
   useNavigate,
-  Navigate,
-  useLocation,
 } from 'react-router-dom';
-import FAQ from './features/webconf/pages/FAQ/FAQ.md';
-import DonneesPerso from './features/webconf/pages/DonneesPerso/DonneesPerso.md';
-import Contact from './features/webconf/pages/Contact/Contact.md';
-import Cgu from './features/webconf/pages/Cgu/Cgu.md';
-import Apropos from './features/webconf/pages/Apropos/Apropos.md';
-import Accessibilite from './features/webconf/pages/Accessibilite/Accessibilite.md';
-import Mentionslegales from './features/webconf/pages/MentionsLegales/MentionsLegales.md';
-import MentionslegalesVisioByApitech from './features/visiobyapitech/pages/staticPagesBuilder/MentionsLegales.md';
-import StaticPagesBuilder from './features/webconf/pages/staticPagesBuilder/StaticPagesBuilder';
-import Feedback from "./features/webconf/pages/feedback/Feedback";
-import BrowserTest from './features/webconf/pages/browserTest/BrowserTest';
-import BrowserTestJoona from './features/visiobyapitech/pages/browserTestJoona/BrowserTestJoona';
-import LoginCallback from './features/webconf/pages/login/LoginCallback';
-import LogoutCallback from './features/webconf/pages/login/LogoutCallback';
-import Error from './features/webconf/pages/Error/Error';
+import Mentionslegales from './pages/MentionsLegales/MentionsLegales.md';
+import MentionslegalesVisioByApitech from './pages/staticPagesBuilder/MentionsLegales.md';
+import StaticPagesBuilder from './pages/staticPagesBuilder/StaticPagesBuilder';
+import BrowserTestJoona from './pages/browserTestJoona/BrowserTestJoona';
+import LoginCallback from './pages/login/LoginCallback';
+import LogoutCallback from './pages/login/LogoutCallback';
+import Error from './pages/Error/Error';
 import MuiDsfrThemeProvider from '@codegouvfr/react-dsfr/mui';
-import PlanDuSite from './features/webconf/pages/PlanDuSite/PlanDuSite';
-import Profile from './features/visiobyapitech/pages/Profile/Profile';
-import WebinarInvitePage from './features/visiobyapitech/pages/webinar/WebinarInvitePage';
-import Dashboard from './features/visiobyapitech/pages/Dashboard/Dashboard';
-import LayoutJoona from './features/visiobyapitech/components/Layout/LayoutJoona';
-import HomeJoona from './features/visiobyapitech/pages/Home/HomeJoona';
-import JitsiMeet from './features/visiobyapitech/pages/Jitsi_meet/jitsi_meet';
-import Admin from './features/visiobyapitech/pages/Admin/Admin';
-import FeedbackJoona from './features/visiobyapitech/pages/Feedback/FeedbackJoona';
-import ReplayList from './features/visiobyapitech/pages/ReplayList/ReplayList';
-import ReplayListGrouped from './features/visiobyapitech/pages/ReplayList/ReplayListGrouped';
+import WebinarInvitePage from './pages/webinar/WebinarInvitePage';
+import Profile from './pages/Profile/Profile';
+import Dashboard from './pages/Dashboard/Dashboard';
+import LayoutJoona from './components/Layout/LayoutJoona';
+import HomeJoona from './pages/Home/HomeJoona';
+import JitsiMeet from './pages/Jitsi_meet/jitsi_meet';
+import Admin from './pages/Admin/Admin';
+import FeedbackJoona from './pages/Feedback/FeedbackJoona';
+import ReplayList from './pages/ReplayList/ReplayList';
+import ReplayListGrouped from './pages/ReplayList/ReplayListGrouped';
 import PrivateRoute from './auth/PrivateRoute';
 import AdminRoute from './auth/AdminRoute';
-import { useAuth } from './auth/useAuth';
 import RouteThemeController from './RouteThemeController';
 import api from './axios/axios';
 
@@ -72,9 +58,6 @@ function AppInner() {
   const [conferenceNumber, setConferenceNumber] = useState(0);
   const [participantsNumber, setparticipantsNumber] = useState(0);
 
-  const location = useLocation();
-  const { authenticated } = useAuth();
-
   /* === LIT LA CONFIG RUNTIME AU LIEU DE import.meta.env === */
 
   const AppTemplate = (cfg.VITE_APP_TEMPLATE as string) || 'joona';
@@ -84,13 +67,13 @@ function AppInner() {
       document.title = cfg.VITE_APP_TITLE;
     }
     if (cfg?.VITE_APP_FAVICON_URL) {
-      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null;
+      let link = document.querySelector("link[rel~='icon']");
       if (!link) {
         link = document.createElement('link');
-        link.rel = 'icon';
+        (link as HTMLLinkElement).rel = 'icon';
         document.head.appendChild(link);
       }
-      link.href = cfg.VITE_APP_FAVICON_URL;
+      (link as HTMLLinkElement).href = cfg.VITE_APP_FAVICON_URL;
     }
   }, [cfg?.VITE_APP_TITLE, cfg?.VITE_APP_FAVICON_URL]);
 
@@ -128,7 +111,7 @@ function AppInner() {
   };
 
   useEffect(() => {
-    if (window.location.pathname.includes("/browser_test")) {
+    if (globalThis.location.pathname.includes("/browser_test")) {
       document.body.classList.add("no-iframe-style");
     } else {
       document.body.classList.remove("no-iframe-style");
@@ -196,203 +179,112 @@ function AppInner() {
     <MuiDsfrThemeProvider>
       <RouteThemeController />
       <Routes>
-        <Route path="/webinar/invite/:token" element={<WebinarInvitePage />} />
-        {AppTemplate === 'joona' && (
-          <>
+        <>
+          <Route path="/webinar/invite/:token" element={<WebinarInvitePage />} />
+          <Route
+            path=":conferenceName"
+            element={
+              <PrivateRoute>
+                <JitsiMeet />
+              </PrivateRoute>
+            }
+          />
+          <Route path="/logout/callback" element={<LogoutCallback />} />
+          <Route
+            path="/login_callback"
+            element={<LoginCallback />}
+          />
+          <Route path="/auth/logout" element={<LogoutCallback />} />
+          <Route
+            path="/login/callback"
+            element={<LoginCallback />}
+          />
+          <Route path="/auth/callback" element={<LoginCallback />} />
+          <Route path="/" element={<LayoutJoona />}>
             <Route
-              path=":conferenceName"
+              index
+              element={
+                <HomeJoona
+                  conferenceName={roomName}
+                  setConferenceName={setRoomName}
+                  setIsWhitelisted={setIsWhitelisted}
+                  isWhitelisted={isWhitelisted}
+                  email={email}
+                  setEmail={setEmail}
+                  sendEmail={sendEmail}
+                  joinConference={joinConference}
+                  conferenceNumber={conferenceNumber}
+                  participantNumber={participantsNumber}
+                />
+              }
+            />
+            <Route
+              path="profile"
               element={
                 <PrivateRoute>
-                  <JitsiMeet />
+                  <Profile />
                 </PrivateRoute>
               }
             />
-            <Route path="/logout/callback" element={<LogoutCallback />} />
-            <Route
-              path="/login_callback"
-              element={<LoginCallback />}
-            />
-            <Route path="/auth/logout" element={<LogoutCallback />} />
-            <Route
-              path="/login/callback"
-              element={<LoginCallback />}
-            />
-            <Route path="/auth/callback" element={<LoginCallback />} />
-            <Route path="/" element={<LayoutJoona />}>
-              <Route
-                index
-                element={
-                  <HomeJoona
-                    conferenceName={roomName}
-                    setConferenceName={setRoomName}
-                    setIsWhitelisted={setIsWhitelisted}
-                    isWhitelisted={isWhitelisted}
-                    email={email}
-                    setEmail={setEmail}
-                    sendEmail={sendEmail}
-                    joinConference={joinConference}
-                    conferenceNumber={conferenceNumber}
-                    participantNumber={participantsNumber}
-                  />
-                }
-              />
-              <Route
-                path="profile"
-                element={
-                  <PrivateRoute>
-                    <Profile />
-                  </PrivateRoute>
-                }
-              />
-              <Route path="visioreplay/:conference_uid" element={<PrivateRoute><ReplayList /></PrivateRoute>} />
+            <Route path="visioreplay/:conference_uid" element={<PrivateRoute><ReplayList /></PrivateRoute>} />
 
-              <Route
-                path="replays"
-                element={
-                  <AdminRoute>
-                    <ReplayListGrouped />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="dashboard"
-                element={
-                  <AdminRoute>
-                    <Dashboard />
-                  </AdminRoute>
-                }
-              />
+            <Route
+              path="replays"
+              element={
+                <AdminRoute>
+                  <ReplayListGrouped />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="dashboard"
+              element={
+                <AdminRoute>
+                  <Dashboard />
+                </AdminRoute>
+              }
+            />
 
-              <Route
-                path="admin"
-                element={
-                  <AdminRoute>
-                    <Admin />
-                  </AdminRoute>
-                }
-              />
-              <Route path="feedback" element={<FeedbackJoona />} />
-              <Route path="browser_test" element={<BrowserTestJoona />} />
-              <Route
-                path="mentionslegales"
-                element={
-                  <StaticPagesBuilder
-                    markDown={MentionslegalesVisioByApitech}
-                    contentTable={false}
-                  />
-                }
-              />
-            </Route>
-          </>
-        )}
+            <Route
+              path="admin"
+              element={
+                <AdminRoute>
+                  <Admin />
+                </AdminRoute>
+              }
+            />
+            <Route path="feedback" element={<FeedbackJoona />} />
+            <Route path="browser_test" element={<BrowserTestJoona />} />
+            <Route
+              path="mentionslegales"
+              element={
+                <StaticPagesBuilder
+                  markDown={MentionslegalesVisioByApitech}
+                  contentTable={false}
+                />
+              }
+            />
+          </Route>
+        </>
 
         {AppTemplate === 'webconf' && (
           <>
+            <Route path="error" element={<Error error={error} />} />
             <Route
-              path="/login_callback"
-              element={<LoginCallback />}
+              path="mentionslegales"
+              element={
+                <StaticPagesBuilder
+                  markDown={Mentionslegales}
+                  contentTable={true}
+                />
+              }
             />
-            <Route
-              path="/login/callback"
-              element={<LoginCallback />}
-            />
-            <Route path="/logout/callback" element={<LogoutCallback />} />
-
-            <Route path="/" element={<Layout />}>
-
-              <Route
-                index
-                element={
-                  <Home
-                    roomName={roomName}
-                    setRoomName={setRoomName}
-                    setIsWhitelisted={setIsWhitelisted}
-                    isWhitelisted={isWhitelisted}
-                    email={email}
-                    setEmail={setEmail}
-                    sendEmail={sendEmail}
-                    joinConference={joinConference}
-                    authenticated={!!authenticated}
-                    conferenceNumber={conferenceNumber}
-                    participantNumber={participantsNumber}
-                  />
-                }
-              />
-
-              {/* Si VITE_API_URL est un chemin relatif, on redirige ; sinon on revient à la home */}
-              <Route
-                path="/wce-api/*"
-                element={
-                  <Navigate
-                    to={
-                      cfg.VITE_API_URL?.startsWith('/')
-                        ? cfg.VITE_API_URL
-                        : '/'
-                    }
-                    replace
-                  />
-                }
-              />
-
-              <Route path="error" element={<Error error={error} />} />
-              <Route path="feedback" element={<Feedback setError={setError} />} />
-              <Route path="browser_test" element={<BrowserTest />} />
-              <Route
-                path="faq"
-                element={<StaticPagesBuilder markDown={FAQ} contentTable={true} />}
-              />
-              <Route
-                path="donneespersonnelles"
-                element={
-                  <StaticPagesBuilder
-                    markDown={DonneesPerso}
-                    contentTable={true}
-                  />
-                }
-              />
-              <Route
-                path="contact"
-                element={
-                  <StaticPagesBuilder markDown={Contact} contentTable={false} />
-                }
-              />
-              <Route
-                path="apropos"
-                element={
-                  <StaticPagesBuilder markDown={Apropos} contentTable={true} />
-                }
-              />
-              <Route
-                path="cgu"
-                element={
-                  <StaticPagesBuilder markDown={Cgu} contentTable={true} />
-                }
-              />
-              <Route
-                path="accessibilite"
-                element={
-                  <StaticPagesBuilder
-                    markDown={Accessibilite}
-                    contentTable={true}
-                  />
-                }
-              />
-              <Route
-                path="mentionslegales"
-                element={
-                  <StaticPagesBuilder
-                    markDown={Mentionslegales}
-                    contentTable={true}
-                  />
-                }
-              />
-              <Route path="plan-du-site" element={<PlanDuSite />} />
-            </Route>
           </>
         )}
       </Routes>
     </MuiDsfrThemeProvider>
   );
+
 }
 export default function App() {
   return (

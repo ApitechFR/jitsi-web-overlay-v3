@@ -23,6 +23,9 @@
     "paths": {
       "@/*": [
         "src/*"
+      ],
+      "@ds": [
+        "src/design_system/react-dsapitech"
       ]
     },
     "types": [
