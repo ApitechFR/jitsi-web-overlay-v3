@@ -15,7 +15,7 @@ const modal = createModal({
 });
 
 export default function HeaderVisio() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [dataChangelog, setDataChangelog] = useState<any>(null);
   const [modalContent, setModalContent] = useState<any>(null);
   const [currentModalId, setCurrentModalId] = useState<string | null>(null);
@@ -27,17 +27,24 @@ export default function HeaderVisio() {
   const HeaderServiceTagline = (cfg.VITE_APP_HEADERSERVICETAGLINE as string) || '';
 
   useEffect(() => {
-    const changelogUrl = cfg.VITE_APP_CHANGELOG_URL || '/infos.json';
+    let lang = i18n.language || 'fr';
+    if (lang.startsWith('en')) lang = 'en';
+    else lang = 'fr';
+    const changelogUrl = cfg.VITE_APP_CHANGELOG_URL || '/utils/changelogs/infos.json';
     fetch(changelogUrl)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error('Changelog not found');
+        return res.json();
+      })
       .then((data) => {
-        setDataChangelog(data);
-        if (data?.submenu?.items?.length > 0) {
-          setModalContent(data.submenu.items[0].id);
-          setCurrentModalId(data.submenu.items[0].id);
+        const langData = data[lang] || data['fr'];
+        setDataChangelog(langData);
+        if (langData?.submenu?.items?.length > 0) {
+          setModalContent(langData.submenu.items[0].id);
+          setCurrentModalId(langData.submenu.items[0].id);
         }
       });
-  }, [cfg]);
+  }, [cfg, i18n.language]);
 
   const faqUrl = cfg.VITE_APP_FAQ_URL || '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf';
   const openPdf = () => {

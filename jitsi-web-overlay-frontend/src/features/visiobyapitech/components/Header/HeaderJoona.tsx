@@ -38,13 +38,15 @@ export default function HeaderJoona() {
     fetch(changelogUrl)
       .then((res) => res.json())
       .then((data) => {
-        setDataChangelog(data);
-        if (data?.submenu?.items?.length > 0) {
-          setModalContent(data.submenu.items[0].id);
-          setCurrentModalId(data.submenu.items[0].id);
+        const lang = i18n.language.startsWith('en') ? 'en' : 'fr';
+        const langData = data[lang] || data['fr'];
+        setDataChangelog(langData);
+        if (langData?.submenu?.items?.length > 0) {
+          setModalContent(langData.submenu.items[0].id);
+          setCurrentModalId(langData.submenu.items[0].id);
         }
       });
-  }, [cfg]);
+  }, [cfg, i18n.language]);
 
   const { user, authenticated, login, logout } = useAuth();
 
@@ -54,7 +56,7 @@ export default function HeaderJoona() {
   };
 
   const renderModalContent = () => {
-    if (!dataChangelog) return null;
+    if (!dataChangelog?.submenu?.items) return null;
     const currentItem = dataChangelog.submenu.items.find(
       (item: Item) => item.id === modalContent
     );
@@ -117,7 +119,7 @@ export default function HeaderJoona() {
         className: 'fr-btn fr-btn--icon-left',
       },
       iconId: 'fr-icon-translate-2',
-      text: isLangFrench ? "FR" : "EN",
+      text: isLangFrench ? "EN" : "FR",
     },
     authenticated
       ? {
