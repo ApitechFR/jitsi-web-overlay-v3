@@ -9,6 +9,7 @@ import { AuthProvider } from './auth/AuthContext';
 import { loadRuntimeConfig } from './config/runtimeConfig';
 
 import { ConfigProvider } from './config/ConfigProvider';
+import './config/i18n';
 
 
 startReactDsfr({

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import Button from '@apitechfr/react-dsapitech/Button';
 import { Alert } from '@apitechfr/react-dsapitech/Alert';
 import { useRuntimeConfig } from '../../../../config/ConfigProvider';
@@ -10,6 +11,7 @@ import type { FeedbackTemplate } from '@/api';
 import { useLocation, useNavigate } from 'react-router';
 
 function FeedbackJoona() {
+    const { t } = useTranslation();
     const cfg = useRuntimeConfig();
     const organizationFilter = cfg.VITE_APP_ORGANIZATION;
 
@@ -67,7 +69,7 @@ function FeedbackJoona() {
         e.preventDefault();
 
         const baseData = {
-            conferenceUuid: room, // à remplacer par le nom de la conf plus tard
+            conferenceUuid: room,
             date: new Date().toISOString(),
             userAgent: navigator.userAgent,
         };
@@ -92,99 +94,102 @@ function FeedbackJoona() {
 
     return (
         <div className={styles.content}>
-            <h1 className={styles.title}>Mesurez la qualité du service</h1>
+            <h1 className={styles.title}>{t('feedback.serviceQuality')}</h1>
 
-            {!isSubmitted ? (
-                loading ? (
-                    <span>Chargement des feedbacks…</span>
-                ) : error ? (
-                    <span>Erreur lors du chargement des feedbacks : {error.message}</span>
-                ) : templates.length > 0 ? (
-                    <div className={styles.contentFeedback}>
-                        <form onSubmit={handleSubmit}>
-                            {templates.map((template) => {
-                                const Component = FieldComponent[template.type.name];
-                                if (!Component) return null;
-                                return (
-                                    <div key={template.id}>
-                                        <Component
-                                            template={template}
-                                            value={responses[template.id]}
-                                            onChange={handleChange}
-                                        />
-                                    </div>
-                                );
-                            })}
+            {(() => {
+                if (!isSubmitted) {
+                    if (loading) {
+                        return <span>{t('feedback.loading')}</span>;
+                    } else if (error) {
+                        return <span>{t('feedback.loadingError')}: {error.message}</span>;
+                    } else if (templates.length > 0) {
+                        return (
+                            <div className={styles.contentFeedback}>
+                                <form onSubmit={handleSubmit}>
+                                    {templates.map((template) => {
+                                        const Component = FieldComponent[template.type.name];
+                                        if (!Component) return null;
+                                        return (
+                                            <div key={template.id}>
+                                                <Component
+                                                    template={template}
+                                                    value={responses[template.id]}
+                                                    onChange={handleChange}
+                                                />
+                                            </div>
+                                        );
+                                    })}
 
-                            <div className={styles.validButtonFeedback}>
-                                <Button disabled={isBusy}>
-                                    <span>{isBusy ? 'Envoi en cours…' : 'Envoyer'}</span>
-                                </Button>
-                                {sendError && (
-                                    <div className={styles.alertContainer}>
-                                        <Alert
-                                            severity="error"
-                                            title="Erreur lors de l'envoi"
-                                            description={sendError.message}
-                                            small
-                                        />
+                                    <div className={styles.validButtonFeedback}>
+                                        <Button disabled={isBusy}>
+                                            <span>{isBusy ? t('feedback.sending') : t('feedback.send')}</span>
+                                        </Button>
+                                        {sendError && (
+                                            <div className={styles.alertContainer}>
+                                                <Alert
+                                                    severity="error"
+                                                    title={t('feedback.sendErrorTitle')}
+                                                    description={sendError.message}
+                                                    small
+                                                />
+                                            </div>
+                                        )}
                                     </div>
-                                )}
+                                </form>
                             </div>
-                        </form>
-                    </div>
-                ) : (
-                    <>
-                        <span>
-                            Il n&apos;y a actuellement pas de feedback à afficher pour cette
-                            organisation.
-                        </span>
-                        <p>
-                            Retour à la page d&apos;accueil ici : <a href="/">Accueil</a>
-                        </p>
-                    </>
-                )
-            ) : isBlankNewPage ? (
-                <>
-                    <span>Merci pour votre retour !</span>
-                    <p>
-                        Vous pouvez désormais retourner à votre visioconférence et fermer
-                        cette fenêtre, celle-ci sera automatiquement fermée d&apos;ici
-                        quelques secondes.
-                    </p>
-                    {isAlertVisible && (
-                        <div className={styles.alertContainer}>
-                            <Alert
-                                severity="success"
-                                title="Votre avis a été soumis, Merci !"
-                                description=""
-                                small
-                            />
-                        </div>
-                    )}
-                </>
-            ) : (
-                <>
-                    <span>
-                        Merci pour votre retour ! Vous allez être redirigé automatiquement
-                        vers la page d&apos;accueil.
-                    </span>
-                    <p>
-                        Si ce n&apos;est pas le cas au bout de quelques secondes, vous
-                        pouvez cliquer ici : <a href="/">Accueil</a>
-                    </p>
-                    {isAlertVisible && (
-                        <div className={styles.alertContainer}>
-                            <Alert
-                                severity="success"
-                                title="Votre avis a été soumis, Merci !"
-                                description=""
-                                small
-                            />
-                        </div>
-                    )}
-                </>
-            )}
+                        );
+                    } else {
+                        return (
+                            <>
+                                <span>{t('feedback.noFeedback')}</span>
+                                <p>
+                                    {t('feedback.backHomeHere')}: <a href="/">{t('header.home')}</a>
+                                </p>
+                            </>
+                        );
+                    }
+                } else if (isBlankNewPage) {
+                    return (
+                        <>
+                            <span>{t('feedback.thankYouShort')}</span>
+                            <p>
+                                {t('feedback.closeWindow')}
+                            </p>
+                            {isAlertVisible && (
+                                <div className={styles.alertContainer}>
+                                    <Alert
+                                        severity="success"
+                                        title={t('feedback.submitted')}
+                                        description=""
+                                        small
+                                    />
+                                </div>
+                            )}
+                        </>
+                    );
+                } else {
+                    return (
+                        <>
+                            <span>
+                                {t('feedback.thankYouRedirect')}
+                            </span>
+                            <p>
+                                {t('feedback.notRedirected')}: <a href="/">{t('header.home')}</a>
+                            </p>
+                            {isAlertVisible && (
+                                <div className={styles.alertContainer}>
+                                    <Alert
+                                        severity="success"
+                                        title={t('feedback.submitted')}
+                                        description=""
+                                        small
+                                    />
+                                </div>
+                            )}
+                        </>
+                    );
+                }
+            })()}
         </div>
     );
 }

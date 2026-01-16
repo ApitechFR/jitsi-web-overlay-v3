@@ -1,0 +1,248 @@
+    {
+      "cards": {
+        "users": {
+          "label": "Utilisateurs actifs",
+          "description": "Nombre d’utilisateurs actifs"
+        },
+        "confNb": {
+          "label": "Conférences lancées",
+          "description": "Nombre total de conférences lancées"
+        },
+        "confTime": {
+          "label": "Durée moyenne",
+          "description": "Durée moyenne d'une conférence"
+        },
+        "confMoyPart": {
+          "label": "Participants moyens",
+          "description": "Moyenne de participants par conférence"
+        },
+        "confMaxSimult": {
+          "label": "Conférences simultanées",
+          "description": "Maximum de conférences simultanées"
+        },
+        "partMaxSimult": {
+          "label": "Participants simultanés",
+          "description": "Maximum de participants simultanés"
+        },
+        "nbAnswer": {
+          "label": "Nombre de réponses",
+          "description": "Nombre de réponses",
+          "question": ""
+        },
+        "moyNote": {
+          "label": "Moyenne des notes",
+          "description": "Moyenne notes",
+          "question": "Qu'avez-vous pensé de la qualité de la conférence ?"
+        },
+        "totalParticipants": {
+          "label": "Participants simultanés",
+          "description": "Nombre de participants simultanés"
+        },
+        "totalConferences": {
+          "label": "Conférences simultanées",
+          "description": "Nombre conférences simultanées"
+        },
+        "MoyParticipantsPerConf": {
+          "label": "Moyenne participants/conférence",
+          "description": "Moy nombre de participants par conf"
+        }
+      },
+      "jitsiMeetWrapper": {
+        "connectedUser": "Utilisateur connecté",
+        "guest": "Invité",
+        "contactAdmin": "Si le problème persiste, contactez l’administrateur de la conférence."
+      },
+      "jitsiMeetingView": {
+        "errorLoadingOptions": "Erreur chargement options Jitsi",
+        "optionsUnavailable": "Options Jitsi non disponibles",
+        "displayName": "Nom d'affichage"
+      },
+      "conferenceWaitingModal": {
+        "authenticate": "S'authentifier",
+        "cancel": "Annuler l’attente",
+        "notStartedTitle": "La conférence n'a pas encore démarré",
+        "notStartedMessage": {
+          "part1": "Si vous disposez d'un compte ",
+          "part2": " vous pouvez vous authentifier, sinon merci de patienter. Vous serez connecté automatiquement dès le démarrage."
+        }
+      },
+      "webinarInvite": {
+        "invalidLink": "Lien d’invitation invalide.",
+        "expiredOrInvalid": "Lien d’invitation expiré ou invalide.",
+        "spectator": "Spectateur"
+      },
+      "replayList": {
+        "loading": "Chargement...",
+        "error": "Erreur",
+        "title": "Enregistrements Vidéo",
+        "none": "Aucun replay disponible pour cette conférence",
+        "download": "Télécharger",
+        "downloadError": "Erreur lors du téléchargement"
+      },
+      "replayListGrouped": {
+        "loading": "Chargement...",
+        "error": "Erreur : {{message}}",
+        "title": "Enregistrements Vidéo par conférence",
+        "empty": "Aucun replay disponible",
+        "download": "Télécharger",
+        "downloadError": "Erreur lors du téléchargement"
+      },
+      "admin": {
+        "title": "Administration",
+        "headerTitle": "Titre du header",
+        "timezone": "Fuseau horaire",
+        "selectTimezone": "Sélectionnez un fuseau horaire",
+        "logoHint": "Ajoutez ou modifier le logo header",
+        "logoValidation": "Texte de validation / d'explication de l'erreur",
+        "logoLabel": "Logo header",
+        "options": "Options",
+        "videoRecording": "Enregistrement vidéo",
+        "ownerOnlyStart": "Uniquement le propriétaire peut lancer",
+        "ownerOnlyDownload": "Uniquement le propriétaire peut télécharger",
+        "roomOption": "Option modifiable dans les salles de réunions",
+        "switchLabel": "Label action interrupteur",
+        "people": "Personnes",
+        "allowVisitors": "Autoriser les visiteurs"
+      },
+      "profile": {
+        "admin": "Administrateur",
+        "id": "ID",
+        "fullName": "Nom complet",
+        "email": "Email"
+      },
+      "browserTest": {
+        "allowCamera": "Veuillez autoriser le navigateur à utiliser la caméra.",
+        "allowMic": "Veuillez autoriser le navigateur à utiliser le microphone.",
+        "info": "Information",
+        "confirmReceptionText": "Cliquez sur le bouton pour confirmer la réception.",
+        "confirmReceptionButton": "Je confirme la réception de la vidéo"
+      },
+      "feedback": {
+        "errorDetectOrigin": "Erreur de détection de la provenance de l'utilisateur",
+        "qualityRequired": "Le champ qualité est obligatoire !",
+        "sendError": "Erreur lors de l'envoi des données, merci de réessayer",
+        "title": "WebConférence de l'État",
+        "serviceQuality": "Mesure de la qualité du service",
+        "qualityLabel": "Comment évaluez-vous la qualité de cette webconférence ?",
+        "invitationLabel": "Comment évaluez-vous la facilité de l’invitation / le raccordement des participants ?",
+        "officeConnection": "Êtes-vous connecté depuis votre bureau?",
+        "yes": "Oui",
+        "no": "Non",
+        "commentLabel": "Informations complémentaires que vous pourriez partager sur le contexte d'utilisation ou votre appréciation sur la qualité de la webconférence :",
+        "difficulties": "Avez-vous rencontré des difficultés ?",
+        "askSupport": "Cliquez ici pour demander de l'assistance",
+        "send": "Envoyer",
+        "loading": "Chargement des feedbacks…",
+        "loadingError": "Erreur lors du chargement des feedbacks",
+        "sending": "Envoi en cours…",
+        "sendErrorTitle": "Erreur lors de l'envoi",
+        "noFeedback": "Il n'y a actuellement pas de feedback à afficher pour cette organisation.",
+        "backHomeHere": "Retour à la page d'accueil ici",
+        "thankYouShort": "Merci pour votre retour !",
+        "closeWindow": "Vous pouvez désormais retourner à votre visioconférence et fermer cette fenêtre, celle-ci sera automatiquement fermée d'ici quelques secondes.",
+        "thankYouRedirect": "Merci pour votre retour ! Vous allez être redirigé automatiquement vers la page d'accueil.",
+        "notRedirected": "Si ce n'est pas le cas au bout de quelques secondes, vous pouvez cliquer ici",
+        "submitted": "Votre avis a été soumis, Merci !"
+      },
+      "footer": {
+        "description": "Description du pied de page",
+        "legalNotice": "Mentions légales",
+        "accessibility": "Accessibilité : totalement conforme"
+      },
+      "header": {
+        "serviceTitle": "Titre du service",
+        "serviceTagline": "Slogan du service",
+        "home": "Accueil",
+        "account": "Mon compte",
+        "conferences": "Conférences",
+        "admin": "Administration",
+        "dashboard": "Dashboard",
+        "hardwareTest": "Test matériel",
+        "documentation": "Documentation",
+        "information": "Informations",
+        "logout": "Se déconnecter",
+        "login": "Connexion",
+        "brandTopLine1": "INTITULÉ",
+        "brandTopLine2": "OFFICIEL",
+        "homeTitle": "Accueil - Nom de l’entité (ministère, secrétariat d‘état, gouvernement)",
+        "quickAccess": {
+          "survey": "Sondage qualité",
+          "documentation": "Documentation",
+          "information": "Informations"
+        }
+      },
+      "homeForm": {
+        "atLeast3Digits": "Au moins 3 chiffres",
+        "min10Chars": "Un minimum de 10 caractères",
+        "digitsAndLetters": "Des chiffres et des lettres sans accents",
+        "linkCopied": "Le lien a été copié",
+        "title": "La WebConférence de l'État pour tous les agents publics",
+        "subtitle": "Audio, vidéo, chat, partage d'écran et de documents",
+        "inputDesc": "Champ de saisie du nom de la conférence",
+        "inputPlaceholder": "Saisissez un nom de conférence...",
+        "stats": "Actuellement, il y a {{conferenceNumber}} conférences et {{participantNumber}} participants.",
+        "learnMore": "En savoir plus sur la WebConf de l'État",
+        "accordionPrereq": "Pré-requis",
+        "accordionStart": "Démarrer avec la WebConf",
+        "accordionResources": "Ressources supplémentaires",
+        "accordionMooc": "le MOOC de la WebConf",
+        "accordionContent1": "Contenu du volet 1.",
+        "accordionContent2": "Contenu du volet 2."
+      },
+      "homeModes": {
+        "webinair_mode": "Passer en mode webinaire",
+        "visio_mode": "Passer en mode visioconférence",
+        "tooltip": "Il est recommandé de ne pas dépasser 75 participants par conférence. Si vous êtes plus nombreux, passez en mode webinaire. ",
+        "visio": {
+          "title": "Rejoindre une visioconférence",
+          "paragraph": "Audio, vidéo, chat, partage d'écran et de documents",
+          "join_button": "Rejoindre ou créer",
+          "input_room": "Saisissez votre nom de conférence",
+          "copy_link": "Copier le lien",
+          "success_copy_link": "Lien copié avec succès !",
+          "schedule_button": "Planifier une réunion"
+        },
+        "webinar": {
+          "title": "Rejoindre un webinaire",
+          "paragraph": "Audio, vidéo, chat, partage d'écran et de documents",
+          "join_button": "Créer et partager un webinaire",
+          "input_room": "Saisissez votre nom de conférence",
+          "modal_name": "Créer et partager un webinaire",
+          "modal_title": "Nom du webinaire : ",
+          "copy_link_participant": "Copier le lien participant pour le partager aux animateurs",
+          "copy_link_visitor": "Copier le lien visiteur pour le partager aux spectateurs",
+          "modal_button": "Entrer dans le webinaire maintenant",
+          "modal_button_finish": "Terminer",
+          "copy_success_participant": "Lien participant copié !",
+          "copy_error": "Erreur lors de la copie",
+          "copy_success_visitor": "Lien spectateur copié !",
+          "copy_error_visitor": "Erreur lors de la génération du lien spectateur",
+          "invalid_conference_name": "Nom de conférence invalide."
+        }
+      },
+      "dashboard": {
+        "realtimeTitle": "Statistiques temps réel",
+        "loading": "Chargement...",
+        "errorLoading": "Erreur lors du chargement des données.",
+        "surveyResultsTitle": "Résultats sondage",
+        "historicStatsTitle": "Statistiques historiques",
+        "noDataForPeriod": "Il n'y a pas de données enregistrée pour cette période",
+        "userComments": "Commentaires utilisateurs",
+        "multipleChoiceAnswers": "Réponses des questions à choix multiples",
+        "exportResults": "Exporter les résultats",
+        "breadcrumb": "Tableau de bord",
+        "title": "Tableau de bord",
+        "realtime": "Statistiques temps réel",
+        "historic": "Statistiques historique",
+        "survey": "Résultats sondage",
+        "filtersLegend": "Filtrer par période",
+        "today": "Aujourd'hui",
+        "thisWeek": "Cette semaine",
+        "thisMonth": "Ce mois-ci",
+        "thisYear": "Cette année",
+        "useGivenPeriod": "Utiliser une période personnalisée",
+        "startDate": "Date de début",
+        "endDate": "Date de fin",
+        "validate": "Valider"
+      }
+    }

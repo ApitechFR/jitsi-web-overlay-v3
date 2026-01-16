@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import styles from './Feedback.module.css';
 import { Button } from '@apitechfr/react-dsapitech/Button';
 import { Input } from '@apitechfr/react-dsapitech/Input';
@@ -25,6 +26,7 @@ interface feedbackProps {
 }
 
 export default function Feedback({ setError }: feedbackProps) {
+    const { t } = useTranslation();
     const [qty, setQty] = useState(0);
     const [inv, setInv] = useState(0);
     const [text, setText] = useState('');
@@ -45,19 +47,19 @@ export default function Feedback({ setError }: feedbackProps) {
             .catch(error => {
                 if (error.response) {
                     setMsg({
-                        message: "erreur de détection de la provenance de l'utilisateur",
+                        message: t('feedback.errorDetectOrigin'),
                         error: { status: '', stack: '' },
                     });
                 } else {
                     if (error.request) {
                         setError({
-                            message: "erreur de détection de la provenance de l'utilisateur",
+                            message: t('feedback.errorDetectOrigin'),
                             error: { status: '', stack: '' },
                         });
                         navigate('/error');
                     } else {
                         setError({
-                            message: "erreur de détection de la provenance de l'utilisateur",
+                            message: t('feedback.errorDetectOrigin'),
                             error: { status: '', stack: '' },
                         });
                         navigate('/error');
@@ -80,7 +82,7 @@ export default function Feedback({ setError }: feedbackProps) {
 
     const sendFeedback = () => {
         if (qty < 1) {
-            setMsg({ message: 'le champ qualité est oblogatoire!', error: {} });
+            setMsg({ message: t('feedback.qualityRequired'), error: {} });
             return;
         }
         const jmmc_objectId = sessionStorage.getItem('jmmc_object_id');
@@ -101,7 +103,7 @@ export default function Feedback({ setError }: feedbackProps) {
             })
             .catch(() => {
                 setMsg({
-                    message: "erreur de l'envoi des données merci de réesayer",
+                    message: t('feedback.sendError'),
                     error: {},
                 });
             });
@@ -109,12 +111,12 @@ export default function Feedback({ setError }: feedbackProps) {
 
     return (
         <div className={styles.home}>
-            <h1>WebConférence de l'État</h1>
+            <h1>{t('feedback.title')}</h1>
             <div className={styles.form}>
                 <div className={styles.formItem}>
-                    <h4>Mesure de la qualité du service</h4>
+                    <h4>{t('feedback.serviceQuality')}</h4>
                     <label className={styles.label}>
-                        Comment évaluez-vous la qualité de cette webconférence ?
+                        {t('feedback.qualityLabel')}
                     </label>
                     <Rating
                         emptyIcon={
@@ -135,8 +137,7 @@ export default function Feedback({ setError }: feedbackProps) {
 
                 <div className={styles.formItem}>
                     <label>
-                        Comment évaluez-vous la facilité de l’invitation / le raccordement
-                        des participants ?{' '}
+                        {t('feedback.invitationLabel')}
                     </label>
                     <Rating
                         emptyIcon={
@@ -157,7 +158,7 @@ export default function Feedback({ setError }: feedbackProps) {
                 {fromRIE ? (
                     <div className={styles.formItem}>
                         <label className={styles.label}>
-                            Êtes-vous connecté depuis votre bureau?
+                            {t('feedback.officeConnection')}
                         </label>
                         <div className={styles.radio}>
                             <RadioGroup
@@ -169,8 +170,8 @@ export default function Feedback({ setError }: feedbackProps) {
                                     setDeskConnexion(Number(e.target.value));
                                 }}
                             >
-                                <FormControlLabel value={1} control={<Radio />} label="Oui" />
-                                <FormControlLabel value={0} control={<Radio />} label="Non" />
+                                <FormControlLabel value={1} control={<Radio />} label={t('feedback.yes')} />
+                                <FormControlLabel value={0} control={<Radio />} label={t('feedback.no')} />
                             </RadioGroup>
                         </div>
                     </div>
@@ -184,10 +185,9 @@ export default function Feedback({ setError }: feedbackProps) {
                             value: text,
                             onChange: e => setText(e.target.value),
                         }}
-                        // onChange={e => setText(e.target.value)}
                         className={styles.textInput}
                         textArea
-                        label="Informations complémentaires que vous pourriez partager sur le contexte d'utilisation ou votre appréciation sur la qualité de la webconférence :"
+                        label={t('feedback.commentLabel')}
                     ></Input>
                     {msg.message ? (
                         <Badge
@@ -200,14 +200,12 @@ export default function Feedback({ setError }: feedbackProps) {
                     ) : null}
                     {msginfo ? (
                         <Badge className={styles.badge} small severity={'info'}>
-                            {
-                                <p>
-                                    Avez-vous rencontré des difficultés ?{' '}
-                                    <a href="/static/contact">
-                                        Cliquez ici pour demander de l'assistance
-                                    </a>
-                                </p>
-                            }
+                            <p>
+                                {t('feedback.difficulties')}{' '}
+                                <a href="/static/contact">
+                                    {t('feedback.askSupport')}
+                                </a>
+                            </p>
                         </Badge>
                     ) : null}
                     <Button
@@ -217,7 +215,7 @@ export default function Feedback({ setError }: feedbackProps) {
                         }}
                         onClick={sendFeedback}
                     >
-                        Envoyer
+                        {t('feedback.send')}
                     </Button>
                     <div id="feedback_server_response"></div>
                 </div>

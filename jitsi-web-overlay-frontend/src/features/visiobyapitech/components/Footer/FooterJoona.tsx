@@ -2,19 +2,23 @@
 import { Footer, FooterProps } from "@apitechfr/react-dsapitech/Footer"
 import { useRuntimeConfig } from "../../../../config/ConfigProvider";
 import { useEffect, useState } from "react";
+import { useTranslation } from 'react-i18next';
 
 
-interface props {
-  headerFooterDisplayItem: FooterProps.BottomItem;
+interface FooterJoonaProps {
+  readonly headerFooterDisplayItem: FooterProps.BottomItem;
 }
 
-function FooterJoona({ headerFooterDisplayItem }: props) {
+function FooterJoona({ headerFooterDisplayItem }: FooterJoonaProps) {
   const [domains, setDomains] = useState<string[]>([])
+  const { t, i18n } = useTranslation();
 
   const cfg = useRuntimeConfig();
   const VisioLogo = (cfg.VITE_APP_LIGHTVISIOLOGOFOOTER as string);
   const DarkVisioLogo = (cfg.VITE_APP_DARKVISIOLOGOFOOTER as string);
-  const FooterDescription = (cfg.VITE_APP_FOOTERDESCRIPTION as string) || '';
+  const FooterDescription = t('footer.description', (cfg.VITE_APP_FOOTERDESCRIPTION as string) || '');
+  // Must be one of: "non compliant", "partially compliant", "fully compliant"
+  const accessibilityLabel: "non compliant" | "partially compliant" | "fully compliant" = "fully compliant";
   const FooterLinks = (cfg.VITE_APP_FOOTERLINKS as string) || '';
 
   useEffect(() => {
@@ -28,12 +32,14 @@ function FooterJoona({ headerFooterDisplayItem }: props) {
 
   return (
     <Footer
+      key={i18n.language}
       mainLogoURL={VisioLogo}
       mainLogoURLDark={DarkVisioLogo}
-      accessibility="fully compliant"
+      accessibility={accessibilityLabel}
       contentDescription={FooterDescription}
       termsLinkProps={{
         href: '/mentionslegales',
+        title: t('footer.legalNotice')
       }}
       domains={domains}
       bottomItems={[headerFooterDisplayItem]}

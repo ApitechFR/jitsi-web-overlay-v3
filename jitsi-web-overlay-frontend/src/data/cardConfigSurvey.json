@@ -1,14 +1,14 @@
 [
     {
         "key": "nbAnswer",
-        "label": "AnswerNumber",
-        "description": "Nombre de réponses",
-        "question": ""
+        "label": "cards.nbAnswer.label",
+        "description": "cards.nbAnswer.description",
+        "question": "cards.nbAnswer.question"
     },
     {
         "key": "moyNote",
-        "label": "moyenneNotes",
-        "description": "Moyenne notes",
-        "question": "Qu'avez-vous pensé de la qualité de la conférence ? "
+        "label": "cards.moyNote.label",
+        "description": "cards.moyNote.description",
+        "question": "cards.moyNote.question"
     }
 ]

@@ -1,16 +1,13 @@
 
 import { useState, useEffect } from 'react';
-import docUtilisateur from '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf';
-
 import styles from './HeaderJoona.module.css';
 import { Header } from '@apitechfr/react-dsapitech/Header';
 import { createModal } from '@apitechfr/react-dsapitech/Modal';
-
-import dataChangelog from '../../../../utils/changelogs/infos.json'
 import { Item } from '../../../../utils/changelogs/Item'
 import ChangelogContent from '../IframePopup/ChangelogContent';
 import { SideMenu } from "@apitechfr/react-dsapitech/SideMenu";
 import { useRuntimeConfig } from '../../../../config/ConfigProvider';
+import { useTranslation } from 'react-i18next';
 
 const modal = createModal({
   id: 'foo-modal',
@@ -18,6 +15,7 @@ const modal = createModal({
 });
 
 export default function HeaderVisio() {
+  const { t } = useTranslation();
   const [dataChangelog, setDataChangelog] = useState<any>(null);
   const [modalContent, setModalContent] = useState<any>(null);
   const [currentModalId, setCurrentModalId] = useState<string | null>(null);
@@ -67,7 +65,7 @@ export default function HeaderVisio() {
         className: 'fr-btn--icon-right',
       },
       iconId: 'fr-icon-search-line',
-      text: 'Sondage qualité',
+      text: t('header.quickAccess.survey', 'Sondage qualité'),
     },
     {
       buttonProps: {
@@ -75,7 +73,7 @@ export default function HeaderVisio() {
         className: 'fr-btn--icon-right',
       },
       iconId: 'fr-icon-external-link-fill',
-      text: 'Documentation',
+      text: t('header.quickAccess.documentation', 'Documentation'),
     },
     {
       buttonProps: {
@@ -83,7 +81,7 @@ export default function HeaderVisio() {
         className: 'fr-btn fr-btn--icon-right',
       },
       iconId: 'fr-icon-information-line',
-      text: 'Informations',
+      text: t('header.quickAccess.information', 'Informations'),
     },
     // {
     //   buttonProps: {
@@ -111,37 +109,36 @@ export default function HeaderVisio() {
         }
         homeLinkProps={{
           href: '/',
-          title:
-            "Accueil - Nom de l’entité (ministère, secrétariat d‘état, gouvernement)",
+          title: t('header.homeTitle', 'Accueil - Nom de l’entité (ministère, secrétariat d‘état, gouvernement)'),
         }}
         id="fr-header-header-with-quick-access-items"
         quickAccessItems={quickAccessItems as any}
       />
 
       <modal.Component title={dataChangelog?.submenu?.title || ''} size="large">
-          <div className={styles.modalContainer}>
-            {dataChangelog && (
-              <SideMenu
-                align="left"
-                burgerMenuButtonText=""
-                title=""
-                items={dataChangelog.submenu.items.map((item: Item) => ({
-                  isActive: item.id === currentModalId,
-                  linkProps: {
-                    href: '#',
-                    onClick: (e: React.MouseEvent) => {
-                      e.preventDefault();
-                      setCurrentModalId(item.id);
-                      setModalContent(item.id);
-                    },
+        <div className={styles.modalContainer}>
+          {dataChangelog && (
+            <SideMenu
+              align="left"
+              burgerMenuButtonText=""
+              title=""
+              items={dataChangelog.submenu.items.map((item: Item) => ({
+                isActive: item.id === currentModalId,
+                linkProps: {
+                  href: '#',
+                  onClick: (e: React.MouseEvent) => {
+                    e.preventDefault();
+                    setCurrentModalId(item.id);
+                    setModalContent(item.id);
                   },
-                  text: item.label,
-                }))}
-              />
-            )}
-            <div className={styles.secondFlexBox}>{renderModalContent()}</div>
-          </div>
-        </modal.Component>
+                },
+                text: item.label,
+              }))}
+            />
+          )}
+          <div className={styles.secondFlexBox}>{renderModalContent()}</div>
+        </div>
+      </modal.Component>
     </>
   );
 }

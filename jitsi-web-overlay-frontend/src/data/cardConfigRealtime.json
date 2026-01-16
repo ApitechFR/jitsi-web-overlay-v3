@@ -1,17 +1,17 @@
 [
     {
         "key": "totalParticipants",
-        "label": "NbSimultParticipant",
-        "description": "Nombre de participants simultanés"
+        "label": "cards.totalParticipants.label",
+        "description": "cards.totalParticipants.description"
     },
     {
         "key": "totalConferences",
-        "label": "NbConferencesSimult",
-        "description": "Nombre conférences simultanées"
+        "label": "cards.totalConferences.label",
+        "description": "cards.totalConferences.description"
     },
     {
         "key": "MoyParticipantsPerConf",
-        "label": "MoyPartByConference",
-        "description": "Moy nombre de participants par conf"
+        "label": "cards.MoyParticipantsPerConf.label",
+        "description": "cards.MoyParticipantsPerConf.description"
     }
 ]

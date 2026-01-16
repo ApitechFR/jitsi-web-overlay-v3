@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, {
   useState,
   useEffect,
@@ -28,6 +29,7 @@ import { Alert } from '@apitechfr/react-dsapitech/Alert';
 import { useRuntimeConfig } from '../../../../config/ConfigProvider';
 
 export default function BrowserTestJoona() {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = React.useState<string | boolean>('');
   const [mic, setMic] = React.useState('');
   const [cam, setCam] = React.useState('');
@@ -124,12 +126,12 @@ export default function BrowserTestJoona() {
         setErrorMessage(
           <Alert
             closable
-            description="Veuillez autoriser le navigateur à utiliser la caméra."
+            description={t('browserTest.allowCamera')}
             onClose={function noRefCheck() {
               return;
             }}
             small
-            title="Information"
+            title={t('browserTest.info')}
             severity="error"
           />
         );
@@ -164,12 +166,12 @@ export default function BrowserTestJoona() {
         setErrorMessage(
           <Alert
             closable
-            description="Veuillez autoriser le navigateur à utiliser la caméra."
+            description={t('browserTest.allowCamera')}
             onClose={function noRefCheck() {
               return;
             }}
             small
-            title="Information"
+            title={t('browserTest.info')}
             severity="error"
           />
         );
@@ -199,12 +201,12 @@ export default function BrowserTestJoona() {
         setErrorMessage(
           <Alert
             closable
-            description="Veuillez autoriser le navigateur à utiliser le microphone."
+            description={t('browserTest.allowMic')}
             onClose={function noRefCheck() {
               return;
             }}
             small
-            title="Information"
+            title={t('browserTest.info')}
             severity="error"
           />
         );
@@ -226,12 +228,12 @@ export default function BrowserTestJoona() {
         setErrorMessage(
           <Alert
             closable
-            description="Veuillez autoriser le navigateur à utiliser le microphone."
+            description={t('browserTest.allowMic')}
             onClose={function noRefCheck() {
               return;
             }}
             small
-            title="Information"
+            title={t('browserTest.info')}
             severity="error"
           />
         );
@@ -898,7 +900,7 @@ export default function BrowserTestJoona() {
               <br />
               <br />
               <Typography style={{ margin: 'auto' }}>
-                Cliquez sur le boutton pour confirmer la réception.
+                {t('browserTest.confirmReceptionText')}
               </Typography>
               <Button
                 style={
@@ -926,7 +928,7 @@ export default function BrowserTestJoona() {
                 onClick={handleStartConference}
                 variant="contained"
               >
-                Je confirme la réception de la vidéo
+                {t('browserTest.confirmReceptionButton')}
               </Button>
             </div>
           ) : null}
