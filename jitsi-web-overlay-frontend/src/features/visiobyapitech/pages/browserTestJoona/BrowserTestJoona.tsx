@@ -435,7 +435,7 @@ export default function BrowserTestJoona() {
             }
         }
       >
-        Lancer le test
+        {t('browserTest.launchTest')}
       </Button>
 
       <Accordion
@@ -453,32 +453,20 @@ export default function BrowserTestJoona() {
           id="panel1bh-header"
         >
           <Typography sx={{ width: '33%', flexShrink: 0 }}>
-            Navigateur
+            {t('browserTest.browser')}
           </Typography>
           <Typography sx={{ color: 'text.secondary' }}>
             {navTest === true
-              ? 'Le navigateur est testé'
-              : 'Cliquer pour tester'}
+              ? t('browserTest.browserTested')
+              : t('browserTest.clickToTest')}
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Typography>
             {navTest === true ? (
-              <p>
-                Votre navigateur est compatible avec webConf de l'état. Pour
-                bénéficier d'une meilleure expérience utilisateur nous vous
-                recommandons de toujours utiliser les dernières versions stables
-                des navigateurs.
-              </p>
+              <p>{t('browserTest.browserOk')}</p>
             ) : navTest === false ? (
-              <p>
-                Attention, vous utilisez un navigateur qui en l’état dégrade
-                fortement la qualité de la conférence pour tous les
-                participants. Nous vous conseillons donc d'utiliser les
-                navigateurs Edge chromium, Chromium ou Google
-                Chrome.L'application mobile "Jitsi Meet" est utilisable pour
-                simplement rejoindre un salon.
-              </p>
+              <p>{t('browserTest.browserKo')}</p>
             ) : null}
           </Typography>
           <div>
@@ -514,7 +502,7 @@ export default function BrowserTestJoona() {
               }}
               variant="contained"
             >
-              tester
+              {t('browserTest.test')}
             </Button>
           </div>
         </AccordionDetails>
@@ -534,17 +522,17 @@ export default function BrowserTestJoona() {
           id="panel2bh-header"
         >
           <Typography sx={{ width: '33%', flexShrink: 0 }}>
-            Microphone
+            {t('browserTest.microphone')}
           </Typography>
           <Typography sx={{ color: 'text.secondary' }}>
             {micTest === true
-              ? 'Le microphone est testé'
-              : 'Cliquer pour tester'}
+              ? t('browserTest.microphoneTested')
+              : t('browserTest.clickToTest')}
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Typography>
-            Testez votre microphone en cliquant sur Commencer et Arrêter.
+            {t('browserTest.testMicrophoneInstruction')}
           </Typography>
           <br />
           <div>
@@ -557,7 +545,7 @@ export default function BrowserTestJoona() {
               }}
             >
               <FormControl fullWidth>
-                <InputLabel id="microphone">microphone</InputLabel>
+                <InputLabel id="microphone">{t('browserTest.microphone')}</InputLabel>
                 <Select
                   labelId="microphone"
                   id="microphoneSelect"
@@ -639,7 +627,7 @@ export default function BrowserTestJoona() {
               onClick={startRecording}
               variant="contained"
             >
-              Commencer
+              {t('browserTest.start')}
             </Button>
             <Button
               style={
@@ -667,7 +655,7 @@ export default function BrowserTestJoona() {
               onClick={stopRecording}
               variant="contained"
             >
-              Arrêter
+              {t('browserTest.stop')}
             </Button>
           </div>
         </AccordionDetails>
@@ -686,14 +674,14 @@ export default function BrowserTestJoona() {
           aria-controls="panel3bh-content"
           id="panel3bh-header"
         >
-          <Typography sx={{ width: '33%', flexShrink: 0 }}>Caméra</Typography>
+          <Typography sx={{ width: '33%', flexShrink: 0 }}>{t('browserTest.camera')}</Typography>
           <Typography sx={{ color: 'text.secondary' }}>
-            {camTest === true ? 'La caméra est testée' : 'Cliquer pour tester'}
+            {camTest === true ? t('browserTest.cameraTested') : t('browserTest.clickToTest')}
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Typography>
-            Testez votre Caméra en cliquant sur Commencer et Arrêter.
+            {t('browserTest.testCameraInstruction')}
           </Typography>
           <Box
             sx={{
@@ -705,7 +693,7 @@ export default function BrowserTestJoona() {
             }}
           >
             <FormControl fullWidth>
-              <InputLabel id="camera">Caméra</InputLabel>
+              <InputLabel id="camera">{t('browserTest.camera')}</InputLabel>
               <Select
                 labelId="camera"
                 id="cameraSelect"
@@ -764,7 +752,7 @@ export default function BrowserTestJoona() {
                   onClick={handleStopCaptureClick}
                   variant="contained"
                 >
-                  Arrêter
+                  {t('browserTest.stop')}
                 </Button>
               ) : (
                 <Button
@@ -793,7 +781,7 @@ export default function BrowserTestJoona() {
                   onClick={handleStartCaptureClick}
                   variant="contained"
                 >
-                  Commencer{' '}
+                  {t('browserTest.start')}
                 </Button>
               )}
             </div>
@@ -815,17 +803,17 @@ export default function BrowserTestJoona() {
           id="panel4bh-header"
         >
           <Typography sx={{ width: '33%', flexShrink: 0 }}>
-            Conférence
+            {t('browserTest.conference')}
           </Typography>
           <Typography sx={{ color: 'text.secondary' }}>
             {confTest === true
-              ? 'La connexion est testée'
-              : 'Cliquer pour tester'}
+              ? t('browserTest.connectionTested')
+              : t('browserTest.clickToTest')}
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Typography>
-            Veuillez attendre l'établissement de la connexion.
+            {t('browserTest.waitConnection')}
           </Typography>
           {expanded === 'panel4' ? (
             <div className={styles.cam}>
