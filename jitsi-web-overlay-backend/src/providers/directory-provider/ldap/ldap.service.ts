@@ -2,10 +2,10 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Client } from 'ldapts';
-import { IDirectory } from '../directory.interface';
+import { DirectoryProvider } from '../directory-provider.interface';
 
 @Injectable()
-export class LdapService implements OnModuleDestroy, IDirectory {
+export class LdapService implements OnModuleDestroy, DirectoryProvider {
     private readonly logger = new Logger(LdapService.name);
     private readonly client: Client;
 
@@ -24,7 +24,7 @@ export class LdapService implements OnModuleDestroy, IDirectory {
         await this.client.unbind();
     }
 
-    async getDirectoryUsers(): Promise<any[]> {
+    async getDirectory(): Promise<any[]> {
         const bindDN = this.configService.get<string>('LDAP_BIND_DN');
         const bindPassword = this.configService.get<string>('LDAP_PASSWORD');
         const baseDN = this.configService.get<string>('LDAP_BASE_DN');

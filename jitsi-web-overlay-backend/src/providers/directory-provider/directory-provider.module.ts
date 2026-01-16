@@ -13,14 +13,13 @@ import { OidcModule } from './oidc/oidc.module';
     ],
     providers: [
         {
-            provide: 'IDirectory',
+            provide: 'DIRECTORY_PROVIDER',
             useFactory: (ldapService: LdapService, oidcService: OidcService) => {
-                return process.env.DIRECTORY_PROVIDER === 'LDAP' ?  ldapService : oidcService;
+                return process.env.DIRECTORY_PROVIDER === 'LDAP' ? ldapService : oidcService;
             },
             inject: [LdapService, OidcService],
         }
     ],
-
-    exports: ['IDirectory'],
+    exports: ['DIRECTORY_PROVIDER'],
 })
 export class DirectoryModule { }

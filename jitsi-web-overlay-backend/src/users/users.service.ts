@@ -7,33 +7,33 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/users.entity';
 import { In, LessThan, Repository } from 'typeorm';
-import { IDirectory } from '../providers/directory/directory.interface';
+import { DirectoryProvider } from '../providers/directory-provider/directory-provider.interface';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private userRepository: Repository<User>,
-    @Inject('IDirectory')
-    private readonly directoryService: IDirectory,
+    private readonly userRepository: Repository<User>,
+    @Inject('DIRECTORY_PROVIDER')
+    private readonly directoryService: DirectoryProvider,
   ) { }
 
   // Create user
   async createUser(userData: Partial<User>): Promise<User> {
     try {
       const user = this.userRepository.create(userData);
-      return this.userRepository.save(user);
+      return await this.userRepository.save(user);
     } catch (error) {
-      throw new InternalServerErrorException('cannot create user');
+      throw new InternalServerErrorException('cannot create user', error);
     }
   }
 
   // Get all users
   async findAll(): Promise<User[]> {
     try {
-      return this.userRepository.find();
+      return await this.userRepository.find();
     } catch (error) {
-      throw new InternalServerErrorException('cannot find users');
+      throw new InternalServerErrorException('cannot find users', error);
     }
   }
 
@@ -46,7 +46,7 @@ export class UsersService {
       }
       return user;
     } catch (error) {
-      throw new InternalServerErrorException('Cannot find user');
+      throw new InternalServerErrorException('Cannot find user', error);
     }
   }
 
@@ -56,7 +56,7 @@ export class UsersService {
       const user = await this.userRepository.findOne({ where: { email } });
       return user;
     } catch (error) {
-      throw new InternalServerErrorException('Cannot find user');
+      throw new InternalServerErrorException('Cannot find user', error);
     }
   }
 
@@ -64,9 +64,9 @@ export class UsersService {
   async update(id: number, userData: Partial<User>): Promise<User> {
     try {
       await this.userRepository.update(id, userData);
-      return this.userRepository.findOne({ where: { id } });
+      return await this.userRepository.findOne({ where: { id } });
     } catch (error) {
-      throw new InternalServerErrorException('Cannot update user');
+      throw new InternalServerErrorException('Cannot update user', error);
     }
   }
 
@@ -75,7 +75,7 @@ export class UsersService {
     try {
       await this.userRepository.delete(id);
     } catch (error) {
-      throw new InternalServerErrorException('Cannot delete user');
+      throw new InternalServerErrorException('Cannot delete user', error);
     }
   }
 
@@ -132,11 +132,11 @@ export class UsersService {
 
   //juste pour tester
   async getAllOidcUsers() {
-    return this.directoryService.getDirectoryUsers();
+    return this.directoryService.getDirectory();
   }
 
   async getUsersWithPwdEndTime() {
-    const users = await this.directoryService.getDirectoryUsers();
+    const users = await this.directoryService.getDirectory();
     return users.filter(u => u.pwdEndTime === true || u.pwdEndTime === 1 || u.pwdEndTime === '1' || u.pwdEndTime === 'true');
   }
 

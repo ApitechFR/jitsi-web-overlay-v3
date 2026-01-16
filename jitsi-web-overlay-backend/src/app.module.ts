@@ -23,8 +23,8 @@ import { RoomModule } from './room/room.module';
 import { dataSourceOptions } from '../db/datasource';
 import { ParticipantModule } from './participant/participant.module';
 import { AutomationModule } from './automation/automation.module';
-import { LdapModule } from './providers/directory/ldap/ldap.module';
-import { OidcModule } from './providers/directory/oidc/oidc.module';
+import { LdapModule } from './providers/directory-provider/ldap/ldap.module';
+import { OidcModule } from './providers/directory-provider/oidc/oidc.module';
 
 
 @Module({
