@@ -135,9 +135,19 @@ export class UsersService {
     return this.directoryService.getDirectory();
   }
 
-  async getUsersWithPwdEndTime() {
+  async getUsersWithPwdEndTime(): Promise<any[]> {
     const users = await this.directoryService.getDirectory();
-    return users.filter(u => u.pwdEndTime === true || u.pwdEndTime === 1 || u.pwdEndTime === '1' || u.pwdEndTime === 'true');
+
+    return users.filter(user => {
+      const pwdEndTime = user?.attributes?.pwdEndTime?.[0];
+
+      return (
+        pwdEndTime === true ||
+        pwdEndTime === 1 ||
+        pwdEndTime === '1' ||
+        pwdEndTime === 'true'
+      );
+    });
   }
 
   async deactivateUsersWithExpiredPassword(): Promise<{
@@ -148,7 +158,7 @@ export class UsersService {
     const deactivatedUids: string[] = [];
 
     for (const extUser of expiredUsers) {
-      if (!extUser?.Email) continue;
+      if (!extUser?.email) continue;
 
       const user = await this.findByEmail(extUser.Email);
       if (!user) continue;

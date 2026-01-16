@@ -32,11 +32,11 @@ export class AutomationService {
      * Désactivation des utilisateurs
     */
     async runDeactivateUsersWithExpiredPassword() {
-        this.logger.log('[Users] Deactivate ussers started');
+        this.logger.log('[Users] Deactivate users started');
         
         const result = await this.userService.deactivateUsersWithExpiredPassword();
-        this.logger.log(`[Users] Deactivated count=${result.checked}`);
-        this.logger.log(`[Users] Deactivated users uids=${result.deactivated.join(', ')}`);
+        this.logger.log(`[Users] Deactivated count = ${result.checked}`);
+        this.logger.log(`[Users] Deactivated users uids = ${result.deactivated.join(', ')}`);
 
         this.logger.log('[Users] Deactivate users finished');
     }
@@ -54,8 +54,8 @@ export class AutomationService {
             this.logger.log('[Conference] No conferences to deactivate');
         }
 
-        this.logger.log(`[Conference] Deactivated count=${result.totalDisabled}`);
-        this.logger.log(`[Conference] Deactivated conferences uids=${result.disabledConferences.join(', ')}`);
+        this.logger.log(`[Conference] Deactivated count = ${result.totalDisabled}`);
+        this.logger.log(`[Conference] Deactivated conferences uids = ${result.disabledConferences.join(', ')}`);
 
         this.logger.log('[Conference] Deactivation conferences finished');
     }
@@ -79,15 +79,15 @@ export class AutomationService {
         const usersResult = await this.userService.deleteDeactivatedUsers(limitDate);
 
         this.logger.log(
-            `[Retention][Users] deleted=${usersResult.totalDeleted} uids=${usersResult.deletedUserUids.join(', ')}`,
+            `[Retention][Users] deleted = ${usersResult.totalDeleted} uids = ${usersResult.deletedUserUids.join(', ')}`,
         );
 
         const replaysResult = await this.replayService.deleteReplaysByDeactivatedConferences(limitDate);
 
         this.logger.log(
-            `[Retention][Replays] totalDeleted=${replaysResult.totalDeleted} details=` +
+            `[Retention][Replays] totalDeleted=${replaysResult.totalDeleted} details = ` +
             replaysResult.byConference
-                .map(c => `${c.conferenceUid}:${c.count}`)
+                .map(c => `${c.conferenceUid} : ${c.count}`)
                 .join(', '),
         );
 
