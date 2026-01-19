@@ -140,6 +140,8 @@ function SurveyResults() {
         fetchStats();
     }, [value, AppTemplate, dateFilters, startDate, endDate]);
 
+    const isExportDisabled = localData.total === 0;
+
     return (
         <>
             <h2 className="dashboardComponentTitle">{t('dashboard.surveyResultsTitle')}</h2>
@@ -249,6 +251,7 @@ function SurveyResults() {
 
                         <div className='exportButton'>
                             <Button
+                                disabled={isExportDisabled}
                                 onClick={() => {
                                     const url = DashboardService.getExportUrl({
                                         baseUrl: cfg.VITE_API_URL || '',
