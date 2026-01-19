@@ -66,9 +66,7 @@ export class AutomationService {
      * Suppression des replays liés aux conférences des utilisateurs désactivés depuis plus de RETENTION_DAYS
     */
     async applyRetention() {
-        const retentionDays = Number(
-            this.configService.get('RETENTION_DAYS', 90),
-        );
+        const retentionDays = Number(this.configService.get('RETENTION_DAYS', 90));
 
         const limitDate = new Date();
         limitDate.setDate(limitDate.getDate() - retentionDays);
@@ -78,9 +76,7 @@ export class AutomationService {
 
         const usersResult = await this.userService.deleteDeactivatedUsers(limitDate);
 
-        this.logger.log(
-            `[Retention][Users] deleted = ${usersResult.totalDeleted} uids = ${usersResult.deletedUserUids.join(', ')}`,
-        );
+        this.logger.log(`[Retention][Users] deleted = ${usersResult.totalDeleted} uids = ${usersResult.deletedUserUids.join(', ')}`);
 
         const replaysResult = await this.replayService.deleteReplaysByDeactivatedConferences(limitDate);
 

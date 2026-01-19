@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/users.entity';
-import { In, LessThan, Repository } from 'typeorm';
+import { LessThan, Repository } from 'typeorm';
 import { DirectoryProvider } from '../providers/directory-provider/directory-provider.interface';
 
 @Injectable()
@@ -130,11 +130,6 @@ export class UsersService {
 
   //--------------------------OIDC-------------------------------------------
 
-  //juste pour tester
-  async getAllOidcUsers() {
-    return this.directoryService.getDirectory();
-  }
-
   async getUsersWithPwdEndTime(): Promise<any[]> {
     const users = await this.directoryService.getDirectory();
 
@@ -175,19 +170,6 @@ export class UsersService {
     };
   }
 
-
-
-  //---------------------------LDAP------------------------------------------
-
-  // async findAllLDAP() {
-  //   const users = await this.ldapService.getAllLdapUsers();
-  //   return users.map(u => ({
-  //     uid: u.uidNumber,
-  //     name: u.cn,
-  //     email: u.Email,
-  //   }));
-  // }
-
   private async deactivateUserIfNeeded(userUid: string): Promise<boolean> {
     const result = await this.userRepository
       .createQueryBuilder()
@@ -204,33 +186,14 @@ export class UsersService {
     return (result.affected || 0) > 0;
   }
 
-  async deactivateUsersByEmail(emails: string[]): Promise<{ deactivatedUids: string[] }> {
-    const users = await this.userRepository.find({
-      where: {
-        email: In(emails),
-        isActive: true,
-      },
-    });
+  //---------------------------LDAP------------------------------------------
 
-    if (!users.length) {
-      return { deactivatedUids: [] };
-    }
-
-    const deactivatedUids = users.map(u => u.uid);
-
-    await this.userRepository
-      .createQueryBuilder()
-      .update()
-      .set({
-        isActive: false,
-        desactivated_at: () => 'IFNULL(desactivated_at, NOW())',
-      })
-      .where('uid IN (:...uids)', { uids: deactivatedUids })
-      .execute();
-
-    return { deactivatedUids };
+  async findAllLDAP() {
+    const users = await this.directoryService.getDirectory();
+    return users.map(u => ({
+      uid: u.uidNumber,
+      name: u.cn,
+      email: u.Email,
+    }));
   }
-
-
-
 }
