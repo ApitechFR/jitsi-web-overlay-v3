@@ -1,10 +1,9 @@
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import '@apitechfr/react-dsapitech/main.css';
 import './index.css';
 import { startReactDsfr } from '@codegouvfr/react-dsfr/spa';
-import { Link } from 'react-router-dom';
 import { AuthProvider } from './auth/AuthContext';
 import { loadRuntimeConfig } from './config/runtimeConfig';
 
