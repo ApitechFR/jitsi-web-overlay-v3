@@ -13,6 +13,7 @@ import {
   Header,
   UseGuards,
   Patch,
+  Inject as NestInject,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -36,6 +37,8 @@ import { JwtAuthGuard } from '../authentication/jwt-auth.guard';
 import { Roles } from '../authentication/roles.decorator';
 import { RolesGuard } from '../authentication/roles.guard';
 
+import { WebinarService } from '../webinar/webinar.service';
+
 interface AuthenticatedRequest extends Request {
   user?: any;
 }
@@ -46,10 +49,12 @@ export class ConferenceController {
   constructor(
     @Inject(IConferenceService)
     private readonly conferenceService: IConferenceService,
-    private readonly prosodyRuntimeService: ProsodyRuntimeService
+    private readonly prosodyRuntimeService: ProsodyRuntimeService,
+    @NestInject(WebinarService)
+    private readonly webinarService: WebinarService,
   ) { }
 
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   @Post('conferences')
   @ApiOkResponse({ description: 'Conférence créée avec succès' })
   async create(@Body() dto: CreateConferenceDTO) {
@@ -87,6 +92,7 @@ export class ConferenceController {
   }
 
 
+  @UseGuards(JwtAuthGuard)
   @Get('conferences/:uid/duration')
   async getDuration(
     @Param('uid') uid: string): Promise<{ duration: string }> {
@@ -102,13 +108,15 @@ export class ConferenceController {
     return this.conferenceService.findOne(uid);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Delete('conferences/:id')
   @ApiOkResponse({ description: 'Conférence supprimée' })
   async delete(@Param('id') id: string) {
     return this.conferenceService.delete(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put('conferences/:id')
   @ApiOkResponse({ description: 'Conférence mise à jour' })
   async update(
@@ -156,14 +164,15 @@ export class ConferenceController {
   @ApiNotFoundResponse({
     description: "retourne 404 si la conférence n'existe pas",
   })
-  async getConferenceState(@Param() params: RoomNameDto) {
-    return this.conferenceService.roomExists(params.roomName);
+  async getConferenceState(@Param('roomName') roomName: RoomNameDto['roomName']) {
+    return this.conferenceService.roomExists(roomName);
   }
 
 
   @Get('/conferences/:roomName/room-size')
-  async getRoomSize(@Param() params: RoomNameDto) {
-    return this.conferenceService.getRoomSize(params.roomName);
+  async getRoomSize(@Param('roomName') roomName: RoomNameDto['roomName']) {
+
+    return this.conferenceService.getRoomSize(roomName);
   }
 
   //send token by email
@@ -191,13 +200,13 @@ export class ConferenceController {
   }
 
   // Check JWT token validity
-  @UseGuards(JwtAuthGuard)
-  @Post('verify-token')
-  @ApiOkResponse({ description: 'JWT vérifié avec succès' })
-  @ApiUnauthorizedResponse({ description: 'JWT invalide ou expiré' })
-  async verifyToken(@Body() dto: JwtDTO) {
-    return this.conferenceService.verifyToken(dto.jwt);
-  }
+  // @UseGuards(JwtAuthGuard)
+  // @Post('verify-token')
+  // @ApiOkResponse({ description: 'JWT vérifié avec succès' })
+  // @ApiUnauthorizedResponse({ description: 'JWT invalide ou expiré' })
+  // async verifyToken(@Body() dto: JwtDTO) {
+  //   return this.conferenceService.verifyToken(dto.jwt);
+  // }
 
   //TODO update new name :old name /:roomName
   @UseGuards(JwtAuthGuard)
@@ -218,19 +227,32 @@ export class ConferenceController {
   @ApiBody({ type: RoomNameDto })
   @ApiBearerAuth()
   async getRoomAccessToken(
-    @Param() params: RoomNameDto,
+    @Param('roomName') roomName: RoomNameDto['roomName'],
     @Headers('webconf-user-region') webconfUserRegion: string,
     @Headers('authorization') accessToken: string,
   ) {
     accessToken = accessToken?.split(' ')[1];
     return this.conferenceService.getRoomAccessToken(
-      params.roomName,
+      roomName,
       webconfUserRegion,
       accessToken,
     );
   }
 
   // @UseGuards(JwtAuthGuard)
+  // @Post('conferences/:roomName/tokens/jitsi')
+  // @Header('Cache-Control', 'no-store')
+  // async createJitsiToken(
+  //   @Param('roomName') roomName: RoomNameDto['roomName'],
+  //   @Req() req: AuthenticatedRequest,
+  //   @Body('isWebinar') isWebinar?: boolean
+  // ) {
+  //   const user = req.user;
+  //   const isModerator = this.conferenceService.isUserModerator(user, roomName);
+  //   const { token, exp } = await this.conferenceService.generateJitsiJwt(user, isModerator, roomName, isWebinar);
+  //   console.log({ user, roomName, isWebinar, isModerator, token, exp });
+  //   return { token, exp, moderator: isModerator };
+  // }
   @Post('conferences/:roomName/tokens/jitsi')
   @Header('Cache-Control', 'no-store')
   async createJitsiToken(
@@ -240,9 +262,30 @@ export class ConferenceController {
 
     const user = req.user;
     const isModerator = this.conferenceService.isUserModerator(user, roomName);
-
     const { token, exp } = await this.conferenceService.generateJitsiJwt(user, isModerator, roomName);
-
     return { token, exp, moderator: isModerator };
+  }
+
+  /**
+ * Generate a Jitsi JWT for a visitor (unauthenticated)
+ * Publicly accessible to generate a visitor link
+ */
+  @Post('conferences/:roomName/tokens/jitsi-visitor')
+  @Header('Cache-Control', 'no-store')
+  async createJitsiVisitorToken(
+    @Param('roomName') roomName: RoomNameDto['roomName'],
+    @Body() body: any
+  ) {
+    // Check if webinar mode is enabled
+    if (process.env.IS_WEBINAR_ENABLED !== 'true') {
+      return { error: 'Webinar mode is disabled' };
+    }
+
+    // Generate a Jitsi JWT for a visitor (no user, no moderator)
+    const { token: jwt, exp } = await this.conferenceService.generateJitsiJwt(undefined, false, roomName, true);
+    // Create a short invitation
+    const invitation = await this.webinarService.createInvitation(roomName, jwt, 'visitor');
+    // Return the invitation token and expiration
+    return { invitationToken: invitation.token, expiresAt: invitation.expiresAt };
   }
 }

@@ -1,0 +1,17 @@
+#!/bin/sh
+# Génère vars.json dynamiquement à chaque démarrage du conteneur
+cat <<EOF > /usr/share/nginx/html/vars.json
+{
+  "DIALINNUMBER_URL": "${DIALINNUMBER_URL}",
+  "DIALINCONFCODE_URL": "${DIALINCONFCODE_URL}",
+  "ENABLE_PHONE_ACCESS": "${ENABLE_PHONE_ACCESS}",
+  "JITSI_DOMAIN": "${JITSI_DOMAIN}",
+  "PHONE_NUMBER_FORMAT": "${PHONE_NUMBER_FORMAT}",
+  "ENABLE_MODERATOR_OPTIONS": "${ENABLE_MODERATOR_OPTIONS}",
+  "TITLE_MEETING_DETAILS": "${TITLE_MEETING_DETAILS}",
+  "ROOM_NAME_PREFIX": "${ROOM_NAME_PREFIX}",
+  "ROOM_NAME_LENGTH": "${ROOM_NAME_LENGTH}"
+}
+EOF
+
+exec nginx -g 'daemon off;'

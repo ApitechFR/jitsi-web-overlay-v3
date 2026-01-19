@@ -450,8 +450,17 @@ export class ConferenceServiceSQL implements IConferenceService {
     return true;
   }
 
-  generateJitsiJwt(user: any, moderator: boolean, roomName: string) {
+  generateJitsiJwt(user: any, moderator: boolean, roomName: string, isWebinar?: boolean) {
+
+    if (isWebinar && !moderator) {
+      // spectateur webinar
+      console.log("service generateJitsiJwt - isWebinar true & !moderator (visitor)", { user, moderator, roomName, isWebinar });
+      return this.jitsiJwtService.generateWebinarViewerJwt(user, roomName);
+    }
+    // Speaker or normal user
+    console.log("service generateJitsiJwt - moderator or not webinar", { user, moderator, roomName, isWebinar });
     return this.jitsiJwtService.generateJitsiJwt(user, moderator, roomName);
+
   }
 
   async activateConference(uid: string): Promise<Conference> {

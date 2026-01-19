@@ -1,0 +1,142 @@
+
+workflow:
+  rules:
+    - if: '$CI_COMMIT_TAG'
+    - if: '$CI_COMMIT_BRANCH == "release"'
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - when: never
+
+variables:
+  DOCKER_CONFIG: /kaniko/.docker/
+
+stages:
+  - release
+  - build
+
+release_outlook_plugin:
+  stage: release
+  image: node:20
+  before_script:
+    - cd jitsi-web-overlay-outlook-plugin
+    - npm ci
+  script:
+    - npx semantic-release
+  only:
+    - release
+    - main
+  variables:
+    GITLAB_TOKEN: $CI_JOB_TOKEN
+
+release_global:
+  stage: release
+  image: node:20
+  before_script:
+    - npm ci
+  script:
+    - npx semantic-release
+  only:
+    - release
+    - main
+  variables:
+    GITLAB_TOKEN: $CI_JOB_TOKEN
+
+# --------------------------------------------------
+# Template Kaniko commun
+# --------------------------------------------------
+.kaniko-build:
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: ["/busybox/sh", "-c"]
+  stage: build
+  before_script:
+    - mkdir -p /kaniko/.docker
+    - |
+      cat > /kaniko/.docker/config.json <<EOF
+      {
+        "auths": {
+          "${CI_REGISTRY}": {
+            "username": "${CI_REGISTRY_USER}",
+            "password": "${CI_REGISTRY_PASSWORD}"
+          }
+        }
+      }
+      EOF
+
+# --------------------------------------------------
+# Build BACKEND
+# --------------------------------------------------
+docker-build-backend:
+  extends: .kaniko-build
+  needs: []
+  rules:
+    - if: '$CI_COMMIT_TAG'
+    - if: '$CI_COMMIT_BRANCH == "release"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+  script:
+    - |
+      SHA_TAG="sha-${CI_COMMIT_SHORT_SHA}"
+
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        VERSION="${CI_COMMIT_TAG#v}"
+        DESTINATIONS="\
+          --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-backend:${VERSION} \
+          --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-backend:latest \
+          --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-backend:${SHA_TAG}"
+      elif echo "$CI_COMMIT_BRANCH" | grep -q 'release'; then
+        VERSION="${CI_COMMIT_BRANCH#release/}"
+        DESTINATIONS="\
+          --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-backend:${VERSION}-rc \
+          --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-backend:${SHA_TAG}"
+      else
+        DESTINATIONS="\
+          --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-backend:${CI_COMMIT_BRANCH} \
+          --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-backend:${SHA_TAG}"
+      fi
+
+      /kaniko/executor \
+        --context "${CI_PROJECT_DIR}/jitsi-web-overlay-backend" \
+        --dockerfile "${CI_PROJECT_DIR}/jitsi-web-overlay-backend/Dockerfile" \
+        $DESTINATIONS \
+        --single-snapshot
+
+# --------------------------------------------------
+# Build FRONTEND
+# --------------------------------------------------
+docker-build-frontend:
+  extends: .kaniko-build
+  needs: []
+  rules:
+    - if: '$CI_COMMIT_TAG'
+    - if: '$CI_COMMIT_BRANCH == "release"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+  script:
+    - |
+      SHA_TAG="sha-${CI_COMMIT_SHORT_SHA}"
+
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        VERSION="${CI_COMMIT_TAG#v}"
+        DESTINATIONS="\
+          --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-frontend:${VERSION} \
+          --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-frontend:latest \
+          --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-frontend:${SHA_TAG}"
+      elif echo "$CI_COMMIT_BRANCH" | grep -q 'release'; then
+        VERSION="${CI_COMMIT_BRANCH#release/}"
+        DESTINATIONS="\
+          --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-frontend:${VERSION}-rc \
+          --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-frontend:${SHA_TAG}"
+      else
+        DESTINATIONS="\
+          --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-frontend:${CI_COMMIT_BRANCH} \
+          --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-frontend:${SHA_TAG}"
+      fi
+
+      /kaniko/executor \
+        --context "${CI_PROJECT_DIR}/jitsi-web-overlay-frontend" \
+        --dockerfile "${CI_PROJECT_DIR}/jitsi-web-overlay-frontend/Dockerfile" \
+        $DESTINATIONS \
+        --build-arg VITE_API_URL=${API_URL} \
+        --build-arg VITE_APP_TEMPLATE=${APP_TEMPLATE} \
+        --single-snapshot

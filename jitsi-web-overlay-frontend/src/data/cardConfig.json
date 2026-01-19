@@ -1,32 +1,32 @@
 [
   {
     "key": "users",
-    "label": "ActifUsers",
-    "description": "Nombre d’utilisateurs actifs"
+    "label": "cards.users.label",
+    "description": "cards.users.description"
   },
   {
     "key": "confNb",
-    "label": "NbConferences",
-    "description": "Nombre total de conférences lancées"
+    "label": "cards.confNb.label",
+    "description": "cards.confNb.description"
   },
   {
     "key": "confTime",
-    "label": "TimeConferences",
-    "description": "Durée moyenne d'une conférence"
+    "label": "cards.confTime.label",
+    "description": "cards.confTime.description"
   },
   {
     "key": "confMoyPart",
-    "label": "MoyPartConference",
-    "description": "Moy participants dans une conférence"
+    "label": "cards.confMoyPart.label",
+    "description": "cards.confMoyPart.description"
   },
   {
     "key": "confMaxSimult",
-    "label": "MaxSimultConference",
-    "description": "Maximum de conférences simultanées"
+    "label": "cards.confMaxSimult.label",
+    "description": "cards.confMaxSimult.description"
   },
   {
     "key": "partMaxSimult",
-    "label": "MaxSimultParticipant",
-    "description": "Maximum de participants simultanés"
+    "label": "cards.partMaxSimult.label",
+    "description": "cards.partMaxSimult.description"
   }
 ]

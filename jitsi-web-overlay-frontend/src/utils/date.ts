@@ -1,7 +1,11 @@
+import i18n from 'i18next';
+
 export const formatDate = (isoString: string): string => {
     const date = new Date(isoString);
-    return new Intl.DateTimeFormat('fr-FR', {
+    const lang = i18n.language || navigator.language || 'fr-FR';
+    return new Intl.DateTimeFormat(lang, {
+        timeZone:  'UTC',
         dateStyle: 'long',
         timeStyle: 'short',
-    }).format(date);
+    }).format(new Date(isoString));
 };
