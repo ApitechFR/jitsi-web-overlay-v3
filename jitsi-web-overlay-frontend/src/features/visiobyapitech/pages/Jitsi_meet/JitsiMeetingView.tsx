@@ -21,7 +21,7 @@ type JitsiApiLike = {
 
 const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displayName, user }) => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const cfg = useRuntimeConfig();
 
   const checkVideoIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -51,6 +51,11 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
     cleanupExpiredGuests();
   }, []);
 
+  const jitsiLang = useMemo(() => {
+    const raw = i18n.language || 'fr';
+    return raw.split('-')[0]; // 'fr-FR' -> 'fr'
+  }, [i18n.language]);
+
   const onClose = () => {
     navigate('/feedback', { state: { room: conferenceName } });
     localStorage.removeItem('conferenceName');
@@ -59,6 +64,7 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
   const configOverwrite = useMemo(() => {
 
     return {
+      lang: jitsiLang,
       startWithAudioMuted: true,
       startWithVideoMuted: true,
       prejoinConfig: { enabled: true },
