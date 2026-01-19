@@ -56,10 +56,6 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
     cleanupExpiredGuests();
   }, []);
 
-  const jitsiLang = useMemo(() => {
-    const raw = i18n.language || 'fr';
-    return raw.split('-')[0]; // 'fr-FR' -> 'fr'
-  }, [i18n.language]);
 
   const onClose = () => {
     navigate('/feedback', { state: { room: conferenceName } });
