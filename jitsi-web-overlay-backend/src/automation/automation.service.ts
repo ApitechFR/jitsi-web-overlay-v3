@@ -81,7 +81,7 @@ export class AutomationService {
         const replaysResult = await this.replayService.deleteReplaysByDeactivatedConferences(limitDate);
 
         this.logger.log(
-            `[Retention][Replays] totalDeleted=${replaysResult.totalDeleted} details = ` +
+            `[Retention][Replays] totalDeleted = ${replaysResult.totalDeleted} details = ` +
             replaysResult.byConference
                 .map(c => `${c.conferenceUid} : ${c.count}`)
                 .join(', '),
