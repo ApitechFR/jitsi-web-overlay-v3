@@ -151,6 +151,7 @@ export class UsersService {
   }> {
     const expiredUsers = await this.getUsersWithPwdEndTime();
     const deactivatedUids: string[] = [];
+    let count = 0;
 
     for (const extUser of expiredUsers) {
       if (!extUser?.email) continue;
@@ -161,11 +162,12 @@ export class UsersService {
       const wasDeactivated = await this.deactivateUserIfNeeded(user.uid);
       if (wasDeactivated) {
         deactivatedUids.push(user.uid);
+        count++;
       }
     }
 
     return {
-      checked: expiredUsers.length,
+      checked: count,
       deactivated: deactivatedUids,
     };
   }
