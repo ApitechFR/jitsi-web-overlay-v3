@@ -38,11 +38,9 @@ export class LdapService implements OnModuleDestroy, DirectoryProvider {
                 attributes: ['uidNumber', 'sn', 'cn', 'Email', 'displayName'],
             });
 
-            console.log('LDAP search entries:', searchEntries);
-
             return searchEntries;
         } catch (err) {
-            this.logger.error('LDAP error', err);
+            this.logger.error('LDAP error', err?.stack || JSON.stringify(err));
             throw err;
         }
     }

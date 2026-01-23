@@ -2,6 +2,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,6 +12,7 @@ import { DirectoryProvider } from '../providers/directory-provider/directory-pro
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -145,10 +147,7 @@ export class UsersService {
     });
   }
 
-  async deactivateUsersWithExpiredPassword(): Promise<{
-    checked: number;
-    deactivated: string[];
-  }> {
+  async deactivateUsersWithExpiredPassword(): Promise<{ checked: number; deactivated: string[]; }> {
     const expiredUsers = await this.getUsersWithPwdEndTime();
     const deactivatedUids: string[] = [];
     let count = 0;
@@ -156,13 +155,22 @@ export class UsersService {
     for (const extUser of expiredUsers) {
       if (!extUser?.email) continue;
 
-      const user = await this.findByEmail(extUser.Email);
-      if (!user) continue;
+      try {
+        const user = await this.findByEmail(extUser.Email);
+        if (!user) continue;
 
-      const wasDeactivated = await this.deactivateUserIfNeeded(user.uid);
-      if (wasDeactivated) {
-        deactivatedUids.push(user.uid);
-        count++;
+        const wasDeactivated = await this.deactivateUserIfNeeded(user.uid);
+        if (wasDeactivated) {
+          deactivatedUids.push(user.uid);
+          count++;
+        }
+
+      } catch (error) {
+        this.logger.error(
+          `Erreur lors de la désactivation de l'utilisateur (email=${extUser.email})`,
+          error,
+        );
+
       }
     }
 

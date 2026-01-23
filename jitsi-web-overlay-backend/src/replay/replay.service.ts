@@ -10,6 +10,7 @@ import { RegisterEvent } from './entities/register_event.entity';
 import { RegisterEventDto } from './DTOs/register_event.dto';
 import { Conference } from '../conference/entities/conference.entity';
 import { ReplayStatus } from './enum/replay_status.enum';
+import { safeStatFile } from './utils/FileVerification';
 
 @Injectable()
 export class ReplayService {
@@ -53,7 +54,7 @@ export class ReplayService {
                 },
             });
         } catch (error) {
-            console.error('Error fetching replays by conference UID:', error);
+            this.logger.error('Error fetching replays by conference UID:', error);
             throw new InternalServerErrorException('Could not fetch replays for the specified conference.');
         }
     }
@@ -90,7 +91,7 @@ export class ReplayService {
                 return await manager.save(replay);
             });
         } catch (error) {
-            console.error('Error inserting replay:', error);
+            this.logger.error('Error inserting replay:', error);
             throw error;
         }
     }
@@ -119,7 +120,7 @@ export class ReplayService {
 
             return await this.replayRepository.save(replay);
         } catch (error) {
-            console.error('Replay non trouvé ou erreur lors de la mise à jour', error);
+            this.logger.error('Replay non trouvé ou erreur lors de la mise à jour', error);
             throw error;
         }
     }
@@ -142,16 +143,15 @@ export class ReplayService {
             const isEnabled = process.env.ENABLE_JIBRI_APITECH_API === 'true';
 
             if (replay_status === ReplayStatus.UPLOADED_RSYNC && filePath) {
-                try {
-                    const stats = fs.statSync(filePath);
-                    if (stats.isFile() && !isEnabled) {
-                        this.logger.log(`Fichier trouvé à l'emplacement : ${filePath}`);
-                        replay_status = ReplayStatus.TERMINATED;
-                    } else {
-                        this.logger.warn(`Le fichier n'existe pas ou n'est pas un fichier : ${filePath}`);
-                    }
-                } catch (err) {
-                    this.logger.error(`Erreur lors de la vérification du fichier à l'emplacement : ${filePath}`, err);
+                const { isFile, error } = safeStatFile(filePath);
+                if (isFile && !isEnabled) {
+                    this.logger.log(`Fichier trouvé à l'emplacement : ${filePath}`);
+                    replay_status = ReplayStatus.TERMINATED;
+                } else {
+                    this.logger.warn(`Le fichier n'existe pas ou n'est pas un fichier : ${filePath}`);
+                }
+                if (error) {
+                    this.logger.error(`Erreur lors de la vérification du fichier : ${error}`);
                 }
             }
             replay.status = replay_status;
@@ -160,7 +160,7 @@ export class ReplayService {
 
             return await this.replayRepository.save(replay);
         } catch (error) {
-            console.error('Erreur lors de la mise à jour du replay :', error);
+            this.logger.error('Erreur lors de la mise à jour du replay :', error);
             throw new InternalServerErrorException(error.message);
         }
     }
@@ -181,7 +181,7 @@ export class ReplayService {
 
             return registerEvent;
         } catch (error) {
-            console.error('Erreur lors de la recherche du registerEvent :', error);
+            this.logger.error('Erreur lors de la recherche du registerEvent :', error);
             throw new InternalServerErrorException(error.message);
         }
     }
@@ -218,11 +218,12 @@ export class ReplayService {
     downloadVideoFile(rawPath: string): { path: string; stat: fs.Stats; safeFilename: string; } {
         const decodedPath = decodeURIComponent(rawPath || '').trim();
 
-        if (!decodedPath || !fs.existsSync(decodedPath)) {
+        const { isFile, stat } = safeStatFile(decodedPath);
+
+        if (!decodedPath || !isFile || !stat) {
             throw new HttpException('Fichier introuvable', HttpStatus.NOT_FOUND);
         }
 
-        const stat = fs.statSync(decodedPath);
         const safeFilename = path.basename(decodedPath);
 
         return { path: decodedPath, stat, safeFilename };
@@ -248,18 +249,27 @@ export class ReplayService {
             };
         }
 
-        const conferenceUids = rows.map(r => r.conferenceUid);
+        const BATCH_SIZE = 1000;
+        let deletedInLoop = 0;
+        let totalDeleted = 0;
 
-        await this.replayRepository
-            .createQueryBuilder()
-            .delete()
-            .where('conference_uid IN (:...uids)', { uids: conferenceUids })
-            .execute();
+        do {
+            const result = await this.replayRepository.query(
+                `
+                DELETE r
+                FROM replay r
+                JOIN conferences c ON c.uid = r.conference_uid
+                WHERE c.is_active = 0
+                  AND c.desactivated_at < ?
+                LIMIT ?
+                `,
+                [date, BATCH_SIZE],
+            );
 
-        const totalDeleted = rows.reduce(
-            (sum, r) => sum + Number(r.count),
-            0,
-        );
+            deletedInLoop = result.affectedRows ?? 0;
+            totalDeleted += deletedInLoop;
+
+        } while (deletedInLoop === BATCH_SIZE);
 
         return {
             totalDeleted,

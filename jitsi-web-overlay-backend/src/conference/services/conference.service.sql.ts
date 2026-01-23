@@ -3,7 +3,6 @@ import {
   NotFoundException,
   UnauthorizedException,
   Logger,
-  InternalServerErrorException,
   BadRequestException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -21,7 +20,6 @@ import { ConfigService } from '@nestjs/config';
 import { ProsodyService } from '../../prosody/prosody.service';
 import { ProsodyRuntimeService } from '../../prosody/prosody-runtime.service';
 import { JitsiJwtService } from '../../common/services/jitsi-jwt.service';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { ParticipantService } from '../../participant/participant.service';
 import { Participant } from '../../participant/entities/participant.entity';
 
@@ -463,25 +461,6 @@ export class ConferenceServiceSQL implements IConferenceService {
 
   }
 
-  async activateConference(uid: string): Promise<Conference> {
-    const conference = await this.conferenceRepo.findOne({
-      where: { uid },
-    });
-
-    if (!conference) {
-      throw new NotFoundException('Conference not found');
-    }
-
-    if (conference.isActive) {
-      return conference; // Déjà active
-    }
-
-    conference.isActive = true;
-    conference.desactivated_at = null;
-
-    return await this.conferenceRepo.save(conference);
-  }
-
   /**
    * Trouver les conférences actives
    * où TOUS les utilisateurs (userUid ≠ null)
@@ -534,7 +513,7 @@ export class ConferenceServiceSQL implements IConferenceService {
     };
   }
 
-  async closeEmptyConferences() {
+  async closeEmptyConferences(): Promise<void> {
     const activeConfs = await this.conferenceRepo.find({
       where: {
         status: ConferenceStatus.STARTED,

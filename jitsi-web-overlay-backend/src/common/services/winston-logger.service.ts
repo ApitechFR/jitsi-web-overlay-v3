@@ -44,7 +44,7 @@ export class WinstonLoggerService implements LoggerService {
         this.logger.info(message);
     }
 
-    error(message: any, trace?: string) {
+    error(message: any, trace?: any) {
         this.logger.error(`${message} ${trace || ''}`);
     }
 

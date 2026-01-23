@@ -142,12 +142,6 @@ export class ConferenceController {
     return this.conferenceService.updateEndTimeConferenceByName(confName, dto.end_time);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Patch(':uid/activate')
-  activate(@Param('uid') uid: string) {
-    return this.conferenceService.activateConference(uid);
-  }
-
   //TODO : to remove Old name /roomExists/:roomName
   @UseGuards(JwtAuthGuard)
   @Get('/roomExists/:roomName')

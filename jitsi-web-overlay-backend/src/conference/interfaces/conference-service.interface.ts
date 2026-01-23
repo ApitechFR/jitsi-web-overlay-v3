@@ -17,7 +17,6 @@ export interface IConferenceService<T = any> {
   findByName?(name: string): Promise<T | null>;
   delete?(id: string): Promise<void>;
   update?(id: string, data: Partial<CreateConferenceDTO>): Promise<T>;
-  activateConference?(uid: string): Promise<T>;
 
   disableAllInactiveUserConferences?(): Promise<T>;
   closeEmptyConferences?(): Promise<T>;

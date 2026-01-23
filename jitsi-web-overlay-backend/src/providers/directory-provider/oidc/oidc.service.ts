@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as queryString from 'querystring';
 import { DirectoryProvider } from '../directory-provider.interface';
+import { OidcUser } from './types/oidc-user.interface';
 
 @Injectable()
 export class OidcService implements DirectoryProvider {
@@ -13,7 +14,7 @@ export class OidcService implements DirectoryProvider {
         private readonly httpService: HttpService,
     ) { }
 
-    async getDirectory(): Promise<any[]> {
+    async getDirectory(): Promise<OidcUser[]> {
 
         const usersEndpoint = this.configService.get<string>('OIDC_USERS_ENDPOINT');
         const tokenEndpoint = this.configService.get<string>('TOKEN_ENDPOINT');

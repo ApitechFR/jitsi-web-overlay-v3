@@ -31,33 +31,51 @@ export class AutomationService {
     /**
      * Désactivation des utilisateurs
     */
-    async runDeactivateUsersWithExpiredPassword() {
+    private async runDeactivateUsersWithExpiredPassword() {
         this.logger.log('[Users] Deactivate users started');
-        
-        const result = await this.userService.deactivateUsersWithExpiredPassword();
-        this.logger.log(`[Users] Deactivated count = ${result.checked}`);
-        this.logger.log(`[Users] Deactivated users uids = ${result.deactivated.join(', ')}`);
 
-        this.logger.log('[Users] Deactivate users finished');
+        try {
+            const result = await this.userService.deactivateUsersWithExpiredPassword();
+            this.logger.log(`[Users] Deactivated count = ${result.checked}`);
+            this.logger.log(`[Users] Deactivated users uids = ${result.deactivated.join(', ')}`);
+
+        } catch (error) {
+            this.logger.error('[Users] Error during deactivation of users', {
+                message: error?.message,
+                stack: error?.stack,
+            });
+
+        } finally {
+            this.logger.log('[Users] Deactivate users finished');
+        }
     }
 
 
     /**
      * Désactivation des conférences des utilisateurs inactifs
     */
-    async runDeactivateConferences() {
+    private async runDeactivateConferences() {
         this.logger.log('[Conference] Deactivation conferences started');
 
-        const result = await this.conferenceService.disableAllInactiveUserConferences();
+        try {
+            const result = await this.conferenceService.disableAllInactiveUserConferences();
 
-        if (result.totalDisabled === 0) {
-            this.logger.log('[Conference] No conferences to deactivate');
+            if (result.totalDisabled === 0) {
+                this.logger.log('[Conference] No conferences to deactivate');
+            }
+
+            this.logger.log(`[Conference] Deactivated count = ${result.totalDisabled}`);
+            this.logger.log(`[Conference] Deactivated conferences uids = ${result.disabledConferences.join(', ')}`);
+
+        } catch (error) {
+            this.logger.error('[Conference] Error during deactivation of conferences', {
+                message: error?.message,
+                stack: error?.stack,
+            });
+
+        } finally {
+            this.logger.log('[Conference] Deactivation conferences finished');
         }
-
-        this.logger.log(`[Conference] Deactivated count = ${result.totalDisabled}`);
-        this.logger.log(`[Conference] Deactivated conferences uids = ${result.disabledConferences.join(', ')}`);
-
-        this.logger.log('[Conference] Deactivation conferences finished');
     }
 
 
@@ -65,40 +83,60 @@ export class AutomationService {
      * Suppression des utilisateurs désactivés depuis plus de RETENTION_DAYS
      * Suppression des replays liés aux conférences des utilisateurs désactivés depuis plus de RETENTION_DAYS
     */
-    async applyRetention() {
+    private async applyRetention() {
         const retentionDays = Number(this.configService.get('RETENTION_DAYS', 90));
 
         const limitDate = new Date();
         limitDate.setDate(limitDate.getDate() - retentionDays);
 
-        this.logger.log(`[Retention] Start – retention days = ${retentionDays}`);
-        this.logger.log(`[Retention] deactivation limite date = ${limitDate.toLocaleString('fr-FR', {timeZone: 'Europe/Paris'})}`);
+        try {
+            this.logger.log(`[Retention] Start – retention days = ${retentionDays}`);
+            this.logger.log(`[Retention] deactivation limite date = ${limitDate.toLocaleString('fr-FR', { timeZone: 'Europe/Paris' })}`);
 
-        const usersResult = await this.userService.deleteDeactivatedUsers(limitDate);
+            const usersResult = await this.userService.deleteDeactivatedUsers(limitDate);
 
-        this.logger.log(`[Retention][Users] deleted = ${usersResult.totalDeleted} uids = ${usersResult.deletedUserUids.join(', ')}`);
+            this.logger.log(`[Retention][Users] deleted = ${usersResult.totalDeleted} uids = ${usersResult.deletedUserUids.join(', ')}`);
 
-        const replaysResult = await this.replayService.deleteReplaysByDeactivatedConferences(limitDate);
+            const replaysResult = await this.replayService.deleteReplaysByDeactivatedConferences(limitDate);
 
-        this.logger.log(
-            `[Retention][Replays] totalDeleted = ${replaysResult.totalDeleted} details = ` +
-            replaysResult.byConference
-                .map(c => `${c.conferenceUid} : ${c.count}`)
-                .join(', '),
-        );
+            this.logger.log(
+                `[Retention][Replays] totalDeleted = ${replaysResult.totalDeleted} details = ` +
+                replaysResult.byConference
+                    .map(c => `${c.conferenceUid} : ${c.count}`)
+                    .join(', '),
+            );
 
-        this.logger.log('[Retention] Finished');
+        } catch (error) {
+            this.logger.error('[Retention] Error during retention process', {
+                message: error?.message,
+                stack: error?.stack,
+            });
+
+        } finally {
+            this.logger.log('[Retention] Finished');
+        }
+
     }
 
-    @Cron(CronExpression.EVERY_DAY_AT_6PM, {timeZone: 'Europe/Paris'})
+    @Cron(CronExpression.EVERY_DAY_AT_6PM, { timeZone: 'Europe/Paris' })
     // @Cron(CronExpression.EVERY_MINUTE)
     async dailyAutomation() {
         this.logger.log('=== DAILY AUTOMATION START ===');
 
-        await this.runDeactivateUsersWithExpiredPassword();
-        await this.runDeactivateConferences();
-        await this.applyRetention();
+        try {
 
-        this.logger.log('=== DAILY AUTOMATION END ===\n');
+            await this.runDeactivateUsersWithExpiredPassword();
+            await this.runDeactivateConferences();
+            await this.applyRetention();
+
+        } catch (error) {
+            this.logger.error('[Automation] Error during daily automation execution', {
+                message: error?.message,
+                stack: error?.stack,
+            });
+
+        } finally {
+            this.logger.log('=== DAILY AUTOMATION END ===\n');
+        }
     }
 }
