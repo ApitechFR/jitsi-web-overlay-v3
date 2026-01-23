@@ -23,8 +23,8 @@ export class LdapService implements OnModuleDestroy, DirectoryProvider {
                 connectTimeout: 100000,
             });
         } else {
+            this.logger.warn('LDAP_URL not defined : LDAP service disabled');
             this.client = undefined;
-            this.logger.warn('LDAP_URL non défini : le service LDAP est inactif.');
         }
     }
 
@@ -38,7 +38,7 @@ export class LdapService implements OnModuleDestroy, DirectoryProvider {
 
     async getDirectory(): Promise<any[]> {
         if (!this.client) {
-            this.logger.warn('Service LDAP inactif : aucune opération effectuée.');
+            this.logger.warn('Service LDAP disabled : no connection client available');
             return [];
         }
         const bindDN = this.configService.get<string>('LDAP_BIND_DN');

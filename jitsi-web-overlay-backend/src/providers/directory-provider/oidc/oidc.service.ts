@@ -22,7 +22,8 @@ export class OidcService implements DirectoryProvider {
         const clientSecret = this.configService.get<string>('OIDC_SECRET');
 
         if (!usersEndpoint || !tokenEndpoint || !clientId) {
-            throw new Error('OIDC variables not found');
+            this.logger.warn('OIDC variables not found');
+            return [];
         }
 
         try {
