@@ -12,6 +12,7 @@ import {
   Query,
   Header,
   UseGuards,
+  Patch,
   Inject as NestInject,
 } from '@nestjs/common';
 import {
@@ -141,6 +142,16 @@ export class ConferenceController {
     return this.conferenceService.updateEndTimeConferenceByName(confName, dto.end_time);
   }
 
+  //TODO : to remove Old name /roomExists/:roomName
+  @UseGuards(JwtAuthGuard)
+  @Get('/roomExists/:roomName')
+  @ApiOkResponse({ description: 'retourne roomName si la conférence existe' })
+  @ApiNotFoundResponse({
+    description: "retourne 404 si la conférence n'existe pas",
+  })
+  async roomExists(@Param() params: RoomNameDto) {
+    return this.conferenceService.roomExists(params.roomName);
+  }
 
   @Get('/conferences/:roomName/state')
   @ApiOkResponse({ description: 'retourne l\'état de la conférence' })

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../authentication/jwt-auth.guard';
 import { Roles } from '../authentication/roles.decorator';
 import { RolesGuard } from '../authentication/roles.guard';
@@ -44,5 +44,10 @@ export class UsersController {
   @Delete(":id")
   async delete(@Param("id") id: number): Promise<void> {
     return this.userService.delete(id);
+  }
+
+  @Patch(':uid/deactivate')
+  async deactivate(@Param('uid') uid: string) {
+    return this.userService.deactivateUser(uid);
   }
 }

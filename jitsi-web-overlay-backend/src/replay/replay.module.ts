@@ -12,5 +12,6 @@ import { Conference } from '../conference/entities/conference.entity';
   ],
   providers: [ReplayService],
   controllers: [ReplayController],
+  exports: [ReplayService],
 })
 export class ReplayModule { }
