@@ -7,24 +7,40 @@ import { DirectoryProvider } from '../directory-provider.interface';
 @Injectable()
 export class LdapService implements OnModuleDestroy, DirectoryProvider {
     private readonly logger = new Logger(LdapService.name);
-    private readonly client: Client;
+
+    private readonly client: Client | undefined;
+
 
     constructor(
         private readonly configService: ConfigService,
         private readonly httpService: HttpService,
     ) {
-        this.client = new Client({
-            url: this.configService.get<string>('LDAP_URL'),
-            timeout: 100000,
-            connectTimeout: 100000,
-        });
+        const ldapUrl = this.configService.get<string>('LDAP_URL');
+        if (ldapUrl) {
+            this.client = new Client({
+                url: ldapUrl,
+                timeout: 100000,
+                connectTimeout: 100000,
+            });
+        } else {
+            this.client = undefined;
+            this.logger.warn('LDAP_URL non défini : le service LDAP est inactif.');
+        }
     }
+
 
     async onModuleDestroy() {
-        await this.client.unbind();
+        if (this.client) {
+            await this.client.unbind();
+        }
     }
 
+
     async getDirectory(): Promise<any[]> {
+        if (!this.client) {
+            this.logger.warn('Service LDAP inactif : aucune opération effectuée.');
+            return [];
+        }
         const bindDN = this.configService.get<string>('LDAP_BIND_DN');
         const bindPassword = this.configService.get<string>('LDAP_PASSWORD');
         const baseDN = this.configService.get<string>('LDAP_BASE_DN');
