@@ -97,6 +97,7 @@ Ces variables sont prises en compte côté backend (API) et frontend (UI) pour a
 	- `FRONTCONF_*` permet de définir des contraintes sur les noms de salle (utilisées pour la validation côté backend et frontend).
 	- `ENABLE_JIBRI_APITECH_API`, `JIBRI_APITECH_API_DOMAIN` activent et configurent l'intégration avec l'API Jibri Apitech pour l'enregistrement/replay.
 	- `NODE_ENV` permet de charger des configurations différentes selon l'environnement (développement, production).
+	- `DIRECTORY_PROVIDER` permet de définir le système d’annuaire utilisé pour l’authentification des utilisateurs.
 
 - Exemple :
 	- `JITSI_DOMAIN`, `VOXAPI_URL` configurent les services externes utilisés par l'application.
@@ -196,6 +197,13 @@ Ces variables sont prises en compte côté backend (API) et frontend (UI) pour a
 | APP_FAQ_URL | Chemin du PDF de la FAQ | `/doc/Documentation_utilisateur_Visio_By_Apitech.pdf` | Non | `/doc/Documentation_utilisateur_Visio_By_Apitech.pdf` |
 | APP_TITLE | Titre dynamique de l'application | `Visio By Apitech` | Non | `Visio By Apitech` |
 | APP_FAVICON_URL | Chemin du favicon dynamique | `/joona/Icone_produits_V.svg` | Non | `/joona/Icone_produits_V.svg` |
+| RETENTION_DAYS | Nombre de jours de conservation des données après leur désactivation | `90` | Oui | `90` |
+| LOG_DIR | Dossier dans lequel l’application écrit les logs Cron | `/etc/logs/automation/` | Oui | `./logs` |
+| DIRECTORY_PROVIDER | Le système d’annuaire utilisé pour l’authentification des utilisateurs | `LDAP` | Oui | `OIDC` |
+| LDAP_URL | Adresse du serveur LDAP | `ldap://127.0.0.1` | Non | (aucune) |
+| LDAP_BIND_DN | Le compte technique utilisé pour s’authentifier auprès du serveur LDAP | `cn=ldap,dc=app,dc=com` | Non | (aucune) |
+| LDAP_PASSWORD | Mot de passe du compte technique LDAP | `password1234@` | Non | (aucune) |
+| LDAP_BASE_DN | Le point de départ des recherches LDAP | `dc=app,dc=com` | Non | (aucune) |
 
 ## Exemple de fichier `.env`
 

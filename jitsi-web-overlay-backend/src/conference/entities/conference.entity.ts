@@ -36,6 +36,9 @@ export class Conference {
   @Column({ type: 'enum', enum: ConferenceStatus, default: ConferenceStatus.DRAFT })
   status!: ConferenceStatus;
 
+  @Column({ name: 'is_active', default: true })
+  isActive!: boolean;
+
   @OneToMany(() => Participant, (participant) => participant.conference, {
     cascade: true,
   })
@@ -53,6 +56,9 @@ export class Conference {
   // Organisateurs ou createurs de la conférence
   @ManyToMany(() => User, u => u.organizedConferences, { cascade: false })
   organizers!: User[];
+
+  @Column({ name: 'desactivated_at', type: 'timestamp', nullable: true })
+  desactivated_at!: Date | null;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   created_at!: Date;

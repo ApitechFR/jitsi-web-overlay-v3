@@ -71,6 +71,9 @@ export class User {
   })
   organizedConferences!: Conference[];
 
+  @Column({ name: 'desactivated_at', type: 'timestamp', nullable: true })
+  desactivated_at!: Date | null;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt!: Date;
 

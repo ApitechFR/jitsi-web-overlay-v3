@@ -54,8 +54,6 @@ export class AuthenticationController {
     return room ? `${base}/${encodeURIComponent(room)}` : base;
   }
 
-
-
   /**
     * Return user information from the JWT.
     */
