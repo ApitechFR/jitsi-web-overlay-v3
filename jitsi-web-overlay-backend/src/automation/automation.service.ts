@@ -121,6 +121,11 @@ export class AutomationService {
     @Cron(CronExpression.EVERY_DAY_AT_6PM, { timeZone: 'Europe/Paris' })
     // @Cron(CronExpression.EVERY_MINUTE)
     async dailyAutomation() {
+        const daily_automation_enabled = this.configService.get('DAILY_AUTOMATION_ENABLED') === 'true';
+
+        if (!daily_automation_enabled) {
+            return;
+        }
         this.logger.log('=== DAILY AUTOMATION START ===');
 
         try {
