@@ -1,10 +1,11 @@
 import { useRef, useState, useCallback } from 'react';
 import { ConferenceService } from '@/api/services/conference/conference.service';
+import { ConferenceNameValidation } from '@/utils/conferenceName';
 
 export type PollingPhase = 'idle' | 'first-check' | 'waiting';
 
 interface UseConferencePollingOptions {
-    isValidConferenceName: (name: string) => boolean;
+    isValidConferenceName: (name: string) => ConferenceNameValidation;
     onConferenceStarted: (room: string) => void;
     onWaitingStart?: () => void;
     pollingInterval?: number;
@@ -57,7 +58,7 @@ export function useConferencePolling({
 
     const runFirstCheckThenMaybeWait = useCallback(async (room: string, isWebinar?: boolean) => {
         if (phase !== 'idle') return;
-        if (!isValidConferenceName(room)) return;
+        if (!isValidConferenceName(room).isValidConfName) return;
         // Si mode webinaire, skipper l'attente
         if (isWebinar) {
             setPhase('idle');

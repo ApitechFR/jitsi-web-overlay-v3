@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './HomeJoona.module.css';
 import { useTranslation } from 'react-i18next';
+import { ConferenceNameValidation } from '@/utils/conferenceName';
 
 interface ConferenceWaitingModalProps {
     modal: any;
@@ -8,7 +9,7 @@ interface ConferenceWaitingModalProps {
     stopWaitingAndPoll: () => void;
     login: (roomName?: string) => void;
     conferenceName: string;
-    validateConferenceName: (name: string) => boolean;
+    validateConferenceName: (name: string) => ConferenceNameValidation;
 }
 
 export const ConferenceWaitingModal: React.FC<ConferenceWaitingModalProps> = ({
@@ -20,6 +21,7 @@ export const ConferenceWaitingModal: React.FC<ConferenceWaitingModalProps> = ({
     validateConferenceName,
 }) => {
     const { t } = useTranslation();
+    const confNameValid = validateConferenceName(conferenceName);
     return (
         <modal.Component
             title=""
@@ -30,7 +32,7 @@ export const ConferenceWaitingModal: React.FC<ConferenceWaitingModalProps> = ({
                     priority: 'primary',
                     onClick: () => {
                         stopWaitingAndPoll();
-                        login(validateConferenceName(conferenceName) ? conferenceName : undefined);
+                        login(confNameValid.isValidConfName ? conferenceName : undefined);
                     },
                     doClosesModal: false,
                 },

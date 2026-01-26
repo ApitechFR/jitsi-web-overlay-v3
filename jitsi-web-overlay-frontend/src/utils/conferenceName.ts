@@ -1,5 +1,12 @@
 import { getCachedRuntimeConfig } from '@/config/runtimeConfig';
 
+export interface ConferenceNameValidation {
+  isValidConfName: boolean;
+  isValidLength: boolean;
+  isValidDigits: boolean;
+  isValidRegex: boolean;
+}
+
 function getConferenceNameConfig() {
   const cfg = getCachedRuntimeConfig();
 
@@ -37,41 +44,75 @@ function getConferenceNameConfig() {
 
 export function validateConferenceName(
   conferenceName: string | undefined,
-): boolean {
-  if (!conferenceName) return false;
+): ConferenceNameValidation {
+  if (!conferenceName) return {
+    isValidConfName: false,
+    isValidLength: false,
+    isValidDigits: false,
+    isValidRegex: false,
+  };
 
   const { regex, minDigits, minLength, maxLength } =
     getConferenceNameConfig();
 
   // Check minimum and maximum length
-  if (conferenceName.length < Number(minLength)) return false;
-  if (conferenceName.length > Number(maxLength)) return false;
+  const length = conferenceName.length >= Number(minLength) && conferenceName.length < Number(maxLength);
 
   // Check minimum number of digits
-  if ((conferenceName.match(/\d/g) || []).length < Number(minDigits)) {
-    return false;
-  }
+  const digits = (conferenceName.match(/\d/g) || []).length >= Number(minDigits);
 
-  return regex.test(conferenceName);
+  const testRegex = regex.test(conferenceName);
+
+  const test = {
+    isValidConfName: length && digits && testRegex,
+    isValidLength: length,
+    isValidDigits: digits,
+    isValidRegex: testRegex,
+  };
+
+  console.log('Validation conference name:', test);
+
+  return {
+    isValidConfName: length && digits && testRegex,
+    isValidLength: length,
+    isValidDigits: digits,
+    isValidRegex: testRegex,
+  };
 }
-
 
 export function generateConferenceName(): string {
   const { genMinLength, genMaxLength, minDigits } = getConferenceNameConfig();
-  const chars = Number(minDigits) === 0 ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const digits = '0123456789';
+  const allChars = letters + digits;
+
   let name = '';
 
   do {
     const len =
-      Math.floor(
-        Math.random() *
-        (Number(genMaxLength) - Number(genMinLength) + 1),
-      ) + Number(genMinLength);
+      Math.floor(Math.random() * (Number(genMaxLength) - Number(genMinLength) + 1)) +
+      Number(genMinLength);
 
-    name = Array.from({ length: len }, () =>
-      chars.charAt(Math.floor(Math.random() * chars.length)),
-    ).join('');
+    if (Number(minDigits) > len) {
+      throw new Error('minDigits cannot be greater than generated length');
+    }
+
+    const chars: string[] = [];
+
+    for (let i = 0; i < Number(minDigits); i++) {
+      chars.push(digits.charAt(Math.floor(Math.random() * digits.length)));
+    }
+
+    for (let i = chars.length; i < len; i++) {
+      chars.push(allChars.charAt(Math.floor(Math.random() * allChars.length)));
+    }
+
+    name = chars
+      .sort(() => Math.random() - 0.5)
+      .join('');
   } while (!validateConferenceName(name));
 
   return name;
 }
+
