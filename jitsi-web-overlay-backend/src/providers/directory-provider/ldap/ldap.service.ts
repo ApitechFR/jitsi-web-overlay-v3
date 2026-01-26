@@ -17,10 +17,11 @@ export class LdapService implements OnModuleDestroy, DirectoryProvider {
     ) {
         const ldapUrl = this.configService.get<string>('LDAP_URL');
         if (ldapUrl) {
+            const timeout = this.configService.get<number>('LDAP_TIMEOUT') ?? 1000;
             this.client = new Client({
                 url: ldapUrl,
-                timeout: 100000,
-                connectTimeout: 100000,
+                timeout,
+                connectTimeout: timeout,
             });
         } else {
             this.logger.warn('LDAP_URL not defined : LDAP service disabled');
@@ -44,6 +45,11 @@ export class LdapService implements OnModuleDestroy, DirectoryProvider {
         const bindDN = this.configService.get<string>('LDAP_BIND_DN');
         const bindPassword = this.configService.get<string>('LDAP_PASSWORD');
         const baseDN = this.configService.get<string>('LDAP_BASE_DN');
+
+        if (!bindDN || !bindPassword || !baseDN) {
+            this.logger.warn('Variables LDAP manquantes : LDAP_BIND_DN, LDAP_PASSWORD ou LDAP_BASE_DN non définies.');
+            return [];
+        }
 
         try {
             await this.client.bind(bindDN, bindPassword);
