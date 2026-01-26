@@ -7,27 +7,49 @@ import { DirectoryProvider } from '../directory-provider.interface';
 @Injectable()
 export class LdapService implements OnModuleDestroy, DirectoryProvider {
     private readonly logger = new Logger(LdapService.name);
-    private readonly client: Client;
+
+    private readonly client: Client | undefined;
+
 
     constructor(
         private readonly configService: ConfigService,
         private readonly httpService: HttpService,
     ) {
-        this.client = new Client({
-            url: this.configService.get<string>('LDAP_URL'),
-            timeout: 100000,
-            connectTimeout: 100000,
-        });
+        const ldapUrl = this.configService.get<string>('LDAP_URL');
+        if (ldapUrl) {
+            const timeout = this.configService.get<number>('LDAP_TIMEOUT') ?? 1000;
+            this.client = new Client({
+                url: ldapUrl,
+                timeout,
+                connectTimeout: timeout,
+            });
+        } else {
+            this.logger.warn('LDAP_URL not defined : LDAP service disabled');
+            this.client = undefined;
+        }
     }
+
 
     async onModuleDestroy() {
-        await this.client.unbind();
+        if (this.client) {
+            await this.client.unbind();
+        }
     }
 
+
     async getDirectory(): Promise<any[]> {
+        if (!this.client) {
+            this.logger.warn('Service LDAP disabled : no connection client available');
+            return [];
+        }
         const bindDN = this.configService.get<string>('LDAP_BIND_DN');
         const bindPassword = this.configService.get<string>('LDAP_PASSWORD');
         const baseDN = this.configService.get<string>('LDAP_BASE_DN');
+
+        if (!bindDN || !bindPassword || !baseDN) {
+            this.logger.warn('Variables LDAP manquantes : LDAP_BIND_DN, LDAP_PASSWORD ou LDAP_BASE_DN non définies.');
+            return [];
+        }
 
         try {
             await this.client.bind(bindDN, bindPassword);

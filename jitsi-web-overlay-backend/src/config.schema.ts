@@ -89,4 +89,12 @@ export const configValidationSchema = joi.object({
   OIDC_END_SESSION_ENDPOINT: joi.string().uri().optional(),
   OIDC_LOGOUT_REDIRECT_URL: joi.string().uri().optional(),
 
+  // LDAP
+  LDAP_URL: joi.string().uri({ scheme: ['ldap', 'ldaps'] }).optional().messages({
+    'string.uri': 'LDAP_URL doit commencer par "ldap://" ou "ldaps://"',
+  }),
+  LDAP_BIND_DN: joi.string().optional(),
+  LDAP_PASSWORD: joi.string().optional(),
+  LDAP_BASE_DN: joi.string().optional(),
+
 });
