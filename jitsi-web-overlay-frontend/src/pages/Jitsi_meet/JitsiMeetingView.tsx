@@ -65,7 +65,7 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
   const configOverwrite = useMemo(() => {
 
     return {
-      lang: jitsiLang,
+      defaultLanguage: jitsiLang,
       startWithAudioMuted: true,
       startWithVideoMuted: true,
       prejoinConfig: { enabled: true },
@@ -96,6 +96,7 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
       domain={domain}
       roomName={conferenceName}
       jwt={jwt}
+      lang={jitsiLang}
       userInfo={{ displayName: displayName ?? t('jitsiMeetingView.displayName'), email: '' }}
       configOverwrite={configOverwrite}
       getIFrameRef={(iframeRef) => {
