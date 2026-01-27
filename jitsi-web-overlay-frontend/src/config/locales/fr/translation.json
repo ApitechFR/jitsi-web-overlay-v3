@@ -165,7 +165,14 @@
       "footer": {
         "description": "Description du pied de page",
         "legalNotice": "Mentions légales",
-        "accessibility": "Accessibilité : totalement conforme"
+        "accessibility": "Accessibilité : totalement conforme",
+        "displaySettings": "Paramètres d'affichage",
+        "close": "Fermer",
+        "pickATheme": "Choisissez un thème pour personnaliser l'apparence du site.",
+        "lightTheme": "Thème clair",
+        "darkTheme": "Thème sombre",
+        "systemTheme": "Système",
+        "systemThemeHint": "Utilise les paramètres système."
       },
       "header": {
         "serviceTitle": "Titre du service",
@@ -189,9 +196,18 @@
           "information": "Informations"
         }
       },
+      "modal": {
+        "close": "Fermer"
+      },
       "homeForm": {
         "atLeast3Digits": "Au moins 3 chiffres",
         "min10Chars": "Un minimum de 10 caractères",
+        "atLeast": "Au moins",
+        "between": "Entre",
+        "and": "et",
+        "digits": "chiffres",
+        "min": "Un minimum de",
+        "chars": "caractères",
         "digitsAndLetters": "Des chiffres et des lettres sans accents",
         "linkCopied": "Le lien a été copié",
         "title": "La WebConférence de l'État pour tous les agents publics",
