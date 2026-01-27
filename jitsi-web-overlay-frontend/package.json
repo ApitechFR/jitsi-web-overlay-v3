@@ -16,14 +16,14 @@
     "copy-lasuite-assets": "cp -r node_modules/@gouvfr-lasuite/integration/dist/ public/@gouvfr-lasuite/integration"
   },
   "dependencies": {
-    "@apitechfr/react-dsapitech": "^1.23.14",
+    "@apitechfr/react-dsapitech": "^1.23.18",
     "@codegouvfr/react-dsfr": "^0.76.3",
     "@emotion/react": "^11.11.1",
     "@emotion/style": "^0.8.0",
     "@emotion/styled": "^11.11.0",
     "@emotion/use-insertion-effect-with-fallbacks": "^1.0.1",
     "@gouvfr-lasuite/integration": "^1.0.1",
-    "@jitsi/react-sdk": "^1.3.0",
+    "@jitsi/react-sdk": "^1.4.4",
     "@mui/base": "^5.0.0-beta.40",
     "@mui/icons-material": "^5.14.11",
     "@mui/material": "^5.14.11",

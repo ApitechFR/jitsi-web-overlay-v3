@@ -13,6 +13,7 @@ const modal = createModal({
   isOpenedByDefault: false,
 });
 
+
 export default function HeaderVisio() {
   const { t, i18n } = useTranslation();
   const [dataChangelog, setDataChangelog] = useState<any>(null);
