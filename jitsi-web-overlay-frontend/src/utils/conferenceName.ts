@@ -29,7 +29,7 @@ function getConferenceNameConfig() {
 
   const regexString =
     cfg?.VITE_CONFERENCE_NAME_REGEX ??
-    '^[A-Z0-9]';
+    '^[A-Z0-9]+$';
 
   return {
     regex: new RegExp(regexString),

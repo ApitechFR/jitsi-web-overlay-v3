@@ -121,7 +121,7 @@ export default function HeaderVisio() {
         quickAccessItems={quickAccessItems as any}
       />
 
-      <modal.Component title={dataChangelog?.submenu?.title || ''} size="large">
+      <modal.Component title={dataChangelog?.submenu?.title || ''} size="large" apitechCustomCloseText={t('modal.close', 'Fermer')}>
         <div className={styles.modalContainer}>
           {dataChangelog && (
             <SideMenu

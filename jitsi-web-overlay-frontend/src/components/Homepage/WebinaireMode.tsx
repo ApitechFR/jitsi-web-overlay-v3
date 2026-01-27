@@ -149,7 +149,7 @@ function WebinaireMode(props: WebinaireMode) {
             </Badge> */}
         </div>
       </div>
-      <modal.Component title={t('homeModes.webinar.modal_name')} size="large" className={styles.webinaireModal}>
+      <modal.Component title={t('homeModes.webinar.modal_name')} size="large" className={styles.webinaireModal} apitechCustomCloseText={t('modal.close')}>
         <div className={styles.modalContainer}>
           <h1 className={styles.modalWebinaireTitle}>{t('homeModes.webinar.modal_title')}<span>{props.conferenceName}</span></h1>
           <div className={styles.mainButtonsBlock}>
