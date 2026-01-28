@@ -7,7 +7,7 @@ import { RolesGuard } from '../authentication/roles.guard';
 
 @Controller('stats')
 export class StatsController {
-  constructor(private statsService: StatsService) { }
+  constructor(private readonly statsService: StatsService) { }
 
   @Get('/homePage')
   @ApiResponse({
@@ -19,7 +19,7 @@ export class StatsController {
     description: "le serveur jicofo n'est pas disponible",
   })
   async homePageStats() {
-    return this.statsService.homePageStats();
+    return this.statsService.realTimeStats();
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -34,6 +34,6 @@ export class StatsController {
     description: "le serveur jicofo n'est pas disponible",
   })
   async dashboardStats() {
-    return this.statsService.dashboardStats();
+    return this.statsService.realTimeStats();
   }
 }

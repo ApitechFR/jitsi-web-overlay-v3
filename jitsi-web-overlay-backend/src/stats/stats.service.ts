@@ -5,42 +5,19 @@ import { Logger, Injectable } from '@nestjs/common';
 export class StatsService {
   private readonly logger = new Logger(StatsService.name);
   constructor(private prosodyService: ProsodyService) { }
-  async homePageStats() {
+  async realTimeStats() {
     try {
       const data = await this.prosodyService.getRealTimeStats();
-      if (data.length > 1) {
-        const mergedData = { conf: 0, part: 0 };
-        for (let i = 0; i < data.length; i++) {
-          mergedData.conf += data[i].conferences;
-          mergedData.part += data[i].participants;
-        }
-        this.logger.log('stats récupérés' + mergedData);
-        return mergedData;
-      } else {
-        this.logger.log('stats récupérés' + data[0]);
-        return data[0];
-      }
-    } catch (error) {
-      this.logger.error('erreur lors de la récupération des stats', error);
-      throw error;
-    }
-  }
+      const result = { conf: 0, part: 0 };
 
-  async dashboardStats() {
-    try {
-      const data = await this.prosodyService.getRealTimeStats();
-      if (data.length > 1) {
-        const mergedData = { conf: 0, part: 0 };
-        for (let i = 0; i < data.length; i++) {
-          mergedData.conf += data[i].total_conferences_created;
-          mergedData.part += data[i].total_participants;
-        }
-        this.logger.log('stats récupérés' + mergedData);
-        return mergedData;
-      } else {
-        this.logger.log('stats récupérés' + data[0]);
-        return data[0];
+      for (const item of data) {
+        result.conf += item.conferences;
+        result.part += item.participants;
       }
+
+      this.logger.log(`stats récupérés ${JSON.stringify(result)}`);
+      return result;
+      
     } catch (error) {
       this.logger.error('erreur lors de la récupération des stats', error);
       throw error;

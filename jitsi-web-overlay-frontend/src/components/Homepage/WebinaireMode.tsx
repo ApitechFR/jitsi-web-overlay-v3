@@ -13,11 +13,14 @@ import { createModal } from '@apitechfr/react-dsapitech/Modal';
 import styles from "../../pages/Home/HomeJoona.module.css"
 import { ConferenceService } from '@/api';
 import { t } from 'i18next';
+import Badge from '@apitechfr/react-dsapitech/Badge';
 
 interface WebinaireMode {
   readonly isError: boolean;
   readonly showError: boolean;
   readonly conferenceName: string;
+  readonly conferenceNumber: number;
+  readonly participantNumber: number;
   readonly setConferenceName: (conferenceName: string) => void;
   readonly onclickGenerateRoomName: () => void;
   readonly handleGenerateRoomName: () => void;
@@ -114,10 +117,12 @@ function WebinaireMode(props: WebinaireMode) {
             </div>
           </div>
           {/* <div>{message}</div> */}
-          {/* <Badge severity="info">
-              Actuellement, il y a {props.conferenceNumber} conférences et{' '}
-              {props.participantNumber} participants.
-            </Badge> */}
+          <Badge severity="info">
+            {t('homeForm.stats', {
+              conferenceNumber: props.conferenceNumber,
+              participantNumber: props.participantNumber
+            })}
+          </Badge>
         </div>
       </div>
       <modal.Component title={t('homeModes.webinar.modal_name')} size="large" className={styles.webinaireModal}>

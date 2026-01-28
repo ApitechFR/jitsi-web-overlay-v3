@@ -8,12 +8,15 @@ import { useRuntimeConfig } from '@/config/ConfigProvider';
 
 import styles from "../../pages/Home/HomeJoona.module.css"
 import { useTranslation } from 'react-i18next';
+import Badge from '@apitechfr/react-dsapitech/Badge';
 
 interface VisioModeProps {
   readonly isError: boolean;
   readonly showError: boolean;
   readonly isAlertVisible: boolean;
   readonly conferenceName: string;
+  readonly conferenceNumber: number;
+  readonly participantNumber: number;
   readonly setConferenceName: (conferenceName: string) => void;
   readonly onclickGenerateRoomName: () => void;
   readonly handleGenerateRoomName: () => void;
@@ -98,10 +101,12 @@ function VisioMode(props: VisioModeProps) {
           </div>
         </div>
         {/* <div>{message}</div> */}
-        {/* <Badge severity="info">
-              Actuellement, il y a {props.conferenceNumber} conférences et{' '}
-              {props.participantNumber} participants.
-            </Badge> */}
+        <Badge severity="info">
+          {t('homeForm.stats', {
+            conferenceNumber: props.conferenceNumber,
+            participantNumber: props.participantNumber
+          })}
+        </Badge>
       </div>
     </div>
   )
