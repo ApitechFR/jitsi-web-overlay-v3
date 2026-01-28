@@ -165,7 +165,14 @@
   "footer": {
     "description": "Footer description",
     "legalNotice": "Legal notice",
-    "accessibility": "Fully compliant"
+    "accessibility": "Accessibility : Fully compliant",
+    "displaySettings": "Display settings",
+    "close": "Close",
+    "pickATheme": "Choose a theme to customize the appearance of the site.",
+    "lightTheme": "Light theme",
+    "darkTheme": "Dark theme",
+    "systemTheme": "System",
+    "systemThemeHint": "Uses system settings."
   },
   "header": {
     "serviceTitle": "Service title",
@@ -189,9 +196,18 @@
       "information": "Information"
     }
   },
+  "modal": {
+    "close": "Close"
+  },
   "homeForm": {
     "atLeast3Digits": "At least 3 digits",
     "min10Chars": "Minimum 10 characters",
+    "atLeast": "At least",
+    "between": "Between",
+    "and": "and",
+    "digits": "digits",
+    "min": "Minimum",
+    "chars": "characters",
     "digitsAndLetters": "Digits and letters without accents",
     "linkCopied": "Link copied",
     "title": "The State's WebConference for all public agents",

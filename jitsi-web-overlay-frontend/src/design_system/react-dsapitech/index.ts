@@ -17,3 +17,6 @@ export { Upload } from "@apitechfr/react-dsapitech/Upload";
 export { Breadcrumb } from "@apitechfr/react-dsapitech/Breadcrumb";
 export { useIsModalOpen } from '@apitechfr/react-dsapitech/Modal/useIsModalOpen';
 export { Tag } from '@apitechfr/react-dsapitech/Tag';
+export { Badge } from '@apitechfr/react-dsapitech/Badge';
+export { Tooltip } from '@apitechfr/react-dsapitech/Tooltip';
+

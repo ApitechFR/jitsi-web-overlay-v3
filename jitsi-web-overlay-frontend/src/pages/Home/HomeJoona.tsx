@@ -1,10 +1,9 @@
 
-import { Badge } from '@apitechfr/react-dsapitech/Badge';
-import { Tooltip } from "@apitechfr/react-dsapitech/Tooltip";
+import { Tooltip } from '@apitechfr/react-dsapitech/Tooltip'; // car pas de Tooltip dans le dsfr mais seulment dans dsapitech
 import { generateConferenceName, validateConferenceName } from '@/utils/conferenceName';
 import React, { useState, useRef, FormEvent, useEffect, useMemo } from 'react';
 import styles from './HomeJoona.module.css';
-import { Button, Input, Alert, createModal, useIsModalOpen } from '@ds';
+import { Button, Input, Alert, createModal, useIsModalOpen, Badge } from '@ds';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/auth/useAuth';
@@ -106,7 +105,7 @@ function HomeJoona(props: HomeJoonaProps) {
 
   // Met à jour l'état d'erreur dès que le nom change (affiche l'erreur si invalide, la retire si valide)
   const isConferenceNameInvalid = (value: string) =>
-    value.trim() !== "" && !isValidConferenceName(value);
+    value.trim() !== "" && !isValidConferenceName(value).isValidConfName;
 
   const hasValue = props.conferenceName.trim() !== "";
   const isInvalid = isConferenceNameInvalid(props.conferenceName);
@@ -167,14 +166,14 @@ function HomeJoona(props: HomeJoonaProps) {
   }, [location.state, authenticated, navigate, props.conferenceName, props.setConferenceName]);
 
   const onCopyLink = () => {
-    if (!props.conferenceName || !isValidConferenceName(props.conferenceName)) return;
+    if (!props.conferenceName || !isValidConferenceName(props.conferenceName).isValidConfName) return;
     const textToCopy = `${window.location.origin}/${props.conferenceName}`;
     navigator.clipboard.writeText(textToCopy).then(() => setIsAlertVisible(true));
   };
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!isValidConferenceName(props.conferenceName)) {
+    if (!isValidConferenceName(props.conferenceName).isValidConfName) {
       setIsError(true);
     }
     setIsError(false);
@@ -202,7 +201,7 @@ function HomeJoona(props: HomeJoonaProps) {
   const verifyAndSetVAlue = React.useCallback(
     (value: string) => {
       if (value) {
-        if (isValidConferenceName(value)) {
+        if (isValidConferenceName(value).isValidConfName) {
           props.setConferenceName(value);
           setMessage(
             <div className={styles.message}>
@@ -313,7 +312,6 @@ function HomeJoona(props: HomeJoonaProps) {
         {mode === 'visio' && (
           <VisioMode
             isError={isErrorConfName}
-            showError={showError}
             isAlertVisible={isAlertVisible}
             conferenceName={props.conferenceName}
             setConferenceName={props.setConferenceName}
@@ -328,7 +326,6 @@ function HomeJoona(props: HomeJoonaProps) {
         {isWebinarEnabled && mode === 'webinaire' && (
           <WebinaireMode
             isError={isErrorConfName}
-            showError={showError}
             conferenceName={props.conferenceName}
             setConferenceName={props.setConferenceName}
             onclickGenerateRoomName={onclickGenerateRoomName}

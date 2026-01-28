@@ -6,10 +6,10 @@ import { useTranslation } from 'react-i18next';
 
 
 interface FooterJoonaProps {
-  readonly headerFooterDisplayItem: FooterProps.BottomItem;
+  readonly apitechHeaderFooterDisplayItem: FooterProps.BottomItem;
 }
 
-function FooterJoona({ headerFooterDisplayItem }: FooterJoonaProps) {
+function FooterJoona({ apitechHeaderFooterDisplayItem }: FooterJoonaProps) {
   const [domains, setDomains] = useState<string[]>([])
   const { t, i18n } = useTranslation();
 
@@ -33,6 +33,12 @@ function FooterJoona({ headerFooterDisplayItem }: FooterJoonaProps) {
   return (
     <Footer
       key={i18n.language}
+      apitechCustomTexts={{
+        accessibility: t('footer.accessibility'),
+        intellectualProperty: "",
+        terms: t('footer.legalNotice'),
+        websiteMap: "",
+      }}
       mainLogoURL={VisioLogo}
       mainLogoURLDark={DarkVisioLogo}
       accessibility={accessibilityLabel}
@@ -42,7 +48,8 @@ function FooterJoona({ headerFooterDisplayItem }: FooterJoonaProps) {
         title: t('footer.legalNotice')
       }}
       domains={domains}
-      bottomItems={[headerFooterDisplayItem]}
+      bottomItems={[apitechHeaderFooterDisplayItem]}
+      license=""
     />
   );
 }

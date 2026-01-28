@@ -17,3 +17,5 @@ export { Upload } from "@codegouvfr/react-dsfr/Upload";
 export { Breadcrumb } from "@codegouvfr/react-dsfr/Breadcrumb";
 export { useIsModalOpen } from '@codegouvfr/react-dsfr/Modal/useIsModalOpen';
 export { Tag } from '@codegouvfr/react-dsfr/Tag';
+export { Badge } from '@codegouvfr/react-dsfr/Badge';
+// export { Tooltip } from '@codegouvfr/react-dsfr/Tooltip';
