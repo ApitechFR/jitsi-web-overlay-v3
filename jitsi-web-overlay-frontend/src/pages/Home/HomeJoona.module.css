@@ -134,6 +134,41 @@
   text-align: center;
 }
 
+.conferenceWaitingModal :global(.fr-modal__header) {
+  padding-bottom: 0;
+}
+
+.conferenceWaitingModal :global(.fr-modal__title) {
+  margin-bottom: 0;
+}
+
+.enterModal {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.modalMessage h1 {
+  font-size: 1.3em;
+  margin-bottom: 5px;
+}
+
+.modalMessage p {
+  margin: 0;
+}
+
+.modalInputBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 1.2rem;
+}
+
+.modalInputBlock :global(.fr-input-group:not(:last-child)) {
+  width: 100%;
+  margin: 0;
+}
+
 .message {
   display: flex;
   flex-direction: column;

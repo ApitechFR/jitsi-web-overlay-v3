@@ -306,6 +306,7 @@ function HomeJoona(props: HomeJoonaProps) {
         login={login}
         conferenceName={props.conferenceName}
         validateConferenceName={validateConferenceName}
+        appTemplate={AppTemplate}
       />
 
       <div className={styles.firstContainer}>

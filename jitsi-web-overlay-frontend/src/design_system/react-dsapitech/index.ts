@@ -17,3 +17,5 @@ export { Upload } from "@apitechfr/react-dsapitech/Upload";
 export { Breadcrumb } from "@apitechfr/react-dsapitech/Breadcrumb";
 export { useIsModalOpen } from '@apitechfr/react-dsapitech/Modal/useIsModalOpen';
 export { Tag } from '@apitechfr/react-dsapitech/Tag';
+export { AgentConnectButton } from "@apitechfr/react-dsapitech/AgentConnectButton";
+export { Checkbox } from "@apitechfr/react-dsapitech/Checkbox";

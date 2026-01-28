@@ -17,3 +17,6 @@ export { Upload } from "@codegouvfr/react-dsfr/Upload";
 export { Breadcrumb } from "@codegouvfr/react-dsfr/Breadcrumb";
 export { useIsModalOpen } from '@codegouvfr/react-dsfr/Modal/useIsModalOpen';
 export { Tag } from '@codegouvfr/react-dsfr/Tag';
+export { AgentConnectButton } from "@codegouvfr/react-dsfr/AgentConnectButton";
+export { Checkbox } from "@codegouvfr/react-dsfr/Checkbox";
+
