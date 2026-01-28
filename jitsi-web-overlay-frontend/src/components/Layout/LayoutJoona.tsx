@@ -41,7 +41,7 @@ export default function LayoutJoona() {
             "light theme": t('footer.lightTheme'),
             "dark theme": t('footer.darkTheme'),
             "system theme": t('footer.systemTheme'),
-            "system theme hint": t('footer. systemThemeHint')
+            "system theme hint": t('footer.systemThemeHint')
           })}
         />
 

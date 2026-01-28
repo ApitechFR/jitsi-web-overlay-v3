@@ -165,7 +165,7 @@
   "footer": {
     "description": "Footer description",
     "legalNotice": "Legal notice",
-    "accessibility": "Fully compliant",
+    "accessibility": "Accessibility : Fully compliant",
     "displaySettings": "Display settings",
     "close": "Close",
     "pickATheme": "Choose a theme to customize the appearance of the site.",
