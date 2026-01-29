@@ -70,8 +70,6 @@ export function validateConferenceName(
     isValidRegex: testRegex,
   };
 
-  console.log('Validation conference name:', test);
-
   return {
     isValidConfName: length && digits && testRegex,
     isValidLength: length,
