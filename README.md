@@ -177,6 +177,7 @@ Ces variables sont prises en compte côté backend (API) et frontend (UI) pour a
 | OIDC_END_SESSION_ENDPOINT | Endpoint end session OIDC | `https://oidc.example.com/end-session` | Optionnelle | (aucune) |
 | AUTHORIZATION_ENDPOINT | Endpoint d'autorisation OIDC | `https://oidc.example.com/auth` | Optionnelle | (aucune) |
 | TOKEN_ENDPOINT | Endpoint token OIDC | `https://oidc.example.com/token` | Optionnelle | (aucune) |
+| OIDC_USERS_ENDPOINT | Endponit users OIDC | `https://oidc.example.com/users` | Optionnelle | (aucune) |
 | USERINFO_ENDPOINT | Endpoint userinfo OIDC | `https://oidc.example.com/userinfo` | Optionnelle | (aucune) |
 | COOKIE_DOMAIN | Domaine des cookies | `.example.com` | Optionnelle | (aucune) |
 | COOKIE_SAMESITE | SameSite des cookies | `lax` | Optionnelle | (aucune) |

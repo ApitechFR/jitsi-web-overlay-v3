@@ -9,6 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/users.entity';
 import { LessThan, Repository } from 'typeorm';
 import { DirectoryProvider } from '../providers/directory-provider/directory-provider.interface';
+import { WinstonLoggerService } from '../common/services/winston-logger.service';
 
 @Injectable()
 export class UsersService {
@@ -18,6 +19,7 @@ export class UsersService {
     private readonly userRepository: Repository<User>,
     @Inject('DIRECTORY_PROVIDER')
     private readonly directoryService: DirectoryProvider,
+    private readonly loggerWinston: WinstonLoggerService,
   ) { }
 
   // Create user
@@ -81,31 +83,32 @@ export class UsersService {
     }
   }
 
-  async deleteDeactivatedUsers(date: Date): Promise<{ totalDeleted: number; deletedUserUids: string[]; }> {
+  async deleteDeactivatedUsers(date: Date): Promise<{ totalDeleted: number; deletedUserEmails: string[]; }> {
 
     const users = await this.userRepository.find({
       where: {
         isActive: false,
         desactivated_at: LessThan(date),
       },
-      select: ['uid'],
+      select: ['email'],
     });
 
     if (!users.length) {
-      return { totalDeleted: 0, deletedUserUids: [] };
+      this.loggerWinston.log('[Retention][Users] No users to delete');
+      return { totalDeleted: 0, deletedUserEmails: [] };
     }
 
-    const uids = users.map(u => u.uid);
+    const emails = users.map(u => u.email);
 
     const result = await this.userRepository
       .createQueryBuilder()
       .delete()
-      .where('uid IN (:...uids)', { uids })
+      .where('email IN (:...emails)', { emails })
       .execute();
 
     return {
       totalDeleted: result.affected || 0,
-      deletedUserUids: uids,
+      deletedUserEmails: emails,
     };
   }
 
@@ -149,8 +152,13 @@ export class UsersService {
 
   async deactivateUsersWithExpiredPassword(): Promise<{ checked: number; deactivated: string[]; }> {
     const expiredUsers = await this.getUsersWithPwdEndTime();
-    const deactivatedUids: string[] = [];
+    const deactivatedEmails: string[] = [];
     let count = 0;
+
+    if (expiredUsers.length === 0) {
+      this.loggerWinston.log('[Users] No users to deactivate');
+      return { checked: 0, deactivated: [] };
+    }
 
     for (const extUser of expiredUsers) {
       if (!extUser?.email) continue;
@@ -161,7 +169,7 @@ export class UsersService {
 
         const wasDeactivated = await this.deactivateUserIfNeeded(user.uid);
         if (wasDeactivated) {
-          deactivatedUids.push(user.uid);
+          deactivatedEmails.push(user.email);
           count++;
         }
 
@@ -174,9 +182,14 @@ export class UsersService {
       }
     }
 
+    if (count === 0) {
+      this.loggerWinston.log('[Users] No users to deactivate');
+      return { checked: 0, deactivated: [] };
+    }
+
     return {
       checked: count,
-      deactivated: deactivatedUids,
+      deactivated: deactivatedEmails,
     };
   }
 

@@ -11,6 +11,7 @@ import { RegisterEventDto } from './DTOs/register_event.dto';
 import { Conference } from '../conference/entities/conference.entity';
 import { ReplayStatus } from './enum/replay_status.enum';
 import { safeStatFile } from './utils/FileVerification';
+import { WinstonLoggerService } from '../common/services/winston-logger.service';
 
 @Injectable()
 export class ReplayService {
@@ -23,6 +24,7 @@ export class ReplayService {
         @InjectRepository(Conference)
         private readonly conferenceRepository: Repository<Conference>,
         private readonly dataSource: DataSource,
+        private readonly loggerWinston: WinstonLoggerService,
     ) { }
 
     async findAll(): Promise<Replay[]> {
@@ -243,10 +245,8 @@ export class ReplayService {
         );
 
         if (!rows.length) {
-            return {
-                totalDeleted: 0,
-                byConference: [],
-            };
+            this.loggerWinston.log('[Retention][Replays] No replays to delete');
+            return { totalDeleted: 0, byConference: [] };
         }
 
         const BATCH_SIZE = 1000;

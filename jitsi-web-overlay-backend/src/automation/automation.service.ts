@@ -36,8 +36,10 @@ export class AutomationService {
 
         try {
             const result = await this.userService.deactivateUsersWithExpiredPassword();
-            this.logger.log(`[Users] Deactivated count = ${result.checked}`);
-            this.logger.log(`[Users] Deactivated users uids = ${result.deactivated.join(', ')}`);
+            if (result.checked !== 0) {
+                this.logger.log(`[Users] Deactivated count = ${result.checked}`);
+                this.logger.log(`[Users] Deactivated users emails = ${result.deactivated.join(', ')}`);
+            }
 
         } catch (error) {
             this.logger.error('[Users] Error during deactivation of users', {
@@ -62,10 +64,10 @@ export class AutomationService {
 
             if (result.totalDisabled === 0) {
                 this.logger.log('[Conference] No conferences to deactivate');
+            } else {
+                this.logger.log(`[Conference] Deactivated count = ${result.totalDisabled}`);
+                this.logger.log(`[Conference] Deactivated conferences uids = ${result.disabledConferences.join(', ')}`);
             }
-
-            this.logger.log(`[Conference] Deactivated count = ${result.totalDisabled}`);
-            this.logger.log(`[Conference] Deactivated conferences uids = ${result.disabledConferences.join(', ')}`);
 
         } catch (error) {
             this.logger.error('[Conference] Error during deactivation of conferences', {
@@ -91,20 +93,24 @@ export class AutomationService {
 
         try {
             this.logger.log(`[Retention] Start – retention days = ${retentionDays}`);
-            this.logger.log(`[Retention] deactivation limite date = ${limitDate.toLocaleString('fr-FR', { timeZone: 'Europe/Paris' })}`);
+            this.logger.log(`[Retention] Deactivation limite date = ${limitDate.toLocaleString('fr-FR', { timeZone: 'Europe/Paris' })}`);
 
             const usersResult = await this.userService.deleteDeactivatedUsers(limitDate);
 
-            this.logger.log(`[Retention][Users] deleted = ${usersResult.totalDeleted} uids = ${usersResult.deletedUserUids.join(', ')}`);
+            if (usersResult.totalDeleted !== 0) {
+                this.logger.log(`[Retention][Users] Finished - total deleted = ${usersResult.totalDeleted} | emails = ${usersResult.deletedUserEmails.join(', ')}`);
+            }
 
             const replaysResult = await this.replayService.deleteReplaysByDeactivatedConferences(limitDate);
 
-            this.logger.log(
-                `[Retention][Replays] totalDeleted = ${replaysResult.totalDeleted} details = ` +
-                replaysResult.byConference
-                    .map(c => `${c.conferenceUid} : ${c.count}`)
-                    .join(', '),
-            );
+            if (replaysResult.totalDeleted !== 0) {
+                this.logger.log(
+                    `[Retention][Replays] Finished - total deleted = ${replaysResult.totalDeleted} | details = ` +
+                    replaysResult.byConference
+                        .map(c => `${c.conferenceUid} : ${c.count}`)
+                        .join(', '),
+                );
+            }
 
         } catch (error) {
             this.logger.error('[Retention] Error during retention process', {

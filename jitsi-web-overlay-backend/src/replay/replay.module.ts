@@ -5,12 +5,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Replay as ReplayEntity } from './entities/replay.entity';
 import { RegisterEvent as RegisterEventEntity } from './entities/register_event.entity';
 import { Conference } from '../conference/entities/conference.entity';
+import { WinstonLoggerService } from '../common/services/winston-logger.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([ReplayEntity, RegisterEventEntity, Conference]),
   ],
-  providers: [ReplayService],
+  providers: [
+    ReplayService,
+    WinstonLoggerService
+  ],
   controllers: [ReplayController],
   exports: [ReplayService],
 })
