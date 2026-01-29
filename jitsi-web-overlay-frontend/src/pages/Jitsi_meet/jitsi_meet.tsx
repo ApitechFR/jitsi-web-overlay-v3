@@ -10,7 +10,7 @@ export default function JitsiMeet() {
     useEffect(() => {
         if (!conferenceName) return;
 
-        if (!validateConferenceName(conferenceName)) {
+        if (!validateConferenceName(conferenceName).isValidConfName) {
             navigate('/', {
                 replace: true,
                 state: { prefillRoomName: conferenceName, invalidRoom: true },
@@ -19,7 +19,7 @@ export default function JitsiMeet() {
         }
     }, [conferenceName, navigate]);
 
-    if (!conferenceName || !validateConferenceName(conferenceName)) return null;
+    if (!conferenceName || !validateConferenceName(conferenceName).isValidConfName) return null;
 
     return <JitsiMeetWrapper />;
 }

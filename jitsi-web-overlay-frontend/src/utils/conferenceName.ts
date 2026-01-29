@@ -41,7 +41,6 @@ function getConferenceNameConfig() {
   };
 }
 
-
 export function validateConferenceName(
   conferenceName: string | undefined,
 ): ConferenceNameValidation {
@@ -70,7 +69,8 @@ export function validateConferenceName(
     isValidRegex: testRegex,
   };
 
-  console.log('Validation conference name:', test);
+  console.log('test crash validateConferenceName', test);
+
 
   return {
     isValidConfName: length && digits && testRegex,
