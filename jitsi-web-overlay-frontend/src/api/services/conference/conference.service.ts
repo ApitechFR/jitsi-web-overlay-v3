@@ -127,7 +127,7 @@ export const ConferenceService = {
     async getStats() {
         try {
             const http = await getHttp();
-            const { data } = await http.get('/stats/homePage');
+            const { data } = await http.get('/stats/realtime');
             return data;
         } catch (error) {
             throw toApiError(error, 'Erreur lors de la récupération des statistiques');

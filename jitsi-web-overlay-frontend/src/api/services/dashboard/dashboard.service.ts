@@ -4,13 +4,9 @@ import { getHttp } from '../../http';
 
 
 export const DashboardService = {
-    async fetchRealtimeStats(appTemplate?: string) {
+    async fetchRealtimeStats() {
         try {
             const http = await getHttp();
-            if (appTemplate === 'webconf') {
-                const { data } = await http.get('/stats/homePage');
-                return data;
-            }
             const { data } = await http.get('/stats/realtime');
             return data;
         } catch (error) {
