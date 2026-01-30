@@ -1,18 +1,16 @@
 import { useState, FormEvent } from 'react';
 
-import { Input } from '@apitechfr/react-dsapitech/Input';
-import { Button } from '@apitechfr/react-dsapitech/Button';
-import { Alert } from '@apitechfr/react-dsapitech/Alert';
+import { Badge, Input, Button, Alert } from '@ds';
+
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import { useRuntimeConfig } from '@/config/ConfigProvider';
 
 import styles from "../../pages/Home/HomeJoona.module.css"
 import { useTranslation } from 'react-i18next';
-import Badge from '@apitechfr/react-dsapitech/Badge';
+import { validateConferenceName } from '@/utils/conferenceName';
 
 interface VisioModeProps {
   readonly isError: boolean;
-  readonly showError: boolean;
   readonly isAlertVisible: boolean;
   readonly conferenceName: string;
   readonly conferenceNumber: number;
@@ -48,7 +46,6 @@ function VisioMode(props: VisioModeProps) {
               <Input
                 label=""
                 id="conferenceName"
-                state={props.showError ? 'error' : 'default'}
                 nativeInputProps={{
                   placeholder: t('homeModes.visio.input_room'),
                   value: props.conferenceName,
@@ -58,8 +55,6 @@ function VisioMode(props: VisioModeProps) {
                   },
                   ref: props.inputRef,
                 }}
-                stateRelatedMessage={
-                  props.showError && (cfg.VITE_CONFERENCE_NAME_REGEX_MESSAGE || 'Nom de conférence invalide.')}
                 style={{ width: '100%' }}
                 addon={
                   <Button className={styles.plusButton} onClick={props.AppTemplate === 'webconf' ? props.onclickGenerateRoomName : props.handleGenerateRoomName} type="button">
@@ -100,6 +95,37 @@ function VisioMode(props: VisioModeProps) {
             </div>
           </div>
         </div>
+        {props.conferenceName && (
+          <div className={styles.validationMsg}>
+            {!validateConferenceName(props.conferenceName).isValidDigits ? (
+              <Badge className={styles.badge} severity="error">
+                {t('homeForm.atLeast') + ' ' + cfg.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS + ' ' + t('homeForm.digits')}
+              </Badge>
+            ) : (
+              <Badge className={styles.badge} severity="success">
+                {t('homeForm.atLeast') + ' ' + cfg.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS + ' ' + t('homeForm.digits')}
+              </Badge>
+            )}
+            {!validateConferenceName(props.conferenceName).isValidLength ? (
+              <Badge className={styles.badge} severity="error">
+                {t('homeForm.between') + ' ' + cfg.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINLENGTH + ' ' + t('homeForm.and') + ' ' + cfg.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MAXLENGTH + ' ' + t('homeForm.chars')}
+              </Badge>
+            ) : (
+              <Badge className={styles.badge} severity="success">
+                {t('homeForm.between') + ' ' + cfg.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINLENGTH + ' ' + t('homeForm.and') + ' ' + cfg.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MAXLENGTH + ' ' + t('homeForm.chars')}
+              </Badge>
+            )}
+            {!validateConferenceName(props.conferenceName).isValidRegex ? (
+              <Badge className={styles.badge} severity="error">
+                {t('homeForm.digitsAndLetters')}
+              </Badge>
+            ) : (
+              <Badge className={styles.badge} severity="success">
+                {t('homeForm.digitsAndLetters')}
+              </Badge>
+            )}
+          </div>
+        )}
         {/* <div>{message}</div> */}
         <Badge severity="info">
           {t('homeForm.stats', {

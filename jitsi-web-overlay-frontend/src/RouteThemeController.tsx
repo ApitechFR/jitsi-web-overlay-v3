@@ -40,7 +40,7 @@ export default function RouteThemeController() {
 
     const firstSeg = path.split("/")[1] ?? "";
     const isSingleSeg = path === `/${firstSeg}` && firstSeg.length > 0;
-    const isJitsi = isSingleSeg && !RESERVED_SEGMENTS.has(firstSeg) && validateConferenceName(firstSeg);
+    const isJitsi = isSingleSeg && !RESERVED_SEGMENTS.has(firstSeg) && validateConferenceName(firstSeg).isValidConfName;
 
     useEffect(() => {
         let scheme = (localStorage.getItem("scheme") as Scheme | null) ?? "system";

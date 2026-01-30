@@ -31,7 +31,7 @@ const JitsiMeetWrapper: React.FC<JitsiMeetWrapperProps> = (props) => {
   const { run: fetchJitsiJwt, loading: loadingJitsiJwt, error: errorJitsiJwt } = useApi(ConferenceService.jitsiJwt);
   const cfg = useRuntimeConfig();
   const domain = cfg.VITE_JITSI_DOMAIN as string;
-  const validRoom = !!conferenceName && validateConferenceName(conferenceName);
+  const validRoom = !!conferenceName && validateConferenceName(conferenceName).isValidConfName;
 
   // If props.jwt is not provided, fetch JWT as before (classic mode)
   useEffect(() => {

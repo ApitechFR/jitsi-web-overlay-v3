@@ -1,4 +1,5 @@
 import Swal from 'sweetalert2';
+import i18next from 'i18next';
 import { ReplayService } from '../replay/replay.service';
 import { showLoadingToast } from './toast';
 import { getReplayCheckTimeoutMs } from './config';
@@ -37,12 +38,12 @@ export async function checkVideo(
             const timeoutMs = getReplayCheckTimeoutMs();
             console.log('Replay check timeout (ms):', timeoutMs);
             Swal.fire({
-                title: 'Succès !',
-                text: `La vidéo pour "${conference_name}" a été enregistrée avec succès.`,
+                title: i18next.t('recording.success'),
+                text: i18next.t('recording.successMessage', { conferenceName: conference_name }),
                 icon: 'success',
                 position: 'top-end',
                 showCloseButton: true,
-                confirmButtonText: 'Voir l’enregistrement',
+                confirmButtonText: i18next.t('recording.viewRecording'),
                 reverseButtons: true,
                 customClass: {
                     popup: 'small-swal-popup'
@@ -57,8 +58,8 @@ export async function checkVideo(
             localStorage.removeItem('isRecordingStarted');
         } else if (data.status === 'error-uploading-rsync') {
             Swal.fire({
-                title: 'Erreur !',
-                text: `Une erreur est survenue lors de l'enregistrement de la vidéo pour "${conference_name}". Veuillez contacter le support.`,
+                title: i18next.t('recording.error'),
+                text: i18next.t('recording.errorMessage', { conferenceName: conference_name }),
                 icon: 'error',
                 toast: true,
                 position: 'top-end',
@@ -104,7 +105,7 @@ export function handleRecordingStatus(
         } else if (isRecordingStarted) {
             isRecordingStarted = "false";
             localStorage.setItem('isRecordingStarted', 'false');
-            showLoadingToast("Préparation de l'enregistrement vidéo");
+            showLoadingToast(i18next.t('recording.preparingVideo'));
             retryVerification(conference_name, checkVideoInterval, checkTimeout);
         }
     });
@@ -132,8 +133,8 @@ function retryVerification(
             checkTimeout = null;
             localStorage.removeItem('isRecordingStarted');
             Swal.fire({
-                title: 'Erreur !',
-                text: `Une erreur est survenue lors de l'enregistrement.`,
+                title: i18next.t('recording.error'),
+                text: i18next.t('recording.generalError'),
                 icon: 'error',
                 toast: true,
                 position: 'top-end',
