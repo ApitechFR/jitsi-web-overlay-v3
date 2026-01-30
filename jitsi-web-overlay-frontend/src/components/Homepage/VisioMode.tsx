@@ -13,6 +13,8 @@ interface VisioModeProps {
   readonly isError: boolean;
   readonly isAlertVisible: boolean;
   readonly conferenceName: string;
+  readonly conferenceNumber: number;
+  readonly participantNumber: number;
   readonly setConferenceName: (conferenceName: string) => void;
   readonly onclickGenerateRoomName: () => void;
   readonly handleGenerateRoomName: () => void;
@@ -108,7 +110,7 @@ function VisioMode(props: VisioModeProps) {
               <Badge className={styles.badge} severity="error">
                 {t('homeForm.between') + ' ' + cfg.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINLENGTH + ' ' + t('homeForm.and') + ' ' + cfg.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MAXLENGTH + ' ' + t('homeForm.chars')}
               </Badge>
-              ) : (
+            ) : (
               <Badge className={styles.badge} severity="success">
                 {t('homeForm.between') + ' ' + cfg.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINLENGTH + ' ' + t('homeForm.and') + ' ' + cfg.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MAXLENGTH + ' ' + t('homeForm.chars')}
               </Badge>
@@ -117,17 +119,20 @@ function VisioMode(props: VisioModeProps) {
               <Badge className={styles.badge} severity="error">
                 {t('homeForm.digitsAndLetters')}
               </Badge>
-              ) : (
+            ) : (
               <Badge className={styles.badge} severity="success">
                 {t('homeForm.digitsAndLetters')}
               </Badge>
             )}
           </div>
         )}
-        {/* <Badge severity="info">
-              Actuellement, il y a {props.conferenceNumber} conférences et{' '}
-              {props.participantNumber} participants.
-            </Badge> */}
+        {/* <div>{message}</div> */}
+        <Badge severity="info">
+          {t('homeForm.stats', {
+            conferenceNumber: props.conferenceNumber,
+            participantNumber: props.participantNumber
+          })}
+        </Badge>
       </div>
     </div>
   )

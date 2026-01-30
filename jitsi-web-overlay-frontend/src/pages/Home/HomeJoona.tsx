@@ -314,6 +314,8 @@ function HomeJoona(props: HomeJoonaProps) {
             isError={isErrorConfName}
             isAlertVisible={isAlertVisible}
             conferenceName={props.conferenceName}
+            conferenceNumber={props.conferenceNumber}
+            participantNumber={props.participantNumber}
             setConferenceName={props.setConferenceName}
             onclickGenerateRoomName={onclickGenerateRoomName}
             handleGenerateRoomName={handleGenerateRoomName}
@@ -327,6 +329,8 @@ function HomeJoona(props: HomeJoonaProps) {
           <WebinaireMode
             isError={isErrorConfName}
             conferenceName={props.conferenceName}
+            conferenceNumber={props.conferenceNumber}
+            participantNumber={props.participantNumber}
             setConferenceName={props.setConferenceName}
             onclickGenerateRoomName={onclickGenerateRoomName}
             handleGenerateRoomName={handleGenerateRoomName}

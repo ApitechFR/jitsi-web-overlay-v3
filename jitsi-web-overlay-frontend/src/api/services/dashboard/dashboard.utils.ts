@@ -23,8 +23,8 @@ export function mapHistoricStatsToCards(prev: CardData[], dataHistoricConf: any)
  * Data mapping for real-time statistics to card format.
  */
 export function mapRealtimeStatsToCards(prev: CardData[], dataRealTime: any): CardData[] {
-    const totalParticipants = dataRealTime.participants || 0;
-    const totalConferences = dataRealTime.conferences || 0;
+    const totalParticipants = dataRealTime.part || 0;
+    const totalConferences = dataRealTime.conf || 0;
     const MoyParticipantsPerConf = totalConferences > 0
         ? Math.round(totalParticipants / totalConferences)
         : 0;

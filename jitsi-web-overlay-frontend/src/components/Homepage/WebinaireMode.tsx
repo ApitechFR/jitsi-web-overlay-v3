@@ -17,6 +17,8 @@ import { validateConferenceName } from '@/utils/conferenceName';
 interface WebinaireMode {
   readonly isError: boolean;
   readonly conferenceName: string;
+  readonly conferenceNumber: number;
+  readonly participantNumber: number;
   readonly setConferenceName: (conferenceName: string) => void;
   readonly onclickGenerateRoomName: () => void;
   readonly handleGenerateRoomName: () => void;
@@ -143,10 +145,13 @@ function WebinaireMode(props: WebinaireMode) {
               )}
             </div>
           )}
-          {/* <Badge severity="info">
-              Actuellement, il y a {props.conferenceNumber} conférences et{' '}
-              {props.participantNumber} participants.
-            </Badge> */}
+          {/* <div>{message}</div> */}
+          <Badge severity="info">
+            {t('homeForm.stats', {
+              conferenceNumber: props.conferenceNumber,
+              participantNumber: props.participantNumber
+            })}
+          </Badge>
         </div>
       </div>
       <modal.Component title={t('homeModes.webinar.modal_name')} size="large" className={styles.webinaireModal} apitechCustomCloseText={t('modal.close')}>
