@@ -1,9 +1,7 @@
 import { FormEvent, useState } from 'react';
 
-import { Alert } from '@apitechfr/react-dsapitech/Alert';
+import { Alert, Input, Button, Badge } from '@ds';
 
-import { Input } from '@apitechfr/react-dsapitech/Input';
-import { Button } from '@apitechfr/react-dsapitech/Button';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import { useRuntimeConfig } from '@/config/ConfigProvider';
 
@@ -13,16 +11,19 @@ import { createModal } from '@apitechfr/react-dsapitech/Modal';
 import styles from "../../pages/Home/HomeJoona.module.css"
 import { ConferenceService } from '@/api';
 import { t } from 'i18next';
+import { ConferenceNameValidation } from '@/utils/conferenceName';
+import { validateConferenceName } from '@/utils/conferenceName';
 
 interface WebinaireMode {
   readonly isError: boolean;
-  readonly showError: boolean;
   readonly conferenceName: string;
+  readonly conferenceNumber: number;
+  readonly participantNumber: number;
   readonly setConferenceName: (conferenceName: string) => void;
   readonly onclickGenerateRoomName: () => void;
   readonly handleGenerateRoomName: () => void;
   readonly onSubmit: (e: FormEvent) => void;
-  readonly isValidConferenceName: (name: string) => boolean;
+  readonly isValidConferenceName: (name: string) => ConferenceNameValidation;
   readonly AppTemplate: string;
   readonly inputRef: React.RefObject<HTMLInputElement>;
 }
@@ -39,7 +40,7 @@ function WebinaireMode(props: WebinaireMode) {
 
   // Copy participant link
   const handleCopyParticipant = async () => {
-    if (!props.conferenceName || !props.isValidConferenceName(props.conferenceName)) return;
+    if (!props.conferenceName || !props.isValidConferenceName(props.conferenceName).isValidConfName) return;
     const url = `${window.location.origin}/${props.conferenceName}`;
     try {
       await navigator.clipboard.writeText(url);
@@ -53,7 +54,7 @@ function WebinaireMode(props: WebinaireMode) {
 
   // Copy visitor link 
   const handleCopyVisitor = async () => {
-    if (!props.conferenceName || !props.isValidConferenceName(props.conferenceName)) return;
+    if (!props.conferenceName || !props.isValidConferenceName(props.conferenceName).isValidConfName) return;
     try {
       const res = await ConferenceService.jitsiVisitorJwt(props.conferenceName);
       const invitationToken = (res as any).invitationToken || (res as any).token;
@@ -81,7 +82,7 @@ function WebinaireMode(props: WebinaireMode) {
                 <Input
                   label=""
                   id="conferenceName"
-                  state={props.showError ? 'error' : 'default'}
+                  // state={props.showError ? 'error' : 'default'}
                   nativeInputProps={{
                     placeholder: t('homeModes.webinar.input_room'),
                     value: props.conferenceName,
@@ -91,8 +92,8 @@ function WebinaireMode(props: WebinaireMode) {
                     },
                     ref: props.inputRef,
                   }}
-                  stateRelatedMessage={
-                    props.showError && (cfg.VITE_CONFERENCE_NAME_REGEX_MESSAGE || t('homeModes.webinar.invalid_conference_name', 'Nom de conférence invalide.'))}
+                  // stateRelatedMessage={
+                  //   props.showError && (cfg.VITE_CONFERENCE_NAME_REGEX_MESSAGE || t('homeModes.webinar.invalid_conference_name', 'Nom de conférence invalide.'))}
                   style={{ width: '100%' }}
                   addon={
                     <Button className={styles.plusButton} onClick={props.AppTemplate === 'webconf' ? props.onclickGenerateRoomName : props.handleGenerateRoomName} type="button">
@@ -113,14 +114,47 @@ function WebinaireMode(props: WebinaireMode) {
               </div>
             </div>
           </div>
+          {props.conferenceName && (
+            <div className={styles.validationMsg}>
+              {!validateConferenceName(props.conferenceName).isValidDigits ? (
+                <Badge className={styles.badge} severity="error">
+                  {t('homeForm.atLeast') + ' ' + cfg.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS + ' ' + t('homeForm.digits')}
+                </Badge>
+              ) : (
+                <Badge className={styles.badge} severity="success">
+                  {t('homeForm.atLeast') + ' ' + cfg.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS + ' ' + t('homeForm.digits')}
+                </Badge>
+              )}
+              {!validateConferenceName(props.conferenceName).isValidLength ? (
+                <Badge className={styles.badge} severity="error">
+                  {t('homeForm.between') + ' ' + cfg.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINLENGTH + ' ' + t('homeForm.and') + ' ' + cfg.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MAXLENGTH + ' ' + t('homeForm.chars')}
+                </Badge>
+                ) : (
+                <Badge className={styles.badge} severity="success">
+                  {t('homeForm.between') + ' ' + cfg.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINLENGTH + ' ' + t('homeForm.and') + ' ' + cfg.VITE_FRONTCONF_ROOMNAMECONSTRAINT_MAXLENGTH + ' ' + t('homeForm.chars')}
+                </Badge>
+              )}
+              {!validateConferenceName(props.conferenceName).isValidRegex ? (
+                <Badge className={styles.badge} severity="error">
+                  {t('homeForm.digitsAndLetters')}
+                </Badge>
+                ) : (
+                <Badge className={styles.badge} severity="success">
+                  {t('homeForm.digitsAndLetters')}
+                </Badge>
+              )}
+            </div>
+          )}
           {/* <div>{message}</div> */}
-          {/* <Badge severity="info">
-              Actuellement, il y a {props.conferenceNumber} conférences et{' '}
-              {props.participantNumber} participants.
-            </Badge> */}
+          <Badge severity="info">
+            {t('homeForm.stats', {
+              conferenceNumber: props.conferenceNumber,
+              participantNumber: props.participantNumber
+            })}
+          </Badge>
         </div>
       </div>
-      <modal.Component title={t('homeModes.webinar.modal_name')} size="large" className={styles.webinaireModal}>
+      <modal.Component title={t('homeModes.webinar.modal_name')} size="large" className={styles.webinaireModal} apitechCustomCloseText={t('modal.close')}>
         <div className={styles.modalContainer}>
           <h1 className={styles.modalWebinaireTitle}>{t('homeModes.webinar.modal_title')}<span>{props.conferenceName}</span></h1>
           <div className={styles.mainButtonsBlock}>

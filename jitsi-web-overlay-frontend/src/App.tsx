@@ -26,6 +26,7 @@ import PrivateRoute from './auth/PrivateRoute';
 import AdminRoute from './auth/AdminRoute';
 import RouteThemeController from './RouteThemeController';
 import api from './axios/axios';
+import { DashboardService } from './api/services/dashboard/dashboard.service';
 
 /* === Import fichier de traduction === */
 import './config/i18n';
@@ -116,21 +117,20 @@ function AppInner() {
     } else {
       document.body.classList.remove("no-iframe-style");
     }
+    const fetchStats = async () => {
+      try {
+        const res = await DashboardService.fetchRealtimeStats();
+        setConferenceNumber(res.conf || 0);
+        setparticipantsNumber(res.part || 0);
 
-    if (AppTemplate === 'webconf') {
-      api
-        .get('/stats/homePage')
-        .then(res => {
-          setConferenceNumber(res.data.conf);
-          setparticipantsNumber(res.data.part);
-        })
-        .catch(() => {
-          setError({
-            message: 'erreur: les statistiques ne sont pas récupérables',
-            error: { status: '500', stack: '' },
-          });
+      } catch (error: any) {
+        setError({
+          message: 'erreur: les statistiques ne sont pas récupérables',
+          error: { status: '500', stack: error?.stack || '' },
         });
-    }
+      }
+    };
+    fetchStats();
   }, [AppTemplate]);
 
   const joinConference = () => {

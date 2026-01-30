@@ -163,7 +163,7 @@ export default function HeaderJoona() {
         />
       </div>
 
-      <modal.Component title={dataChangelog?.submenu?.title || ''} size="large">
+      <modal.Component title={dataChangelog?.submenu?.title || ''} size="large" apitechCustomCloseText={t('modal.close')}>
         <div className={styles.modalContainer}>
           {dataChangelog && (
             <SideMenu
