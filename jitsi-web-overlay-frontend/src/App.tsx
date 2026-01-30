@@ -119,7 +119,7 @@ function AppInner() {
     }
     const fetchStats = async () => {
       try {
-        const res = await DashboardService.fetchRealtimeStats(AppTemplate);
+        const res = await DashboardService.fetchRealtimeStats();
         setConferenceNumber(res.conf || 0);
         setparticipantsNumber(res.part || 0);
 
