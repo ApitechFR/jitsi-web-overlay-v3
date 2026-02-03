@@ -20,7 +20,6 @@ interface WebinaireMode {
   readonly conferenceNumber: number;
   readonly participantNumber: number;
   readonly setConferenceName: (conferenceName: string) => void;
-  readonly onclickGenerateRoomName: () => void;
   readonly handleGenerateRoomName: () => void;
   readonly onSubmit: (e: FormEvent) => void;
   readonly isValidConferenceName: (name: string) => ConferenceNameValidation;
@@ -96,7 +95,7 @@ function WebinaireMode(props: WebinaireMode) {
                   //   props.showError && (cfg.VITE_CONFERENCE_NAME_REGEX_MESSAGE || t('homeModes.webinar.invalid_conference_name', 'Nom de conférence invalide.'))}
                   style={{ width: '100%' }}
                   addon={
-                    <Button className={styles.plusButton} onClick={props.AppTemplate === 'webconf' ? props.onclickGenerateRoomName : props.handleGenerateRoomName} type="button">
+                    <Button className={styles.plusButton} onClick={props.handleGenerateRoomName} type="button">
                       <ShuffleIcon />
                     </Button>
                   }
