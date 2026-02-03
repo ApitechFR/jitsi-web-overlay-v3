@@ -214,7 +214,7 @@
         "subtitle": "Audio, vidéo, chat, partage d'écran et de documents",
         "inputDesc": "Champ de saisie du nom de la conférence",
         "inputPlaceholder": "Saisissez un nom de conférence...",
-        "stats": "Actuellement, il y a {{conferenceNumber}} conférences et {{participantNumber}} participants.",
+        "stats": "Actuellement, il {conferenceNumber, plural, =0 {n'y a aucune conférence} one {y a # conférence} other {y a # conférences}} et {participantNumber, plural, =0 {aucun participant} one {# participant} other {# participants}}.",
         "learnMore": "En savoir plus sur la WebConf de l'État",
         "accordionPrereq": "Pré-requis",
         "accordionStart": "Démarrer avec la WebConf",
