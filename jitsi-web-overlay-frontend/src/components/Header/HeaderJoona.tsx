@@ -85,6 +85,8 @@ export default function HeaderJoona() {
       : []),
   ];
 
+  const enableLanguageSwitch = (cfg.VITE_ENABLE_LANGUAGE_SWITCH as boolean) || false;
+
   const quickAccessItems = [
     {
       linkProps: {
@@ -111,14 +113,14 @@ export default function HeaderJoona() {
       iconId: 'fr-icon-information-line',
       text: t('header.information'),
     },
-    {
+    ...(enableLanguageSwitch ? [{
       buttonProps: {
         onClick: switchLang,
         className: 'fr-btn fr-btn--icon-left',
       },
       iconId: 'fr-icon-translate-2',
       text: isLangFrench ? "EN" : "FR",
-    },
+    }] : []),
     authenticated
       ? {
         buttonProps: {

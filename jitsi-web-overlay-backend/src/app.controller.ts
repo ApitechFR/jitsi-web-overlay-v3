@@ -43,6 +43,7 @@ export class AppController {
       VITE_APP_TITLE: process.env.APP_TITLE,
       VITE_APP_FAVICON_URL: process.env.APP_FAVICON_URL,
       VITE_IS_WEBINAR_ENABLED: process.env.IS_WEBINAR_ENABLED,
+      VITE_ENABLE_LANGUAGE_SWITCH: process.env.ENABLE_LANGUAGE_SWITCH,
     };
   }
 
