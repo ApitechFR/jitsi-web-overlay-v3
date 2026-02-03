@@ -164,7 +164,7 @@ export class UsersService {
       if (!extUser?.email) continue;
 
       try {
-        const user = await this.findByEmail(extUser.Email);
+        const user = await this.findByEmail(extUser.email);
         if (!user) continue;
 
         const wasDeactivated = await this.deactivateUserIfNeeded(user.uid);
