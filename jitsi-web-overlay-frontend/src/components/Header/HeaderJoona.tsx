@@ -86,16 +86,17 @@ export default function HeaderJoona() {
   ];
 
   const enableLanguageSwitch = (cfg.VITE_ENABLE_LANGUAGE_SWITCH as boolean) || false;
+  const enableHardwareTest = (cfg.VITE_ENABLE_HARDWARE_TEST as boolean) ?? true;
 
   const quickAccessItems = [
-    {
+    ...(enableHardwareTest ? [{
       linkProps: {
         href: '/browser_test',
         className: 'fr-btn--icon-right',
       },
       iconId: 'fr-icon-pulse-line',
       text: t('header.hardwareTest'),
-    },
+    }] : []),
     {
 
       buttonProps: {
