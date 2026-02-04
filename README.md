@@ -198,6 +198,7 @@ Ces variables sont prises en compte côté backend (API) et frontend (UI) pour a
 | APP_FAQ_URL | Chemin du PDF de la FAQ | `/doc/Documentation_utilisateur_Visio_By_Apitech.pdf` | Non | `/doc/Documentation_utilisateur_Visio_By_Apitech.pdf` |
 | APP_TITLE | Titre dynamique de l'application | `Visio By Apitech` | Non | `Visio By Apitech` |
 | APP_FAVICON_URL | Chemin du favicon dynamique | `/joona/Icone_produits_V.svg` | Non | `/joona/Icone_produits_V.svg` |
+| DAILY_AUTOMATION_ENABLED | Active l'automation | `false` | Non | false |
 | RETENTION_DAYS | Nombre de jours de conservation des données après leur désactivation | `90` | Oui | `90` |
 | LOG_DIR | Dossier dans lequel l’application écrit les logs Cron | `/etc/logs/automation/` | Oui | `./logs` |
 | DIRECTORY_PROVIDER | Le système d’annuaire utilisé pour l’authentification des utilisateurs | `LDAP` | Oui | `OIDC` |
