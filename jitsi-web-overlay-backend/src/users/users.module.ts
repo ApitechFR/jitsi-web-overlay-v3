@@ -4,6 +4,7 @@ import { UsersController } from './users.controller';
 import { User } from './entities/users.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DirectoryModule } from '../providers/directory-provider/directory-provider.module';
+import { WinstonLoggerService } from '../common/services/winston-logger.service';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { DirectoryModule } from '../providers/directory-provider/directory-provi
   ],
   providers: [
     UsersService,
+    WinstonLoggerService
   ],
   controllers: [UsersController],
   exports: [UsersService],
