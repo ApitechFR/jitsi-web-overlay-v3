@@ -214,7 +214,7 @@
     "subtitle": "Audio, video, chat, screen and document sharing",
     "inputDesc": "Conference name input field",
     "inputPlaceholder": "Enter a conference name...",
-    "stats": "Currently, there are {{conferenceNumber}} conferences and {{participantNumber}} participants.",
+    "stats": "Currently, there are {conferenceNumber, plural, =0 {no conferences} one {# conference} other {# conferences}} and {participantNumber, plural, =0 {no participants} one {# participant} other {# participants}}.",
     "learnMore": "Learn more about the State's WebConf",
     "accordionPrereq": "Prerequisites",
     "accordionStart": "Getting started with WebConf",

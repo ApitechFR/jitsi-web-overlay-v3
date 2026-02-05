@@ -62,16 +62,6 @@ export function validateConferenceName(
 
   const testRegex = regex.test(conferenceName);
 
-  const test = {
-    isValidConfName: length && digits && testRegex,
-    isValidLength: length,
-    isValidDigits: digits,
-    isValidRegex: testRegex,
-  };
-
-  console.log('test crash validateConferenceName', test);
-
-
   return {
     isValidConfName: length && digits && testRegex,
     isValidLength: length,

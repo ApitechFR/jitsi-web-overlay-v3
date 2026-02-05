@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react';
 
-import { Badge, Input, Button, Alert } from '@ds';
+import { Badge, Button, Alert, Input } from '@ds';
 
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import { useRuntimeConfig } from '@/config/ConfigProvider';
@@ -16,7 +16,6 @@ interface VisioModeProps {
   readonly conferenceNumber: number;
   readonly participantNumber: number;
   readonly setConferenceName: (conferenceName: string) => void;
-  readonly onclickGenerateRoomName: () => void;
   readonly handleGenerateRoomName: () => void;
   readonly onSubmit: (e: FormEvent) => void;
   readonly onCopyLink: () => void;
@@ -57,7 +56,7 @@ function VisioMode(props: VisioModeProps) {
                 }}
                 style={{ width: '100%' }}
                 addon={
-                  <Button className={styles.plusButton} onClick={props.AppTemplate === 'webconf' ? props.onclickGenerateRoomName : props.handleGenerateRoomName} type="button">
+                  <Button className={styles.plusButton} onClick={props.handleGenerateRoomName} type="button">
                     <ShuffleIcon />
                   </Button>
                 }
@@ -126,7 +125,6 @@ function VisioMode(props: VisioModeProps) {
             )}
           </div>
         )}
-        {/* <div>{message}</div> */}
         <Badge severity="info">
           {t('homeForm.stats', {
             conferenceNumber: props.conferenceNumber,

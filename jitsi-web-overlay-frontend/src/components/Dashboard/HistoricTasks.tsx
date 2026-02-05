@@ -22,6 +22,8 @@ function HistoricTasks() {
     const {
         startDate,
         endDate,
+        setStartDate,
+        setEndDate,
         handleDashboardDateChange
     } = useDashboardDateFilters();
 
@@ -29,6 +31,11 @@ function HistoricTasks() {
 
     const handleToogleChange = () => {
         setIsToogleActive(!isToogleActive);
+
+        if (startDate || endDate) {
+            setStartDate("");
+            setEndDate("");
+        }
     };
 
     // Manage apply date changes
@@ -44,16 +51,18 @@ function HistoricTasks() {
     };
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const dataHistoricConf = await DashboardService.fetchHistoricStats(value);
-                setLocalData(prev => mapHistoricStatsToCards(prev, dataHistoricConf));
-            } catch (error) {
-                console.error("Erreur lors du fetch des données :", error);
-            }
-        };
-        if (value) fetchData();
-    }, [value]);
+        if(!isToogleActive) {
+            const fetchData = async () => {
+                try {
+                    const dataHistoricConf = await DashboardService.fetchHistoricStats(value);
+                    setLocalData(prev => mapHistoricStatsToCards(prev, dataHistoricConf));
+                } catch (error) {
+                    console.error("Erreur lors du fetch des données :", error);
+                }
+            };
+            if (value) fetchData();
+        }
+    }, [value, isToogleActive]);
 
 
     return (
