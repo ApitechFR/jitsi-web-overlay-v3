@@ -24,6 +24,8 @@ export type FrontConfig = {
     VITE_APP_FOOTERLINKS?: string;
     VITE_APP_CHANGELOG_URL?: string;
     VITE_APP_FAQ_URL?: string;
+    VITE_APP_FAQ_URL_FR?: string;
+    VITE_APP_FAQ_URL_EN?: string;
     VITE_APP_TITLE?: string;
     VITE_APP_FAVICON_URL?: string;
     VITE_IS_WEBINAR_ENABLED?: boolean | string;
@@ -54,6 +56,8 @@ export async function loadRuntimeConfig(force = false): Promise<FrontConfig> {
                 ...raw,
                 VITE_APP_CHANGELOG_URL: raw.VITE_APP_CHANGELOG_URL || (import.meta.env.VITE_APP_CHANGELOG_URL as string | undefined) || '/infos.json',
                 VITE_APP_FAQ_URL: raw.VITE_APP_FAQ_URL || (import.meta.env.VITE_APP_FAQ_URL as string | undefined) || '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf',
+                VITE_APP_FAQ_URL_FR: raw.VITE_APP_FAQ_URL_FR || (import.meta.env.VITE_APP_FAQ_URL_FR as string | undefined) || '/doc/Documentation_utilisateur_Visio_By_Apitech_FR.pdf',
+                VITE_APP_FAQ_URL_EN: raw.VITE_APP_FAQ_URL_EN || (import.meta.env.VITE_APP_FAQ_URL_EN as string | undefined) || '/doc/Documentation_utilisateur_Visio_By_Apitech_EN.pdf',
                 VITE_APP_TITLE: raw.VITE_APP_TITLE || (import.meta.env.VITE_APP_TITLE as string | undefined) || 'Visio By Apitech',
                 VITE_API_URL: (import.meta.env.VITE_API_URL as string | undefined) || '/api',
                 VITE_APP_TEMPLATE: raw.VITE_APP_TEMPLATE || (import.meta.env.VITE_APP_TEMPLATE as string | undefined) || 'joona',

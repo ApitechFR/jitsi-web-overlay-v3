@@ -19,7 +19,7 @@ export default function HeaderJoona() {
 
   const { t, i18n } = useTranslation();
 
-  const isLangFrench = i18n.language === 'fr';
+  //const isLangFrench = i18n.language === 'fr';
 
   const cfg = useRuntimeConfig();
   const VisioLogo = (cfg.VITE_APP_LIGHTVISIOLOGOHEADER as string) || '/assets/visiobyapitech-creme.png';
@@ -48,7 +48,21 @@ export default function HeaderJoona() {
 
   const { user, authenticated, login, logout } = useAuth();
 
-  const faqUrl = cfg.VITE_APP_FAQ_URL || '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf';
+  const isFrench = (i18n.resolvedLanguage || i18n.language)
+    ?.toLowerCase()
+    .startsWith('fr');
+
+  const faqUrl = isFrench
+    ? (cfg.VITE_APP_FAQ_URL_FR as string) || '/doc/Documentation_utilisateur_Visio_By_Apitech_FR.pdf'
+    : (cfg.VITE_APP_FAQ_URL_EN as string) || '/doc/Documentation_utilisateur_Visio_By_Apitech_EN.pdf';
+
+  console.log({
+    language: i18n.language,
+    resolvedLanguage: i18n.resolvedLanguage,
+    isFrench,
+    faqUrl,
+  });
+
   const openPdf = () => {
     window.open(faqUrl, '_blank', 'noopener,noreferrer');
   };
@@ -65,7 +79,7 @@ export default function HeaderJoona() {
   };
 
   const switchLang = () => {
-    i18n.changeLanguage(isLangFrench ? 'en' : 'fr')
+    i18n.changeLanguage(isFrench ? 'en' : 'fr')
   }
 
   const navItems = [
@@ -120,7 +134,7 @@ export default function HeaderJoona() {
         className: 'fr-btn fr-btn--icon-left',
       },
       iconId: 'fr-icon-translate-2',
-      text: isLangFrench ? "EN" : "FR",
+      text: isFrench ? "EN" : "FR",
     }] : []),
     authenticated
       ? {

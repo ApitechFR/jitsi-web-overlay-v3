@@ -46,7 +46,14 @@ export default function HeaderVisio() {
       });
   }, [cfg, i18n.language]);
 
-  const faqUrl = cfg.VITE_APP_FAQ_URL || '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf';
+  const isFrench = (i18n.resolvedLanguage || i18n.language)
+    ?.toLowerCase()
+    .startsWith('fr');
+
+  const faqUrl = isFrench
+    ? (cfg.VITE_APP_FAQ_URL_FR as string) || '/doc/Documentation_utilisateur_Visio_By_Apitech_FR.pdf'
+    : (cfg.VITE_APP_FAQ_URL_EN as string) || '/doc/Documentation_utilisateur_Visio_By_Apitech_EN.pdf';
+
   const openPdf = () => {
     window.open(faqUrl, '_blank', 'noopener,noreferrer');
   };
@@ -116,7 +123,7 @@ export default function HeaderVisio() {
         }
         homeLinkProps={{
           href: '/',
-          title: t('header.homeTitle', 'Accueil - Nom de l’entité (ministère, secrétariat d‘état, gouvernement)'),
+          title: t('header.homeTitle', 'Accueil'),
         }}
         id="fr-header-header-with-quick-access-items"
         quickAccessItems={quickAccessItems as any}
