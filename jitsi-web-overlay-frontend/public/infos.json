@@ -16,12 +16,11 @@
                                 "description": "La dernière version v3.2.0 du 06 février 2026 apporte des correctifs. Cette nouvelle version apporte notamment :",
                                 "features": {
                                     "ameliorations": [
-                                        "Interface Webinaire intégrée dans Visio by Apitech (basée sur l’interface Joona).",
+                                        "Interface Webinaire intégrée dans Visio by Apitech.",
                                         "Création d’un webinaire depuis la page d’accueil (saisie du nom + validation regex + popup de partage des liens participant/spectateur).",
                                         "Workflow Webinaire : au-delà d’un seuil X de participants, bascule automatique en mode webinaire (nouveaux entrants en spectateurs).",
-                                        "Traduction de l’ensemble des libellés de l’application Visio by Apitech.",
-                                        "Bouton / entrée de menu ajouté(e) pour accéder à la traduction (conforme aux maquettes).",
-                                        "Rendre paramétrables les modules complémentaires (activation/désactivation via configuration).",
+                                        "Traduction FR/EN de l’application Visio by Apitech.",
+                                        "Activation/désactivation des modules complémentaires via configuration.",
                                         "Option client : session non persistante (déconnexion automatique à la fermeture du navigateur) via variables d’environnement."
                                     ]
                                 },
@@ -160,11 +159,9 @@
                                 "description": "The latest version v3.2.0 from February 06, 2026 brings fixes. This new version notably includes:",
                                 "features": {
                                     "ameliorations": [
-                                        "Webinar interface integrated into Visio by Apitech (based on Joona webinar UI).",
-                                        "Create a webinar from the home page (name input + regex validation + share popup for participant/spectator links).",
+                                        "Webinar interface integrated into Visio by Apitech.",
                                         "Webinar workflow: above X participants, the meeting automatically switches to webinar mode (new joiners become spectators).",
-                                        "Full translation of Visio by Apitech labels (FR/EN).",
-                                        "Menu entry/button added for translations (as per mockups).",
+                                        "Translation of all Visio by Apitech labels (FR/EN).",
                                         "Complementary modules are now configurable (enable/disable via configuration).",
                                         "Client option: non-persistent session (auto logout when browser closes) via environment variables."
                                     ]
