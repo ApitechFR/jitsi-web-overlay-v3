@@ -22,6 +22,8 @@ function HistoricTasks() {
     const {
         startDate,
         endDate,
+        setStartDate,
+        setEndDate,
         handleDashboardDateChange
     } = useDashboardDateFilters();
 
@@ -29,6 +31,11 @@ function HistoricTasks() {
 
     const handleToogleChange = () => {
         setIsToogleActive(!isToogleActive);
+
+        if (startDate || endDate) {
+            setStartDate("");
+            setEndDate("");
+        }
     };
 
     // Manage apply date changes
