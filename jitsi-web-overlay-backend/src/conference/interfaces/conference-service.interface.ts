@@ -18,6 +18,9 @@ export interface IConferenceService<T = any> {
   delete?(id: string): Promise<void>;
   update?(id: string, data: Partial<CreateConferenceDTO>): Promise<T>;
 
+  disableAllInactiveUserConferences?(): Promise<T>;
+  closeEmptyConferences?(): Promise<T>;
+
   //web conf
   getRoomAccessToken?(
     roomName: string,
@@ -37,6 +40,6 @@ export interface IConferenceService<T = any> {
   verifyToken?(jwt: string): { jwt: string } | void;
   isInternalUser?(webconfUserRegion: string): boolean;
   sendToken?(roomName: string): { roomName: string; jwt: string };
-  generateJitsiJwt?(user: any, moderator: boolean, roomName: string): any;
+  generateJitsiJwt?(user: any, moderator: boolean, roomName: string, isWebinar?: boolean): any;
   isUserModerator?(user: any, roomName: string): boolean;
 }

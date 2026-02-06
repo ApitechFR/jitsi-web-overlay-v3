@@ -5,3 +5,11 @@ export interface Props {
     displayName?: string;
     user?: any;
 }
+
+export interface JitsiModuleOptions {
+    etherpad: boolean;
+    transcription: boolean;
+    recording: boolean;
+    excalidraw: boolean;
+    voxify: boolean;
+}

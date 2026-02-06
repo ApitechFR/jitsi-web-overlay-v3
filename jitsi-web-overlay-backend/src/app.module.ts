@@ -22,6 +22,10 @@ import { ReplayModule } from './replay/replay.module';
 import { RoomModule } from './room/room.module';
 import { dataSourceOptions } from '../db/datasource';
 import { ParticipantModule } from './participant/participant.module';
+import { AutomationModule } from './automation/automation.module';
+import { LdapModule } from './providers/directory-provider/ldap/ldap.module';
+import { OidcModule } from './providers/directory-provider/oidc/oidc.module';
+import { WebinarModule } from './webinar/webinar.module';
 
 
 @Module({
@@ -88,6 +92,10 @@ import { ParticipantModule } from './participant/participant.module';
     ReplayModule,
     RoomModule,
     ParticipantModule,
+    AutomationModule,
+    LdapModule,
+    OidcModule,
+    WebinarModule,
   ],
   controllers: [AppController],
   providers: [AppService, RoomNameValidator],
@@ -95,6 +103,7 @@ import { ParticipantModule } from './participant/participant.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
+
     consumer
       .apply(JwtOidcMiddleware)
       .forRoutes({ path: 'conferences/*', method: RequestMethod.ALL });

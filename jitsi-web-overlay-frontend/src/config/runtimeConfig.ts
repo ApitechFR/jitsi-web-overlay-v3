@@ -24,8 +24,13 @@ export type FrontConfig = {
     VITE_APP_FOOTERLINKS?: string;
     VITE_APP_CHANGELOG_URL?: string;
     VITE_APP_FAQ_URL?: string;
+    VITE_APP_FAQ_URL_FR?: string;
+    VITE_APP_FAQ_URL_EN?: string;
     VITE_APP_TITLE?: string;
     VITE_APP_FAVICON_URL?: string;
+    VITE_IS_WEBINAR_ENABLED?: boolean | string;
+    VITE_ENABLE_LANGUAGE_SWITCH?: boolean | string;
+    VITE_ENABLE_HARDWARE_TEST?: boolean | string;
 };
 
 let cached: FrontConfig | null = null;
@@ -51,6 +56,8 @@ export async function loadRuntimeConfig(force = false): Promise<FrontConfig> {
                 ...raw,
                 VITE_APP_CHANGELOG_URL: raw.VITE_APP_CHANGELOG_URL || (import.meta.env.VITE_APP_CHANGELOG_URL as string | undefined) || '/infos.json',
                 VITE_APP_FAQ_URL: raw.VITE_APP_FAQ_URL || (import.meta.env.VITE_APP_FAQ_URL as string | undefined) || '/doc/Documentation_utilisateur_Visio_By_Apitech.pdf',
+                VITE_APP_FAQ_URL_FR: raw.VITE_APP_FAQ_URL_FR || (import.meta.env.VITE_APP_FAQ_URL_FR as string | undefined) || '/doc/Documentation_utilisateur_Visio_By_Apitech_FR.pdf',
+                VITE_APP_FAQ_URL_EN: raw.VITE_APP_FAQ_URL_EN || (import.meta.env.VITE_APP_FAQ_URL_EN as string | undefined) || '/doc/Documentation_utilisateur_Visio_By_Apitech_EN.pdf',
                 VITE_APP_TITLE: raw.VITE_APP_TITLE || (import.meta.env.VITE_APP_TITLE as string | undefined) || 'Visio By Apitech',
                 VITE_API_URL: (import.meta.env.VITE_API_URL as string | undefined) || '/api',
                 VITE_APP_TEMPLATE: raw.VITE_APP_TEMPLATE || (import.meta.env.VITE_APP_TEMPLATE as string | undefined) || 'joona',
@@ -71,6 +78,8 @@ export async function loadRuntimeConfig(force = false): Promise<FrontConfig> {
                 VITE_FRONTCONF_ROOMNAMECONSTRAINT_GENMINLENGTH: coerceNum(raw.VITE_FRONTCONF_ROOMNAMECONSTRAINT_GENMINLENGTH),
                 VITE_FRONTCONF_ROOMNAMECONSTRAINT_GENMAXLENGTH: coerceNum(raw.VITE_FRONTCONF_ROOMNAMECONSTRAINT_GENMAXLENGTH),
                 VITE_APP_FAVICON_URL: raw.VITE_APP_FAVICON_URL || (import.meta.env.VITE_APP_FAVICON_URL as string | undefined) || '/joona/Icone_produits_V.svg',
+                VITE_ENABLE_LANGUAGE_SWITCH: coerceBool(raw.VITE_ENABLE_LANGUAGE_SWITCH ?? (import.meta.env.VITE_ENABLE_LANGUAGE_SWITCH as string | undefined) ?? 'false'),
+                VITE_ENABLE_HARDWARE_TEST: coerceBool(raw.VITE_ENABLE_HARDWARE_TEST ?? (import.meta.env.VITE_ENABLE_HARDWARE_TEST as string | undefined) ?? 'false'),
             };
             return cached;
         })

@@ -2,6 +2,7 @@ workflow:
   rules:
     - if: '$CI_COMMIT_TAG'
     - if: '$CI_COMMIT_BRANCH == "release"'
+    - if: '$CI_COMMIT_BRANCH == "dev"'
     - if: '$CI_COMMIT_BRANCH == "main"'
     - when: never
 
@@ -69,6 +70,7 @@ docker-build-backend:
     - if: '$CI_COMMIT_TAG'
     - if: '$CI_COMMIT_BRANCH == "release"'
     - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "dev"'
   script:
     - |
       SHA_TAG="sha-${CI_COMMIT_SHORT_SHA}"
@@ -86,7 +88,7 @@ docker-build-backend:
           --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-backend:${SHA_TAG}"
       else
         DESTINATIONS="\
-          --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-backend:main \
+          --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-backend:${CI_COMMIT_BRANCH} \
           --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-backend:${SHA_TAG}"
       fi
 
@@ -106,6 +108,7 @@ docker-build-frontend:
     - if: '$CI_COMMIT_TAG'
     - if: '$CI_COMMIT_BRANCH == "release"'
     - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "dev"'
   script:
     - |
       SHA_TAG="sha-${CI_COMMIT_SHORT_SHA}"
@@ -123,7 +126,7 @@ docker-build-frontend:
           --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-frontend:${SHA_TAG}"
       else
         DESTINATIONS="\
-          --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-frontend:main \
+          --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-frontend:${CI_COMMIT_BRANCH} \
           --destination ${CI_REGISTRY_IMAGE}/jitsi-web-overlay-frontend:${SHA_TAG}"
       fi
 
@@ -133,14 +136,4 @@ docker-build-frontend:
         $DESTINATIONS \
         --build-arg VITE_API_URL=${API_URL} \
         --build-arg VITE_APP_TEMPLATE=${APP_TEMPLATE} \
-        --build-arg VITE_JITSI_DOMAIN=${JITSI_DOMAIN} \
-        --build-arg VITE_APP_ORGANIZATION=${APP_ORGANIZATION} \
-        --build-arg VITE_CONFERENCE_NAME_REGEX_MESSAGE=${CONFERENCE_NAME_REGEX_MESSAGE} \
-        --build-arg VITE_VOXAPI_URL=${VOXAPI_URL} \
-        --build-arg VITE_CONFERENCE_NAME_REGEX=${CONFERENCE_NAME_REGEX} \
-        --build-arg VITE_ENABLE_JIBRI_APITECH_API=${ENABLE_JIBRI_APITECH_API} \
-        --build-arg VITE_JIBRI_APITECH_API_DOMAIN=${JIBRI_APITECH_API_DOMAIN} \
-        --build-arg VITE_REPLAY_CHECK_TIMEOUT_MS=${REPLAY_CHECK_TIMEOUT_MS} \
-        --build-arg VITE_FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS=${FRONTCONF_ROOMNAMECONSTRAINT_MINNUMBEROFDIGITS} \
-        --build-arg VITE_FRONTCONF_ROOMNAMECONSTRAINT_LENGTH=${FRONTCONF_ROOMNAMECONSTRAINT_LENGTH} \
         --single-snapshot

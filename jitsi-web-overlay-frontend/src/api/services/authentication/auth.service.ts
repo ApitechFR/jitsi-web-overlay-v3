@@ -16,7 +16,6 @@ function getApiBaseUrl(): string {
 // Toutes les fonctions qui utilisent baseApi doivent attendre que la config soit chargée
 function getBaseApiOrThrow(): string {
     const api = getApiBaseUrl();
-    // if (!api) throw new Error('API URL non chargée. Attendez que la configuration soit disponible.');
     return api;
 }
 async function userinfo(): Promise<UserInfos | null> {
@@ -51,51 +50,26 @@ async function userinfoDecoded(): Promise<UserInfos | null> {
 
 
 
-// async function userinfo(): Promise<UserInfos | null> {
-//     try {
-//         const http = await getHttp();
-//         const { data } = await http.get<UserInfos>('/authentication/userinfo');
-//         return data ?? null;
-//     } catch (e) {
-//         const err = toApiError(e);
-//         if (err.status === 401) return null;
-//         return null;
-//     }
-// }
 
-// async function userinfoDecoded(): Promise<UserInfos | null> {
-//     const data = await userinfo();
-//     if (!data) return null;
-//     if (data.idToken && typeof data.idToken === 'string') {
-//         try { return decodeJwt(data.idToken) as unknown as UserInfos; }
-//         catch { /* ignore */ }
-//     }
-//     return data;
-// }
 
-function getLoginUrl(confName?: string) {
+
+
+function getLoginUrl(confName?: string, sessionOnly?: boolean) {
     const url = joinUrl(getBaseApiOrThrow(), '/authentication/login_authorize');
     const state = genState();
     saveState(state);
 
-    const params = new URLSearchParams({ state, ...(confName ? { room: confName } : {}) });
+    const params: Record<string, string> = { state };
+    if (confName) params.room = confName;
 
-    //sessionStorage.setItem('oidc_state', params.get('state') || '');
-    return `${url}?${params.toString()}`;
+    if (sessionOnly) params.sessionOnly = '1';
 
+    const qs = new URLSearchParams(params);
+    return `${url}?${qs.toString()}`;
 }
 
 
-// const login = (room?: string) => {
-//     const state = [...crypto.getRandomValues(new Uint8Array(16))]
-//       .map(b => b.toString(16).padStart(2, '0'))
-//       .join('');
-//     sessionStorage.setItem('oidc_state', state);
 
-//     const loginUrl = joinUrl(baseApi, '/authentication/login_authorize');
-//     const qs = new URLSearchParams({ state, ...(room ? { room } : {}) });
-//     window.location.href = `${loginUrl}?${qs.toString()}`;
-//   };
 
 function getLoginCallbackUrl(code: string, state: string) {
     const url = joinUrl(getBaseApiOrThrow(), '/authentication/login_callback');
@@ -109,7 +83,7 @@ async function logout() {
         const http = await getHttp();
         return await http.post('/authentication/logout');
     } catch (e) {
-        return Promise.reject(toApiError(e));
+        throw toApiError(e);
     }
 }
 

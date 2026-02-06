@@ -1,0 +1,231 @@
+.homeContainer {
+  display: flex;
+  flex-direction: row;
+  padding: 8% 0px;
+}
+
+.homeContent {
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.firstContainer {
+  width: 55%;
+}
+
+.homeTitle {
+  margin-bottom: 60px;
+  font-size: 2.2em;
+}
+
+.secondContainer {
+  width: 45%;
+  height: auto;
+}
+
+.secondContainer img {
+  max-width: 100%;
+  object-fit: contain;
+  padding-top: 20px;
+}
+
+.homepageDispositionSideBlocks {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.joinPart {
+  display: flex;
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+.joinInput {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  width: 100%;
+}
+
+.buttonsSection {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  width: 100%;
+}
+
+.joinPart {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.buttonsPart {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.plusButton {
+  display: inline-block;
+  height: 10px;
+  min-width: 60px;
+  text-align: center;
+}
+
+.dropdownButton {
+  height: 10px;
+  min-width: 60px;
+  border-radius: 0 0.25rem 0 0;
+  /* font-weight: bold;
+  font-size: 1.2rem;
+  display: flex; */
+  /* Override dsfr si changement souhaité ici */
+  justify-content: center;
+}
+
+.hiddenDropdownButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hiddenDropdownButtons :global(.fr-btn) {
+  width: 100%;
+}
+
+.joinButton {
+  width: 100%;
+}
+
+.joinInput :global(.fr-btn) {
+  border-radius: 0.25rem;
+}
+
+.joinButton span {
+  text-align: center;
+  width: 100%;
+}
+
+.switchModeBlock {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.buttonSwitchMode {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+  width: auto;
+}
+
+.alertContainer {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 1000;
+  animation: slideUpFade 0.4s ease-out;
+}
+
+.contentModal {
+  text-align: center;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+}
+
+/*** Modal Webinaire Style ***/
+.webinaireModal :global(.fr-modal__content) {
+  margin-bottom: 2rem;
+}
+
+.modalContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.modalWebinaireTitle {
+  font-size: 1.3em;
+}
+
+.mainButtonsBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  padding: 0px 30px;
+}
+
+.mainButtonsBlock .joinButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.bottomButtonBlock {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  justify-content: end;
+  padding: 30px 0px;
+  /* border-top: solid 1px grey; */
+}
+
+.validationMsg {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+
+/*****************************/
+
+@keyframes slideUpFade {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 1000px) and (min-width: 800.99px) {
+  .secondContainer {
+    padding-top: 80px;
+  }
+}
+
+@media (max-width: 800px) {
+  .homeContainer {
+    flex-direction: column-reverse;
+    gap: 20px;
+  }
+
+  .firstContainer {
+    width: 100%;
+  }
+
+  .secondContainer {
+    width: 90%;
+    padding-top: 0px;
+  }
+}
+
+@media (max-width: 500px) {
+  .homeTitle {
+    font-size: 2.2em;
+  }
+
+}

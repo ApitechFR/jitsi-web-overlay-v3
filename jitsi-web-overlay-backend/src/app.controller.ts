@@ -1,10 +1,17 @@
 
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
+import { ConfigService } from '@nestjs/config';
+
+
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) { }
+  constructor(
+    private readonly appService: AppService,
+    private readonly configService: ConfigService
+  ) { }
+
 
   @Get('/config')
   getFrontendConfig() {
@@ -33,13 +40,32 @@ export class AppController {
       VITE_FRONTCONF_ROOMNAMECONSTRAINT_GENMAXLENGTH: process.env.FRONTCONF_ROOMNAMECONSTRAINT_GENMAXLENGTH,
       VITE_APP_CHANGELOG_URL: process.env.APP_CHANGELOG_URL,
       VITE_APP_FAQ_URL: process.env.APP_FAQ_URL,
+      VITE_APP_FAQ_URL_FR: process.env.APP_FAQ_URL_FR,
+      VITE_APP_FAQ_URL_EN: process.env.APP_FAQ_URL_EN,
       VITE_APP_TITLE: process.env.APP_TITLE,
       VITE_APP_FAVICON_URL: process.env.APP_FAVICON_URL,
+      VITE_IS_WEBINAR_ENABLED: process.env.IS_WEBINAR_ENABLED,
+      VITE_ENABLE_LANGUAGE_SWITCH: process.env.ENABLE_LANGUAGE_SWITCH,
+      VITE_ENABLE_HARDWARE_TEST: process.env.ENABLE_HARDWARE_TEST,
     };
   }
+
 
   @Get('/health')
   getHealth() {
     return { status: 'ok' };
   }
+
+
+  @Get('/jitsi/modules')
+  getJitsiModules() {
+    return {
+      etherpad: this.configService.get('JITSI_MOD_ETHERPAD', 'false') === 'true',
+      transcription: this.configService.get('JITSI_MOD_TRANSCRIPTION', 'false') === 'true',
+      recording: this.configService.get('JITSI_MOD_RECORDING', 'false') === 'true',
+      excalidraw: this.configService.get('JITSI_MOD_EXCALIDRAW', 'false') === 'true',
+      voxify: this.configService.get('JITSI_MOD_VOXIFY', 'false') === 'true',
+    };
+  }
 }
+

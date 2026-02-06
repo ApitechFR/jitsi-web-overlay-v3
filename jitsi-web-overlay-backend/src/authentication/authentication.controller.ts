@@ -54,8 +54,6 @@ export class AuthenticationController {
     return room ? `${base}/${encodeURIComponent(room)}` : base;
   }
 
-
-
   /**
     * Return user information from the JWT.
     */
@@ -97,16 +95,21 @@ export class AuthenticationController {
     @Res({ passthrough: true }) response: Response,
     @Query('room') room: string,
     @Query('state') stateFromFrontend?: string,
+    @Query('sessionOnly') sessionOnly?: string,
   ) {
     const state = stateFromFrontend || crypto.randomBytes(32).toString('hex');
     const nonce = crypto.randomBytes(32).toString('hex');
 
     this.authenticationService.setAuthCookie(response, 'state', state);
-
     if (room) {
       this.authenticationService.setAuthCookie(response, 'roomName', room);
     }
-
+    // Set a temporary cookie for sessionOnly mode (read at callback) 
+    if (sessionOnly === '1') {
+      this.authenticationService.setAuthCookie(response, 'sessionOnly', '1');
+    } else {
+      this.authenticationService.clearAuthCookie(response, 'sessionOnly');
+    }
     return { url: this.authenticationService.loginAuthorize(state, nonce) };
   }
   @Get('authentication/login_callback')
@@ -135,7 +138,7 @@ export class AuthenticationController {
         // Token still valid → already logged in
         return response.redirect(302, this.getFrontRedirectTarget(request));
       } catch {
-        //console.log('Token present but expired/invalid');
+
       }
     }
 
@@ -159,8 +162,8 @@ export class AuthenticationController {
       sub: this.configService.get('JITSI_JITSIJWT_SUB'),
       email: this.authenticationService.extractEmail(userinfo),
       ...userInfos,
-      admin: user.admin, // force la valeur de la base
-      role: user.role,   // force la valeur de la base
+      admin: user.admin, // Override admin from DB
+      role: user.role,   // Add role from DB
       uid: user.uid,
     };
 
@@ -170,13 +173,32 @@ export class AuthenticationController {
       idToken,
     });
 
+    // Read sessionOnly preference from temporary cookie or env variable 
+    let sessionOnly: boolean;
+    if (request.signedCookies?.sessionOnly !== undefined) {
+      sessionOnly = request.signedCookies.sessionOnly === '1';
+    } else {
+      // If the frontend does not specify, check the environment variable SESSION_PERSISTENCE
+      // true => persistent session, false => sessionOnly
+      const envPersist = this.configService.get<string>('SESSION_PERSISTENCE');
+      sessionOnly = envPersist === 'false' || envPersist === '0';
+    }
+
     // Set session cookies
-    this.authenticationService.setAuthCookie(response, 'accessToken', accessToken, {
-      maxAge: 2 * 60 * 60 * 1000, // 2h
-    });
-    this.authenticationService.setAuthCookie(response, 'refreshToken', refreshToken, {
-      maxAge: 12 * 60 * 60 * 1000, // 12h
-    });
+    if (sessionOnly) {
+      // Session cookie: no maxAge/Expires
+      this.authenticationService.setAuthCookie(response, 'accessToken', accessToken);
+      this.authenticationService.setAuthCookie(response, 'refreshToken', refreshToken);
+      this.authenticationService.clearAuthCookie(response, 'sessionOnly');
+    } else {
+      // Persistent cookie (default)
+      this.authenticationService.setAuthCookie(response, 'accessToken', accessToken, {
+        maxAge: 2 * 60 * 60 * 1000, // 2h
+      });
+      this.authenticationService.setAuthCookie(response, 'refreshToken', refreshToken, {
+        maxAge: 12 * 60 * 60 * 1000, // 12h
+      });
+    }
 
     // Targeted cleanup of temporary cookies
     this.authenticationService.clearAuthCookie(response, 'state');
@@ -195,6 +217,11 @@ export class AuthenticationController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
+    // Permettre le logout via sendBeacon (Content-Type text/plain)
+    if (request.headers['content-type'] === 'text/plain') {
+      this.authenticationService.clearAllCookies(response);
+      return '';
+    }
     const decoded = request?.signedCookies?.refreshToken
       ? this.jwtService.decode(request.signedCookies.refreshToken)
       : undefined;
@@ -281,7 +308,7 @@ export class AuthenticationController {
         idToken: decoded?.idToken,
       });
 
-      // this.authenticationService.setAuthCookie(response, 'refreshToken', newRefreshToken);
+
       this.authenticationService.setAuthCookie(response, 'accessToken', accessToken, {
         maxAge: 2 * 60 * 60 * 1000, // 2h
       });
@@ -292,7 +319,8 @@ export class AuthenticationController {
       return { accessToken };
     } catch (error) {
       this.authenticationService.clearAllCookies(response);
-      throw new UnauthorizedException('Veuillez vous authentifier');
+      // On relance l'exception pour respecter le lint
+      throw error instanceof UnauthorizedException ? error : new UnauthorizedException('Veuillez vous authentifier');
     }
   }
 }
