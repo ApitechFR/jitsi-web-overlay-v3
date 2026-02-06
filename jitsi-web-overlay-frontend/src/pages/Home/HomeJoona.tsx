@@ -1,9 +1,8 @@
 
-import { Tooltip } from '@apitechfr/react-dsapitech/Tooltip'; // car pas de Tooltip dans le dsfr mais seulment dans dsapitech
 import { generateConferenceName, validateConferenceName } from '@/utils/conferenceName';
 import React, { useState, useRef, FormEvent, useEffect, useMemo } from 'react';
 import styles from './HomeJoona.module.css';
-import { Button, Input, Alert, createModal, useIsModalOpen, Badge } from '@ds';
+import { Button, Input, Alert, createModal, useIsModalOpen, Badge, Tooltip } from '@ds';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/auth/useAuth';
