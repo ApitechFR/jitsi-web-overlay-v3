@@ -5,6 +5,8 @@ import { ConferenceNameValidation } from '@/utils/conferenceName';
 
 import { AgentConnectButton, Input, Checkbox, Button } from "@ds";
 
+import { AgentConnectButton, Input, Checkbox, Button } from "@ds";
+
 interface ConferenceWaitingModalProps {
     modal: any;
     authenticated: boolean;
