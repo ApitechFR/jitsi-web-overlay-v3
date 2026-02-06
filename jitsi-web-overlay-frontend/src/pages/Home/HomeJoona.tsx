@@ -348,7 +348,13 @@ function HomeJoona(props: HomeJoonaProps) {
               kind="hover"
               title={t('homeModes.tooltip')}
             >
-              <i className="ri-question-line"></i>
+              <span
+                onClick={(e) => e.stopPropagation()}
+                role="button"
+                tabIndex={0}
+              >
+                <i className="ri-question-line" />
+              </span>
             </Tooltip>
           </div>
         )}
