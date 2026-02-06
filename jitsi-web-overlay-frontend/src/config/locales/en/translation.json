@@ -281,11 +281,11 @@
   },
   "recording": {
     "success": "Success!",
-    "successMessage": "The video for \"{{conferenceName}}\" has been successfully recorded.",
+    "successMessage": "The video for \"{conferenceName}\" has been successfully recorded.",
     "viewRecording": "View recording",
     "preparingVideo": "Preparing video recording",
     "error": "Error!",
-    "errorMessage": "An error occurred while recording the video for \"{{conferenceName}}\". Please contact support.",
+    "errorMessage": "An error occurred while recording the video for \"{conferenceName}\". Please contact support.",
     "generalError": "An error occurred while recording."
   }
 }
