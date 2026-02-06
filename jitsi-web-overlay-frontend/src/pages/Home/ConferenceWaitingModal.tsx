@@ -5,15 +5,13 @@ import { ConferenceNameValidation } from '@/utils/conferenceName';
 
 import { AgentConnectButton, Input, Checkbox, Button } from "@ds";
 
-import { AgentConnectButton, Input, Checkbox, Button } from "@ds";
-
 interface ConferenceWaitingModalProps {
     modal: any;
     authenticated: boolean;
     stopWaitingAndPoll: () => void;
     login: (roomName?: string) => void;
     conferenceName: string;
-    validateConferenceName: (name: string) => boolean;
+    validateConferenceName: (name: string) => ConferenceNameValidation;
     appTemplate: string;
 }
 
@@ -27,7 +25,6 @@ export const ConferenceWaitingModal: React.FC<ConferenceWaitingModalProps> = ({
     appTemplate
 }) => {
     const { t } = useTranslation();
-    const confNameValid = validateConferenceName(conferenceName);
     return (
         <modal.Component
             title=""
