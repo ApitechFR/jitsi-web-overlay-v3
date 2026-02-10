@@ -1,12 +1,10 @@
 import { useState, FormEvent, useEffect } from 'react';
 
-import { Badge, Button, Alert, Input } from '@ds';
+import { Badge, Button, Alert, Input, createModal, useIsModalOpen } from '@ds';
 
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import { useRuntimeConfig } from '@/config/ConfigProvider';
 
-import { createModal } from '@ds';
-import { useIsModalOpen } from '@codegouvfr/react-dsfr/Modal/useIsModalOpen';
 import ICalLink from 'react-icalendar-link';
 import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 
