@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './HomeJoona.module.css';
 import { useTranslation } from 'react-i18next';
 import { ConferenceNameValidation } from '@/utils/conferenceName';
 
-import { AgentConnectButton, Input, Checkbox, Button } from "@ds";
+import { AgentConnectButton, Input, Checkbox, Button, Badge } from "@ds";
 
 interface ConferenceWaitingModalProps {
     modal: any;
@@ -13,6 +13,11 @@ interface ConferenceWaitingModalProps {
     conferenceName: string;
     validateConferenceName: (name: string) => ConferenceNameValidation;
     appTemplate: string;
+    email: string;
+    isWhitelisted: boolean | null;
+    setEmail: (mail: string) => void;
+    sendEmail: (mail: string) => void;
+    setIsWhitelisted: (whitelisted: boolean | null) => void;
 }
 
 export const ConferenceWaitingModal: React.FC<ConferenceWaitingModalProps> = ({
@@ -22,9 +27,47 @@ export const ConferenceWaitingModal: React.FC<ConferenceWaitingModalProps> = ({
     login,
     conferenceName,
     validateConferenceName,
-    appTemplate
+    appTemplate,
+    email,
+    isWhitelisted,
+    setEmail,
+    sendEmail,
+    setIsWhitelisted
 }) => {
     const { t } = useTranslation();
+    const [isChecked, setIsChecked] = useState<boolean>(false);
+    const [msg, setMsg] = useState<string | null>('');
+    const [buttonMsg, setButtonMsg] = useState(
+        'Recevoir le code de vérification par email'
+    );
+
+    /** webconf **/
+    const onCheck = () => {
+        setIsChecked(!isChecked);
+    };
+
+    const agentConnect = (room: string) => {
+        login(room);
+    };
+
+     const mailchanger = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setEmail(e.target.value);
+    };
+
+    const mailSender = (roomName: string) => {
+        sendEmail(roomName);
+        setButtonMsg('Email non reçu ? Cliquez ici pour recevoir un nouvel email');
+    };
+
+     useEffect(() => {
+        setIsWhitelisted(null);
+
+        setEmail('');
+        setIsChecked(false);
+        setMsg(null);
+        setButtonMsg('Recevoir le code de vérification par email');
+    }, [setEmail, setIsWhitelisted]);
+
     return (
         <modal.Component
             title=""
@@ -42,11 +85,19 @@ export const ConferenceWaitingModal: React.FC<ConferenceWaitingModalProps> = ({
                 </div>
                 {appTemplate === 'webconf' && (
                     <>
-                        <AgentConnectButton url="https://google.fr" />
+                        <AgentConnectButton onClick={() => agentConnect(conferenceName)}  />
                         <div className={styles.modalInputBlock}>
                             <Input
-                            label={t('conferenceWaitingModal.emailLabel')}
-                            id="mailConnection"
+                                label={t('conferenceWaitingModal.emailLabel')}
+                                id="mailConnection"
+                                nativeInputProps={{
+                                    'aria-describedby': 'input3-desc-error',
+                                    'aria-labelledby': 'input3-desc-error',
+                                    id: 'input3',
+                                    value: email,
+                                    onChange: mailchanger,
+                                    required: true,
+                                }}
                             />
                             <Checkbox
                                 options={[
@@ -54,15 +105,31 @@ export const ConferenceWaitingModal: React.FC<ConferenceWaitingModalProps> = ({
                                         label: t('conferenceWaitingModal.rememberMe'),
                                         nativeInputProps: {
                                             name: 'checkboxes-1',
-                                            value: 'value1'
+                                            value: 'value1',
+                                            onChange: onCheck,
+                                            checked: isChecked,
                                         }
                                     }
                                 ]}
                                 state="default"
                             />
-                            <Button priority="primary" onClick={() => {}}>
+                            <Button priority="primary" onClick={() => mailSender(conferenceName)}>
                                 <span>{t('conferenceWaitingModal.receiveCode')}</span>
                             </Button>
+                            {/* {msg} */}
+                            {isWhitelisted === false && (
+                                <p>
+                                    <Badge severity="error">
+                                        votre adresse email n'est pas valide. Merci de saisir votre
+                                        adresse email professionelle.
+                                    </Badge>
+                                </p>
+                            )}
+                            {isWhitelisted === true && (
+                                <p>
+                                    <Badge severity="success">Message envoyé.</Badge>
+                                </p>
+                            )}
                         </div>
                     </>
                 )}
