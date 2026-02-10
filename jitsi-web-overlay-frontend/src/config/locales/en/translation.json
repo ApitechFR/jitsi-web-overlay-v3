@@ -234,7 +234,17 @@
       "input_room": "Enter your conference name",
       "copy_link": "Copy link",
       "success_copy_link": "Link copied successfully !",
-      "schedule_button": "Schedule a meeting"
+      "schedule_button": "Schedule a meeting",
+      "calendarModal": {
+        "invitation": "Generate an invitation",
+        "start_date": "Start date",
+        "duration": "Duration",
+        "phone_details": "Phone details of the conference",
+        "phone_number": "Phone number",
+        "pin": "Conference code",
+        "add_button": "Add to calendar",
+        "copy_button": "Copy"
+      }
     },
     "webinar": {
       "title": "Join a webinar",
