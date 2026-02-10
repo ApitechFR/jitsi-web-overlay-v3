@@ -93,8 +93,8 @@ export const configValidationSchema = joi.object({
   LDAP_URL: joi.string().uri({ scheme: ['ldap', 'ldaps'] }).optional().messages({
     'string.uri': 'LDAP_URL doit commencer par "ldap://" ou "ldaps://"',
   }),
-  LDAP_BIND_DN: joi.string().optional(),
-  LDAP_PASSWORD: joi.string().optional(),
-  LDAP_BASE_DN: joi.string().optional(),
+  LDAP_BIND_DN: joi.string().allow('', null).optional(),
+  LDAP_PASSWORD: joi.string().allow('', null).optional(),
+  LDAP_BASE_DN: joi.string().allow('', null).optional(),
 
 });
