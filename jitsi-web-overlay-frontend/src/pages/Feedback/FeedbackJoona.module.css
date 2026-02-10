@@ -27,6 +27,11 @@
   animation: slideUpFade 0.8s ease-out;
 }
 
+.noResize textarea {
+    width: 50%;
+    resize: none;
+}
+
 .alertContainer :global(.fr-alert) {
     background-color: #ffffffb5;
 }
