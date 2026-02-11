@@ -64,7 +64,24 @@
     "notStartedMessage": {
       "part1": "If you have a ",
       "part2": " account you can authenticate, otherwise please wait. You will be connected automatically when it starts."
-    }
+    },
+    "organizerTitle": "Are you the meeting organizer?",
+    "organizerMessage": {
+      "part1": "We need to verify your identity to create the conference ",
+      "part2": "."
+    },
+    "inviteeTitle": "Are you invited to the meeting?",
+    "inviteeMessage": {
+      "part1": "The conference ",
+      "part2": " has not been created yet. You can stay on this page while waiting for the organizer to start the meeting."
+    },
+    "loginLabel": "Log in with your professional account:",
+    "emailLabel": "Or enter your professional email address: ",
+    "rememberMe": "Remember me on this device",
+    "receiveCode": "Receive a verification code by email",
+    "emailNotReceived": "Email not received? Click here to receive a new email",
+    "emailNotValid": "Your email address is not valid. Please enter your professional email address.",
+    "messageSent": "Message sent."
   },
   "webinarInvite": {
     "invalidLink": "Invalid invitation link.",

@@ -48,7 +48,7 @@ function HomeJoona(props: HomeJoonaProps) {
 
   const isValidConferenceName = (name: string) => validateConferenceName(name);
 
-  const { authenticated, login } = useAuth();
+  const { authenticated, login, email, setEmail } = useAuth();
   const { t } = useTranslation();
 
   // pour intercepter toute fermeture de modal
@@ -304,6 +304,12 @@ function HomeJoona(props: HomeJoonaProps) {
         login={login}
         conferenceName={props.conferenceName}
         validateConferenceName={validateConferenceName}
+        appTemplate={AppTemplate}
+        email={email}
+        isWhitelisted={props.isWhitelisted}
+        setEmail={setEmail}
+        sendEmail={props.sendEmail}
+        setIsWhitelisted={props.setIsWhitelisted}
       />
 
       <div className={styles.firstContainer}>
