@@ -36,9 +36,8 @@ export const ConferenceWaitingModal: React.FC<ConferenceWaitingModalProps> = ({
 }) => {
     const { t } = useTranslation();
     const [isChecked, setIsChecked] = useState<boolean>(false);
-    const [msg, setMsg] = useState<string | null>('');
     const [buttonMsg, setButtonMsg] = useState(
-        'Recevoir le code de vérification par email'
+        t('conferenceWaitingModal.receiveCode')
     );
 
     /** webconf **/
@@ -50,29 +49,28 @@ export const ConferenceWaitingModal: React.FC<ConferenceWaitingModalProps> = ({
         login(room);
     };
 
-     const mailchanger = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const mailchanger = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEmail(e.target.value);
     };
 
     const mailSender = (roomName: string) => {
         sendEmail(roomName);
-        setButtonMsg('Email non reçu ? Cliquez ici pour recevoir un nouvel email');
+        setButtonMsg(t('conferenceWaitingModal.emailNotReceived'));
     };
 
-     useEffect(() => {
+    useEffect(() => {
         setIsWhitelisted(null);
-
         setEmail('');
         setIsChecked(false);
-        setMsg(null);
-        setButtonMsg('Recevoir le code de vérification par email');
-    }, [setEmail, setIsWhitelisted]);
+        setButtonMsg(t('conferenceWaitingModal.receiveCode'));
+    }, [setEmail, setIsWhitelisted, t]);
 
     return (
         <modal.Component
             title=""
             concealingBackdrop={false}
             className={styles.conferenceWaitingModal}
+            apitechCustomCloseText={t('modal.close')}
         >
             <div className={styles.enterModal}>
                 <div className={styles.modalMessage}>
@@ -85,7 +83,7 @@ export const ConferenceWaitingModal: React.FC<ConferenceWaitingModalProps> = ({
                 </div>
                 {appTemplate === 'webconf' && (
                     <>
-                        <AgentConnectButton onClick={() => agentConnect(conferenceName)}  />
+                        <AgentConnectButton onClick={() => agentConnect(conferenceName)} />
                         <div className={styles.modalInputBlock}>
                             <Input
                                 label={t('conferenceWaitingModal.emailLabel')}
@@ -114,20 +112,18 @@ export const ConferenceWaitingModal: React.FC<ConferenceWaitingModalProps> = ({
                                 state="default"
                             />
                             <Button priority="primary" onClick={() => mailSender(conferenceName)}>
-                                <span>{t('conferenceWaitingModal.receiveCode')}</span>
+                                <span>{buttonMsg}</span>
                             </Button>
-                            {/* {msg} */}
                             {isWhitelisted === false && (
                                 <p>
                                     <Badge severity="error">
-                                        votre adresse email n'est pas valide. Merci de saisir votre
-                                        adresse email professionelle.
+                                        {t('conferenceWaitingModal.emailNotValid')}
                                     </Badge>
                                 </p>
                             )}
                             {isWhitelisted === true && (
                                 <p>
-                                    <Badge severity="success">Message envoyé.</Badge>
+                                    <Badge severity="success">{t('conferenceWaitingModal.messageSent')}</Badge>
                                 </p>
                             )}
                         </div>

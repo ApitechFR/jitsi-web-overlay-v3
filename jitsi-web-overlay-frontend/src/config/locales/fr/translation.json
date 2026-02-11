@@ -78,7 +78,10 @@
         "loginLabel": "Se connecter avec votre compte professionnel",
         "emailLabel": "Ou saissez votre adresse email professionnelle : ",
         "rememberMe": "Se souvenir de moi",
-        "receiveCode": "Recevoir le code de vérification par email"
+        "receiveCode": "Recevoir le code de vérification par email",
+        "emailNotReceived": "Email non reçu ? Cliquez ici pour recevoir un nouvel email",
+        "emailNotValid": "votre adresse email n'est pas valide. Merci de saisir votre adresse email professionelle.",
+        "messageSent": "Message envoyé."
       },
       "webinarInvite": {
         "invalidLink": "Lien d’invitation invalide.",

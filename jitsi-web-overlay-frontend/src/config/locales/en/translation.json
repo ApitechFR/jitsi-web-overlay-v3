@@ -78,7 +78,10 @@
     "loginLabel": "Log in with your professional account:",
     "emailLabel": "Or enter your professional email address: ",
     "rememberMe": "Remember me on this device",
-    "receiveCode": "Receive a verification code by email"
+    "receiveCode": "Receive a verification code by email",
+    "emailNotReceived": "Email not received? Click here to receive a new email",
+    "emailNotValid": "Your email address is not valid. Please enter your professional email address.",
+    "messageSent": "Message sent."
   },
   "webinarInvite": {
     "invalidLink": "Invalid invitation link.",
