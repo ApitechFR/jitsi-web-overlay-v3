@@ -56,13 +56,6 @@ export default function HeaderJoona() {
     ? (cfg.VITE_APP_FAQ_URL_FR as string) || '/doc/Documentation_utilisateur_Visio_By_Apitech_FR.pdf'
     : (cfg.VITE_APP_FAQ_URL_EN as string) || '/doc/Documentation_utilisateur_Visio_By_Apitech_EN.pdf';
 
-  console.log({
-    language: i18n.language,
-    resolvedLanguage: i18n.resolvedLanguage,
-    isFrench,
-    faqUrl,
-  });
-
   const openPdf = () => {
     window.open(faqUrl, '_blank', 'noopener,noreferrer');
   };
