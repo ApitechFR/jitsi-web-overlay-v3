@@ -257,13 +257,13 @@ function VisioMode(props: VisioModeProps) {
             }}
           />
         </p>
-        {/* {voxApiUrl && phoneNumber && pin && ( */}
+        {voxApiUrl && phoneNumber && pin && (
           <>
             <h6>{t('homeModes.visio.calendarModal.phone_details')} :</h6>
             <p>- {t('homeModes.visio.calendarModal.phone_number')} : {phoneNumber}</p>
             <p>- {t('homeModes.visio.calendarModal.pin')} : {`${pin}#`}</p>
           </>
-        {/* )} */}
+        )}
         <Snackbar
           open={open}
           autoHideDuration={6000}

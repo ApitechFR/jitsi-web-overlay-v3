@@ -26,6 +26,7 @@ import { AutomationModule } from './automation/automation.module';
 import { LdapModule } from './providers/directory-provider/ldap/ldap.module';
 import { OidcModule } from './providers/directory-provider/oidc/oidc.module';
 import { WebinarModule } from './webinar/webinar.module';
+import { VoxifyModule } from './voxify/voxify.module';
 
 
 @Module({
@@ -96,6 +97,7 @@ import { WebinarModule } from './webinar/webinar.module';
     LdapModule,
     OidcModule,
     WebinarModule,
+    VoxifyModule,
   ],
   controllers: [AppController],
   providers: [AppService, RoomNameValidator],
