@@ -144,25 +144,38 @@ function HomeJoona(props: HomeJoonaProps) {
     if (st.prefillRoomName) {
       const nm = st.prefillRoomName.trim();
       props.setConferenceName(nm);
-      setIsError(!validateConferenceName(nm));
+      setIsError(!validateConferenceName(nm).isValidConfName);
       setTimeout(() => inputRef.current?.focus(), 0);
-      navigate('.', { replace: true, state: {} });
+      // Nettoie APRÈS que le state soit mis à jour
+      setTimeout(() => navigate('.', { replace: true, state: {} }), 0);
+      return;
     }
 
     if (st.waitForRoom) {
       const target = st.waitForRoom;
-      if (props.conferenceName !== target) props.setConferenceName(target);
+      props.setConferenceName(target);
+      // Lance le polling qui va ouvrir la modal si la conf n'a pas démarré
       runFirstCheckThenMaybeWait(target);
-      navigate('.', { replace: true, state: {} });
+      // Nettoie APRÈS que le state soit mis à jour
+      setTimeout(() => navigate('.', { replace: true, state: {} }), 0);
+      return;
     }
+  }, [location.state, navigate, props.setConferenceName, runFirstCheckThenMaybeWait]);
 
-    if (st.openAuthModal && !authenticated) {
-      const target = st.waitForRoom ?? props.conferenceName;
-      if (target && target !== props.conferenceName) props.setConferenceName(target);
-      runFirstCheckThenMaybeWait(target);
-      navigate('.', { replace: true, state: {} });
+  // Après authentification, redémarre le polling avec la conférence sauvegardée
+  useEffect(() => {
+    if (authenticated) {
+      const roomFromStorage = sessionStorage.getItem('pendingConferenceName');
+      if (roomFromStorage) {
+        props.setConferenceName(roomFromStorage);
+        // Petit délai pour être sûr que le state est mis à jour
+        setTimeout(() => {
+          runFirstCheckThenMaybeWait(roomFromStorage);
+          sessionStorage.removeItem('pendingConferenceName');
+        }, 0);
+      }
     }
-  }, [location.state, authenticated, navigate, props.conferenceName, props.setConferenceName]);
+  }, [authenticated, props.setConferenceName, runFirstCheckThenMaybeWait]);
 
   const onCopyLink = () => {
     if (!props.conferenceName || !isValidConferenceName(props.conferenceName).isValidConfName) return;
@@ -354,13 +367,13 @@ function HomeJoona(props: HomeJoonaProps) {
               kind="hover"
               title={t('homeModes.tooltip')}
             >
-              <span
+              <button
                 onClick={(e) => e.stopPropagation()}
-                role="button"
-                tabIndex={0}
+                type="button"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
               >
                 <i className="ri-question-line" />
-              </span>
+              </button>
             </Tooltip>
           </div>
         )}

@@ -2,6 +2,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { ReactNode } from 'react';
 import { useAuth } from './useAuth';
 import CircularProgress from '@mui/material/CircularProgress';
+import { validateConferenceName } from '@/utils/conferenceName';
 
 export default function PrivateRoute({ children }: { children: ReactNode }) {
   const { authenticated, status } = useAuth();
@@ -27,11 +28,20 @@ export default function PrivateRoute({ children }: { children: ReactNode }) {
     }
 
     // Sinon: redirection habituelle vers la Home
+    // Valide le nom de la conférence avant de rediriger
+    const isValidRoom = waitForRoom && validateConferenceName(waitForRoom).isValidConfName;
+
     return (
       <Navigate
         to="/"
         replace
-        state={{ from: location, ...(waitForRoom ? { waitForRoom } : {}), openAuthModal: true }}
+        state={{
+          from: location,
+          // Si le nom est valide, on lance le polling (waitForRoom)
+          // Si invalide, on pré-remplit le champ avec le nom invalide (prefillRoomName)
+          ...(isValidRoom ? { waitForRoom } : waitForRoom && { prefillRoomName: waitForRoom }),
+          openAuthModal: isValidRoom,
+        }}
       />
     );
   }
