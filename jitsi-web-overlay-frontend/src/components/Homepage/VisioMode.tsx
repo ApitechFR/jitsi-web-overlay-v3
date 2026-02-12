@@ -58,16 +58,11 @@ function VisioMode(props: VisioModeProps) {
 
   const startDate = new Date(dateTimeStart);
 
-  const dateTimeEnd = new Date(
-    startDate.getTime() + (hours * 60 + minutes) * 60000
-  );
+  const dateTimeEnd = new Date(startDate.getTime() + (hours * 60 + minutes) * 60000);
 
   const formattedEnd = formatForInput(dateTimeEnd);
 
-  const handleClose = (
-    event: Event | React.SyntheticEvent<any, Event>,
-    reason: SnackbarCloseReason
-  ) => {
+  const handleClose = (event: Event | React.SyntheticEvent<any, Event>, reason: SnackbarCloseReason) => {
     if (reason === 'clickaway') {
       return;
     }
@@ -89,19 +84,13 @@ function VisioMode(props: VisioModeProps) {
     setOpen(true);
   };
 
-
   useEffect(() => {
     if (isOpen && voxApiUrl && cfg.VITE_JITSI_DOMAIN && roomName) {
-      VoxifyService.getConferenceCode(roomName)
-        .then(setPin)
-        .catch(console.error);
-    }
-  }, [roomName, isOpen]);
-
-  useEffect(() => {
-    if (isOpen && voxApiUrl && cfg.VITE_JITSI_DOMAIN && roomName) {
-      VoxifyService.getPhoneNumbers(roomName)
-        .then(setPhoneNumber)
+      VoxifyService.getConferenceInfo(roomName)
+        .then(({ pin, phone }) => {
+          setPin(pin);
+          setPhoneNumber(phone);
+        })
         .catch(console.error);
     }
   }, [roomName, isOpen]);

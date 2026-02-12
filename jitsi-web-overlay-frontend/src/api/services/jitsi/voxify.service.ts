@@ -19,5 +19,14 @@ export const VoxifyService = {
     });
 
     return response.data.numbers.FR[0];
+  },
+
+  async getConferenceInfo(roomName: string) {
+    const [pin, phone] = await Promise.all([
+      VoxifyService.getConferenceCode(roomName),
+      VoxifyService.getPhoneNumbers(roomName)
+    ]);
+
+    return { pin, phone };
   }
 };
