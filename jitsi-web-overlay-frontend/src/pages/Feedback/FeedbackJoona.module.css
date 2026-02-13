@@ -28,7 +28,6 @@
 }
 
 .noResize textarea {
-    width: 50%;
     resize: none;
 }
 
