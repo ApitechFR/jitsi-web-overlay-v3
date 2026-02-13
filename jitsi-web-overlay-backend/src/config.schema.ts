@@ -102,4 +102,15 @@ export const configValidationSchema = joi.object({
     'boolean.base': 'MULTI_TENANT_MODE doit être true ou false',
   }),
 
+  // RESELLER (Encryption Keys)
+  ENCRYPTION_KEY: joi
+    .string()
+    .length(64)
+    .hex()
+    .optional()
+    .messages({
+      'string.hex': 'ENCRYPTION_KEY doit être hexadécimal',
+      'string.length': 'ENCRYPTION_KEY doit faire exactement 64 caractères (32 bytes)',
+    }),
+
 });

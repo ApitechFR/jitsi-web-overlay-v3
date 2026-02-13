@@ -24,45 +24,45 @@ import { v4 as uuidv4 } from 'uuid';
  */
 @Injectable()
 export class TenantContext {
-  private clientId: string | null = null;
+    private clientId: string | null = null;
 
-  /**
-   * Assigne le client_id actuel du contexte de la requête
-   * @param clientId UUID du client, ou null pour mode single-tenant
-   */
-  setClientId(clientId: string | null): void {
-    this.clientId = clientId;
-  }
+    /**
+     * Assigne le client_id actuel du contexte de la requête
+     * @param clientId UUID du client, ou null pour mode single-tenant
+     */
+    setClientId(clientId: string | null): void {
+        this.clientId = clientId;
+    }
 
-  /**
-   * Récupère le client_id actuel du contexte
-   * @returns UUID du client, ou null si aucun client défini
-   */
-  getClientId(): string | null {
-    return this.clientId;
-  }
+    /**
+     * Récupère le client_id actuel du contexte
+     * @returns UUID du client, ou null si aucun client défini
+     */
+    getClientId(): string | null {
+        return this.clientId;
+    }
 
-  /**
-   * Vérifie si un client_id est défini dans le contexte
-   * @returns true si un client_id a été assigné, false sinon
-   */
-  hasClientId(): boolean {
-    return this.clientId !== null;
-  }
+    /**
+     * Vérifie si un client_id est défini dans le contexte
+     * @returns true si un client_id a été assigné, false sinon
+     */
+    hasClientId(): boolean {
+        return this.clientId !== null;
+    }
 
-  /**
-   * Vide le contexte (appeler après la requête)
-   */
-  clear(): void {
-    this.clientId = null;
-  }
+    /**
+     * Vide le contexte (appeler après la requête)
+     */
+    clear(): void {
+        this.clientId = null;
+    }
 
-  /**
-   * Génère un nouvel UUID v4 pour client_id
-   * Le UUID est utilisé comme identifiant public du client
-   * @returns UUID v4
-   */
-  generateClientId(): string {
-    return uuidv4();
-  }
+    /**
+     * Génère un nouvel UUID v4 pour client_id
+     * Le UUID est utilisé comme identifiant public du client
+     * @returns UUID v4
+     */
+    generateClientId(): string {
+        return uuidv4();
+    }
 }
