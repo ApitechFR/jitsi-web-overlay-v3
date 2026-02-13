@@ -56,6 +56,40 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
     cleanupExpiredGuests();
   }, []);
 
+  // Listen for Jitsi iframe postMessage errors (including authenticationRequired)
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      // Only process messages that might be from Jitsi
+      if (typeof event.data === 'string') {
+        try {
+          const data = JSON.parse(event.data);
+          if (data?.error === 'conference.authenticationRequired' ||
+            data?.name === 'conference.authenticationRequired') {
+            navigate('/', {
+              replace: true,
+              state: { waitForRoom: conferenceName, openAuthModal: true },
+            });
+          }
+        } catch {
+          // Not JSON, ignore
+        }
+      } else if (typeof event.data === 'object' && event.data !== null) {
+        const data = event.data;
+        if (data?.error === 'conference.authenticationRequired' ||
+          data?.name === 'conference.authenticationRequired' ||
+          data?.data?.error === 'conference.authenticationRequired' ||
+          data?.data?.name === 'conference.authenticationRequired') {
+          navigate('/', {
+            replace: true,
+            state: { waitForRoom: conferenceName, openAuthModal: true },
+          });
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [conferenceName, navigate]);
 
   const onClose = () => {
     navigate('/feedback', { state: { room: conferenceName } });
@@ -119,6 +153,20 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
         if (handlersRegisteredRef.current) return;
         handlersRegisteredRef.current = true;
 
+        // Handle authentication errors - redirect to home with modal
+        const onConferenceFailed = (event: any) => {
+          const errorName = event?.error?.name || event?.error || event?.errorType || event;
+          if (errorName === 'conference.authenticationRequired') {
+            navigate('/', {
+              replace: true,
+              state: { waitForRoom: conferenceName, openAuthModal: true },
+            });
+          }
+        };
+        // Listen to multiple possible event names
+        (api as JitsiApiLike).on('conferenceFailed', onConferenceFailed);
+        (api as JitsiApiLike).on('errorOccurred', onConferenceFailed);
+
         // End call
         const onReadyToClose = async () => {
           try {
@@ -141,12 +189,13 @@ const JitsiMeetingView: React.FC<Props> = ({ domain, conferenceName, jwt, displa
         (api as JitsiApiLike).on('readyToClose', onReadyToClose);
         (api as JitsiApiLike).on('videoConferenceJoined', onJoined);
 
-        // Best-effort cleanup if the API supports off()
-        // (we cannot guarantee this callback will be called again at unmount, but it's better than nothing)
+        // Cleanup listeners when API is disposed
         const tryCleanup = () => {
           if ((api as JitsiApiLike).off) {
             (api as JitsiApiLike).off!('readyToClose', onReadyToClose);
             (api as JitsiApiLike).off!('videoConferenceJoined', onJoined);
+            (api as JitsiApiLike).off!('conferenceFailed', onConferenceFailed);
+            (api as JitsiApiLike).off!('errorOccurred', onConferenceFailed);
           }
         };
 
