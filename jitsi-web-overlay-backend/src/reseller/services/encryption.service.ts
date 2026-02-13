@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { createCipheriv, createDecipheriv, randomBytes, createSecretKey, createHash } from 'node:crypto';
+import { createCipheriv, createDecipheriv, randomBytes, createSecretKey, createHash } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 
 /**
@@ -62,18 +62,6 @@ export class EncryptionService {
      * @param plaintext Secret en texte brut
      * @returns Chaîne chiffrée au format: IV(hex)$AUTHTAG(hex)$CIPHERTEXT(hex)
      */
-    // encrypt(plaintext: string): string {
-    //     const iv = randomBytes(this.IV_LENGTH);
-    //     const cipher = createCipheriv(this.ALGORITHM, this.encryptionKey, iv);
-
-    //     let encrypted = cipher.update(plaintext, 'utf8', 'hex');
-    //     encrypted += cipher.final('hex');
-
-    //     const authTag = cipher.getAuthTag();
-
-    //     // Format: iv$authTag$ciphertext (tous en hex)
-    //     return `${iv.toString('hex')}$${authTag.toString('hex')}$${encrypted}`;
-    // }
     encrypt(plaintext: string): string {
         const iv = randomBytes(this.IV_LENGTH);
 
@@ -97,40 +85,6 @@ export class EncryptionService {
      * @returns Secret en texte brut
      * @throws Erreur si format invalide ou authentification échoue
      */
-    // decrypt(encrypted: string): string {
-    //     try {
-    //         const parts = encrypted.split('$');
-    //         if (parts.length !== 3) {
-    //             throw new Error('Format de chaîne chiffrée invalide');
-    //         }
-
-    //         const [ivHex, authTagHex, ciphertextHex] = parts;
-
-    //         const iv = Buffer.from(ivHex, 'hex');
-    //         const authTag = Buffer.from(authTagHex, 'hex');
-    //         const ciphertext = Buffer.from(ciphertextHex, 'hex');
-
-    //         // Valider les longueurs
-    //         if (iv.length !== this.IV_LENGTH) {
-    //             throw new Error(`IV invalide: length ${iv.length}, esperé ${this.IV_LENGTH}`);
-    //         }
-    //         if (authTag.length !== this.AUTH_TAG_LENGTH) {
-    //             throw new Error(
-    //                 `AuthTag invalide: length ${authTag.length}, esperé ${this.AUTH_TAG_LENGTH}`,
-    //             );
-    //         }
-
-    //         const decipher = createDecipheriv(this.ALGORITHM, this.encryptionKey, iv);
-    //         decipher.setAuthTag(authTag);
-
-    //         const decryptedPart1 = decipher.update(ciphertext);
-    //         const decryptedPart2 = decipher.final();
-
-    //         return Buffer.concat([decryptedPart1, decryptedPart2]).toString('utf8');
-    //     } catch (error) {
-    //         throw new Error(`Déchiffrement échoué: ${error.message}`);
-    //     }
-    // }
     decrypt(encrypted: string): string {
         try {
             const parts = encrypted.split('$');
