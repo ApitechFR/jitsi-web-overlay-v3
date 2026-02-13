@@ -26,6 +26,7 @@ import { AutomationModule } from './automation/automation.module';
 import { LdapModule } from './providers/directory-provider/ldap/ldap.module';
 import { OidcModule } from './providers/directory-provider/oidc/oidc.module';
 import { WebinarModule } from './webinar/webinar.module';
+import { CommonModule } from './common/common.module';
 
 
 @Module({
@@ -84,6 +85,7 @@ import { WebinarModule } from './webinar/webinar.module';
       envFilePath: `.env.${process.env.NODE_ENV}`,
       validationSchema: configValidationSchema,
     }),
+    CommonModule,
     AuthenticationModule,
     ConferenceModule,
     StatsModule,

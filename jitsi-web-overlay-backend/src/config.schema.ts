@@ -97,4 +97,9 @@ export const configValidationSchema = joi.object({
   LDAP_PASSWORD: joi.string().allow('', null).optional(),
   LDAP_BASE_DN: joi.string().allow('', null).optional(),
 
+  // MULTI-TENANT (Optional Feature)
+  MULTI_TENANT_MODE: joi.boolean().default(false).optional().messages({
+    'boolean.base': 'MULTI_TENANT_MODE doit être true ou false',
+  }),
+
 });
