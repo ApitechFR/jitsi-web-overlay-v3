@@ -31,7 +31,7 @@ function StarRating({ rating, changeRating }: StarRatingProps) {
                 height="48"
                 fill={isFilled ? "#6f6f6fff" : "none"}
                 stroke="#6f6f6fff"
-                strokeWidth="1"
+                strokeWidth={isFilled ? 2 : 1}
               >
                 <use xlinkHref="#star" />
               </svg>
