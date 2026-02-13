@@ -186,6 +186,18 @@
   gap: 10px;
 }
 
+.calendarModalButtons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  vertical-align: middle;
+  justify-content: space-between;
+}
+
+.modalButton {
+  border-radius: 50px 10px 50px 50px;
+}
+
 
 /*****************************/
 
