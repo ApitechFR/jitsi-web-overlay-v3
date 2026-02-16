@@ -257,7 +257,10 @@ function VisioMode(props: VisioModeProps) {
           open={open}
           autoHideDuration={6000}
           onClose={handleClose}
-          anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+          sx={{
+            bottom: '10px !important'
+          }}
         >
           <Alert severity="success" title={t('homeModes.visio.success_copy_link')} description="" small />
         </Snackbar>
