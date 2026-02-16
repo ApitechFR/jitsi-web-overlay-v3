@@ -18,7 +18,7 @@ export class CreateOffersTable1770996550 implements MigrationInterface {
             type: 'varchar',
             length: '50',
             isUnique: true,
-            comment: 'BASIQUE or PREMIUM',
+            comment: 'BASIC or PREMIUM',
           },
           {
             name: 'name',

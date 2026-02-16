@@ -262,7 +262,7 @@ export class ClientService {
       throw new BadRequestException(`Offer type ${toOffer} not found`);
     }
 
-    // Simple validation: BASIQUE -> PREMIUM is upgrade, others check offer priorities
+    // Simple validation: BASIC-> PREMIUM is upgrade, others check offer priorities
     if (client.offerType === OfferType.PREMIUM) {
       throw new BadRequestException(
         'Cannot upgrade from PREMIUM offer',
@@ -316,10 +316,10 @@ export class ClientService {
       throw new BadRequestException(`Offer type ${toOffer} not found`);
     }
 
-    // Simple validation: PREMIUM -> BASIQUE is downgrade
-    if (client.offerType === OfferType.BASIQUE) {
+    // Simple validation: PREMIUM -> BASIC is downgrade
+    if (client.offerType === OfferType.BASIC) {
       throw new BadRequestException(
-        'Cannot downgrade from BASIQUE offer',
+        'Cannot downgrade from BASIC offer',
       );
     }
 

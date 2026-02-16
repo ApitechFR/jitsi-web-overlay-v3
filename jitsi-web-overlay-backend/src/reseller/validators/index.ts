@@ -95,11 +95,11 @@ export class IsValidOfferTypeConstraint implements ValidatorConstraintInterface 
         // return !!offer;
 
         // Pour maintenant, vérifier contre enum
-        return ['basique', 'premium'].includes(value);
+        return ['basic', 'premium'].includes(value);
     }
 
     defaultMessage(args: ValidationArguments): string {
-        return `offerType "${args.value}" n'existe pas. Valeurs acceptées: basique, premium`;
+        return `offerType "${args.value}" n'existe pas. Valeurs acceptées: basic, premium`;
     }
 }
 

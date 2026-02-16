@@ -4,6 +4,6 @@
  * - PREMIUM: Modules étendue (webinar, replay, recording, voxify) + personnalisation activée
  */
 export enum OfferType {
-    BASIQUE = 'BASIQUE',
-    PREMIUM = 'PREMIUM',
+    BASIC = 'basic',
+    PREMIUM = 'premium',
 }

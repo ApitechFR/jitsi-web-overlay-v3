@@ -29,7 +29,7 @@ export class CreateClientsTable1770996551 implements MigrationInterface {
             name: 'offer_type',
             type: 'varchar',
             length: '50',
-            comment: 'BASIQUE or PREMIUM',
+            comment: 'BASIC or PREMIUM',
           },
           {
             name: 'offer_id',
