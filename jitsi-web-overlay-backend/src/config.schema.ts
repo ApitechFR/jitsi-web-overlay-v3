@@ -113,4 +113,12 @@ export const configValidationSchema = joi.object({
       'string.length': 'ENCRYPTION_KEY doit faire exactement 64 caractères (32 bytes)',
     }),
 
+  // API Key Bootstrap
+  BOOTSTRAP_SECRET: joi
+    .string()
+    .optional()
+    .messages({
+      'string.base': 'BOOTSTRAP_SECRET doit être une chaîne de caractères',
+    }),
+
 });

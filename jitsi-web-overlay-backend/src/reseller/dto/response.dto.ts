@@ -17,6 +17,21 @@ export class ClientResponseDto {
         appName?: string;
     };
     modules: ModuleKey[];
+    authConfig?: {
+        type: 'oidc';
+        oidcUrl?: string;
+        oidcClientId?: string;
+        ldapUrl?: string;
+        ldapBindDn?: string;
+        ldapBaseDn?: string;
+    };
+    limits?: {
+        maxParticipants?: number;
+        replayRetentionDays?: number;
+    };
+    stats?: {
+        usersCount: number;
+    };
     isActive: boolean;
     createdAt: Date;
     updatedAt: Date;
@@ -29,10 +44,11 @@ export class ClientResponseDto {
 export class ClientSummaryDto {
     uid: string;
     name: string;
+    domains: string[];
     offerType: OfferType;
+    usersCount: number;
     isActive: boolean;
     createdAt: Date;
-    moduleCount: number;
 }
 
 /**

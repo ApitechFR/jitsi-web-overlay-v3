@@ -8,8 +8,8 @@ import {
 } from 'class-validator';
 
 /**
- * Validateur pour vérifier qu'un domaine n'est utilisé que par 1 client
- * (TODO: Injecter ClientRepository pour vérifier en BD)
+ * Validator to check that a domain is used by only 1 client
+ *  (TODO: Injecter ClientRepository pour vérifier en BD)
  */
 @ValidatorConstraint({ name: 'isUniqueDomain', async: true })
 @Injectable()
@@ -28,8 +28,11 @@ export class IsUniqueDomainConstraint implements ValidatorConstraintInterface {
     }
 }
 
+
 /**
- * Décorateur pour valider l'unicité d'un domaine
+ * Decorator to validate that a domain is unique (not used by another client)
+ * @param validationOptions 
+ * @returns 
  */
 export function IsUniqueDomain(validationOptions?: ValidationOptions) {
     return function (target: Object, propertyName: string) {
@@ -43,26 +46,29 @@ export function IsUniqueDomain(validationOptions?: ValidationOptions) {
     };
 }
 
+
 /**
- * Validateur pour format d'email domain
- * Acceptable: "uni-paris.fr", "example.co.uk", etc.
+ * Validator for email domain format
+ * Acceptable: "apitech.fr", "subdomain.apitech.fr"
  * Format: word chars/hyphens (not dots) + dot + word chars/hyphens (not dots) + ... + TLD (2-6 chars)
  */
 @ValidatorConstraint({ name: 'isValidEmailDomain' })
 export class IsValidEmailDomainConstraint implements ValidatorConstraintInterface {
-  validate(value: string): boolean {
-    // Format: [word-]+ . [word-]+ . ... . [a-z]{2,6}
-    // No leading/trailing dots, no consecutive dots, no spaces
-    return /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*\.[a-z]{2,6}$/i.test(value);
-  }
+    validate(value: string): boolean {
+        // Format: [word-]+ . [word-]+ . ... . [a-z]{2,6}
+        // No leading/trailing dots, no consecutive dots, no spaces
+        return /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*\.[a-z]{2,6}$/i.test(value);
+    }
 
-  defaultMessage(): string {
-    return 'domaine doit être un format valide (ex: "uni-paris.fr")';
-  }
+    defaultMessage(): string {
+        return 'domaine doit être un format valide (ex: "apitech.fr")';
+    }
 }
 
 /**
- * Décorateur pour valider le format d'un email domain
+ * Decorator to validate email domain format
+ * @param validationOptions 
+ * @returns 
  */
 export function IsValidEmailDomain(validationOptions?: ValidationOptions) {
     return function (target: Object, propertyName: string) {
@@ -77,7 +83,7 @@ export function IsValidEmailDomain(validationOptions?: ValidationOptions) {
 }
 
 /**
- * Validateur pour l'existence d'une offre
+ * Validator for offer existence
  * (TODO: Injecter OfferRepository pour vérifier en BD)
  */
 @ValidatorConstraint({ name: 'isValidOfferType', async: true })
@@ -89,16 +95,19 @@ export class IsValidOfferTypeConstraint implements ValidatorConstraintInterface 
         // return !!offer;
 
         // Pour maintenant, vérifier contre enum
-        return ['BASIQUE', 'PREMIUM'].includes(value);
+        return ['basique', 'premium'].includes(value);
     }
 
     defaultMessage(args: ValidationArguments): string {
-        return `offerType "${args.value}" n'existe pas. Valeurs acceptées: BASIQUE, PREMIUM`;
+        return `offerType "${args.value}" n'existe pas. Valeurs acceptées: basique, premium`;
     }
 }
 
+
 /**
- * Décorateur pour valider une offre existante
+ * Decorator to validate that an offer type exists
+ * @param validationOptions 
+ * @returns 
  */
 export function IsValidOfferType(validationOptions?: ValidationOptions) {
     return function (target: Object, propertyName: string) {

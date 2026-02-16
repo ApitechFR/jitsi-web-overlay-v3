@@ -8,19 +8,19 @@ import { AuthConfigDto, CustomizationDto } from './shared.dto';
  */
 export class CreateClientDto {
     @IsString()
-    @IsNotEmpty({ message: 'name est requis' })
+    @IsNotEmpty({ message: 'name is required' })
     @MaxLength(255)
     name: string;
 
-    @IsEnum(OfferType, { message: `offerType doit être l'un de: ${Object.values(OfferType).join(', ')}` })
-    @IsNotEmpty({ message: 'offerType est requis' })
+    @IsEnum(OfferType, { message: 'offerType must be one of: basic, premium' })
+    @IsNotEmpty({ message: 'offerType is required' })
     offerType: OfferType;
 
     @IsOptional()
     @IsArray()
     @Matches(/^[\w.-]+\.[a-z]{2,}$/i, {
         each: true,
-        message: 'Chaque domaine doit être un email domain valide (ex: "apitech.fr")',
+        message: 'Each domain must be a valid email domain (e.g. "apitech.fr")',
     })
     domains?: string[];
 
@@ -48,7 +48,7 @@ export class UpdateClientDto {
     @IsArray()
     @Matches(/^[\w.-]+\.[a-z]{2,}$/i, {
         each: true,
-        message: 'Chaque domaine doit être un email domain valide (ex: "apitech.fr")',
+        message: 'Each domain must be a valid email domain (e.g. "apitech.fr")',
     })
     domains?: string[];
 
@@ -67,6 +67,10 @@ export class UpdateClientDto {
  *  Upgrade offer DTO (BASIC → PREMIUM)
  */
 export class UpgradeClientDto {
+    @IsEnum(OfferType, { message: 'toOffer must be one of: basic, premium' })
+    @IsNotEmpty({ message: 'toOffer is required' })
+    toOffer: OfferType;
+
     @IsOptional()
     effectiveDate?: Date;
 
@@ -80,15 +84,19 @@ export class UpgradeClientDto {
  *  Downgrade offer DTO (PREMIUM → BASIC)
  */
 export class DowngradeClientDto {
+    @IsEnum(OfferType, { message: 'toOffer must be one of: basic, premium' })
+    @IsNotEmpty({ message: 'toOffer is required' })
+    toOffer: OfferType;
+
     @IsOptional()
     effectiveDate?: Date;
 
     @IsOptional()
-    deleteReplays?: boolean = false;
+    deleteReplays?: boolean;
 
     @IsOptional()
-    deleteRecordings?: boolean = false;
+    deleteRecordings?: boolean;
 
     @IsOptional()
-    exportStats?: boolean = false;
+    exportStats?: boolean;
 }

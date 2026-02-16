@@ -1,5 +1,4 @@
-import { IsString, IsOptional, IsEmail, IsEnum, ValidateNested, IsArray } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsString, IsOptional, IsEnum } from 'class-validator';
 
 /**
  * Authentification configuration for a client
