@@ -81,7 +81,7 @@ export class ClientService {
     if (offerModules && offerModules.length > 0) {
       const clientModules = offerModules.map((moduleKey) => {
         const mod = new ClientModule();
-        mod.client = savedClient;
+        mod.clientId = savedClient.id;
         mod.moduleKey = moduleKey;
         mod.enabled = true;
         return mod;
@@ -146,21 +146,59 @@ export class ClientService {
 
   /**
    * Find clients with pagination, scoped to reseller
+   * Supports filtering by offerType, isActive, and search (name/domain)
    */
   async findClientsByReseller(
     resellerId: string,
     pagination: PaginationDto,
   ): Promise<{ data: Client[]; total: number }> {
-    const { page = 1, limit = 20 } = pagination;
+    const { page = 1, limit = 20, offerType, isActive, search } = pagination;
     const skip = (page - 1) * limit;
 
-    const [clients, total] = await this.clientRepository.findAndCount({
-      where: { resellerId, isActive: true },
-      relations: ['offer', 'modules', 'domains', 'customization'],
-      skip,
-      take: limit,
-      order: { createdAt: 'DESC' },
-    });
+    // Build where conditions
+    const where: any = { resellerId };
+
+    // Filter by offerType if provided
+    if (offerType) {
+      where.offerType = offerType;
+    }
+
+    // Filter by isActive if provided (default: true)
+    if (isActive === undefined) {
+      where.isActive = true; // Default: only active clients
+    } else {
+      where.isActive = isActive;
+    }
+
+    const query = this.clientRepository
+      .createQueryBuilder('client')
+      .where('client.resellerId = :resellerId', { resellerId })
+      .andWhere('client.isActive = :isActive', { isActive: where.isActive });
+
+    // Add offerType filter if provided
+    if (offerType) {
+      query.andWhere('client.offerType = :offerType', { offerType });
+    }
+
+    // Add search filter (name or domain) if provided
+    if (search) {
+      query.leftJoinAndSelect('client.domains', 'domains')
+        .andWhere('(client.name LIKE :search OR domains.domainName LIKE :search)', {
+          search: `%${search}%`,
+        });
+    } else {
+      query.leftJoinAndSelect('client.domains', 'domains');
+    }
+
+    query
+      .leftJoinAndSelect('client.offer', 'offer')
+      .leftJoinAndSelect('client.modules', 'modules')
+      .leftJoinAndSelect('client.customization', 'customization')
+      .skip(skip)
+      .take(limit)
+      .orderBy('client.createdAt', 'DESC');
+
+    const [clients, total] = await query.getManyAndCount();
 
     return { data: clients, total };
   }

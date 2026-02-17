@@ -5,6 +5,7 @@ import {
     UnauthorizedException,
     Logger,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ApiKeyService } from '../services/api-key.service';
 import { ApiKeyRepository } from '../repositories/api-key.repository';
 
@@ -14,6 +15,13 @@ import { ApiKeyRepository } from '../repositories/api-key.repository';
  * 
  * Usage: @UseGuards(ApiKeyGuard)
  * Ou globalement: app.useGlobalGuards(new ApiKeyGuard(...))
+ * 
+ * Mode DEV (NODE_ENV=development):
+ * - Accepte BOOTSTRAP_SECRET directement (pratique pour les tests)
+ * - Accepte aussi les clés générées et hashées en BD
+ * 
+ * Mode PROD (NODE_ENV!=development):
+ * - Validé UNIQUEMENT contre les clés hashées en BD
  * 
  * Vérifie:
  * - Présence du header x-api-key
@@ -25,11 +33,15 @@ import { ApiKeyRepository } from '../repositories/api-key.repository';
 export class ApiKeyGuard implements CanActivate {
     private readonly logger = new Logger(ApiKeyGuard.name);
     private readonly RESELLER_ID = 'reseller-1'; // Seul revendeur du systeme
+    private readonly isDevelopment: boolean;
 
     constructor(
         private readonly apiKeyService: ApiKeyService,
         private readonly apiKeyRepository: ApiKeyRepository,
-    ) { }
+        private readonly configService: ConfigService,
+    ) {
+        this.isDevelopment = this.configService.get<string>('NODE_ENV') === 'development';
+    }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest();
@@ -45,6 +57,18 @@ export class ApiKeyGuard implements CanActivate {
         if (!this.apiKeyService.isValidApiKeyFormat(apiKey)) {
             this.logger.warn(`API Key format is invalid: ${apiKey.substring(0, 8)}...`);
             throw new UnauthorizedException('API Key format is invalid');
+        }
+
+        // Mode DEV: accepter BOOTSTRAP_SECRET directement
+        if (this.isDevelopment) {
+            const bootstrapSecret = this.configService.get<string>('BOOTSTRAP_SECRET');
+            if (bootstrapSecret && apiKey === bootstrapSecret) {
+                this.logger.debug(
+                    `API Key validated via BOOTSTRAP_SECRET (Dev mode): ${apiKey.substring(0, 8)}...`,
+                );
+                request.resellerId = this.RESELLER_ID;
+                return true;
+            }
         }
 
         // Valider contra la BD via ApiKeyRepository
@@ -65,7 +89,7 @@ export class ApiKeyGuard implements CanActivate {
         }
 
         this.logger.debug(
-            `API Key validated: ${apiKey.substring(0, 8)}... (reseller: ${this.RESELLER_ID})`,
+            `API Key validated via database: ${apiKey.substring(0, 8)}... (reseller: ${this.RESELLER_ID})`,
         );
 
         // Injecter reseller_id dans la request

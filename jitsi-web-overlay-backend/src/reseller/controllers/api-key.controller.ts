@@ -35,6 +35,12 @@ export class ApiKeyController {
             );
         }
 
+        if (!bootstrapSecret) {
+            throw new UnauthorizedException(
+                'Bootstrap secret missing in header (x-bootstrap-secret)',
+            );
+        }
+
         // Comparaison temps constant
         if (!this.constantTimeCompare(bootstrapSecret, expectedSecret)) {
             throw new UnauthorizedException('Invalid bootstrap secret');

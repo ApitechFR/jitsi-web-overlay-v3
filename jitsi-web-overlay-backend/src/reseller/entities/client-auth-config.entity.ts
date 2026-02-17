@@ -16,14 +16,15 @@ export class ClientAuthConfig {
   @JoinColumn({ name: 'client_id' })
   client: Client;
 
-  @Column({ type: 'enum', enum: ['oidc'] })
-  type: 'oidc';
+  @Column({ type: 'enum', enum: ['oidc'], nullable: true })
+  type?: 'oidc';
 
   @Column({
     type: 'json',
+    nullable: true,
     comment: 'Encrypted config - contains URL, clientId, clientSecret, etc.',
   })
-  config: Record<string, any>;
+  config?: Record<string, any>;
 
   @CreateDateColumn()
   createdAt: Date;

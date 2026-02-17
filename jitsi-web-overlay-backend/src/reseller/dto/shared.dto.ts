@@ -5,10 +5,11 @@ import { IsString, IsOptional, IsEnum } from 'class-validator';
  * Supports OIDC authentication
  */
 export class AuthConfigDto {
+    @IsOptional()
     @IsEnum(['oidc'], {
-        message: "Type must be 'oidc'",
+        message: "Type must be 'oidc' if provided",
     })
-    type: 'oidc';
+    type?: 'oidc';
 
     // OIDC fields
     @IsOptional()
@@ -84,4 +85,11 @@ export class PaginationDto {
     @IsOptional()
     @IsString()
     search?: string;
+
+    @IsOptional()
+    @IsString()
+    offerType?: string;
+
+    @IsOptional()
+    isActive?: boolean;
 }

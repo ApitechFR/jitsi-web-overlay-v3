@@ -3,6 +3,7 @@ import { Type } from 'class-transformer';
 import { OfferType } from '../enums/offer-type.enum';
 import { AuthConfigDto, CustomizationDto } from './shared.dto';
 import { IsValidEmailDomain } from '../validators';
+import { TransformDomainArray } from '../transformers/domain-array.transformer';
 
 /**
  * DTO for domain validation
@@ -33,8 +34,8 @@ export class CreateClientDto {
 
     @IsOptional()
     @IsArray()
+    @TransformDomainArray()
     @ValidateNested({ each: true })
-    @Type(() => DomainDto)
     domains?: DomainDto[];
 
     @IsOptional()
@@ -59,8 +60,8 @@ export class UpdateClientDto {
 
     @IsOptional()
     @IsArray()
+    @TransformDomainArray()
     @ValidateNested({ each: true })
-    @Type(() => DomainDto)
     domains?: DomainDto[];
 
     @IsOptional()

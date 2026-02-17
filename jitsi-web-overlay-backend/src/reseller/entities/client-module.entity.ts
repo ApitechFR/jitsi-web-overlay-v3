@@ -15,6 +15,9 @@ export class ClientModule {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ name: 'client_id' })
+  clientId: number;
+
   @ManyToOne(() => Client, (client) => client.modules, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'client_id' })
   client: Client;

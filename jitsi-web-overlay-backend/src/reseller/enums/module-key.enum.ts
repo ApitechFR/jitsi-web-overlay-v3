@@ -20,8 +20,8 @@ export enum ModuleKey {
  * Mapping of offer types to included modules
  */
 export const OFFER_MODULES = {
-    BASIC: [ModuleKey.VISIO_JITSI, ModuleKey.FEEDBACK],
-    PREMIUM: [
+    basic: [ModuleKey.VISIO_JITSI, ModuleKey.FEEDBACK],
+    premium: [
         ModuleKey.VISIO_JITSI,
         ModuleKey.FEEDBACK,
         ModuleKey.WEBINAR,

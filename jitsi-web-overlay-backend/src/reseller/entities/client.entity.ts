@@ -25,6 +25,7 @@ import { ModuleKey } from '../enums/module-key.enum';
 @Entity('clients')
 @Index(['resellerId', 'isActive'])
 @Index(['createdAt'])
+@Index(['resellerId', 'name'], { unique: true })
 export class Client {
     @PrimaryGeneratedColumn()
     id: number;
