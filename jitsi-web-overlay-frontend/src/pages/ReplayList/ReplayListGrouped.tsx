@@ -4,7 +4,7 @@ import { useApi, ReplayService } from '@/api';
 import styles from './ReplayList.module.css';
 import CircularProgress from '@mui/material/CircularProgress';
 import Button from '@codegouvfr/react-dsfr/Button';
-import { formatDate } from '@/utils/date';
+import { formatReplayDate } from '@/utils/date';
 import type { Replay } from '@/api';
 
 
@@ -60,7 +60,7 @@ const ReplayListGrouped: React.FC = () => {
                             {replays.map((replay) => (
                                 <div className={styles.replayRow} key={replay.id}>
                                     <div className={styles.filename}>{replay.uid}</div>
-                                    <div className={styles.date}>{formatDate(replay.updated_at)}</div>
+                                    <div className={styles.date}>{formatReplayDate(replay.created_at, replay.updated_at)}</div>
                                     <Button
                                         className={styles.downloadButton}
                                         priority="primary"
