@@ -10,7 +10,7 @@ import { ModuleKey } from '../enums/module-key.enum';
  */
 @Entity('client_modules')
 @Unique(['client', 'moduleKey'])
-@Index(['clientId', 'enabled'])
+@Index(['client', 'enabled'])
 export class ClientModule {
   @PrimaryGeneratedColumn()
   id: number;
@@ -18,9 +18,6 @@ export class ClientModule {
   @ManyToOne(() => Client, (client) => client.modules, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'client_id' })
   client: Client;
-
-  @Column()
-  clientId: number;
 
   @Column({ type: 'enum', enum: ModuleKey })
   moduleKey: ModuleKey;

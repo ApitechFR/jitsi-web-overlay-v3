@@ -42,12 +42,9 @@ export class Client {
     resellerId?: string;
 
     // Relations
-    @ManyToOne(() => Offer, { eager: true })
+    @ManyToOne(() => Offer, { eager: true, nullable: true })
     @JoinColumn({ name: 'offer_id' })
     offer?: Offer;
-
-    @Column()
-    offerId: number;
 
     @OneToOne(() => ClientCustomization, (custom) => custom.client, { nullable: true, cascade: true })
     customization?: ClientCustomization;

@@ -16,11 +16,8 @@ export class ClientAuthConfig {
   @JoinColumn({ name: 'client_id' })
   client: Client;
 
-  @Column()
-  clientId: number;
-
-  @Column({ type: 'enum', enum: ['oidc', 'ldap', 'local'] })
-  type: 'oidc' | 'ldap' | 'local';
+  @Column({ type: 'enum', enum: ['oidc'] })
+  type: 'oidc';
 
   @Column({
     type: 'json',

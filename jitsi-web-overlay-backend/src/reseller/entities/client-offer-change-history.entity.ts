@@ -9,7 +9,7 @@ import { OfferType } from '../enums/offer-type.enum';
  * Status: pending (scheduled), applied (executed), cancelled (cancelled) 
  */
 @Entity('client_offer_changes_history')
-@Index(['clientId', 'status'])
+@Index(['client', 'status'])
 @Index(['effectiveDate'])
 export class ClientOfferChangeHistory {
   @PrimaryGeneratedColumn()
@@ -18,9 +18,6 @@ export class ClientOfferChangeHistory {
   @ManyToOne(() => Client, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'client_id' })
   client: Client;
-
-  @Column()
-  clientId: number;
 
   @Column({ type: 'enum', enum: OfferType })
   fromOffer: OfferType;

@@ -16,9 +16,6 @@ export class ClientCustomization {
   @JoinColumn({ name: 'client_id' })
   client: Client;
 
-  @Column()
-  clientId: number;
-
   @Column({ nullable: true, comment: 'Primary logo (URL or base64)' })
   logo?: string;
 

@@ -34,6 +34,7 @@ export class CreateClientsTable1770996551 implements MigrationInterface {
           {
             name: 'offer_id',
             type: 'int',
+            isNullable: true,
           },
           {
             name: 'reseller_id',
