@@ -6,7 +6,7 @@ import {
     Logger,
 } from '@nestjs/common';
 import { ApiKeyService } from '../services/api-key.service';
-import { TenantContext } from '../../common/context/tenant.context';
+import { ApiKeyRepository } from '../repositories/api-key.repository';
 
 /**
  * Guard pour valider les clés API des revendeurs
@@ -18,16 +18,17 @@ import { TenantContext } from '../../common/context/tenant.context';
  * Vérifie:
  * - Présence du header x-api-key
  * - Format valide (64 chars hex)
- * - Hash correspond à une clé en BD (TODO: via ApiKeyRepository)
- * - Extrait reseller_id et l'injecte dans request.resellerId
+ * - Hash correspond à une clé en BD (via ApiKeyRepository)
+ * - Injecte reseller_id dans request.resellerId
  */
 @Injectable()
 export class ApiKeyGuard implements CanActivate {
     private readonly logger = new Logger(ApiKeyGuard.name);
+    private readonly RESELLER_ID = 'reseller-1'; // Seul revendeur du systeme
 
     constructor(
-        private apiKeyService: ApiKeyService,
-        private tenantContext: TenantContext,
+        private readonly apiKeyService: ApiKeyService,
+        private readonly apiKeyRepository: ApiKeyRepository,
     ) { }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -36,32 +37,39 @@ export class ApiKeyGuard implements CanActivate {
         // Extraire le header x-api-key
         const apiKey = this.extractApiKeyFromHeader(request);
         if (!apiKey) {
-            this.logger.warn('API Key manquante dans header x-api-key');
-            throw new UnauthorizedException('API Key manquante (header: x-api-key)');
+            this.logger.warn('API Key is missing from x-api-key header');
+            throw new UnauthorizedException('API Key is required in x-api-key header');
         }
 
         // Valider le format de la clé (64 chars hex)
         if (!this.apiKeyService.isValidApiKeyFormat(apiKey)) {
-            this.logger.warn(`Format de clé API invalide: ${apiKey.substring(0, 8)}...`);
-            throw new UnauthorizedException('Format de clé API invalide');
+            this.logger.warn(`API Key format is invalid: ${apiKey.substring(0, 8)}...`);
+            throw new UnauthorizedException('API Key format is invalid');
         }
 
-        // TODO: Valider contra la BD via ApiKeyRepository
-        // const apiKeyRecord = await this.apiKeyRepository.findByKeyHash(...)
-        // if (!apiKeyRecord) { throw new UnauthorizedException(...) }
+        // Valider contra la BD via ApiKeyRepository
+        // Chercher toutes les clés (peu nombreuses) et valider le hash
+        const apiKeyRecords = await this.apiKeyRepository.findAll();
+        let isValidKey = false;
 
-        // Pour maintenant, accepter toute clé au format valide
-        // En production, il faudra vérifier contra la BD
+        for (const record of apiKeyRecords) {
+            if (this.apiKeyService.validateApiKey(apiKey, record.keyHash)) {
+                isValidKey = true;
+                break;
+            }
+        }
+
+        if (!isValidKey) {
+            this.logger.warn(`Invalid API Key: ${apiKey.substring(0, 8)}...`);
+            throw new UnauthorizedException('Invalid API Key');
+        }
+
         this.logger.debug(
-            `API Key validée (format OK): ${apiKey.substring(0, 8)}...`,
+            `API Key validated: ${apiKey.substring(0, 8)}... (reseller: ${this.RESELLER_ID})`,
         );
 
-        // TODO: Extraire reseller_id depuis apiKeyRecord
-        // request.resellerId = apiKeyRecord.resellerId;
-        // this.tenantContext.setResellerId(apiKeyRecord.resellerId);
-
-        // Placeholder: utiliser un ID statique pour le dev
-        request.resellerId = 'dev-reseller-1';
+        // Injecter reseller_id dans la request
+        request.resellerId = this.RESELLER_ID;
 
         return true;
     }

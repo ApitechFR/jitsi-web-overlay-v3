@@ -6,41 +6,43 @@ import {
     ValidationOptions,
     ValidationArguments,
 } from 'class-validator';
+import { ClientDomainRepository } from '../repositories/client-domain.repository';
 
 /**
  * Validator to check that a domain is used by only 1 client
- *  (TODO: Injecter ClientRepository pour vérifier en BD)
+ * Injects ClientDomainRepository for database verification
  */
 @ValidatorConstraint({ name: 'isUniqueDomain', async: true })
 @Injectable()
 export class IsUniqueDomainConstraint implements ValidatorConstraintInterface {
-    async validate(value: string, args: ValidationArguments): Promise<boolean> {
-        // TODO: Injecter ClientRepository
-        // const existing = await this.clientRepository.findByDomain(value, excludeClientId);
-        // return !existing;
+    constructor(private readonly clientDomainRepository: ClientDomainRepository) { }
 
-        // Pour maintenant, passer (implémenté en BD via UNIQUE INDEX)
-        return true;
+    async validate(value: string, args: ValidationArguments): Promise<boolean> {
+        // Extract optional clientId from constraints (for update operations)
+        const clientId = args.constraints?.[0];
+
+        // Check if domain is unique
+        return this.clientDomainRepository.isUnique(value, clientId);
     }
 
     defaultMessage(args: ValidationArguments): string {
-        return `Domaine "${args.value}" est déjà utilisé par un autre client`;
+        return `Domain "${args.value}" is already used by another client. Each client must have a unique domain.`;
     }
 }
 
-
 /**
  * Decorator to validate that a domain is unique (not used by another client)
+ * @param excludeClientId Optional: exclude a specific client ID (useful for updates)
  * @param validationOptions 
  * @returns 
  */
-export function IsUniqueDomain(validationOptions?: ValidationOptions) {
+export function IsUniqueDomain(excludeClientId?: number, validationOptions?: ValidationOptions) {
     return function (target: Object, propertyName: string) {
         registerDecorator({
             target: target.constructor,
             propertyName: propertyName,
             options: validationOptions,
-            constraints: [],
+            constraints: excludeClientId ? [excludeClientId] : [],
             validator: IsUniqueDomainConstraint,
         });
     };
@@ -61,7 +63,7 @@ export class IsValidEmailDomainConstraint implements ValidatorConstraintInterfac
     }
 
     defaultMessage(): string {
-        return 'domaine doit être un format valide (ex: "apitech.fr")';
+        return 'domain must be a valid format (e.g.,   "apitech.fr")';
     }
 }
 
@@ -99,7 +101,7 @@ export class IsValidOfferTypeConstraint implements ValidatorConstraintInterface 
     }
 
     defaultMessage(args: ValidationArguments): string {
-        return `offerType "${args.value}" n'existe pas. Valeurs acceptées: basic, premium`;
+        return `offerType "${args.value}" is not a valid offer type. Accepted values: basic, premium`;
     }
 }
 

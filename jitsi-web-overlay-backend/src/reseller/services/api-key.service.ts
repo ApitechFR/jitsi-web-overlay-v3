@@ -80,6 +80,17 @@ export class ApiKeyService {
     }
 
     /**
+     * Validate that an API key has the correct format
+     * Should be 64 characters hex (32 bytes * 2)
+     * @param apiKey API key to validate
+     * @returns true if format is valid, false otherwise
+     */
+    isValidApiKeyFormat(apiKey: string): boolean {
+        // Should be exactly 64 hex characters (32 bytes)
+        return /^[a-f0-9]{64}$/i.test(apiKey);
+    }
+
+    /**
      * Generate and store an API key
      *  Returns the API key in plaintext (only once!)
      */

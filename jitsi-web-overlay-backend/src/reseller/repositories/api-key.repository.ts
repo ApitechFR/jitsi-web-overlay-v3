@@ -32,4 +32,11 @@ export class ApiKeyRepository {
     async findById(id: number): Promise<ApiKey | null> {
         return this.repository.findOne({ where: { id } });
     }
+
+    /**
+     * Find all API keys (should be only a few)
+     */
+    async findAll(): Promise<ApiKey[]> {
+        return this.repository.find();
+    }
 }
