@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { randomBytes, pbkdf2Sync, timingSafeEqual } from 'node:crypto';
+import { ApiKeyRepository } from '../repositories/api-key.repository';
+import { ApiKeyResponseDto } from '../dto/api-key.dto';
 
 /**
- * Service pour gérer les clés API des revendeurs
- * - Hachage PBKDF2 (iterations: 100000)
- * - Génération aléatoire
- * - Validation constant-time
+ * Manage API keys for resellers
+ * - Generate unique API keys
+ * - Hash with PBKDF2
+ * - Store only the hash (never the raw key)
+ * - Validate keys in constant time to prevent timing attacks
  */
 @Injectable()
 export class ApiKeyService {
@@ -14,10 +17,12 @@ export class ApiKeyService {
     private readonly DIGEST = 'sha256';
     private readonly SALT_LENGTH = 16;
 
+    constructor(private readonly apiKeyRepository: ApiKeyRepository) { }
+
     /**
-     * Hache une clé API en utilisant PBKDF2
-     * @param apiKey Clé API en texte brut
-     * @returns Hash au format: iterations$salt$hash
+     * Hash  a plaintext API key using PBKDF2
+     * @param apiKey API key in plaintext
+     * @returns Hash string in the format: iterations$salt$derivedKey
      */
     hashApiKey(apiKey: string): string {
         const salt = randomBytes(this.SALT_LENGTH).toString('hex');
@@ -33,11 +38,11 @@ export class ApiKeyService {
     }
 
     /**
-     * Valide une clé API contre son hash en temps constant
-     * Prévient timing attacks
-     * @param apiKey Clé API en texte brut
-     * @param hash Hash PBKDF2 stocké en BD
-     * @returns true si valide, false sinon
+     * Validate a plaintext API key against a stored hash
+     * Performs a constant-time comparison to prevent timing attacks
+     * @param apiKey API key in plaintext
+     * @param hash PBKDF2 hash stored in DB
+     * @returns true if valid, false otherwise
      */
     validateApiKey(apiKey: string, hash: string): boolean {
         try {
@@ -56,7 +61,7 @@ export class ApiKeyService {
                 this.DIGEST,
             ).toString('hex');
 
-            // Comparaison constant-time pour éviter timing attacks
+            // Constante-time comparison to prevent timing attacks
             return timingSafeEqual(
                 new Uint8Array(Buffer.from(derivedKey)),
                 new Uint8Array(Buffer.from(storedHash)),
@@ -67,21 +72,35 @@ export class ApiKeyService {
     }
 
     /**
-     * Génère une nouvelle clé API aléatoire (format: 32 caractères hex)
-     * À être stockée EN HASH en BD, jamais en texte brut
-     * @returns Clé API aléatoire (32 bytes = 64 chars hex)
+     * Generate a random API key (plaintext)
+     * @returns A new API key in plaintext
      */
     generateApiKey(): string {
         return randomBytes(32).toString('hex');
     }
 
     /**
-     * Valide le format d'une clé API (64 caractères hexadécimaux)
-     * À appeler avant de hacher/valider
-     * @param apiKey Clé à valider
-     * @returns true si format valide
+     * Generate and store an API key
+     *  Returns the API key in plaintext (only once!)
      */
-    isValidApiKeyFormat(apiKey: string): boolean {
-        return /^[a-f0-9]{64}$/.test(apiKey);
+    async generateAndStoreApiKey(): Promise<ApiKeyResponseDto> {
+        // Generate a new API key in plaintext
+        const apiKey = this.generateApiKey();
+
+        // Hash the API key for secure storage
+        const keyHash = this.hashApiKey(apiKey);
+
+        // Store the hash in the database (never store the plaintext key)
+        const apiKeyRecord = await this.apiKeyRepository.create({
+            keyHash,
+        });
+
+        // Return the plaintext API key to the caller (only once!)
+        return {
+            id: apiKeyRecord.id,
+            apiKey,
+            createdAt: apiKeyRecord.createdAt,
+            message: 'WARNING: This API key will only be shown once. Please store it securely. It cannot be retrieved again.',
+        };
     }
 }

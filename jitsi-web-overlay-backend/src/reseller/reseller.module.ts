@@ -8,7 +8,6 @@ import { ClientService } from './services/client.service';
 import { OfferService } from './services/offer.service';
 import { OfferChangeService } from './services/offer-change.service';
 import { ClientController, OfferController } from './controllers/client.controller';
-import { PublicOfferController } from './controllers/public-offer.controller';
 import { OfferChangeController } from './controllers/offer-change.controller';
 import { ApiKeyController } from './controllers/api-key.controller';
 import { ApiKeyRepository } from './repositories/api-key.repository';
@@ -41,7 +40,7 @@ import {
       ClientOfferChangeHistory,
     ]),
   ],
-  controllers: [ClientController, OfferController, PublicOfferController, OfferChangeController, ApiKeyController],
+  controllers: [ClientController, OfferController, OfferChangeController, ApiKeyController],
   providers: [
     ApiKeyService,
     EncryptionService,
