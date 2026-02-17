@@ -9,8 +9,8 @@ describe('Client DTOs', () => {
         it('should validate a valid CreateClientDto', async () => {
             const dto = plainToClass(CreateClientDto, {
                 name: 'Test Client',
-                offerType: OfferType.BASIQUE,
-                domains: ['example.fr'],
+                offerType: OfferType.BASIC,
+                domains: [{ domain: 'example.fr' }],
             });
 
             const errors = await validate(dto);
@@ -19,7 +19,7 @@ describe('Client DTOs', () => {
 
         it('should fail if name is missing', async () => {
             const dto = plainToClass(CreateClientDto, {
-                offerType: OfferType.BASIQUE,
+                offerType: OfferType.BASIC,
             });
 
             const errors = await validate(dto);
@@ -30,7 +30,7 @@ describe('Client DTOs', () => {
         it('should fail if name exceeds max length', async () => {
             const dto = plainToClass(CreateClientDto, {
                 name: 'a'.repeat(256),
-                offerType: OfferType.BASIQUE,
+                offerType: OfferType.BASIC,
             });
 
             const errors = await validate(dto);
@@ -51,7 +51,7 @@ describe('Client DTOs', () => {
             const dto = plainToClass(CreateClientDto, {
                 name: 'Test Client',
                 offerType: OfferType.PREMIUM,
-                domains: ['valid.fr', 'another.com'],
+                domains: [{ domain: 'valid.fr' }, { domain: 'another.com' }],
             });
 
             const errors = await validate(dto);
@@ -61,8 +61,8 @@ describe('Client DTOs', () => {
         it('should fail if domain format is invalid', async () => {
             const dto = plainToClass(CreateClientDto, {
                 name: 'Test Client',
-                offerType: OfferType.BASIQUE,
-                domains: ['invalid_domain'],
+                offerType: OfferType.BASIC,
+                domains: [{ domain: 'invalid_domain' }],
             });
 
             const errors = await validate(dto);
@@ -74,7 +74,7 @@ describe('Client DTOs', () => {
         it('should validate a valid UpdateClientDto', async () => {
             const dto = plainToClass(UpdateClientDto, {
                 name: 'Updated Name',
-                domains: ['updated.fr'],
+                domains: [{ domain: 'updated.fr' }],
             });
 
             const errors = await validate(dto);

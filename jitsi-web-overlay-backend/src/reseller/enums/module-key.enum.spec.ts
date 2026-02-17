@@ -18,22 +18,22 @@ describe('ModuleKey Enum', () => {
 });
 
 describe('OFFER_MODULES Config', () => {
-  it('should have BASIQUE offer with 2 modules', () => {
-    expect(OFFER_MODULES.BASIQUE).toHaveLength(2);
-    expect(OFFER_MODULES.BASIQUE).toContain(ModuleKey.VISIO_JITSI);
-    expect(OFFER_MODULES.BASIQUE).toContain(ModuleKey.FEEDBACK);
+  it('should have BASIC offer with 2 modules', () => {
+    expect(OFFER_MODULES.basic).toHaveLength(2);
+    expect(OFFER_MODULES.basic).toContain(ModuleKey.VISIO_JITSI);
+    expect(OFFER_MODULES.basic).toContain(ModuleKey.FEEDBACK);
   });
 
   it('should have PREMIUM offer with 7 modules', () => {
-    expect(OFFER_MODULES.PREMIUM).toHaveLength(7);
-    expect(OFFER_MODULES.PREMIUM).toContain(ModuleKey.WEBINAR);
-    expect(OFFER_MODULES.PREMIUM).toContain(ModuleKey.REPLAY);
-    expect(OFFER_MODULES.PREMIUM).toContain(ModuleKey.RECORDING);
-    expect(OFFER_MODULES.PREMIUM).toContain(ModuleKey.WHITEBOARD);
+    expect(OFFER_MODULES.premium).toHaveLength(7);
+    expect(OFFER_MODULES.premium).toContain(ModuleKey.WEBINAR);
+    expect(OFFER_MODULES.premium).toContain(ModuleKey.REPLAY);
+    expect(OFFER_MODULES.premium).toContain(ModuleKey.RECORDING);
+    expect(OFFER_MODULES.premium).toContain(ModuleKey.WHITEBOARD);
   });
 
   it('should include core modules in both offers', () => {
-    expect(OFFER_MODULES.BASIQUE).toContain(ModuleKey.VISIO_JITSI);
-    expect(OFFER_MODULES.PREMIUM).toContain(ModuleKey.VISIO_JITSI);
+    expect(OFFER_MODULES.basic).toContain(ModuleKey.VISIO_JITSI);
+    expect(OFFER_MODULES.premium).toContain(ModuleKey.VISIO_JITSI);
   });
 });

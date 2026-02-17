@@ -46,14 +46,14 @@ describe('Email Domain Validator', () => {
 describe('OfferType Validator', () => {
   const validator = new IsValidOfferTypeConstraint();
 
-  it('should validate BASIQUE and PREMIUM', async () => {
-    expect(await validator.validate('BASIQUE' as any)).toBe(true);
+  it('should validate BASIC and PREMIUM', async () => {
+    expect(await validator.validate('BASIC' as any)).toBe(true);
     expect(await validator.validate('PREMIUM' as any)).toBe(true);
   });
 
   it('should reject invalid offer types', async () => {
     expect(await validator.validate('INVALID' as any)).toBe(false);
-    expect(await validator.validate('basique' as any)).toBe(false);
+    expect(await validator.validate('basic' as any)).toBe(false);
   });
 
   it('should have proper error message', () => {
@@ -63,12 +63,34 @@ describe('OfferType Validator', () => {
 });
 
 describe('Unique Domain Validator', () => {
-  const validator = new IsUniqueDomainConstraint();
+  let mockClientDomainRepository: any;
+  let validator: IsUniqueDomainConstraint;
 
-  it('should always return true (TODO: implement DB check)', async () => {
-    // Placeholder: implement when ClientRepository is available
-    const result = await validator.validate('any-domain.fr' as any, {} as any);
+  beforeEach(() => {
+    mockClientDomainRepository = {
+      isUnique: jest.fn().mockResolvedValue(true),
+    };
+    validator = new IsUniqueDomainConstraint(mockClientDomainRepository);
+  });
+
+  it('should return true if domain is unique', async () => {
+    mockClientDomainRepository.isUnique.mockResolvedValue(true);
+    const result = await validator.validate('new-domain.fr' as any, {} as any);
     expect(result).toBe(true);
+  });
+
+  it('should return false if domain is already used', async () => {
+    mockClientDomainRepository.isUnique.mockResolvedValue(false);
+    const result = await validator.validate('existing-domain.fr' as any, {} as any);
+    expect(result).toBe(false);
+  });
+
+  it('should pass clientId to repository for exclusion', async () => {
+    const clientId = 123;
+    mockClientDomainRepository.isUnique.mockResolvedValue(true);
+    await validator.validate('domain.fr' as any, { constraints: [clientId] } as any);
+
+    expect(mockClientDomainRepository.isUnique).toHaveBeenCalledWith('domain.fr', clientId);
   });
 
   it('should have proper error message', () => {
