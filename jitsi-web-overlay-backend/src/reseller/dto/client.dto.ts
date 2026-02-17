@@ -2,6 +2,21 @@ import { IsString, IsNotEmpty, IsOptional, IsArray, MaxLength, Matches, Validate
 import { Type } from 'class-transformer';
 import { OfferType } from '../enums/offer-type.enum';
 import { AuthConfigDto, CustomizationDto } from './shared.dto';
+import { IsValidEmailDomain } from '../validators';
+
+/**
+ * DTO for domain validation
+ * Allows validation of both format and uniqueness
+ */
+export class DomainDto {
+    @IsString()
+    @IsNotEmpty({ message: 'domain is required' })
+    @IsValidEmailDomain()
+    @Matches(/^[\w.-]+\.[a-z]{2,}$/i, {
+        message: 'Domain must be a valid email domain (e.g. "apitech.fr")',
+    })
+    domain: string;
+}
 
 /**
  * Create client DTO
@@ -18,11 +33,9 @@ export class CreateClientDto {
 
     @IsOptional()
     @IsArray()
-    @Matches(/^[\w.-]+\.[a-z]{2,}$/i, {
-        each: true,
-        message: 'Each domain must be a valid email domain (e.g. "apitech.fr")',
-    })
-    domains?: string[];
+    @ValidateNested({ each: true })
+    @Type(() => DomainDto)
+    domains?: DomainDto[];
 
     @IsOptional()
     @ValidateNested()
@@ -46,11 +59,9 @@ export class UpdateClientDto {
 
     @IsOptional()
     @IsArray()
-    @Matches(/^[\w.-]+\.[a-z]{2,}$/i, {
-        each: true,
-        message: 'Each domain must be a valid email domain (e.g. "apitech.fr")',
-    })
-    domains?: string[];
+    @ValidateNested({ each: true })
+    @Type(() => DomainDto)
+    domains?: DomainDto[];
 
     @IsOptional()
     @ValidateNested()

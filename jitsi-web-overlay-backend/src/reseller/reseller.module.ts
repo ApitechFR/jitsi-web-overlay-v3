@@ -11,6 +11,8 @@ import { ClientController, OfferController } from './controllers/client.controll
 import { OfferChangeController } from './controllers/offer-change.controller';
 import { ApiKeyController } from './controllers/api-key.controller';
 import { ApiKeyRepository } from './repositories/api-key.repository';
+import { ClientDomainRepository } from './repositories/client-domain.repository';
+import { IsUniqueDomainConstraint, IsValidOfferTypeConstraint } from './validators';
 import {
   Offer,
   Client,
@@ -50,6 +52,9 @@ import {
     OfferService,
     OfferChangeService,
     ApiKeyRepository,
+    ClientDomainRepository,
+    IsUniqueDomainConstraint,
+    IsValidOfferTypeConstraint,
   ],
   exports: [
     ApiKeyService,
@@ -59,6 +64,7 @@ import {
     OfferService,
     OfferChangeService,
     ApiKeyRepository,
+    ClientDomainRepository,
   ],
 })
 export class ResellerModule { }

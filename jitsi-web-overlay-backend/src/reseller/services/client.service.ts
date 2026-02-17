@@ -53,13 +53,13 @@ export class ClientService {
 
     // Check domain uniqueness
     if (domains && domains.length > 0) {
-      for (const domain of domains) {
+      for (const domainDto of domains) {
         const existingDomain = await this.clientDomainRepository.findOne({
-          where: { domainName: domain },
+          where: { domainName: domainDto.domain },
         });
         if (existingDomain) {
           throw new ConflictException(
-            `Domain ${domain} is already assigned to another client`,
+            `Domain ${domainDto.domain} is already assigned to another client`,
           );
         }
       }
@@ -91,10 +91,10 @@ export class ClientService {
 
     // Add domains if provided
     if (domains && domains.length > 0) {
-      const clientDomains = domains.map((domain) => {
+      const clientDomains = domains.map((domainDto) => {
         const d = new ClientDomain();
         d.client = savedClient;
-        d.domainName = domain;
+        d.domainName = domainDto.domain;
         return d;
       });
       await this.clientDomainRepository.save(clientDomains);
@@ -185,25 +185,25 @@ export class ClientService {
     if (domains !== undefined) {
       // Check new domains for uniqueness (excluding this client's existing domains)
       const existingDomainNames = new Set((client.domains || []).map((d) => d.domainName));
-      const newDomains = domains.filter((d) => !existingDomainNames.has(d));
+      const newDomains = domains.filter((d) => !existingDomainNames.has(d.domain));
 
-      for (const domain of newDomains) {
+      for (const domainDto of newDomains) {
         const existingDomain = await this.clientDomainRepository.findOne({
-          where: { domainName: domain },
+          where: { domainName: domainDto.domain },
         });
         if (existingDomain) {
           throw new ConflictException(
-            `Domain ${domain} is already assigned to another client`,
+            `Domain ${domainDto.domain} is already assigned to another client`,
           );
         }
       }
 
       // Remove old domains and add new ones
       await this.clientDomainRepository.delete({ client: { uid } });
-      const clientDomains = domains.map((domain) => {
+      const clientDomains = domains.map((domainDto) => {
         const d = new ClientDomain();
         d.client = client;
-        d.domainName = domain;
+        d.domainName = domainDto.domain;
         return d;
       });
       await this.clientDomainRepository.save(clientDomains);

@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 
 /**
  * Service pour chiffrement/déchiffrement des secrets sensibles
- * Utilise AES-256-GCM pour chiffrer les secrets OIDC et LDAP
+ * Utilise AES-256-GCM pour chiffrer les secrets.
  * 
  * Format stocké en BD: IV(16)$AUTHtag(16)$CIPHERTEXT
  * Tous les composants en hexadécimal, séparés par $
@@ -35,14 +35,14 @@ export class EncryptionService {
             const nodeEnv = this.configService.get<string>('NODE_ENV') || 'development';
             keyString = this.generateDeterministicKey(nodeEnv);
             console.warn(
-                '[EncryptionService] ENCRYPTION_KEY non configuré. Utilisation de clé déterministe (DEV ONLY).',
+                '[EncryptionService] ENCRYPTION_KEY is not set. Using a deterministic key for development. DO NOT USE THIS IN PRODUCTION.',
             );
         }
 
         // Valider que c'est bien 64 chars hex (32 bytes)
         if (!/^[a-f0-9]{64}$/i.test(keyString)) {
             throw new Error(
-                'ENCRYPTION_KEY invalide: doit être 64 caractères hexadécimaux (32 bytes)',
+                'ENCRYPTION_KEY invalid: must be a 64-character hexadecimal string (32 bytes)',
             );
         }
 
@@ -65,7 +65,7 @@ export class EncryptionService {
     encrypt(plaintext: string): string {
         const iv = randomBytes(this.IV_LENGTH);
 
-        // ✅ KeyObject au lieu de Buffer => plus d’erreur TS
+        //  KeyObject au lieu de Buffer => plus d’erreur TS
         const key = createSecretKey(this.encryptionKey);
         const cipher = createCipheriv(this.ALGORITHM, key, iv);
 
@@ -106,7 +106,6 @@ export class EncryptionService {
             const key = createSecretKey(this.encryptionKey);
             const decipher = createDecipheriv(this.ALGORITHM, key, iv);
 
-            // ✅ Si TS continue à râler selon versions, force en Uint8Array
             decipher.setAuthTag(new Uint8Array(authTag));
 
             const plaintext = Buffer.concat([
@@ -116,7 +115,7 @@ export class EncryptionService {
 
             return plaintext;
         } catch (error: any) {
-            throw new Error(`Déchiffrement échoué: ${error?.message ?? String(error)}`);
+            throw new Error(`Erreur de déchiffrement: ${error?.message ?? String(error)}`);
         }
     }
     /**
