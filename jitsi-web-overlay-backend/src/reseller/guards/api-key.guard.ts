@@ -16,35 +16,37 @@ import { ApiKeyRepository } from '../repositories/api-key.repository';
  * Usage: @UseGuards(ApiKeyGuard)
  * Ou globalement: app.useGlobalGuards(new ApiKeyGuard(...))
  * 
- * Mode DEV (NODE_ENV=development):
- * - Accepte BOOTSTRAP_SECRET directement (pratique pour les tests)
- * - Accepte aussi les clés générées et hashées en BD
- * 
- * Mode PROD (NODE_ENV!=development):
- * - Validé UNIQUEMENT contre les clés hashées en BD
+ * Accepte deux types de clés (touts environnements):
+ * 1. BOOTSTRAP_SECRET (pour bootstrap et urgences)
+ * 2. Clés générées et hashées en BD (pour la production)
  * 
  * Vérifie:
  * - Présence du header x-api-key
  * - Format valide (64 chars hex)
- * - Hash correspond à une clé en BD (via ApiKeyRepository)
+ * - Correspond au BOOTSTRAP_SECRET ou est hachée en BD
  * - Injecte reseller_id dans request.resellerId
  */
 @Injectable()
 export class ApiKeyGuard implements CanActivate {
     private readonly logger = new Logger(ApiKeyGuard.name);
     private readonly RESELLER_ID = 'reseller-1'; // Seul revendeur du systeme
-    private readonly isDevelopment: boolean;
 
     constructor(
         private readonly apiKeyService: ApiKeyService,
         private readonly apiKeyRepository: ApiKeyRepository,
         private readonly configService: ConfigService,
     ) {
-        this.isDevelopment = this.configService.get<string>('NODE_ENV') === 'development';
     }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest();
+
+        // Vérifier que le mode reseller est activé
+        const resellerModeEnabled = this.configService.get<boolean>('RESELLER_MODE_ENABLED', false);
+        if (!resellerModeEnabled) {
+            this.logger.warn('ApiKeyGuard: RESELLER_MODE_ENABLED is not enabled - rejecting API Key access');
+            throw new UnauthorizedException('Reseller API is not enabled. Set RESELLER_MODE_ENABLED=true');
+        }
 
         // Extraire le header x-api-key
         const apiKey = this.extractApiKeyFromHeader(request);
@@ -59,19 +61,17 @@ export class ApiKeyGuard implements CanActivate {
             throw new UnauthorizedException('API Key format is invalid');
         }
 
-        // Mode DEV: accepter BOOTSTRAP_SECRET directement
-        if (this.isDevelopment) {
-            const bootstrapSecret = this.configService.get<string>('BOOTSTRAP_SECRET');
-            if (bootstrapSecret && apiKey === bootstrapSecret) {
-                this.logger.debug(
-                    `API Key validated via BOOTSTRAP_SECRET (Dev mode): ${apiKey.substring(0, 8)}...`,
-                );
-                request.resellerId = this.RESELLER_ID;
-                return true;
-            }
+        // Accepter BOOTSTRAP_SECRET (tous les environnements)
+        const bootstrapSecret = this.configService.get<string>('BOOTSTRAP_SECRET');
+        if (bootstrapSecret && apiKey === bootstrapSecret) {
+            this.logger.debug(
+                `API Key validated via BOOTSTRAP_SECRET: ${apiKey.substring(0, 8)}...`,
+            );
+            request.resellerId = this.RESELLER_ID;
+            return true;
         }
 
-        // Valider contra la BD via ApiKeyRepository
+        // Valider contre la BD via ApiKeyRepository
         // Chercher toutes les clés (peu nombreuses) et valider le hash
         const apiKeyRecords = await this.apiKeyRepository.findAll();
         let isValidKey = false;

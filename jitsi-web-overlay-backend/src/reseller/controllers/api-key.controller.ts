@@ -27,6 +27,12 @@ export class ApiKeyController {
     async bootstrapApiKey(
         @Headers('x-bootstrap-secret') bootstrapSecret: string,
     ): Promise<ApiKeyResponseDto> {
+        // Vérifier que le mode reseller est activé
+        const resellerModeEnabled = this.configService.get<boolean>('RESELLER_MODE_ENABLED', false);
+        if (!resellerModeEnabled) {
+            throw new UnauthorizedException('Reseller API is not enabled. Set RESELLER_MODE_ENABLED=true');
+        }
+
         const expectedSecret = this.configService.get<string>('BOOTSTRAP_SECRET');
 
         if (!expectedSecret) {
