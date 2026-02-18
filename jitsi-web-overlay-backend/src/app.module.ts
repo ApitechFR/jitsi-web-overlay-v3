@@ -14,6 +14,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RoomNameValidator } from './common/validators/room-name.validator';
 import { JwtOidcMiddleware } from './authentication/utils/jwt-oidc.middleware';
+import { TenantMiddleware } from './common/middleware/tenant.middleware';
 import { ScheduleModule } from '@nestjs/schedule';
 import { OriginMiddleware } from './common/middleware/origin.middleware';
 
@@ -107,6 +108,12 @@ import { ResellerModule } from './reseller/reseller.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
+    // Register TenantMiddleware globally for ALL routes
+    // (first, before the other middleware)
+
+    consumer
+      .apply(TenantMiddleware)
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
 
     consumer
       .apply(JwtOidcMiddleware)

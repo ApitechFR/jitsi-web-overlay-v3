@@ -58,6 +58,10 @@ export class User {
   @Column({ name: 'is_active', default: true })
   isActive!: boolean;
 
+  // Multi-tenant: UUID du client (null en mode single-tenant)
+  @Column({ name: 'client_id', type: 'varchar', length: 36, nullable: true })
+  clientId?: string | null;
+
   // Relations
   @OneToMany(() => Participant, p => p.user)
   participants!: Participant[];

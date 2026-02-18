@@ -6,7 +6,7 @@ import {
   BadRequestException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { IConferenceService } from '../interfaces/conference-service.interface';
 import { CreateConferenceDTO } from '../DTOs/conference.dto';
 import { Conference } from '../entities/conference.entity';
@@ -22,6 +22,7 @@ import { ProsodyRuntimeService } from '../../prosody/prosody-runtime.service';
 import { JitsiJwtService } from '../../common/services/jitsi-jwt.service';
 import { ParticipantService } from '../../participant/participant.service';
 import { Participant } from '../../participant/entities/participant.entity';
+import { TenantIsolationService } from '../../common/services/tenant-isolation.service';
 
 @Injectable()
 export class ConferenceServiceSQL implements IConferenceService {
@@ -39,7 +40,8 @@ export class ConferenceServiceSQL implements IConferenceService {
     private readonly configService: ConfigService,
     private readonly prosodyService: ProsodyService,
     private readonly prosodyRuntimeService: ProsodyRuntimeService,
-    private readonly jitsiJwtService: JitsiJwtService
+    private readonly jitsiJwtService: JitsiJwtService,
+    private readonly tenantIsolation: TenantIsolationService,
   ) { }
 
   async create(data: CreateConferenceDTO): Promise<Conference> {
@@ -55,17 +57,17 @@ export class ConferenceServiceSQL implements IConferenceService {
     }
 
     // check if there is already an active conference for this room
-    const existingConference = await this.conferenceRepo.findOne({
-      where: {
-        room: { uid: room.uid },
-        status: ConferenceStatus.STARTED,
-        end_time: null,
-      },
-      relations: ['room'],
-      order: {
-        start_time: 'DESC',
-      },
-    });
+    let existingQuery = this.conferenceRepo.createQueryBuilder('conference')
+      .where('conference.room_uid = :room_uid', { room_uid: room.uid })
+      .andWhere('conference.status = :status', { status: ConferenceStatus.STARTED })
+      .andWhere('conference.end_time IS NULL')
+      .orderBy('conference.start_time', 'DESC')
+      .leftJoinAndSelect('conference.room', 'room');
+
+    // Apply multi-tenant filter
+    this.tenantIsolation.applyClientFilter(existingQuery, 'conference');
+
+    const existingConference = await existingQuery.getOne();
 
     if (existingConference) {
       return existingConference;
@@ -78,41 +80,75 @@ export class ConferenceServiceSQL implements IConferenceService {
       status: ConferenceStatus.STARTED,
       start_time: new Date(),
     });
+
+    // Inject clientId (and optionally offerType for audit trail)
+    this.tenantIsolation.injectClientId(conf);
+
     return this.conferenceRepo.save(conf);
   }
 
   async findAll(): Promise<Conference[]> {
-    return this.conferenceRepo.find({ relations: ['participants', 'replays'] });
+    const query = this.conferenceRepo.createQueryBuilder('conference')
+      .leftJoinAndSelect('conference.participants', 'participants')
+      .leftJoinAndSelect('conference.replays', 'replays');
+
+    // Apply multi-tenant filter
+    this.tenantIsolation.applyClientFilter(query, 'conference');
+
+    return query.getMany();
   }
 
   async findOne(uid: string): Promise<Conference> {
-    return this.conferenceRepo.findOne({
-      where: { uid },
-      relations: ['participants', 'replays'],
-    });
+    const query = this.conferenceRepo.createQueryBuilder('conference')
+      .where('conference.uid = :uid', { uid })
+      .leftJoinAndSelect('conference.participants', 'participants')
+      .leftJoinAndSelect('conference.replays', 'replays');
+
+    // Apply multi-tenant filter
+    this.tenantIsolation.applyClientFilter(query, 'conference');
+
+    const conference = await query.getOne();
+    if (!conference) {
+      throw new NotFoundException(`Conference with uid ${uid} not found`);
+    }
+
+    return conference;
   }
 
 
   async findByName(name: string): Promise<Conference | null> {
-    return await this.conferenceRepo.findOne({
-      where: { name },
-      order: { start_time: 'DESC' },
-    });
+    const query = this.conferenceRepo.createQueryBuilder('conference')
+      .where('conference.name = :name', { name })
+      .orderBy('conference.start_time', 'DESC');
+
+    // Apply multi-tenant filter
+    this.tenantIsolation.applyClientFilter(query, 'conference');
+
+    const conference = await query.getOne();
+    return conference || null;
   }
 
   async update(
     id: string,
     data: Partial<CreateConferenceDTO>,
   ): Promise<Conference> {
+    const conference = await this.findOne(id); // This already validates multi-tenant access
+    this.tenantIsolation.validateOwnership(conference, 'conference');
+
     await this.conferenceRepo.update(+id, data);
     return this.findOne(id);
   }
 
   async updateEndTimeConferenceByName(confName: string, endTime: Date) {
-    const conf = await this.conferenceRepo.findOne({
-      where: { name: confName, end_time: null },
-      order: { start_time: 'DESC' },
-    });
+    const query = this.conferenceRepo.createQueryBuilder('conference')
+      .where('conference.name = :name', { name: confName })
+      .andWhere('conference.end_time IS NULL')
+      .orderBy('conference.start_time', 'DESC');
+
+    // Apply multi-tenant filter
+    this.tenantIsolation.applyClientFilter(query, 'conference');
+
+    const conf = await query.getOne();
 
     if (!conf) {
       throw new NotFoundException(`No active conference found for name: ${confName}`);
@@ -124,9 +160,13 @@ export class ConferenceServiceSQL implements IConferenceService {
   }
 
   private async countByDateRange(start: Date, end: Date): Promise<number> {
-    return this.conferenceRepo.count({
-      where: { start_time: Between(start, end) }
-    });
+    const query = this.conferenceRepo.createQueryBuilder('conference')
+      .where('conference.start_time BETWEEN :start AND :end', { start, end });
+
+    // Apply multi-tenant filter
+    this.tenantIsolation.applyClientFilter(query, 'conference');
+
+    return query.getCount();
   }
 
   private getDateRangeByFilter(filter: ConferenceFilter): { start: Date; end: Date } {
@@ -142,7 +182,7 @@ export class ConferenceServiceSQL implements IConferenceService {
         end.setHours(23, 59, 59, 999);
         break;
 
-      case ConferenceFilter.WEEK:
+      case ConferenceFilter.WEEK: {
         const day = now.getDay();
         const diffToMonday = day === 0 ? -6 : 1 - day;
         start = new Date(now);
@@ -153,6 +193,7 @@ export class ConferenceServiceSQL implements IConferenceService {
         end.setDate(start.getDate() + 6);
         end.setHours(23, 59, 59, 999);
         break;
+      }
 
       case ConferenceFilter.MONTH:
         start = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -179,8 +220,13 @@ export class ConferenceServiceSQL implements IConferenceService {
   }
 
   async getGlobalStatistics() {
+    // Count total for this client
+    const totalQuery = this.conferenceRepo.createQueryBuilder('conference');
+    this.tenantIsolation.applyClientFilter(totalQuery, 'conference');
+    const total = await totalQuery.getCount();
+
     return {
-      total: await this.conferenceRepo.count(),
+      total,
       today: (await this.getStatisticsByFilter(ConferenceFilter.TODAY)).total,
       week: (await this.getStatisticsByFilter(ConferenceFilter.WEEK)).total,
       month: (await this.getStatisticsByFilter(ConferenceFilter.MONTH)).total,
@@ -210,13 +256,18 @@ export class ConferenceServiceSQL implements IConferenceService {
   }
 
   async getAverageParticipants(start?: Date, end?: Date): Promise<number> {
-    const conferences = await this.conferenceRepo.find({
-      where: {
-        status: ConferenceStatus.COMPLETED,
-        ...(start && end ? { start_time: Between(start, end) } : {}),
-      },
-      relations: ['participants'],
-    });
+    const query = this.conferenceRepo.createQueryBuilder('conference')
+      .where('conference.status = :status', { status: ConferenceStatus.COMPLETED });
+
+    if (start && end) {
+      query.andWhere('conference.start_time BETWEEN :start AND :end', { start, end });
+    }
+
+    // Apply multi-tenant filter
+    this.tenantIsolation.applyClientFilter(query, 'conference');
+
+    query.leftJoinAndSelect('conference.participants', 'participants');
+    const conferences = await query.getMany();
 
     if (conferences.length === 0) return 0;
 
@@ -235,6 +286,7 @@ export class ConferenceServiceSQL implements IConferenceService {
     end?: Date,
   ): Promise<string> {
 
+    const clientId = this.tenantIsolation.getClientId();
 
     let query = `
     SELECT AVG(TIMESTAMPDIFF(SECOND, start_time, end_time)) AS avg_seconds
@@ -243,6 +295,10 @@ export class ConferenceServiceSQL implements IConferenceService {
   `;
 
     const params: any[] = [];
+    if (clientId) {
+      query += ` AND client_id = ?`;
+      params.push(clientId);
+    }
     if (start && end) {
       query += ` AND start_time BETWEEN ? AND ?`;
       params.push(start, end);
@@ -260,19 +316,12 @@ export class ConferenceServiceSQL implements IConferenceService {
   }
 
   async getDuration(uid: string): Promise<string> {
-    const conference = await this.conferenceRepo.findOne({
-      where: { uid },
-    });
-
-    if (!conference) {
-      throw new NotFoundException(`Conference with uid ${uid} not found`);
-    }
+    const conference = await this.findOne(uid); // This already validates multi-tenant access
 
     const start = conference.start_time;
     const end = conference.end_time ?? new Date();
 
     const durationMs = end.getTime() - start.getTime();
-    //const durationInMinutes = Math.floor(durationMs / 60000);
 
     const totalSeconds = Math.floor(durationMs / 1000);
     const hours = Math.floor(totalSeconds / 3600);
@@ -288,6 +337,8 @@ export class ConferenceServiceSQL implements IConferenceService {
     end?: Date,
   ): Promise<number> {
 
+    const clientId = this.tenantIsolation.getClientId();
+
     // Récupération des conférences dans l'intervalle
     let query = `
     SELECT start_time, end_time
@@ -295,6 +346,10 @@ export class ConferenceServiceSQL implements IConferenceService {
     WHERE status = 'completed'
   `;
     const params: any[] = [];
+    if (clientId) {
+      query += ` AND client_id = ?`;
+      params.push(clientId);
+    }
     if (start && end) {
       query += ` AND start_time <= ? AND end_time >= ?`;
       params.push(end, start);
@@ -304,8 +359,10 @@ export class ConferenceServiceSQL implements IConferenceService {
 
     const events: { time: Date; type: 'start' | 'end' }[] = [];
     for (const conf of conferences) {
-      events.push({ time: new Date(conf.start_time), type: 'start' });
-      events.push({ time: new Date(conf.end_time), type: 'end' });
+      events.push(
+        { time: new Date(conf.start_time), type: 'start' },
+        { time: new Date(conf.end_time), type: 'end' },
+      );
     }
 
     events.sort((a, b) => a.time.getTime() - b.time.getTime() || (a.type === 'end' ? -1 : 1));
@@ -330,14 +387,23 @@ export class ConferenceServiceSQL implements IConferenceService {
       throw new BadRequestException('Specify start and end date for max simultaneous participants');
     }
 
-    const query = `
+    const clientId = this.tenantIsolation.getClientId();
+
+    let query = `
     SELECT p.created_at AS join_time, c.end_time AS leave_time
     FROM participants p
     JOIN conferences c ON c.uid = p.conference_uid
     WHERE p.created_at <= ? AND (c.end_time IS NULL OR c.end_time >= ?)
   `;
 
-    const rows = await this.participantRepo.query(query, [end, start]);
+    const params: any[] = [end, start];
+
+    if (clientId) {
+      query += ` AND c.client_id = ?`;
+      params.push(clientId);
+    }
+
+    const rows = await this.participantRepo.query(query, params);
 
     if (!rows.length) return 0;
 
@@ -373,12 +439,14 @@ export class ConferenceServiceSQL implements IConferenceService {
   }
 
   async delete(id: string): Promise<void> {
+    // Validate ownership before deleting
+    const conference = await this.findOne(id);
+    this.tenantIsolation.validateOwnership(conference, 'conference');
+
     await this.conferenceRepo.delete(+id);
   }
 
   async roomExists(roomName: string) {
-    //const { token } = await this.generateJitsiJwt({ role: 'service' }, true, roomName);
-
     const exists = await this.prosodyRuntimeService.roomExistsV2(roomName);
     if (exists) return { roomName, active: true };
 
@@ -465,14 +533,28 @@ export class ConferenceServiceSQL implements IConferenceService {
    * sont désactivés (isActive = false)
  */
   async findConferencesWithOnlyInactiveUsers(): Promise<string[]> {
-    const rows = await this.conferenceRepo.query(`
+    const clientId = this.tenantIsolation.getClientId();
+
+    let query = `
       SELECT c.uid FROM conferences c
       LEFT JOIN participants p ON p.conference_uid = c.uid AND p.user_uid IS NOT NULL
       LEFT JOIN users u ON u.uid = p.user_uid
       WHERE c.is_active = 1
+    `;
+
+    const params: any[] = [];
+
+    if (clientId) {
+      query += ` AND c.client_id = ?`;
+      params.push(clientId);
+    }
+
+    query += `
       GROUP BY c.uid
       HAVING SUM(CASE WHEN u.is_active = 1 THEN 1 ELSE 0 END) = 0;
-    `); // Compter le nombre d’utilisateurs ACTIFS dans la conférence
+    `;
+
+    const rows = await this.conferenceRepo.query(query, params);
 
     return rows.map(r => r.uid);
   }
@@ -483,7 +565,9 @@ export class ConferenceServiceSQL implements IConferenceService {
   async disableConferences(uids: string[]): Promise<number> {
     if (!uids.length) return 0;
 
-    await this.conferenceRepo
+    const clientId = this.tenantIsolation.getClientId();
+
+    let query = this.conferenceRepo
       .createQueryBuilder()
       .update()
       .set({
@@ -491,8 +575,14 @@ export class ConferenceServiceSQL implements IConferenceService {
         desactivated_at: () => 'NOW()',
       })
       .where('uid IN (:...uids)', { uids })
-      .andWhere('desactivated_at IS NULL')
-      .execute();
+      .andWhere('desactivated_at IS NULL');
+
+    // Apply multi-tenant filter to ensure we only disable our own conferences
+    if (clientId) {
+      query.andWhere('client_id = :clientId', { clientId });
+    }
+
+    await query.execute();
 
     return uids.length;
   }
@@ -512,12 +602,14 @@ export class ConferenceServiceSQL implements IConferenceService {
   }
 
   async closeEmptyConferences(): Promise<void> {
-    const activeConfs = await this.conferenceRepo.find({
-      where: {
-        status: ConferenceStatus.STARTED,
-        end_time: null,
-      },
-    });
+    const query = this.conferenceRepo.createQueryBuilder('conference')
+      .where('conference.status = :status', { status: ConferenceStatus.STARTED })
+      .andWhere('conference.end_time IS NULL');
+
+    // Apply multi-tenant filter
+    this.tenantIsolation.applyClientFilter(query, 'conference');
+
+    const activeConfs = await query.getMany();
 
     if (activeConfs.length === 0) {
       return;

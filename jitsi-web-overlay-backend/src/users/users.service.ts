@@ -6,8 +6,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './entities/users.entity';
+import { User, AuthProvider } from './entities/users.entity';
 import { LessThan, Repository } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 import { DirectoryProvider } from '../providers/directory-provider/directory-provider.interface';
 import { WinstonLoggerService } from '../common/services/winston-logger.service';
 
@@ -218,5 +219,72 @@ export class UsersService {
       name: u.cn,
       email: u.Email,
     }));
+  }
+
+  //---------------------------MULTI-TENANT------------------------------------------
+
+  /**
+   * Trouve ou crée un utilisateur (pour authentification multi-tenant JWT RS256)
+   * Find or create user (for multi-tenant JWT RS256 authentication)
+   * @param userData - User data (email, displayName, etc.)
+   * @param clientId - Client ID (tenant identifier, optional in single-tenant mode)
+   * @returns User entity
+   *
+   * Logic:
+   * - In multi-tenant mode with JWT RS256, we look for the user by email + clientId
+   * - If not found, we create a new user with the provided email and displayName
+   * - The provider is set to OIDC since JWT RS256 is a form of token-based authentication
+   * - In single-tenant mode, this method can still be used but clientId will be ignored
+   */
+  async findOrCreateUser(
+    userData: {
+      email: string;
+      displayName?: string;
+      authProvider?: string;
+    },
+    clientId?: string,
+  ): Promise<User> {
+    try {
+      // Find user by email and clientId (if provided)
+      const query = this.userRepository.createQueryBuilder('user').where('user.email = :email', {
+        email: userData.email,
+      });
+
+      // In multi-tenant mode, we must also match the clientId
+      if (clientId) {
+        query.andWhere('user.client_id = :clientId', { clientId });
+      }
+
+      let user = await query.getOne();
+
+      if (user) {
+        // User exists: update displayName if changed (for example if displayName has changed)
+        if (userData.displayName && user.displayName !== userData.displayName) {
+          user.displayName = userData.displayName;
+          await this.userRepository.save(user);
+        }
+        return user;
+      }
+
+      // User does not exist: create new user
+      const newUser = this.userRepository.create({
+        uid: uuidv4(), // Generate unique identifier
+        email: userData.email,
+        displayName: userData.displayName || userData.email,
+        provider: AuthProvider.OIDC, // JWT RS256 use OIDC provider type for token-based authentication
+        clientId,
+        isActive: true,
+        admin: false,
+      });
+
+      return await this.userRepository.save(newUser);
+    } catch (error) {
+      this.logger.error('Error in findOrCreateUser', {
+        email: userData.email,
+        clientId,
+        error,
+      });
+      throw new InternalServerErrorException('cannot find or create user');
+    }
   }
 }
