@@ -11,10 +11,11 @@ import {
   UnauthorizedException,
   Inject,
   UseGuards,
+  Post,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { Request, Response } from 'express';
-import * as crypto from 'crypto';
+import * as crypto from 'node:crypto';
 
 import { JwtService } from '@nestjs/jwt';
 import { LoginCallbackDTO } from './DTOs/LoginCallbackDTO';
@@ -27,6 +28,7 @@ import {
 } from '@nestjs/swagger';
 import { IConferenceService } from '../conference/interfaces/conference-service.interface';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { TenantContext } from '../common/context/tenant.context';
 
 @Controller()
 export class AuthenticationController {
@@ -38,6 +40,7 @@ export class AuthenticationController {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly usersService: UsersService,
+    private readonly tenantContext: TenantContext,
   ) { }
 
   private getFrontBaseUrl(): string {
@@ -212,11 +215,20 @@ export class AuthenticationController {
 
   @Get('authentication/logout')
   @Redirect('', 302)
-  @ApiResponse({ status: 302, description: 'redirection vers cerbère' })
+  @ApiResponse({ status: 302, description: 'Redirection to Cerbère (OIDC) or success (JWT RS256)' })
   logout(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
+    // Check reseller mode (JWT RS256)
+    const isResellerModeEnabled = this.configService.get<boolean>('RESELLER_MODE_ENABLED', false);
+
+    if (isResellerModeEnabled) {
+      // Mode JWT RS256 (Multi-Tenant/Reseller)
+      return this.logoutJwtRs256();
+    }
+
+    // Mode OIDC original (Single-Tenant)
     // Permettre le logout via sendBeacon (Content-Type text/plain)
     if (request.headers['content-type'] === 'text/plain') {
       this.authenticationService.clearAllCookies(response);
@@ -234,11 +246,25 @@ export class AuthenticationController {
     return { url: this.authenticationService.logout(state, idToken) };
   }
 
+  /**
+   * Specific logout flow for JWT RS256 multi-tenant mode:
+   * @private
+   */
+  private logoutJwtRs256() {
+    const clientId = this.tenantContext.getClientId();
+
+    if (!clientId) {
+      throw new UnauthorizedException('No active JWT RS256 session found');
+    }
+
+    return this.authenticationService.logoutJwtRs256(clientId);
+  }
+
   @Get('authentication/logout_callback')
-  @ApiOkResponse({ description: "retourne l'url /" })
+  @ApiOkResponse({ description: "returns the url /" })
   @ApiUnauthorizedResponse({
     description:
-      "le state de retour n'est pas la meme que celle qui a été envoyé",
+      "the returned state is not the same as the one that was sent",
   })
   logoutCallback(
     @Query() query: LogoutCallbackDTO,
@@ -250,7 +276,7 @@ export class AuthenticationController {
 
     if (state !== sendedState) {
       throw new UnauthorizedException(
-        "Le state de retour n'est pas le même que celui envoyé",
+        "The returned state is not the same as the one that was sent",
       );
     }
 
@@ -319,7 +345,7 @@ export class AuthenticationController {
       return { accessToken };
     } catch (error) {
       this.authenticationService.clearAllCookies(response);
-      // On relance l'exception pour respecter le lint
+
       throw error instanceof UnauthorizedException ? error : new UnauthorizedException('Veuillez vous authentifier');
     }
   }
