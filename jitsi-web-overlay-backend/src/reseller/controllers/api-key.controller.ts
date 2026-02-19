@@ -5,6 +5,7 @@ import {
     HttpCode,
     HttpStatus,
     UnauthorizedException,
+    ForbiddenException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiKeyService } from '../services/api-key.service';
@@ -30,7 +31,7 @@ export class ApiKeyController {
         // Vérifier que le mode reseller est activé
         const resellerModeEnabled = this.configService.get<boolean>('RESELLER_MODE_ENABLED', false);
         if (!resellerModeEnabled) {
-            throw new UnauthorizedException('Reseller API is not enabled. Set RESELLER_MODE_ENABLED=true');
+            throw new ForbiddenException('Reseller mode is not enabled');
         }
 
         const expectedSecret = this.configService.get<string>('BOOTSTRAP_SECRET');

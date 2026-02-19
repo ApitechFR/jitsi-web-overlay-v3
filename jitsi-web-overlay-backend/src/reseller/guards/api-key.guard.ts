@@ -3,6 +3,7 @@ import {
     CanActivate,
     ExecutionContext,
     UnauthorizedException,
+    ForbiddenException,
     Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -45,7 +46,7 @@ export class ApiKeyGuard implements CanActivate {
         const resellerModeEnabled = this.configService.get<boolean>('RESELLER_MODE_ENABLED', false);
         if (!resellerModeEnabled) {
             this.logger.warn('ApiKeyGuard: RESELLER_MODE_ENABLED is not enabled - rejecting API Key access');
-            throw new UnauthorizedException('Reseller API is not enabled. Set RESELLER_MODE_ENABLED=true');
+            throw new ForbiddenException('Reseller mode is not enabled');
         }
 
         // Extraire le header x-api-key
