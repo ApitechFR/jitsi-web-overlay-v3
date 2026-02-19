@@ -38,10 +38,12 @@ export class JwtRs256Strategy extends PassportStrategy(Strategy, 'jwt-rs256') {
         private readonly clientDomainRepository: ClientDomainRepository,
     ) {
         // Retrieve the reseller mode BEFORE calling super()
-        const resellerModeEnabled = configService.get('RESELLER_MODE_ENABLED') === 'true';
+        const resellerModeEnabled = configService.get<boolean>('RESELLER_MODE_ENABLED', false);
 
         // Get the public key for JWT validation from config
-        const publicKey = configService.get<string>('PROVIDER_JWT_PUBLIC_KEY');
+        const publicKeyRaw = configService.get<string>('PROVIDER_JWT_PUBLIC_KEY');
+        // Convert literal \n to actual newlines
+        const publicKey = publicKeyRaw ? publicKeyRaw.replace(/\\n/g, '\n') : undefined;
 
         // En mode single-tenant, les paramètres ne sont pas fortement validés
         // car la clé publique n'est pas requise (OIDC sera utilisé)
@@ -64,7 +66,7 @@ export class JwtRs256Strategy extends PassportStrategy(Strategy, 'jwt-rs256') {
             writable: false,
         });
 
-        if (resellerModeEnabled && !publicKey) {
+        if (resellerModeEnabled && !publicKeyRaw) {
             this.logger.error(
                 'JwtRs256Strategy initialized in RESELLER_MODE_ENABLED but PROVIDER_JWT_PUBLIC_KEY is not set',
             );

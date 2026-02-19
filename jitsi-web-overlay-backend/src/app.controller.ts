@@ -47,6 +47,7 @@ export class AppController {
       VITE_IS_WEBINAR_ENABLED: process.env.IS_WEBINAR_ENABLED,
       VITE_ENABLE_LANGUAGE_SWITCH: process.env.ENABLE_LANGUAGE_SWITCH,
       VITE_ENABLE_HARDWARE_TEST: process.env.ENABLE_HARDWARE_TEST,
+      VITE_RESELLER_MODE_ENABLED: process.env.RESELLER_MODE_ENABLED === 'true',
     };
   }
 

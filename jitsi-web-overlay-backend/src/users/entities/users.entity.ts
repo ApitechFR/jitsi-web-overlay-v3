@@ -9,6 +9,7 @@ export enum AuthProvider {
   LOCAL = 'LOCAL',
   OIDC = 'OIDC',
   LDAP = 'LDAP',
+  JWT_RS256 = 'JWT_RS256',
 }
 
 @Entity('users')
