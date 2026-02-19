@@ -31,6 +31,7 @@ export type FrontConfig = {
     VITE_IS_WEBINAR_ENABLED?: boolean | string;
     VITE_ENABLE_LANGUAGE_SWITCH?: boolean | string;
     VITE_ENABLE_HARDWARE_TEST?: boolean | string;
+    VITE_RESELLER_MODE_ENABLED?: boolean | string;
 };
 
 let cached: FrontConfig | null = null;
@@ -80,6 +81,7 @@ export async function loadRuntimeConfig(force = false): Promise<FrontConfig> {
                 VITE_APP_FAVICON_URL: raw.VITE_APP_FAVICON_URL || (import.meta.env.VITE_APP_FAVICON_URL as string | undefined) || '/joona/Icone_produits_V.svg',
                 VITE_ENABLE_LANGUAGE_SWITCH: coerceBool(raw.VITE_ENABLE_LANGUAGE_SWITCH ?? (import.meta.env.VITE_ENABLE_LANGUAGE_SWITCH as string | undefined) ?? 'false'),
                 VITE_ENABLE_HARDWARE_TEST: coerceBool(raw.VITE_ENABLE_HARDWARE_TEST ?? (import.meta.env.VITE_ENABLE_HARDWARE_TEST as string | undefined) ?? 'false'),
+                VITE_RESELLER_MODE_ENABLED: coerceBool(raw.VITE_RESELLER_MODE_ENABLED ?? (import.meta.env.VITE_RESELLER_MODE_ENABLED as string | undefined) ?? 'false'),
             };
             return cached;
         })
