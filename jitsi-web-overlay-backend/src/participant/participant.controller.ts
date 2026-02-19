@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
 import { ParticipantService } from './participant.service';
 import { CreateParticipantDto, UpdateParticipantDto } from './dto/create-participant.dto';
@@ -21,6 +21,20 @@ export class ParticipantController {
     //     return this.participantService.create(dto, clientIp);
     // }
 
+    @Get('conferences')
+    async getConferenceUIDsByEmail(@Query('email') email: string) {
+        if (!email) {
+            throw new BadRequestException('email is required');
+        }
+
+        const confUIDs = await this.participantService.getConferenceUIDsByEmail(email);
+
+        return {
+            email,
+            total: confUIDs.length,
+            conferences: confUIDs,
+        };
+    }
 
     @Post()
     create(@Body() dto: CreateParticipantDto) {
@@ -47,6 +61,7 @@ export class ParticipantController {
     ) {
         return this.participantService.update(uid, dto);
     }
+
     @UseGuards(JwtAuthGuard)
     @Get('conference/:conferenceUid')
     getParticipantsByConference(
