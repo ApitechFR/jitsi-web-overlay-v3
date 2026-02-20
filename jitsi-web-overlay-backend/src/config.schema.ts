@@ -42,7 +42,7 @@ export const configValidationSchema = joi.object({
       .messages({
         'any.required': 'MONGO_URI is required when DB_TYPE is mongodb',
         'string.uri':
-          'MONGO_URI doit commencer par "mongodb://" ou "mongodb+srv://"',
+          'MONGO_URI must start with "mongodb://" or "mongodb+srv://"',
       }),
     otherwise: joi.string().optional().allow('', null),
   }),
@@ -91,10 +91,57 @@ export const configValidationSchema = joi.object({
 
   // LDAP
   LDAP_URL: joi.string().uri({ scheme: ['ldap', 'ldaps'] }).optional().messages({
-    'string.uri': 'LDAP_URL doit commencer par "ldap://" ou "ldaps://"',
+    'string.uri': 'LDAP_URL must start with "ldap://" or "ldaps://"',
   }),
-  LDAP_BIND_DN: joi.string().optional(),
-  LDAP_PASSWORD: joi.string().optional(),
-  LDAP_BASE_DN: joi.string().optional(),
+  LDAP_BIND_DN: joi.string().allow('', null).optional(),
+  LDAP_PASSWORD: joi.string().allow('', null).optional(),
+  LDAP_BASE_DN: joi.string().allow('', null).optional(),
+
+  // RESELLER (Multi-Tenant Mode - Optional Feature)
+  RESELLER_MODE_ENABLED: joi.boolean().default(false).optional().messages({
+    'boolean.base': 'RESELLER_MODE_ENABLED must be a boolean (true or false)',
+  }),
+
+  // RESELLER (Encryption Keys)
+  ENCRYPTION_KEY: joi
+    .string()
+    .length(64)
+    .hex()
+    .optional()
+    .messages({
+      'string.hex': 'ENCRYPTION_KEY must be hexadecimal',
+      'string.length': 'ENCRYPTION_KEY must be exactly 64 characters (32 bytes)',
+    }),
+
+  // API Key Bootstrap
+  BOOTSTRAP_SECRET: joi
+    .string()
+    .optional()
+    .messages({
+      'string.base': 'BOOTSTRAP_SECRET must be a string',
+    }),
+
+  // JWT RS256 (Multi-tenant Authentication)
+  // Required when RESELLER_MODE_ENABLED=true
+  PROVIDER_JWT_PUBLIC_KEY: joi
+    .string()
+    .optional()
+    .messages({
+      'string.base': 'PROVIDER_JWT_PUBLIC_KEY must be a string',
+    }),
+
+  PROVIDER_JWT_ISSUER: joi
+    .string()
+    .optional()
+    .messages({
+      'string.base': 'PROVIDER_JWT_ISSUER must be a string',
+    }),
+
+  PROVIDER_JWT_AUDIENCE: joi
+    .string()
+    .optional()
+    .messages({
+      'string.base': 'PROVIDER_JWT_AUDIENCE must be a string',
+    }),
 
 });

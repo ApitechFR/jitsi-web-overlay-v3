@@ -1,4 +1,5 @@
 export interface UserInfos {
+    uid?: string;
     email?: string;
     nom?: string; lastName?: string; family_name?: string;
     prenom?: string; firstName?: string; given_name?: string;

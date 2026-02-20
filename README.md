@@ -181,6 +181,12 @@ Ces variables sont prises en compte côté backend (API) et frontend (UI) pour a
 | USERINFO_ENDPOINT | Endpoint userinfo OIDC | `https://oidc.example.com/userinfo` | Optionnelle | (aucune) |
 | COOKIE_DOMAIN | Domaine des cookies | `.example.com` | Optionnelle | (aucune) |
 | COOKIE_SAMESITE | SameSite des cookies | `lax` | Optionnelle | (aucune) |
+| RESELLER_MODE_ENABLED | Active le mode multi-tenant/reseller (JWT RS256) | `true` ou `false` | Optionnelle | `false` |
+| RESELLER_AUTH_URL | URL d'authentification externe en mode reseller | `https://auth.reseller.example.com/login` | Optionnelle si RESELLER_MODE_ENABLED=true | (aucune) |
+| PROVIDER_JWT_PUBLIC_KEY | Clé publique RSA pour valider les JWT RS256 | `-----BEGIN PUBLIC KEY-----...` | Obligatoire si RESELLER_MODE_ENABLED=true | (aucune) |
+| PROVIDER_JWT_ISSUER | Issuer pour valider les JWT RS256 | `https://auth.reseller.example.com` | Optionnelle | (aucune) |
+| PROVIDER_JWT_AUDIENCE | Audience pour valider les JWT RS256 | `jitsi` | Optionnelle | (aucune) |
+| ENCRYPTION_KEY | Clé de chiffrement pour données sensibles clients | `your-encryption-key-32-chars-min` | Obligatoire si RESELLER_MODE_ENABLED=true | (aucune) |
 | DEBUG | Active le debug backend | `false` | Optionnelle | false |
 | FRONTEND_PORT | Port d'écoute du frontend | `3001` | Optionnelle | 3000 |
 | JITSI_DOMAIN  | Domaine Jitsi utilisé côté frontend | `meet.example.com` | Obligatoire | (aucune) |
@@ -198,6 +204,8 @@ Ces variables sont prises en compte côté backend (API) et frontend (UI) pour a
 | APP_FAQ_URL | Chemin du PDF de la FAQ | `/doc/Documentation_utilisateur_Visio_By_Apitech.pdf` | Non | `/doc/Documentation_utilisateur_Visio_By_Apitech.pdf` |
 | APP_TITLE | Titre dynamique de l'application | `Visio By Apitech` | Non | `Visio By Apitech` |
 | APP_FAVICON_URL | Chemin du favicon dynamique | `/joona/Icone_produits_V.svg` | Non | `/joona/Icone_produits_V.svg` |
+| RESELLER_MODE_ENABLED | Active le mode multi-tenant côté frontend | `true` ou `false` | Optionnelle | `false` |
+| RESELLER_AUTH_URL | URL d'authentification externe en mode reseller | `https://auth.reseller.example.com/login` | Optionnelle si VITE_RESELLER_MODE_ENABLED=true | (aucune) |
 | DAILY_AUTOMATION_ENABLED | Active l'automation | `false` | Non | false |
 | RETENTION_DAYS | Nombre de jours de conservation des données après leur désactivation | `90` | Oui | `90` |
 | LOG_DIR | Dossier dans lequel l’application écrit les logs Cron | `/etc/logs/automation/` | Oui | `./logs` |

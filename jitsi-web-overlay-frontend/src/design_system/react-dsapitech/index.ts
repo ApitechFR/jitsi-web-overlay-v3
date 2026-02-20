@@ -19,4 +19,5 @@ export { useIsModalOpen } from '@apitechfr/react-dsapitech/Modal/useIsModalOpen'
 export { Tag } from '@apitechfr/react-dsapitech/Tag';
 export { Badge } from '@apitechfr/react-dsapitech/Badge';
 export { Tooltip } from '@apitechfr/react-dsapitech/Tooltip';
-
+export { AgentConnectButton } from "@apitechfr/react-dsapitech/AgentConnectButton";
+export { Checkbox } from "@apitechfr/react-dsapitech/Checkbox";
