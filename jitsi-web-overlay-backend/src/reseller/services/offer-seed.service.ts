@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Offer } from '../entities/offer.entity';
@@ -7,10 +7,10 @@ import { ModuleKey } from '../enums/module-key.enum';
 
 /**
  * Seed service for initializing default offers
- * Runs at module initialization to ensure offers exist in DB
+ * Runs after application bootstrap to ensure DB is ready
  */
 @Injectable()
-export class OfferSeedService implements OnModuleInit {
+export class OfferSeedService implements OnApplicationBootstrap {
     private readonly logger = new Logger('OfferSeedService');
 
     constructor(
@@ -18,14 +18,44 @@ export class OfferSeedService implements OnModuleInit {
         private readonly offerRepository: Repository<Offer>,
     ) { }
 
-    async onModuleInit() {
+    async onApplicationBootstrap() {
+        // Use a small delay to ensure all services are fully initialized
+        await new Promise(resolve => setTimeout(resolve, 1000));
         await this.seedOffers();
     }
 
     async seedOffers(): Promise<void> {
         try {
-            // Check if offers already exist
-            const existingOffers = await this.offerRepository.count();
+            // Check if offers already exist with retry logic
+            let existingOffers = 0;
+            let retries = 3;
+            let lastError: Error | null = null;
+
+            while (retries > 0) {
+                try {
+                    existingOffers = await this.offerRepository.count();
+                    break;
+                } catch (error) {
+                    lastError = error as Error;
+                    retries--;
+                    if (retries > 0) {
+                        this.logger.warn(`Failed to count offers, retrying... (${retries} retries left)`);
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                }
+            }
+
+            if (retries === 0 && lastError) {
+                this.logger.error('Failed to initialize offers after retries:', lastError);
+                throw lastError;
+            }
+
+            if (existingOffers >= 2) {
+                this.logger.debug('Offers already seeded, skipping...');
+                return;
+            }
+
+            this.logger.log('Seeding default offers...');
 
             if (existingOffers >= 2) {
                 this.logger.debug('Offers already seeded, skipping...');

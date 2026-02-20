@@ -6,7 +6,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeor
  * PBKDF2 hashing with constant-time validation
  * The actual key is NEVER stored
  */
-@Entity('api_key')
+@Entity('api_keys')
 export class ApiKey {
   @PrimaryGeneratedColumn()
   id: number;
