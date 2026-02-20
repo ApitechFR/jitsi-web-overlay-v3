@@ -19,6 +19,15 @@ export class ApiKey {
   })
   keyHash: string;
 
+  @Column({
+    name: 'key_hash_short',
+    type: 'varchar',
+    length: 64,
+    nullable: true,
+    comment: 'First 8 chars of the key hash for display purposes',
+  })
+  keyHashShort?: string;
+
   @CreateDateColumn()
   createdAt: Date;
 }

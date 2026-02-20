@@ -32,6 +32,7 @@ export class ClientOfferChangeHistory {
     type: 'enum',
     enum: ['pending', 'applied', 'cancelled'],
     default: 'pending',
+    comment: 'Status of the offer change',
   })
   status: 'pending' | 'applied' | 'cancelled';
 
@@ -58,9 +59,9 @@ export class ClientOfferChangeHistory {
   })
   metadata?: Record<string, any>;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }
