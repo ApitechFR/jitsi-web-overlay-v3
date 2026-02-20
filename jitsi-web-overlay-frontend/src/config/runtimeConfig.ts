@@ -32,6 +32,7 @@ export type FrontConfig = {
     VITE_ENABLE_LANGUAGE_SWITCH?: boolean | string;
     VITE_ENABLE_HARDWARE_TEST?: boolean | string;
     VITE_RESELLER_MODE_ENABLED?: boolean | string;
+    VITE_RESELLER_AUTH_URL?: string;
 };
 
 let cached: FrontConfig | null = null;
@@ -82,6 +83,7 @@ export async function loadRuntimeConfig(force = false): Promise<FrontConfig> {
                 VITE_ENABLE_LANGUAGE_SWITCH: coerceBool(raw.VITE_ENABLE_LANGUAGE_SWITCH ?? (import.meta.env.VITE_ENABLE_LANGUAGE_SWITCH as string | undefined) ?? 'false'),
                 VITE_ENABLE_HARDWARE_TEST: coerceBool(raw.VITE_ENABLE_HARDWARE_TEST ?? (import.meta.env.VITE_ENABLE_HARDWARE_TEST as string | undefined) ?? 'false'),
                 VITE_RESELLER_MODE_ENABLED: coerceBool(raw.VITE_RESELLER_MODE_ENABLED ?? (import.meta.env.VITE_RESELLER_MODE_ENABLED as string | undefined) ?? 'false'),
+                VITE_RESELLER_AUTH_URL: raw.VITE_RESELLER_AUTH_URL || (import.meta.env.VITE_RESELLER_AUTH_URL as string | undefined),
             };
             return cached;
         })

@@ -75,8 +75,25 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
     globalThis.location.href = AuthService.getLoginUrl(room, session);
   };
 
-  const logout = () => {
-    globalThis.location.href = AuthService.getLogoutUrl();
+  const logout = async () => {
+    // Check if in JWT RS256 mode (multi-tenant/reseller)
+    const isJwtMode = AuthService.getBearer() !== null;
+
+    if (isJwtMode) {
+      // JWT RS256 mode: send POST logout request
+      try {
+        await AuthService.logout();
+      } catch (e) {
+        console.error('Logout error:', e);
+      }
+      // Clear localStorage bearer tokens
+      AuthService.clearBearer();
+      // Redirect to home
+      globalThis.location.href = '/';
+    } else {
+      // OIDC mode: redirect to logout endpoint
+      globalThis.location.href = AuthService.getLogoutUrl();
+    }
   };
 
   const contextValue = useMemo(

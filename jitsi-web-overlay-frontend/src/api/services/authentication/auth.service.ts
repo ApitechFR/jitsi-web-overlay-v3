@@ -40,6 +40,26 @@ async function userinfo(): Promise<UserInfos | null> {
 }
 
 async function userinfoDecoded(): Promise<UserInfos | null> {
+    // In JWT RS256 mode (reseller), extract userinfo from the JWT token itself
+    if (isJwtMode()) {
+        const token = getBearer();
+        if (token) {
+            const payload = decodeJwtPayload(token);
+            if (payload) {
+                return {
+                    uid: payload.uid,
+                    email: payload.email,
+                    name: payload.name || payload.preferred_username,
+                    given_name: payload.given_name,
+                    family_name: payload.family_name,
+                    idToken: token, // Include the JWT as idToken for consistency
+                } as UserInfos;
+            }
+        }
+        return null;
+    }
+
+    // In OIDC mode (single-tenant), get userinfo from endpoint
     const data = await userinfo();
     if (!data) return null;
     if (data.idToken && typeof data.idToken === 'string') {

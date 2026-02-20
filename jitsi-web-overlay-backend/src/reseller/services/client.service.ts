@@ -14,6 +14,7 @@ import { OfferType } from '../enums/offer-type.enum';
 import { ModuleKey, OFFER_MODULES } from '../enums/module-key.enum';
 import { EncryptionService } from './encryption.service';
 import { PaginationDto } from '../dto/shared.dto';
+import { User } from '../../users/entities/users.entity';
 
 @Injectable()
 export class ClientService {
@@ -32,6 +33,8 @@ export class ClientService {
     private readonly authConfigRepository: Repository<ClientAuthConfig>,
     @InjectRepository(ClientOfferChangeHistory)
     private readonly offerChangeHistoryRepository: Repository<ClientOfferChangeHistory>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     private readonly encryptionService: EncryptionService,
   ) { }
 
@@ -49,6 +52,16 @@ export class ClientService {
     const offer = await this.offerRepository.findOne({ where: { type: offerType } });
     if (!offer) {
       throw new BadRequestException(`Offer type ${offerType} not found`);
+    }
+
+    // Check client name uniqueness within the reseller
+    const existingClient = await this.clientRepository.findOne({
+      where: { resellerId, name, isActive: true },
+    });
+    if (existingClient) {
+      throw new ConflictException(
+        `A client with the name "${name}" already exists for this reseller`,
+      );
     }
 
     // Check domain uniqueness
@@ -276,6 +289,27 @@ export class ClientService {
   }
 
   /**
+   * Update modules for a client based on offer type
+   */
+  private async updateModulesForOffer(clientId: number, offerType: OfferType): Promise<void> {
+    // Delete existing modules
+    await this.clientModuleRepository.delete({ client: { id: clientId } });
+
+    // Add new modules from the offer
+    const newModules = OFFER_MODULES[offerType];
+    if (newModules && newModules.length > 0) {
+      const clientModules = newModules.map((moduleKey) => {
+        const mod = new ClientModule();
+        mod.clientId = clientId;
+        mod.moduleKey = moduleKey;
+        mod.enabled = true;
+        return mod;
+      });
+      await this.clientModuleRepository.save(clientModules);
+    }
+  }
+
+  /**
    * Upgrade client to a higher offer type
    */
   async upgradeClient(
@@ -307,12 +341,19 @@ export class ClientService {
       );
     }
 
-    // Create offer change history entry (pending status)
+    // Update client offer type
+    client.offerType = toOffer;
+    await this.clientRepository.save(client);
+
+    // Update client modules to match new offer
+    await this.updateModulesForOffer(client.id, toOffer);
+
+    // Create offer change history entry
     const history = new ClientOfferChangeHistory();
     history.client = client;
     history.fromOffer = client.offerType;
     history.toOffer = toOffer;
-    history.status = 'pending';
+    history.status = 'applied';
     history.effectiveDate = new Date();
 
     const savedHistory = await this.offerChangeHistoryRepository.save(history);
@@ -346,7 +387,7 @@ export class ClientService {
       );
     }
 
-    // Validate offer exists and is actually a downgrade
+    // Validate offer exists
     const newOffer = await this.offerRepository.findOne({
       where: { type: toOffer },
     });
@@ -354,19 +395,31 @@ export class ClientService {
       throw new BadRequestException(`Offer type ${toOffer} not found`);
     }
 
-    // Simple validation: PREMIUM -> BASIC is downgrade
+    // Validate downgrade: PREMIUM -> BASIC is downgrade, others not allowed
     if (client.offerType === OfferType.BASIC) {
       throw new BadRequestException(
         'Cannot downgrade from BASIC offer',
       );
     }
 
-    // Create offer change history entry (pending status)
+    // Update client offer type
+    client.offerType = toOffer;
+    await this.clientRepository.save(client);
+
+    // Update client modules to match new offer
+    await this.updateModulesForOffer(client.id, toOffer);
+
+    // Remove customization if downgrading to BASIC
+    if (toOffer === OfferType.BASIC && client.customization) {
+      await this.customizationRepository.delete({ client: { id: client.id } });
+    }
+
+    // Create offer change history entry
     const history = new ClientOfferChangeHistory();
     history.client = client;
     history.fromOffer = client.offerType;
     history.toOffer = toOffer;
-    history.status = 'pending';
+    history.status = 'applied';
     history.effectiveDate = new Date();
 
     const savedHistory = await this.offerChangeHistoryRepository.save(history);
@@ -393,6 +446,50 @@ export class ClientService {
     client.deactivatedAt = new Date();
 
     return await this.clientRepository.save(client);
+  }
+
+  /**
+   * Hard delete a client (permanent deletion with all associated data)
+   * Deletes: client, domains, customization, auth config, modules, users, conferences, etc.
+   */
+  async hardDeleteClient(uid: string, resellerId: string): Promise<{ message: string; uid: string }> {
+    const client = await this.findClient(uid, resellerId);
+
+    // Delete all users associated with this client
+    await this.userRepository.delete({ clientId: client.uid });
+
+    // Delete all domains
+    await this.clientDomainRepository.delete({ client: { uid } });
+
+    // Delete customization
+    if (client.customization) {
+      await this.customizationRepository.delete({ client: { uid } });
+    }
+
+    // Delete auth config
+    if (client.authConfig) {
+      await this.authConfigRepository.delete({ client: { uid } });
+    }
+
+    // Delete modules
+    await this.clientModuleRepository.delete({ client: { uid } });
+
+    // Delete offer change history
+    await this.offerChangeHistoryRepository.delete({ client: { uid } });
+
+    // Delete the client itself
+    await this.clientRepository.delete({ uid });
+
+    return { message: 'Client supprimé définitivement', uid };
+  }
+
+  /**
+   * Count active users for a specific client
+   */
+  async countUsersByClientId(clientId: string): Promise<number> {
+    return await this.userRepository.count({
+      where: { clientId, isActive: true },
+    });
   }
 
   /**
@@ -469,6 +566,9 @@ export class ClientService {
   /**
    * Get client with decrypted auth config (internal use only)
    */
+  /**
+   * Get client with decrypted auth config (internal use only)
+   */
   async getClientWithDecryptedConfig(
     uid: string,
     resellerId: string,
@@ -483,5 +583,17 @@ export class ClientService {
     }
 
     return client;
+  }
+
+  /**
+   * Get a client by UID with all relations and user count
+   */
+  async findClientWithStats(
+    uid: string,
+    resellerId: string,
+  ): Promise<{ client: Client; usersCount: number }> {
+    const client = await this.findClient(uid, resellerId);
+    const usersCount = await this.countUsersByClientId(client.uid);
+    return { client, usersCount };
   }
 }

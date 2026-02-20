@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { AuthService } from '@/api';
 import { readState, clearState } from '@/api/services/authentication/oidc.utils';
 import { getHttp } from '@/api/http';
+import { useAuth } from '@/auth/useAuth';
 
 export default function LoginCallback() {
   const navigate = useNavigate();
+  const { refresh: refreshAuth } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -26,7 +28,8 @@ export default function LoginCallback() {
     }
 
     // ===== Mode JWT RS256 (Multi-Tenant/Reseller) =====
-    console.log('LoginCallback: Checking for JWT token in URL...', { jwtToken });
+    const room = p.get('room'); // Optional: conferenceName to redirect to after auth
+    console.log('LoginCallback: Checking for JWT token in URL...', { jwtToken, room });
     if (jwtToken) {
       (async () => {
         try {
@@ -40,9 +43,13 @@ export default function LoginCallback() {
 
           console.log('Reseller login successful:', response.data);
 
-          // Redirige vers home (les cookies de session sont déjà set)
+          // Refresh auth context to update user info and authenticated state
+          await refreshAuth();
+
+          // Redirige vers la conférence si 'room' est fourni, sinon vers home
           setLoading(false);
-          navigate('/', { replace: true });
+          const redirectTarget = room ? `/${room}` : '/';
+          navigate(redirectTarget, { replace: true });
         } catch (e: any) {
           console.error('Reseller login failed:', e);
           const msg = e?.response?.data?.message || 'Reseller login failed';

@@ -16,7 +16,10 @@ export class ClientDomainRepository {
      * @returns ClientDomain if exists, null otherwise
      */
     async findByDomainName(domainName: string): Promise<ClientDomain | null> {
-        return this.repository.findOne({ where: { domainName } });
+        return this.repository.findOne({
+            where: { domainName },
+            relations: ['client'],
+        });
     }
 
     /**

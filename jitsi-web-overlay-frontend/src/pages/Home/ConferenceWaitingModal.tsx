@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styles from './HomeJoona.module.css';
 import { useTranslation } from 'react-i18next';
 import { ConferenceNameValidation } from '@/utils/conferenceName';
+import { loadRuntimeConfig } from '@/config/runtimeConfig';
 
 import { AgentConnectButton, Input, Checkbox, Button, Badge } from "@ds";
 
@@ -39,6 +40,8 @@ export const ConferenceWaitingModal: React.FC<ConferenceWaitingModalProps> = ({
     const [buttonMsg, setButtonMsg] = useState(
         t('conferenceWaitingModal.receiveCode')
     );
+    const [resellerAuthUrl, setResellerAuthUrl] = useState<string | null>(null);
+    const [isResellerMode, setIsResellerMode] = useState<boolean>(false);
 
     /** webconf **/
     const onCheck = () => {
@@ -58,12 +61,39 @@ export const ConferenceWaitingModal: React.FC<ConferenceWaitingModalProps> = ({
         setButtonMsg(t('conferenceWaitingModal.emailNotReceived'));
     };
 
+    const handleAuthenticationClick = () => {
+        if (isResellerMode && resellerAuthUrl && validateConferenceName(conferenceName)) {
+            // Reseller mode: redirect to authentication URL with conference name
+            const authUrlWithRoom = `${resellerAuthUrl}?room=${encodeURIComponent(conferenceName)}`;
+            window.location.href = authUrlWithRoom;
+        } else {
+            // Standard mode: use login function
+            stopWaitingAndPoll();
+            login(validateConferenceName(conferenceName) ? conferenceName : undefined);
+        }
+    };
+
     useEffect(() => {
         setIsWhitelisted(null);
         setEmail('');
         setIsChecked(false);
         setButtonMsg(t('conferenceWaitingModal.receiveCode'));
     }, [setEmail, setIsWhitelisted, t]);
+
+    useEffect(() => {
+        // Load runtime config to get reseller settings
+        loadRuntimeConfig().then((config) => {
+            const resellerModeEnabled = config.VITE_RESELLER_MODE_ENABLED === true || config.VITE_RESELLER_MODE_ENABLED === 'true';
+            const authUrl = config.VITE_RESELLER_AUTH_URL;
+
+            setIsResellerMode(resellerModeEnabled);
+            if (authUrl) {
+                setResellerAuthUrl(authUrl);
+            }
+        }).catch((error) => {
+            console.error('Failed to load runtime config:', error);
+        });
+    }, []);
 
     return (
         <modal.Component
@@ -130,10 +160,7 @@ export const ConferenceWaitingModal: React.FC<ConferenceWaitingModalProps> = ({
                     </>
                 )}
                 {appTemplate === 'joona' && !authenticated && (
-                    <Button priority="primary" onClick={() => {
-                        stopWaitingAndPoll();
-                        login(validateConferenceName(conferenceName) ? conferenceName : undefined);
-                    }}>
+                    <Button priority="primary" onClick={handleAuthenticationClick}>
                         <span>{t('conferenceWaitingModal.authenticate')}</span>
                     </Button>
                 )}
