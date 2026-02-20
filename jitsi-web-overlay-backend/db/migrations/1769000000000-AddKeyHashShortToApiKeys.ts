@@ -2,8 +2,16 @@ import { MigrationInterface, QueryRunner, TableColumn, TableIndex } from 'typeor
 
 export class AddKeyHashShortToApiKeys1769000000000 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
-        try {
-            // Ajouter la colonne key_hash_short (nullable initially)
+        // Check if column exists before adding
+        const table = await queryRunner.getTable('api_keys');
+
+        if (!table) {
+            console.log('api_keys table does not exist, skipping migration');
+            return;
+        }
+
+        // Add key_hash_short column if it doesn't exist
+        if (!table.findColumnByName('key_hash_short')) {
             await queryRunner.addColumn(
                 'api_keys',
                 new TableColumn({
@@ -13,17 +21,16 @@ export class AddKeyHashShortToApiKeys1769000000000 implements MigrationInterface
                     isNullable: true,
                 }),
             );
-        } catch (error) {
-            // Column might already exist, continue
-            if (error instanceof Error && error.message.includes('already exists')) {
-                console.log('key_hash_short already exists or migration already applied');
-            } else {
-                throw error;
-            }
+            console.log('Added key_hash_short column to api_keys');
+        } else {
+            console.log('key_hash_short column already exists');
         }
 
-        try {
-            // Créer un index unique sur key_hash_short
+        // Create unique index on key_hash_short if it doesn't exist
+        const existingIndexes = table.indices;
+        const hasKeyHashShortIndex = existingIndexes.some(idx => idx.name === 'IDX_api_keys_key_hash_short');
+
+        if (!hasKeyHashShortIndex) {
             await queryRunner.createIndex(
                 'api_keys',
                 new TableIndex({
@@ -32,63 +39,28 @@ export class AddKeyHashShortToApiKeys1769000000000 implements MigrationInterface
                     isUnique: true,
                 }),
             );
-        } catch (error) {
-            // Index might already exist, continue
-            if (error instanceof Error && error.message.includes('already exists')) {
-                console.log('Index IDX_api_keys_key_hash_short already exists');
-            } else {
-                throw error;
-            }
-        }
-
-        try {
-            // Ajouter un index sur last_used_at si n'existe pas
-            await queryRunner.createIndex(
-                'api_keys',
-                new TableIndex({
-                    name: 'IDX_api_keys_last_used',
-                    columnNames: ['last_used_at'],
-                }),
-            );
-        } catch (error) {
-            // Index might already exist, continue
-            if (error instanceof Error && error.message.includes('already exists')) {
-                console.log('Index IDX_api_keys_last_used already exists');
-            } else {
-                throw error;
-            }
+            console.log('Created index IDX_api_keys_key_hash_short');
+        } else {
+            console.log('Index IDX_api_keys_key_hash_short already exists');
         }
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        try {
-            await queryRunner.dropIndex('api_keys', 'IDX_api_keys_last_used');
-        } catch (error) {
-            if (error instanceof Error && error.message.includes('does not exist')) {
-                console.log('Index not found');
-            } else {
-                throw error;
-            }
+        const table = await queryRunner.getTable('api_keys');
+
+        if (!table) {
+            return;
         }
 
-        try {
+        // Drop index if exists
+        const hasKeyHashShortIndex = table.indices.some(idx => idx.name === 'IDX_api_keys_key_hash_short');
+        if (hasKeyHashShortIndex) {
             await queryRunner.dropIndex('api_keys', 'IDX_api_keys_key_hash_short');
-        } catch (error) {
-            if (error instanceof Error && error.message.includes('does not exist')) {
-                console.log('Index not found');
-            } else {
-                throw error;
-            }
         }
 
-        try {
+        // Drop column if exists
+        if (table.findColumnByName('key_hash_short')) {
             await queryRunner.dropColumn('api_keys', 'key_hash_short');
-        } catch (error) {
-            if (error instanceof Error && error.message.includes('does not exist')) {
-                console.log('Column not found');
-            } else {
-                throw error;
-            }
         }
     }
 }
