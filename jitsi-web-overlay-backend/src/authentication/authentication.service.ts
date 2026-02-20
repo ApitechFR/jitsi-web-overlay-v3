@@ -5,6 +5,7 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
+  Inject,
 } from '@nestjs/common';
 import * as queryString from 'querystring';
 import { HttpsProxyAgent } from 'https-proxy-agent';
@@ -14,6 +15,7 @@ import { AuthCookieUtil } from './utils/auth-cookie.util';
 import { UsersService } from '../users/users.service';
 import { User, AuthProvider } from '../users/entities/users.entity';
 import { v4 as uuidv4 } from 'uuid';
+import { TenantContext } from '../common/context/tenant.context';
 
 @Injectable()
 export class AuthenticationService {
@@ -25,6 +27,7 @@ export class AuthenticationService {
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
+    private readonly tenantContext: TenantContext,
   ) {
     this.cookieUtil = new AuthCookieUtil(this.configService);
   }
@@ -218,6 +221,27 @@ export class AuthenticationService {
 
     const url = this.configService.get('OIDC_END_SESSION_ENDPOINT') + '?';
     return url + queryString.stringify(query);
+  }
+
+  /**
+   * Logout pour mode JWT RS256 (Multi-Tenant/Reseller)
+   * En mode stateless JWT, il y a pas de session serveur à détruire
+   * Le logout consiste simplement à nettoyer le contexte client
+   * 
+   * @param clientId UUID du client à déconnecter
+   * @returns Objet de confirmation avec succès et message
+   */
+  logoutJwtRs256(clientId: string): { success: boolean; message: string; clientId: string } {
+    this.logger.log(`JWT RS256 logout for clientId: ${clientId}`);
+
+    // Nettoyage du contexte (TenantContext REQUEST-scoped)
+    this.tenantContext.clear();
+
+    return {
+      success: true,
+      message: 'Session cleared successfully. Token will expire at natural expiration time.',
+      clientId,
+    };
   }
 
   generateJwtPair(claims: Record<string, any>) {
