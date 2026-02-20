@@ -80,18 +80,18 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
     const isJwtMode = AuthService.getBearer() !== null;
 
     if (isJwtMode) {
-      // JWT RS256 mode: send POST logout request
+      // JWT RS256 mode: clear bearer, call logout endpoint, then redirect
+      AuthService.clearBearer();
       try {
+        // Call logout endpoint to clear server-side cookies
         await AuthService.logout();
       } catch (e) {
-        console.error('Logout error:', e);
+        console.error('Logout request failed:', e);
       }
-      // Clear localStorage bearer tokens
-      AuthService.clearBearer();
-      // Redirect to home
+      // Redirect to home after logout
       globalThis.location.href = '/';
     } else {
-      // OIDC mode: redirect to logout endpoint
+      // OIDC mode: redirect to OIDC logout endpoint
       globalThis.location.href = AuthService.getLogoutUrl();
     }
   };
