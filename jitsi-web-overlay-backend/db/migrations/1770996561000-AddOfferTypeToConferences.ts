@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
-export class AddOfferTypeToConferences1770996561 implements MigrationInterface {
+export class AddOfferTypeToConferences1770996561000 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         // Ajout de  la colonne offer_type_at_creation à la table conferences
         const columnExists = await queryRunner.hasColumn('conferences', 'offer_type_at_creation');
