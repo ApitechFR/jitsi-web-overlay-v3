@@ -23,9 +23,9 @@ import { ClientResponseDto, ClientSummaryDto, PaginatedResponseDto, OfferInfoDto
 import { Client } from '../entities/client.entity';
 
 /**
- * Transforms a Client entity to a ClientResponseDto
+ * Transforms a Client entity to a ClientResponseDto with optional user count
  */
-function clientToResponseDto(client: Client): ClientResponseDto {
+function clientToResponseDto(client: Client, usersCount: number = 0): ClientResponseDto {
   return {
     uid: client.uid,
     name: client.name,
@@ -58,7 +58,7 @@ function clientToResponseDto(client: Client): ClientResponseDto {
       }
       : undefined,
     stats: {
-      usersCount: 0, // Will be calculated from actual users in future
+      usersCount: usersCount,
     },
     isActive: client.isActive,
     createdAt: client.createdAt,
@@ -68,15 +68,15 @@ function clientToResponseDto(client: Client): ClientResponseDto {
 }
 
 /**
- * Transforms a Client entity to a ClientSummaryDto
+ * Transforms a Client entity to a ClientSummaryDto with user count
  */
-function clientToSummaryDto(client: Client): ClientSummaryDto {
+function clientToSummaryDto(client: Client, usersCount: number = 0): ClientSummaryDto {
   return {
     uid: client.uid,
     name: client.name,
     domains: client.domains?.map((d) => d.domainName) || [],
     offerType: client.offerType,
-    usersCount: 0, // Will be calculated from actual users in future
+    usersCount: usersCount,
     isActive: client.isActive,
     createdAt: client.createdAt,
   };
@@ -101,7 +101,8 @@ export class ClientController {
     @CurrentClient() resellerId: string,
   ): Promise<ClientResponseDto> {
     const client = await this.clientService.createClient(createClientDto, resellerId);
-    return clientToResponseDto(client);
+    const usersCount = await this.clientService.countUsersByClientId(client.uid);
+    return clientToResponseDto(client, usersCount);
   }
 
   /**
@@ -123,8 +124,16 @@ export class ClientController {
     const limit = pagination.limit || 20;
     const pages = Math.ceil(total / limit);
 
+    // Get user counts for all clients in the list
+    const dataWithCounts = await Promise.all(
+      data.map(async (client) => {
+        const usersCount = await this.clientService.countUsersByClientId(client.uid);
+        return clientToSummaryDto(client, usersCount);
+      }),
+    );
+
     return {
-      data: data.map(clientToSummaryDto),
+      data: dataWithCounts,
       total,
       page,
       limit,
@@ -142,8 +151,8 @@ export class ClientController {
     @Param('uid') uid: string,
     @CurrentClient() resellerId: string,
   ): Promise<ClientResponseDto> {
-    const client = await this.clientService.findClient(uid, resellerId);
-    return clientToResponseDto(client);
+    const { client, usersCount } = await this.clientService.findClientWithStats(uid, resellerId);
+    return clientToResponseDto(client, usersCount);
   }
 
   /**
@@ -158,7 +167,8 @@ export class ClientController {
     @CurrentClient() resellerId: string,
   ): Promise<ClientResponseDto> {
     const client = await this.clientService.updateClient(uid, updateClientDto, resellerId);
-    return clientToResponseDto(client);
+    const usersCount = await this.clientService.countUsersByClientId(client.uid);
+    return clientToResponseDto(client, usersCount);
   }
 
   /**
@@ -177,6 +187,19 @@ export class ClientController {
       uid: client.uid,
       deactivatedAt: client.deactivatedAt,
     };
+  }
+
+  /**
+   * DELETE /reseller/clients/:uid/hard-delete
+   * Hard delete a client (permanent deletion with all associated data)
+   */
+  @Delete(':uid/hard-delete')
+  @HttpCode(HttpStatus.OK)
+  async hardDeleteClient(
+    @Param('uid') uid: string,
+    @CurrentClient() resellerId: string,
+  ): Promise<{ message: string; uid: string }> {
+    return this.clientService.hardDeleteClient(uid, resellerId);
   }
 
   /**

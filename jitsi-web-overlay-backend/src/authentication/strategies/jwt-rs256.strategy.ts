@@ -102,8 +102,11 @@ export class JwtRs256Strategy extends PassportStrategy(Strategy, 'jwt-rs256') {
                 clientIdStr,
             );
 
-            // Inject clientId into the context
+            // Inject clientId and offerType into the context
             this.tenantContext.setClientId(clientIdStr);
+            if (payload.offerType) {
+                this.tenantContext.setOfferType(String(payload.offerType));
+            }
 
             return {
                 sub: payload.sub,
@@ -140,8 +143,11 @@ export class JwtRs256Strategy extends PassportStrategy(Strategy, 'jwt-rs256') {
                     clientId,
                 );
 
-                // Inject clientId into the context
+                // Inject clientId and offerType into the context
                 this.tenantContext.setClientId(clientId);
+                if (payload.offerType) {
+                    this.tenantContext.setOfferType(String(payload.offerType));
+                }
 
                 return {
                     sub: payload.sub,
@@ -184,6 +190,7 @@ export class JwtRs256Strategy extends PassportStrategy(Strategy, 'jwt-rs256') {
  *   email: 'user@example.com',
  *   name: 'John Doe',
  *   clientId: 'client-uuid' (optionnel),
+ *   offerType: 'offer-type' (optionnel),
  *   iat: 1234567890,
  *   exp: 1234567890 + 3600
  * }
@@ -193,6 +200,7 @@ export interface JwtPayload {
     email: string; // Email utilisateur
     name?: string; // Nom affichage
     clientId?: string | number; // UUID client (optionnel, résolu par email domain sinon)
+    offerType?: string; // Type d'offre (optionnel)
     iat?: number; // Issued At
     exp?: number; // Expiration
 }

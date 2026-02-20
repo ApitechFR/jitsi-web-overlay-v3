@@ -14,6 +14,8 @@ export enum ModuleKey {
     RECORDING = 'recording',
     WHITEBOARD = 'whiteboard',
     VOXIFY = 'voxify',
+    ETHERPAD = 'etherpad',
+    TRANSCRIPTION = 'transcription',
 }
 
 /**
@@ -29,5 +31,7 @@ export const OFFER_MODULES = {
         ModuleKey.RECORDING,
         ModuleKey.WHITEBOARD,
         ModuleKey.VOXIFY,
+        ModuleKey.ETHERPAD,
+        ModuleKey.TRANSCRIPTION,
     ],
 };

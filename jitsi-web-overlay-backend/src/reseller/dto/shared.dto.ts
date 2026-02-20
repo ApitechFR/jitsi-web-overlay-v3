@@ -1,4 +1,5 @@
 import { IsString, IsOptional, IsEnum } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 
 /**
  * Authentification configuration for a client
@@ -91,5 +92,11 @@ export class PaginationDto {
     offerType?: string;
 
     @IsOptional()
+    @Transform(({ value }) => {
+        if (typeof value === 'string') {
+            return value.toLowerCase() === 'true';
+        }
+        return value;
+    })
     isActive?: boolean;
 }

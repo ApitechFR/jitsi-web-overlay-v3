@@ -23,6 +23,7 @@ import {
   ApiKey,
   ClientOfferChangeHistory,
 } from './entities';
+import { User } from '../users/entities/users.entity';
 
 /**
  * Reseller Module
@@ -40,6 +41,7 @@ import {
       ClientDomain,
       ApiKey,
       ClientOfferChangeHistory,
+      User,
     ]),
   ],
   controllers: [ClientController, OfferController, OfferChangeController, ApiKeyController],

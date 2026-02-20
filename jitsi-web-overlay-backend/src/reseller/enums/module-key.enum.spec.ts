@@ -9,11 +9,13 @@ describe('ModuleKey Enum', () => {
     expect(ModuleKey.RECORDING).toBe('recording');
     expect(ModuleKey.WHITEBOARD).toBe('whiteboard');
     expect(ModuleKey.VOXIFY).toBe('voxify');
+    expect(ModuleKey.ETHERPAD).toBe('etherpad');
+    expect(ModuleKey.TRANSCRIPTION).toBe('transcription');
   });
 
-  it('should have exactly 7 module keys', () => {
+  it('should have exactly 9 module keys', () => {
     const values = Object.values(ModuleKey);
-    expect(values).toHaveLength(7);
+    expect(values).toHaveLength(9);
   });
 });
 
@@ -24,12 +26,14 @@ describe('OFFER_MODULES Config', () => {
     expect(OFFER_MODULES.basic).toContain(ModuleKey.FEEDBACK);
   });
 
-  it('should have PREMIUM offer with 7 modules', () => {
-    expect(OFFER_MODULES.premium).toHaveLength(7);
+  it('should have PREMIUM offer with 9 modules', () => {
+    expect(OFFER_MODULES.premium).toHaveLength(9);
     expect(OFFER_MODULES.premium).toContain(ModuleKey.WEBINAR);
     expect(OFFER_MODULES.premium).toContain(ModuleKey.REPLAY);
     expect(OFFER_MODULES.premium).toContain(ModuleKey.RECORDING);
     expect(OFFER_MODULES.premium).toContain(ModuleKey.WHITEBOARD);
+    expect(OFFER_MODULES.premium).toContain(ModuleKey.ETHERPAD);
+    expect(OFFER_MODULES.premium).toContain(ModuleKey.TRANSCRIPTION);
   });
 
   it('should include core modules in both offers', () => {

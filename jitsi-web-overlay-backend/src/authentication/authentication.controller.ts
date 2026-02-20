@@ -13,6 +13,8 @@ import {
   Inject,
   UseGuards,
   Post,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { AuthProvider } from '../users/entities/users.entity';
@@ -31,6 +33,7 @@ import {
 import { IConferenceService } from '../conference/interfaces/conference-service.interface';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { TenantContext } from '../common/context/tenant.context';
+import { ClientDomainRepository } from '../reseller/repositories/client-domain.repository';
 
 @Controller()
 export class AuthenticationController {
@@ -43,6 +46,7 @@ export class AuthenticationController {
     private readonly configService: ConfigService,
     private readonly usersService: UsersService,
     private readonly tenantContext: TenantContext,
+    private readonly clientDomainRepository: ClientDomainRepository,
   ) { }
 
   private getFrontBaseUrl(): string {
@@ -216,9 +220,9 @@ export class AuthenticationController {
 
 
   @Get('authentication/logout')
-  @Redirect('', 302)
+  @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: 302, description: 'Redirection to Cerbère (OIDC) or success (JWT RS256)' })
-  logout(
+  async logout(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
@@ -227,7 +231,10 @@ export class AuthenticationController {
 
     if (isResellerModeEnabled) {
       // Mode JWT RS256 (Multi-Tenant/Reseller)
-      return this.logoutJwtRs256();
+      // Clear session cookies and redirect to frontend
+      this.authenticationService.clearAllCookies(response);
+      const frontendLogoutRedirect = this.configService.get('FRONTEND_LOGOUT_REDIRECT') || '/';
+      return response.redirect(frontendLogoutRedirect);
     }
 
     // Mode OIDC original (Single-Tenant)
@@ -245,7 +252,9 @@ export class AuthenticationController {
 
     this.authenticationService.setAuthCookie(response, 'state', state);
 
-    return { url: this.authenticationService.logout(state, idToken) };
+    // Redirect to OIDC logout URL
+    const logoutUrl = this.authenticationService.logout(state, idToken);
+    response.redirect(logoutUrl);
   }
 
   /**
@@ -253,13 +262,17 @@ export class AuthenticationController {
    * @private
    */
   private logoutJwtRs256() {
+    // Try to get clientId from tenantContext (if JWT Bearer token is present)
     const clientId = this.tenantContext.getClientId();
 
-    if (!clientId) {
-      throw new UnauthorizedException('No active JWT RS256 session found');
+    // If clientId is present, perform full logout via clientId
+    if (clientId) {
+      return this.authenticationService.logoutJwtRs256(clientId);
     }
 
-    return this.authenticationService.logoutJwtRs256(clientId);
+    // Fallback: User might be authenticated via cookies only (no Bearer token)
+    // In this case, just return success (cookies will be cleared by clearAllCookies below)
+    return { success: true, message: 'Logged out successfully' };
   }
 
   @Get('authentication/logout_callback')
@@ -411,6 +424,26 @@ export class AuthenticationController {
       throw new UnauthorizedException('JWT must contain email or sub claim');
     }
 
+    // Extract client info from JWT (for multi-tenant isolation)
+    let clientId = decoded.clientId || decoded.client_id;
+    const offerType = decoded.offerType || decoded.offer_type;
+
+    // If clientId not in JWT, try to resolve from email domain
+    if (!clientId && email?.includes('@')) {
+      const emailDomain = email.split('@')[1];
+      const clientDomain = await this.clientDomainRepository.findByDomainName(emailDomain);
+      if (clientDomain) {
+        clientId = String(clientDomain.client.id);
+      }
+    }
+
+    // Ensure we have a clientId to proceed in reseller mode
+    if (!clientId) {
+      throw new UnauthorizedException(
+        'Cannot resolve clientId from JWT or email domain. Ensure the JWT contains clientId or the email domain is registered.',
+      );
+    }
+
     // Create/upsert user
     let user = await this.usersService.findByEmail(email);
     if (!user) {
@@ -420,10 +453,14 @@ export class AuthenticationController {
         displayName: decoded.name || email.split('@')[0],
         provider: AuthProvider.JWT_RS256,
         uid: crypto.randomBytes(16).toString('hex'),
+        clientId, // Store clientId for multi-tenant isolation
       });
       if (!user) {
         throw new UnauthorizedException('Failed to create user');
       }
+    } else if (clientId && !user.clientId) {
+      // User exists but has no clientId - assign it now (for reseller migration scenarios)
+      user = await this.usersService.update(user.id, { clientId });
     }
 
     // Generate session tokens (same as OIDC)
@@ -434,6 +471,8 @@ export class AuthenticationController {
       email,
       name: decoded.name || email,
       uid: user.uid,
+      ...(clientId && { clientId }), // Include clientId if present (for multi-tenant isolation)
+      ...(offerType && { offerType }), // Include offerType if present (for plan/feature access)
     };
 
     const accessToken = this.authenticationService.generateAccessToken(baseClaims);
