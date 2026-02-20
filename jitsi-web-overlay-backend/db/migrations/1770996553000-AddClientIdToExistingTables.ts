@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
-export class AddClientIdToExistingTables1770996553 implements MigrationInterface {
+export class AddClientIdToExistingTables1770996553000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Liste des tables existantes
     const tables = [
