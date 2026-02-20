@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, TableColumn, TableIndex } from 'typeorm';
 
-export class AddKeyHashShortToApiKeys1769000000000000 implements MigrationInterface {
+export class AddKeyHashShortToApiKeys1769000000000 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         try {
             // Ajouter la colonne key_hash_short (nullable initially)
