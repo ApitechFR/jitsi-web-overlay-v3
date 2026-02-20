@@ -221,7 +221,7 @@ export class AuthenticationController {
 
   @Get('authentication/logout')
   @HttpCode(HttpStatus.OK)
-  @ApiResponse({ status: 302, description: 'Redirection to Cerbère (OIDC) or success (JWT RS256)' })
+  @ApiResponse({ status: 200, description: 'Logout successful (JWT RS256) or redirect (OIDC)' })
   async logout(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
@@ -231,10 +231,10 @@ export class AuthenticationController {
 
     if (isResellerModeEnabled) {
       // Mode JWT RS256 (Multi-Tenant/Reseller)
-      // Clear session cookies and redirect to frontend
+      // Clear session cookies and return success
+      // Frontend will handle the redirect to home
       this.authenticationService.clearAllCookies(response);
-      const frontendLogoutRedirect = this.configService.get('FRONTEND_LOGOUT_REDIRECT') || '/';
-      return response.redirect(frontendLogoutRedirect);
+      return { success: true, message: 'Logged out successfully' };
     }
 
     // Mode OIDC original (Single-Tenant)
