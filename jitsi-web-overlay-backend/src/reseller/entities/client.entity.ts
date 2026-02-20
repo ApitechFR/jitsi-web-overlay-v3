@@ -36,10 +36,10 @@ export class Client {
     @Column()
     name: string;
 
-    @Column({ type: 'enum', enum: OfferType })
+    @Column({ type: 'varchar', length: 50, name: 'offer_type' })
     offerType: OfferType;
 
-    @Column({ nullable: true, comment: 'Reseller ID - isolate clients by reseller' })
+    @Column({ name: 'reseller_id', nullable: true, comment: 'Reseller ID - isolate clients by reseller' })
     resellerId?: string;
 
     // Relations
@@ -60,15 +60,15 @@ export class Client {
     domains?: ClientDomain[];
 
     // Metadata
-    @Column({ default: true })
+    @Column({ name: 'is_active', default: true })
     isActive: boolean;
 
-    @Column({ nullable: true })
+    @Column({ name: 'deactivated_at', nullable: true })
     deactivatedAt?: Date;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({ name: 'updated_at' })
     updatedAt: Date;
 }

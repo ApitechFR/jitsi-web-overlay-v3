@@ -1,22 +1,26 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToOne,
+  JoinColumn,
+  Index,
+} from 'typeorm';
 import { Client } from './client.entity';
 
-
-/**
- * Entity ClientAuthConfig - Per-client authentication configuration
- * Supports OIDC
- * Secrets are encrypted via EncryptionService
- */
 @Entity('client_auth_configs')
+@Index(['client'], { unique: true }) // 1 config auth par client (si c’est bien le modèle)
 export class ClientAuthConfig {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => Client, (client) => client.authConfig)
+  @OneToOne(() => Client, (client) => client.authConfig, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'client_id' })
   client: Client;
 
-  @Column({ type: 'enum', enum: ['oidc'], nullable: true })
+  @Column({ type: 'varchar', length: 50, nullable: true })
   type?: 'oidc';
 
   @Column({
@@ -26,9 +30,9 @@ export class ClientAuthConfig {
   })
   config?: Record<string, any>;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }

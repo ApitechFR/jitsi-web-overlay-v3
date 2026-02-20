@@ -185,18 +185,18 @@ export class ClientService {
 
     const query = this.clientRepository
       .createQueryBuilder('client')
-      .where('client.resellerId = :resellerId', { resellerId })
-      .andWhere('client.isActive = :isActive', { isActive: where.isActive });
+      .where('client.reseller_id = :resellerId', { resellerId })
+      .andWhere('client.is_active = :isActive', { isActive: where.isActive });
 
     // Add offerType filter if provided
     if (offerType) {
-      query.andWhere('client.offerType = :offerType', { offerType });
+      query.andWhere('client.offer_type = :offerType', { offerType });
     }
 
     // Add search filter (name or domain) if provided
     if (search) {
       query.leftJoinAndSelect('client.domains', 'domains')
-        .andWhere('(client.name LIKE :search OR domains.domainName LIKE :search)', {
+        .andWhere('(client.name LIKE :search OR domains.domain_name LIKE :search)', {
           search: `%${search}%`,
         });
     } else {

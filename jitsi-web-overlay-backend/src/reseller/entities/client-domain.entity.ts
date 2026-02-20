@@ -16,9 +16,9 @@ export class ClientDomain {
   @JoinColumn({ name: 'client_id' })
   client: Client;
 
-  @Column({ length: 255, unique: true })
+  @Column({ name: 'domain_name', type: 'varchar', length: 255, unique: true })
   domainName: string; // e.g., "apitech.fr"
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }

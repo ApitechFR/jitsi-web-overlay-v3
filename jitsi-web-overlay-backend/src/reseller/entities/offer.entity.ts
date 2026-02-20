@@ -2,11 +2,8 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Index } from 
 import { OfferType } from '../enums/offer-type.enum';
 import { ModuleKey } from '../enums/module-key.enum';
 
-/**
- * Entité Offer - Offres disponibles (statiques: BASIC, PREMIUM)
- * Immuable après création - utilisée en référence par les clients
- */
 @Entity('offers')
+@Index(['type'], { unique: true })
 export class Offer {
   @PrimaryGeneratedColumn()
   id: number;
@@ -14,26 +11,24 @@ export class Offer {
   @Column({ type: 'enum', enum: OfferType, unique: true })
   type: OfferType;
 
-  @Column()
-  name: string; // "Basic Offer", "Premium Offer"
+  @Column({ type: 'varchar', length: 255 })
+  name: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   description: string;
 
-  @Column('json')
-  modules: ModuleKey[]; // Array de modules inclus
+  @Column({ type: 'json' })
+  modules: ModuleKey[];
 
-  @Column('json', { nullable: true })
+  @Column({ type: 'json', nullable: true })
   limits: {
     maxParticipants?: number;
     replayRetentionDays?: number;
   };
 
-  @Column({ default: false })
+  @Column({ name: 'customization_enabled', type: 'boolean', default: false })
   customizationEnabled: boolean;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
-
-  // JAMAIS modifiable après création!
 }
