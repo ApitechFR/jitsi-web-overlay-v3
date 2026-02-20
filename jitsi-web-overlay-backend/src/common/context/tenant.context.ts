@@ -25,6 +25,7 @@ import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class TenantContext {
     private clientId: string | null = null;
+    private offerType: string | null = null;
 
     /**
      * Assigne le client_id actuel du contexte de la requête
@@ -48,6 +49,22 @@ export class TenantContext {
      */
     hasClientId(): boolean {
         return this.clientId !== null;
+    }
+
+    /**
+     * Assigne le type d'offre (plan) du client actuel
+     * @param offerType Type d'offre (basic, premium, etc.), ou null
+     */
+    setOfferType(offerType: string | null): void {
+        this.offerType = offerType;
+    }
+
+    /**
+     * Récupère le type d'offre actuel du contexte
+     * @returns Type d'offre, ou null si aucun offerType défini
+     */
+    getOfferType(): string | null {
+        return this.offerType;
     }
 
     /**

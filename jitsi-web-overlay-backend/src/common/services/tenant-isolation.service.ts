@@ -101,6 +101,24 @@ export class TenantIsolationService {
     }
 
     /**
+     * Injects the offerType into an entity before saving to the database
+     *
+     * Usage:
+     * ```typescript
+     * const conference = new Conference();
+     * conference.name = 'My Conference';
+     * this.tenantIsolation.injectOfferType(conference, 'offerTypeAtCreation');
+     * await this.conferenceRepository.save(conference);
+     * ```
+     */
+    injectOfferType(entity: any, fieldName: string = 'offerTypeAtCreation'): void {
+        const offerType = this.tenantContext.getOfferType();
+        if (offerType && !entity[fieldName]) {
+            entity[fieldName] = offerType;
+        }
+    }
+
+    /**
      * Creates a QueryBuilder with automatic clientId isolation
      *
      * Usage:

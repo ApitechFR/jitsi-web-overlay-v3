@@ -81,8 +81,9 @@ export class ConferenceServiceSQL implements IConferenceService {
       start_time: new Date(),
     });
 
-    // Inject clientId (and optionally offerType for audit trail)
+    // Inject clientId and offerType (and optionally offerType for audit trail)
     this.tenantIsolation.injectClientId(conf);
+    this.tenantIsolation.injectOfferType(conf, 'offerTypeAtCreation');
 
     return this.conferenceRepo.save(conf);
   }
