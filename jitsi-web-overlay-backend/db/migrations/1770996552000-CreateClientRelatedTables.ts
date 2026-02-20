@@ -17,7 +17,8 @@ export class CreateClientRelatedTables1770996552000 implements MigrationInterfac
           {
             name: 'client_id',
             type: 'int',
-            isUnique: true,
+            // ⚠️ IMPORTANT: Pas de isUnique: true ici!
+            // TypeORM crée automatiquement l'index unique via @JoinColumn
           },
           {
             name: 'logo',
@@ -246,75 +247,8 @@ export class CreateClientRelatedTables1770996552000 implements MigrationInterfac
       }),
     );
 
-    // ApiKey
-    await queryRunner.createTable(
-      new Table({
-        name: 'api_keys',
-        columns: [
-          {
-            name: 'id',
-            type: 'int',
-            isPrimary: true,
-            isGenerated: true,
-            generationStrategy: 'increment',
-          },
-          {
-            name: 'key_hash',
-            type: 'varchar',
-            length: '255',
-            isUnique: true,
-          },
-          {
-            name: 'reseller_id',
-            type: 'varchar',
-            length: '255',
-            isNullable: true,
-          },
-          {
-            name: 'is_active',
-            type: 'boolean',
-            default: true,
-          },
-          {
-            name: 'label',
-            type: 'varchar',
-            length: '255',
-            isNullable: true,
-          },
-          {
-            name: 'last_used_at',
-            type: 'datetime',
-            isNullable: true,
-          },
-          {
-            name: 'revoked_at',
-            type: 'datetime',
-            isNullable: true,
-          },
-          {
-            name: 'created_at',
-            type: 'datetime(6)',
-            default: 'CURRENT_TIMESTAMP(6)',
-          },
-          {
-            name: 'updated_at',
-            type: 'datetime(6)',
-            default: 'CURRENT_TIMESTAMP(6)',
-            onUpdate: 'CURRENT_TIMESTAMP(6)',
-          },
-        ],
-      }),
-      true,
-    );
-
-    // Note: key_hash unique index is already created via column constraint
-    await queryRunner.createIndex(
-      'api_keys',
-      new TableIndex({
-        name: 'IDX_api_keys_reseller_active',
-        columnNames: ['reseller_id', 'is_active'],
-      }),
-    );
+    // NOTE: api_keys table is already created by migration 1767000000000-CreateApiKeysTable
+    // Do NOT recreate it here to avoid "Table already exists" error
 
     // ClientOfferChangeHistory
     await queryRunner.createTable(
@@ -409,7 +343,8 @@ export class CreateClientRelatedTables1770996552000 implements MigrationInterfac
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.dropTable('client_offer_changes_history');
-    await queryRunner.dropTable('api_keys');
+    // ⚠️ api_keys table is NOT dropped here because we didn't create it in this migration
+    // It's managed by migration 1767000000000-CreateApiKeysTable
     await queryRunner.dropTable('client_domains');
     await queryRunner.dropTable('client_auth_configs');
     await queryRunner.dropTable('client_modules');
