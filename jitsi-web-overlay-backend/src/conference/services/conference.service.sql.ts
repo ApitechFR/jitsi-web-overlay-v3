@@ -78,7 +78,7 @@ export class ConferenceServiceSQL implements IConferenceService {
     //get offerType
     let offerType: string | null = null;
     if (data.clientId) {
-      const offerType = await this.clientService.getOfferTypeById(Number(data.clientId));
+      offerType = await this.clientService.getOfferTypeById(Number(data.clientId));
       console.log('Offer type:', offerType);
     }
 

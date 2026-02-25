@@ -445,6 +445,8 @@ export class AuthenticationController {
       );
     }
 
+    // console.log('clientId JWT login:', clientId);
+    // this.tenantContext.setClientId(clientId);
     // Create/upsert user
     let user = await this.usersService.findByEmail(email);
     if (!user) {
