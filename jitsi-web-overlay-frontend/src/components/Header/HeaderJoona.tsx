@@ -2,6 +2,7 @@
 import styles from './HeaderJoona.module.css';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/auth/useAuth';
+import { AuthService } from '@/api';
 import { Header, createModal, SideMenu } from '@ds';
 import { isUserAdmin } from '@/utils/user';
 import { Item } from '@/utils/changelogs/Item';
@@ -56,13 +57,6 @@ export default function HeaderJoona() {
     ? (cfg.VITE_APP_FAQ_URL_FR as string) || '/doc/Documentation_utilisateur_Visio_By_Apitech_FR.pdf'
     : (cfg.VITE_APP_FAQ_URL_EN as string) || '/doc/Documentation_utilisateur_Visio_By_Apitech_EN.pdf';
 
-  console.log({
-    language: i18n.language,
-    resolvedLanguage: i18n.resolvedLanguage,
-    isFrench,
-    faqUrl,
-  });
-
   const openPdf = () => {
     window.open(faqUrl, '_blank', 'noopener,noreferrer');
   };
@@ -98,6 +92,13 @@ export default function HeaderJoona() {
       ]
       : []),
   ];
+
+  // Vérifier si on est en mode reseller ET si un JWT est en URL
+  const isResellerModeEnabled = (cfg?.VITE_RESELLER_MODE_ENABLED as boolean | string) === true || (cfg?.VITE_RESELLER_MODE_ENABLED as string) === 'true';
+
+  // En mode multi-tenant, masquer complètement le bouton login (sauf si déjà connecté)
+  // L'accès doit se faire UNIQUEMENT via lien revendeur avec JWT en URL
+  const showLoginButton = !authenticated && !AuthService.isJwtMode() && !isResellerModeEnabled;
 
   const enableLanguageSwitch = (cfg.VITE_ENABLE_LANGUAGE_SWITCH as boolean) || false;
   const enableHardwareTest = (cfg.VITE_ENABLE_HARDWARE_TEST as boolean) ?? true;
@@ -145,15 +146,17 @@ export default function HeaderJoona() {
         iconId: 'fr-icon-logout-box-r-line',
         text: t('header.logout'),
       }
-      : {
-        buttonProps: {
-          onClick: () => login(),
-          className: 'fr-btn fr-btn--icon-right',
-        },
-        iconId: 'fr-icon-account-circle-fill',
-        text: t('header.login'),
-      },
-  ];
+      : showLoginButton
+        ? {
+          buttonProps: {
+            onClick: () => login(),
+            className: 'fr-btn fr-btn--icon-right',
+          },
+          iconId: 'fr-icon-account-circle-fill',
+          text: t('header.login'),
+        }
+        : null,
+  ].filter(Boolean);
 
   return (
     <>

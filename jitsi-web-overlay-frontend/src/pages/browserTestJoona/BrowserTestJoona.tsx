@@ -7,7 +7,6 @@ import React, {
   SyntheticEvent,
 } from 'react';
 import styles from './BrowserTestJoona.module.css';
-import Button from '@mui/material/Button';
 // import { ReactMic } from 'react-mic';
 import { ReactMediaRecorder } from 'react-media-recorder';
 import Webcam from 'react-webcam';
@@ -25,7 +24,7 @@ import api from '@/axios/axios';
 import CircularProgress from '@mui/material/CircularProgress';
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import { useNavigate } from 'react-router-dom';
-import { Alert } from '@ds';
+import { Alert, Button } from '@ds';
 import { useRuntimeConfig } from '@/config/ConfigProvider';
 
 export default function BrowserTestJoona() {
@@ -409,34 +408,14 @@ export default function BrowserTestJoona() {
   return (
     <div className={styles.main}>
       {errorMessage}
-      <Button
-        variant="contained"
-        onClick={launchTest}
-        className={styles.button}
-        style={
-          matches
-            ? {
-              textTransform: 'none',
-              borderRadius: 0,
-              backgroundColor: '#0a76f6',
-              marginBottom: '5px',
-              display: 'block',
-              margin: '30px auto',
-              width: '20%',
-            }
-            : {
-              textTransform: 'none',
-              borderRadius: 0,
-              backgroundColor: '#0a76f6',
-              marginBottom: '5px',
-              display: 'block',
-              margin: '30px auto',
-              width: '50%',
-            }
-        }
-      >
-        {t('browserTest.launchTest')}
-      </Button>
+      <div className={styles.buttonContainer}>
+        <Button
+          onClick={launchTest}
+          className={styles.buttonTestPage}
+        >
+          {t('browserTest.launchTest')}
+        </Button>
+      </div>
 
       <Accordion
         className="data-fr-theme"
@@ -469,30 +448,9 @@ export default function BrowserTestJoona() {
               <p>{t('browserTest.browserKo')}</p>
             ) : null}
           </Typography>
-          <div>
+          <div className={styles.buttonContainerAccordion}>
             <Button
-              style={
-                matches
-                  ? {
-                    textTransform: 'none',
-                    borderRadius: 0,
-                    backgroundColor: '#0a76f6',
-                    marginBottom: '5px',
-                    display: 'block',
-                    margin: '30px auto',
-                    width: '20%',
-                  }
-                  : {
-                    textTransform: 'none',
-                    borderRadius: 0,
-                    backgroundColor: '#0a76f6',
-                    marginBottom: '5px',
-                    display: 'block',
-                    margin: '30px auto',
-                    width: '50%',
-                  }
-              }
-              className={styles.micButton}
+              className={styles.buttonTestPage}
               onClick={() => {
                 setNavTest(null);
                 const isChromium = navigator.userAgent.includes('Chrome');
@@ -500,7 +458,6 @@ export default function BrowserTestJoona() {
                   setNavTest(navTest => isChromium);
                 }, 500);
               }}
-              variant="contained"
             >
               {t('browserTest.test')}
             </Button>
@@ -601,62 +558,20 @@ export default function BrowserTestJoona() {
                 );
               }}
             />
-            <Button
-              style={
-                matches
-                  ? {
-                    textTransform: 'none',
-                    borderRadius: 0,
-                    backgroundColor: '#0a76f6',
-                    marginBottom: '5px',
-                    display: 'block',
-                    margin: '30px auto',
-                    width: '20%',
-                  }
-                  : {
-                    textTransform: 'none',
-                    borderRadius: 0,
-                    backgroundColor: '#0a76f6',
-                    marginBottom: '5px',
-                    display: 'block',
-                    margin: '30px auto',
-                    width: '50%',
-                  }
-              }
-              className={styles.micButton}
-              onClick={startRecording}
-              variant="contained"
-            >
-              {t('browserTest.start')}
-            </Button>
-            <Button
-              style={
-                matches
-                  ? {
-                    textTransform: 'none',
-                    borderRadius: 0,
-                    backgroundColor: '#0a76f6',
-                    marginBottom: '5px',
-                    display: 'block',
-                    margin: '30px auto',
-                    width: '20%',
-                  }
-                  : {
-                    textTransform: 'none',
-                    borderRadius: 0,
-                    backgroundColor: '#0a76f6',
-                    marginBottom: '5px',
-                    display: 'block',
-                    margin: '30px auto',
-                    width: '50%',
-                  }
-              }
-              className={styles.micButton}
-              onClick={stopRecording}
-              variant="contained"
-            >
-              {t('browserTest.stop')}
-            </Button>
+            <div className={styles.micAccordionContainer}>
+              <Button
+                className={styles.buttonTestPage}
+                onClick={startRecording}
+              >
+                {t('browserTest.start')}
+              </Button>
+              <Button
+                className={styles.buttonTestPage}
+                onClick={stopRecording}
+              >
+                {t('browserTest.stop')}
+              </Button>
+            </div>
           </div>
         </AccordionDetails>
       </Accordion>
@@ -725,65 +640,23 @@ export default function BrowserTestJoona() {
                   );
                 }
               })}
-              {capturing ? (
-                <Button
-                  style={
-                    matches
-                      ? {
-                        textTransform: 'none',
-                        borderRadius: 0,
-                        backgroundColor: '#0a76f6',
-                        marginBottom: '5px',
-                        display: 'block',
-                        margin: '30px auto',
-                        width: '20%',
-                      }
-                      : {
-                        textTransform: 'none',
-                        borderRadius: 0,
-                        backgroundColor: '#0a76f6',
-                        marginBottom: '5px',
-                        display: 'block',
-                        margin: '30px auto',
-                        width: '50%',
-                      }
-                  }
-                  className={styles.micButton}
-                  onClick={handleStopCaptureClick}
-                  variant="contained"
-                >
-                  {t('browserTest.stop')}
-                </Button>
-              ) : (
-                <Button
-                  style={
-                    matches
-                      ? {
-                        textTransform: 'none',
-                        borderRadius: 0,
-                        backgroundColor: '#0a76f6',
-                        marginBottom: '5px',
-                        display: 'block',
-                        margin: '30px auto',
-                        width: '20%',
-                      }
-                      : {
-                        textTransform: 'none',
-                        borderRadius: 0,
-                        backgroundColor: '#0a76f6',
-                        marginBottom: '5px',
-                        display: 'block',
-                        margin: '30px auto',
-                        width: '50%',
-                      }
-                  }
-                  className={styles.micButton}
-                  onClick={handleStartCaptureClick}
-                  variant="contained"
-                >
-                  {t('browserTest.start')}
-                </Button>
-              )}
+              <div className={styles.buttonContainerAccordion}>
+                {capturing ? (
+                  <Button
+                    className={styles.buttonTestPage}
+                    onClick={handleStopCaptureClick}
+                  >
+                    {t('browserTest.stop')}
+                  </Button>
+                ) : (
+                  <Button
+                    className={styles.buttonTestPage}
+                    onClick={handleStartCaptureClick}
+                  >
+                    {t('browserTest.start')}
+                  </Button>
+                )}
+              </div>
             </div>
           ) : null}
         </AccordionDetails>
@@ -890,34 +763,14 @@ export default function BrowserTestJoona() {
               <Typography style={{ margin: 'auto' }}>
                 {t('browserTest.confirmReceptionText')}
               </Typography>
-              <Button
-                style={
-                  matches
-                    ? {
-                      textTransform: 'none',
-                      borderRadius: 0,
-                      backgroundColor: '#0a76f6',
-                      marginBottom: '5px',
-                      display: 'block',
-                      margin: '30px auto',
-                      width: '20%',
-                    }
-                    : {
-                      textTransform: 'none',
-                      borderRadius: 0,
-                      backgroundColor: '#0a76f6',
-                      marginBottom: '5px',
-                      display: 'block',
-                      margin: '30px auto',
-                      width: '80%',
-                    }
-                }
-                className={styles.confButton}
-                onClick={handleStartConference}
-                variant="contained"
-              >
-                {t('browserTest.confirmReceptionButton')}
-              </Button>
+              <div className={styles.buttonContainerAccordion}>
+                <Button
+                  className={styles.buttonTestPage}
+                  onClick={handleStartConference}
+                >
+                  {t('browserTest.confirmReceptionButton')}
+                </Button>
+              </div>
             </div>
           ) : null}
         </AccordionDetails>

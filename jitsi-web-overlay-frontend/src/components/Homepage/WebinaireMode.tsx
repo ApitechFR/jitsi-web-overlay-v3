@@ -183,9 +183,9 @@ function WebinaireMode(props: WebinaireMode) {
             >
               {t('homeModes.webinar.modal_button')}
             </Button>
-            <Button onClick={function noRefCheck() { }} className={styles.joinButton}>
+            {/* <Button onClick={function noRefCheck() { }} className={styles.joinButton}>
               {t('homeModes.webinar.modal_button_finish')}
-            </Button>
+            </Button> */}
           </div>
         </div>
       </modal.Component>

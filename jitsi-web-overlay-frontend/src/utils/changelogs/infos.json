@@ -8,33 +8,28 @@
           "id": "web-overlay",
           "label": "Version Web Overlay",
           "content": {
-            "title": "Nouvelle version 06/02/2026",
-            "version": "v3.2.0",
-            "releaseDate": "2026-02-06",
+            "title": "Nouvelle version 20/02/2026",
+            "version": "v3.3.0",
+            "releaseDate": "2026-02-20",
             "blocks": [
               {
-                "description": "La dernière version v3.2.0 du 06 février 2026 apporte des correctifs. Cette nouvelle version apporte notamment :",
+                "description": "La dernière version v3.3.0 du 20 février 2026 apporte des correctifs. Cette nouvelle version apporte notamment :",
                 "features": {
                   "ameliorations": [
-                    "Interface Webinaire intégrée dans Visio by Apitech.",
-                    "Création d’un webinaire depuis la page d’accueil (saisie du nom + validation regex + popup de partage des liens participant/spectateur).",
-                    "Workflow Webinaire : au-delà d’un seuil X de participants, bascule automatique en mode webinaire (nouveaux entrants en spectateurs).",
-                    "Traduction FR/EN de l’application Visio by Apitech.",
-                    "Activation/désactivation des modules complémentaires via configuration.",
-                    "Option client : session non persistante (déconnexion automatique à la fermeture du navigateur) via variables d’environnement."
+                    "Ajout de l'API Revendeur et le mode multi-tenant pour permettre à des revendeurs d'intégrer et personnaliser Visio by Apitech pour leurs clients.",
+                    "Template sondage de fin de réunion par défaut"
                   ]
                 },
                 "fix": {
                   "bugs": [
-                    "Fix : stabilisation du langage de jitsi.",
-                    "Fix : affichage de l’horaire dans le lien de l’enregistrement vidéo.",
-                    "Fix : affichage d’un message d’erreur si aucun feedback n’est disponible."
+                    "Fix : popup authentification de jitsi qui apparait de manière inopinée",
+                    "Fix : Bouton \"terminer\" du webinaire de fonctionne pas"
                   ]
                 },
                 "link": [
                   {
                     "label": "Voir plus",
-                    "href": "https://git.joona.fr/visio-by-apitech/jitsi-web-overlay-v3/releases/tag/v3.2.0"
+                    "href": "https://git.joona.fr/visio-by-apitech/jitsi-web-overlay-v3/releases/tag/v3.3.0"
                   }
                 ]
               }
@@ -151,32 +146,28 @@
           "id": "web-overlay",
           "label": "Web Overlay Version",
           "content": {
-            "title": "New version 02/06/2026",
-            "version": "v3.2.0",
-            "releaseDate": "2026-02-06",
+            "title": "New version 20/02/2026",
+            "version": "v3.3.0",
+            "releaseDate": "2026-02-20",
             "blocks": [
               {
-                "description": "The latest version v3.2.0 from February 06, 2026 brings fixes. This new version notably includes:",
+                "description": "The latest version v3.3.0 from February 20, 2026 brings fixes. This new version notably includes:",
                 "features": {
                   "ameliorations": [
-                    "Webinar interface integrated into Visio by Apitech.",
-                    "Webinar workflow: above X participants, the meeting automatically switches to webinar mode (new joiners become spectators).",
-                    "Translation of all Visio by Apitech labels (FR/EN).",
-                    "Complementary modules are now configurable (enable/disable via configuration).",
-                    "Client option: non-persistent session (auto logout when browser closes) via environment variables."
+                    "Addition of the Reseller API and multi-tenant mode to allow resellers to integrate and customize Visio by Apitech for their clients.",
+                    "Default end-of-meeting poll template"
                   ]
                 },
                 "fix": {
                   "bugs": [
-                    "Fix: stabilization of jitsi language.",
-                    "Fix: display of schedule in the video recording link.",
-                    "Fix: display of an error message if no feedback is available."
+                    "Fix: jitsi authentication popup that appears unexpectedly",
+                    "Fix: The \"end\" button of the webinar does not work"
                   ]
                 },
                 "link": [
                   {
                     "label": "See more",
-                    "href": "https://github.com/ApitechFR/jitsi-web-overlay-v3/releases/tag/v3.1.0"
+                    "href": "https://github.com/ApitechFR/jitsi-web-overlay-v3/releases/tag/v3.3.0"
                   }
                 ]
               }
