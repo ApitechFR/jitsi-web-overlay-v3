@@ -3,6 +3,7 @@ import { ConferenceService, RoomService, useApi } from '@/api';
 import { ParticipantService } from '@/api/services/participants/participant.service';
 import { handleRecordingStatus } from '@/api/services/jitsi/jitsi-recording.service';
 import { getStoredGuestParticipant, saveGuestParticipant } from '@/api/services/participants/participants.guests';
+import { userinfo } from '@/api/services/authentication/auth.service';
 
 type JitsiApiLike = {
     on: (event: string, handler: (...args: any[]) => void) => void;
@@ -44,7 +45,10 @@ export function useConferenceJoinSync({
         // La vraie protection doit être côté backend (contrainte unique / createOrGet).
         if (participantCountRef.current === 1 && !conferenceRef.current) {
             const room = await createRoom({ name: conferenceName, created_by: user?.uid });
-            const conf = await createConf({ room_uid: room.uid, name: conferenceName });
+            const userinfos = await userinfo();
+            let userClientId: string | undefined = undefined;
+            if (userinfos?.clientId) {userClientId = userinfos.clientId;}
+            const conf = await createConf({ room_uid: room.uid, name: conferenceName, clientId: userClientId });
             conferenceRef.current = conf;
         }
 

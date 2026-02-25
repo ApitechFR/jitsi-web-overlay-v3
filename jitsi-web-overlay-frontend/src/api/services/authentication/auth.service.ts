@@ -18,7 +18,7 @@ function getBaseApiOrThrow(): string {
     const api = getApiBaseUrl();
     return api;
 }
-async function userinfo(): Promise<UserInfos | null> {
+export async function userinfo(): Promise<UserInfos | null> {
     const withTimeout = <T,>(p: Promise<T>, ms = 5000): Promise<T> =>
         new Promise((resolve, reject) => {
             const t = setTimeout(() => reject(Object.assign(new Error('auth timeout'), { status: 0 })), ms);
@@ -54,6 +54,7 @@ async function userinfoDecoded(): Promise<UserInfos | null> {
                     given_name: payload.given_name,
                     family_name: payload.family_name,
                     idToken: token, // Include the JWT as idToken for consistency
+                    clientId: payload.clientId,
                 } as UserInfos;
             }
         }
