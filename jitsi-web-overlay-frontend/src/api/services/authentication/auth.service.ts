@@ -45,9 +45,10 @@ async function userinfoDecoded(): Promise<UserInfos | null> {
         const token = getBearer();
         if (token) {
             const payload = decodeJwtPayload(token);
+            const userinfos = await userinfo() as UserInfos | null;
             if (payload) {
                 return {
-                    uid: payload.uid,
+                    uid: payload.uid || userinfos?.uid,
                     email: payload.email,
                     name: payload.name || payload.preferred_username,
                     given_name: payload.given_name,

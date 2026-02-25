@@ -96,7 +96,7 @@ export class TenantIsolationService {
     injectClientId(entity: any): void {
         const clientId = this.getClientId();
         if (clientId) {
-            entity.client_id = clientId;
+            entity.clientId = clientId;
         }
     }
 
