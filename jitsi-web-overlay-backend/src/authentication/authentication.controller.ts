@@ -9,12 +9,17 @@ import {
   Req,
   Headers,
   UnauthorizedException,
+  ForbiddenException,
   Inject,
   UseGuards,
+  Post,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
+import { AuthProvider } from '../users/entities/users.entity';
 import { Request, Response } from 'express';
-import * as crypto from 'crypto';
+import * as crypto from 'node:crypto';
 
 import { JwtService } from '@nestjs/jwt';
 import { LoginCallbackDTO } from './DTOs/LoginCallbackDTO';
@@ -27,6 +32,8 @@ import {
 } from '@nestjs/swagger';
 import { IConferenceService } from '../conference/interfaces/conference-service.interface';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { TenantContext } from '../common/context/tenant.context';
+import { ClientDomainRepository } from '../reseller/repositories/client-domain.repository';
 
 @Controller()
 export class AuthenticationController {
@@ -38,6 +45,8 @@ export class AuthenticationController {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly usersService: UsersService,
+    private readonly tenantContext: TenantContext,
+    private readonly clientDomainRepository: ClientDomainRepository,
   ) { }
 
   private getFrontBaseUrl(): string {
@@ -211,12 +220,24 @@ export class AuthenticationController {
 
 
   @Get('authentication/logout')
-  @Redirect('', 302)
-  @ApiResponse({ status: 302, description: 'redirection vers cerbère' })
-  logout(
+  @HttpCode(HttpStatus.OK)
+  @ApiResponse({ status: 200, description: 'Logout successful (JWT RS256) or redirect (OIDC)' })
+  async logout(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
+    // Check reseller mode (JWT RS256)
+    const isResellerModeEnabled = this.configService.get<boolean>('RESELLER_MODE_ENABLED', false);
+
+    if (isResellerModeEnabled) {
+      // Mode JWT RS256 (Multi-Tenant/Reseller)
+      // Clear session cookies and return success
+      // Frontend will handle the redirect to home
+      this.authenticationService.clearAllCookies(response);
+      return { success: true, message: 'Logged out successfully' };
+    }
+
+    // Mode OIDC original (Single-Tenant)
     // Permettre le logout via sendBeacon (Content-Type text/plain)
     if (request.headers['content-type'] === 'text/plain') {
       this.authenticationService.clearAllCookies(response);
@@ -231,14 +252,34 @@ export class AuthenticationController {
 
     this.authenticationService.setAuthCookie(response, 'state', state);
 
-    return { url: this.authenticationService.logout(state, idToken) };
+    // Redirect to OIDC logout URL
+    const logoutUrl = this.authenticationService.logout(state, idToken);
+    response.redirect(logoutUrl);
+  }
+
+  /**
+   * Specific logout flow for JWT RS256 multi-tenant mode:
+   * @private
+   */
+  private logoutJwtRs256() {
+    // Try to get clientId from tenantContext (if JWT Bearer token is present)
+    const clientId = this.tenantContext.getClientId();
+
+    // If clientId is present, perform full logout via clientId
+    if (clientId) {
+      return this.authenticationService.logoutJwtRs256(clientId);
+    }
+
+    // Fallback: User might be authenticated via cookies only (no Bearer token)
+    // In this case, just return success (cookies will be cleared by clearAllCookies below)
+    return { success: true, message: 'Logged out successfully' };
   }
 
   @Get('authentication/logout_callback')
-  @ApiOkResponse({ description: "retourne l'url /" })
+  @ApiOkResponse({ description: "returns the url /" })
   @ApiUnauthorizedResponse({
     description:
-      "le state de retour n'est pas la meme que celle qui a été envoyé",
+      "the returned state is not the same as the one that was sent",
   })
   logoutCallback(
     @Query() query: LogoutCallbackDTO,
@@ -250,7 +291,7 @@ export class AuthenticationController {
 
     if (state !== sendedState) {
       throw new UnauthorizedException(
-        "Le state de retour n'est pas le même que celui envoyé",
+        "The returned state is not the same as the one that was sent",
       );
     }
 
@@ -319,8 +360,135 @@ export class AuthenticationController {
       return { accessToken };
     } catch (error) {
       this.authenticationService.clearAllCookies(response);
-      // On relance l'exception pour respecter le lint
+
       throw error instanceof UnauthorizedException ? error : new UnauthorizedException('Veuillez vous authentifier');
     }
+  }
+
+  /**
+   * Reseller mode: Accept JWT RS256 Bearer token and create session
+   * POST /authentication/reseller/login
+   * Authorization: Bearer <jwt_rs256_token>
+   */
+  @Post('authentication/reseller/login')
+  @ApiResponse({ status: 200, description: 'JWT valide, session créée (cookies configurés)' })
+  @ApiResponse({ status: 401, description: 'JWT invalide ou expiré' })
+  @ApiResponse({ status: 403, description: 'Mode reseller désactivé' })
+  async resellerLogin(
+    @Headers('authorization') authHeader: string,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    // Check if reseller mode is enabled
+    const resellerModeEnabled = this.configService.get<boolean>('RESELLER_MODE_ENABLED', false);
+    if (!resellerModeEnabled) {
+      throw new ForbiddenException('Reseller mode is not enabled');
+    }
+
+    // Extract Bearer token
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new UnauthorizedException('Missing or invalid Authorization header');
+    }
+
+    const token = authHeader.substring(7);
+
+    // Get RS256 public key
+    const publicKeyRaw = this.configService.get<string>('PROVIDER_JWT_PUBLIC_KEY');
+    if (!publicKeyRaw) {
+      throw new UnauthorizedException('RS256 public key not configured');
+    }
+
+    // Convert literal \n to actual newlines
+    const publicKey = publicKeyRaw.replace(/\\n/g, '\n');
+
+    // Validate JWT RS256
+    let decoded: any;
+    try {
+      decoded = this.jwtService.verify(token, {
+        secret: publicKey,
+        algorithms: ['RS256'],
+        issuer: 'MjWRmjB7zE2gdXznagfT7vsmTx3Cn3Zw',
+        audience: 'jitsi',
+      });
+    } catch (e) {
+      const err = e instanceof Error ? e.message : String(e);
+      throw new UnauthorizedException(`Invalid JWT RS256: ${err}`);
+    }
+
+    if (!decoded) {
+      throw new UnauthorizedException('JWT verification returned invalid payload');
+    }
+
+    // Extract user info from JWT
+    const email = decoded.email || decoded.sub;
+    if (!email) {
+      throw new UnauthorizedException('JWT must contain email or sub claim');
+    }
+
+    // Extract client info from JWT (for multi-tenant isolation)
+    let clientId = decoded.clientId || decoded.client_id;
+    const offerType = decoded.offerType || decoded.offer_type;
+
+    // If clientId not in JWT, try to resolve from email domain
+    if (!clientId && email?.includes('@')) {
+      const emailDomain = email.split('@')[1];
+      const clientDomain = await this.clientDomainRepository.findByDomainName(emailDomain);
+      if (clientDomain) {
+        clientId = String(clientDomain.client.id);
+      }
+    }
+
+    // Ensure we have a clientId to proceed in reseller mode
+    if (!clientId) {
+      throw new UnauthorizedException(
+        'Cannot resolve clientId from JWT or email domain. Ensure the JWT contains clientId or the email domain is registered.',
+      );
+    }
+
+    // Create/upsert user
+    let user = await this.usersService.findByEmail(email);
+    if (!user) {
+      // Create new user for reseller flow
+      user = await this.usersService.createUser({
+        email,
+        displayName: decoded.name || email.split('@')[0],
+        provider: AuthProvider.JWT_RS256,
+        uid: crypto.randomBytes(16).toString('hex'),
+        clientId, // Store clientId for multi-tenant isolation
+      });
+      if (!user) {
+        throw new UnauthorizedException('Failed to create user');
+      }
+    } else if (clientId && !user.clientId) {
+      // User exists but has no clientId - assign it now (for reseller migration scenarios)
+      user = await this.usersService.update(user.id, { clientId });
+    }
+
+    // Generate session tokens (same as OIDC)
+    const baseClaims = {
+      iss: this.configService.get('JITSI_JITSIJWT_ISS'),
+      aud: this.configService.get('JITSI_JITSIJWT_AUD'),
+      sub: this.configService.get('JITSI_JITSIJWT_SUB'),
+      email,
+      name: decoded.name || email,
+      uid: user.uid,
+      ...(clientId && { clientId }), // Include clientId if present (for multi-tenant isolation)
+      ...(offerType && { offerType }), // Include offerType if present (for plan/feature access)
+    };
+
+    const accessToken = this.authenticationService.generateAccessToken(baseClaims);
+    const refreshToken = this.authenticationService.generateRefreshToken({
+      ...baseClaims,
+      idToken: token, // Store original JWT as idToken for reference
+    });
+
+    // Set session cookies (same as OIDC)
+    this.authenticationService.setAuthCookie(response, 'accessToken', accessToken, {
+      maxAge: 2 * 60 * 60 * 1000, // 2h
+    });
+    this.authenticationService.setAuthCookie(response, 'refreshToken', refreshToken, {
+      maxAge: 12 * 60 * 60 * 1000, // 12h
+    });
+
+    return { authenticated: true, email };
   }
 }

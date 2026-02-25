@@ -98,6 +98,8 @@
 
 .joinButton {
   width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .joinInput :global(.fr-btn) {
