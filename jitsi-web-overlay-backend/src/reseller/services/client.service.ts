@@ -596,4 +596,14 @@ export class ClientService {
     const usersCount = await this.countUsersByClientId(client.uid);
     return { client, usersCount };
   }
+
+  async getOfferTypeById(id: number): Promise<OfferType | null> {
+    const result = await this.clientRepository
+      .createQueryBuilder('client')
+      .select('client.offerType', 'offerType')
+      .where('client.id = :id', { id })
+      .getRawOne();
+
+    return result?.offerType ?? null;
+  }
 }

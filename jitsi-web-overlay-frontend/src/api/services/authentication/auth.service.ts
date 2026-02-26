@@ -18,7 +18,7 @@ function getBaseApiOrThrow(): string {
     const api = getApiBaseUrl();
     return api;
 }
-async function userinfo(): Promise<UserInfos | null> {
+export async function userinfo(): Promise<UserInfos | null> {
     const withTimeout = <T,>(p: Promise<T>, ms = 5000): Promise<T> =>
         new Promise((resolve, reject) => {
             const t = setTimeout(() => reject(Object.assign(new Error('auth timeout'), { status: 0 })), ms);
@@ -45,14 +45,16 @@ async function userinfoDecoded(): Promise<UserInfos | null> {
         const token = getBearer();
         if (token) {
             const payload = decodeJwtPayload(token);
+            const userinfos = await userinfo() as UserInfos | null;
             if (payload) {
                 return {
-                    uid: payload.uid,
+                    uid: payload.uid || userinfos?.uid,
                     email: payload.email,
                     name: payload.name || payload.preferred_username,
                     given_name: payload.given_name,
                     family_name: payload.family_name,
                     idToken: token, // Include the JWT as idToken for consistency
+                    clientId: payload.clientId,
                 } as UserInfos;
             }
         }
@@ -101,7 +103,7 @@ function getLoginCallbackUrl(code: string, state: string) {
 async function logout() {
     try {
         const http = await getHttp();
-        return await http.post('/authentication/logout');
+        return await http.get('/authentication/logout');
     } catch (e) {
         throw toApiError(e);
     }
@@ -168,7 +170,7 @@ function getOfferTypeFromJwt(): 'basic' | 'premium' | null {
 async function logoutJwt() {
     try {
         const http = await getHttp();
-        await http.post('/authentication/logout');
+        await http.get('/authentication/logout');
     } catch (e) {
         // Logout échoue, on nettoie le token local quand même
         console.warn('JWT logout failed:', e);

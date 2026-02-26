@@ -34,6 +34,7 @@ import { IConferenceService } from '../conference/interfaces/conference-service.
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { TenantContext } from '../common/context/tenant.context';
 import { ClientDomainRepository } from '../reseller/repositories/client-domain.repository';
+import { v4 as uuidv4 } from 'uuid';
 
 @Controller()
 export class AuthenticationController {
@@ -444,6 +445,8 @@ export class AuthenticationController {
       );
     }
 
+    // console.log('clientId JWT login:', clientId);
+    // this.tenantContext.setClientId(clientId);
     // Create/upsert user
     let user = await this.usersService.findByEmail(email);
     if (!user) {
@@ -452,7 +455,8 @@ export class AuthenticationController {
         email,
         displayName: decoded.name || email.split('@')[0],
         provider: AuthProvider.JWT_RS256,
-        uid: crypto.randomBytes(16).toString('hex'),
+        // uid: crypto.randomBytes(16).toString('hex'),
+        uid: uuidv4(),
         clientId, // Store clientId for multi-tenant isolation
       });
       if (!user) {

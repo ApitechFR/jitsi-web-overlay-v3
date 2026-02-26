@@ -25,13 +25,13 @@ export async function getHttp(): Promise<AxiosInstance> {
     let waiters: Array<() => void> = [];
 
     // Request interceptor: inject Bearer token for JWT RS256 mode
-    httpInstance.interceptors.request.use((config) => {
-        const token = localStorage.getItem('accessToken');
-        if (token && !config.headers.Authorization) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    });
+    // httpInstance.interceptors.request.use((config) => {
+    //     const token = localStorage.getItem('accessToken');
+    //     if (token && !config.headers.Authorization) {
+    //         config.headers.Authorization = `Bearer ${token}`;
+    //     }
+    //     return config;
+    // });
 
     httpInstance.interceptors.response.use(
         r => r,
