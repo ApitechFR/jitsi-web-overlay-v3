@@ -191,4 +191,18 @@ export class ParticipantService {
             },
         });
     }
+
+    async getConferenceUIDsByEmail(email: string): Promise<string[]> {
+        const rows = await this.participantRepo.query(
+        `
+            SELECT DISTINCT conference_uid
+            FROM participants
+            WHERE email = ?
+        `,
+            [email],
+        );
+
+        return rows.map(r => r.conference_uid);
+    }
+
 }
