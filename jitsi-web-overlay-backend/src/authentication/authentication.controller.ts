@@ -235,7 +235,8 @@ export class AuthenticationController {
       // Clear session cookies and return success
       // Frontend will handle the redirect to home
       this.authenticationService.clearAllCookies(response);
-      return { success: true, message: 'Logged out successfully' };
+      // return { success: true, message: 'Logged out successfully' };
+      return response.redirect(this.configService.get('FRONTEND_LOGOUT_REDIRECT') || '/');
     }
 
     // Mode OIDC original (Single-Tenant)
