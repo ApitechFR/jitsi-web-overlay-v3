@@ -251,6 +251,7 @@
           "input_room": "Saisissez votre nom de conférence",
           "copy_link": "Copier le lien",
           "success_copy_link": "Lien copié avec succès !",
+          "success_copy_link_planification": "Planification copiée avec succès !",
           "schedule_button": "Planifier une réunion",
           "calendarModal":{
             "invitation": "Générer une invitation",

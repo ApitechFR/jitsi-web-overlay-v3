@@ -251,6 +251,7 @@
       "input_room": "Enter your conference name",
       "copy_link": "Copy link",
       "success_copy_link": "Link copied successfully !",
+      "success_copy_link_planification": "Scheduling copied successfully !",
       "schedule_button": "Schedule a meeting",
       "calendarModal": {
         "invitation": "Generate an invitation",

@@ -262,7 +262,7 @@ function VisioMode(props: VisioModeProps) {
             bottom: '10px !important'
           }}
         >
-          <Alert severity="success" title={t('homeModes.visio.success_copy_link')} description="" small />
+          <Alert severity="success" title={t('homeModes.visio.success_copy_link_planification')} description="" small />
         </Snackbar>
 
         <div className={styles.calendarModalButtons}>
