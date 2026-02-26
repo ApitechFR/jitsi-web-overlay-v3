@@ -23,6 +23,7 @@ import { JitsiJwtService } from '../../common/services/jitsi-jwt.service';
 import { ParticipantService } from '../../participant/participant.service';
 import { Participant } from '../../participant/entities/participant.entity';
 import { TenantIsolationService } from '../../common/services/tenant-isolation.service';
+import { ClientService } from '../../reseller/services/client.service';
 
 @Injectable()
 export class ConferenceServiceSQL implements IConferenceService {
@@ -42,6 +43,7 @@ export class ConferenceServiceSQL implements IConferenceService {
     private readonly prosodyRuntimeService: ProsodyRuntimeService,
     private readonly jitsiJwtService: JitsiJwtService,
     private readonly tenantIsolation: TenantIsolationService,
+    private readonly clientService: ClientService,
   ) { }
 
   async create(data: CreateConferenceDTO): Promise<Conference> {
@@ -73,17 +75,25 @@ export class ConferenceServiceSQL implements IConferenceService {
       return existingConference;
     }
 
+    //get offerType
+    let offerType: string | null = null;
+    if (data.clientId) {
+      offerType = await this.clientService.getOfferTypeById(Number(data.clientId));
+      console.log('Offer type:', offerType);
+    }
+
     const conf = this.conferenceRepo.create({
       ...data,
       uid: uuidv4(),
       room: room,
+      offerTypeAtCreation: offerType as any,
       status: ConferenceStatus.STARTED,
       start_time: new Date(),
     });
 
     // Inject clientId and offerType (and optionally offerType for audit trail)
-    this.tenantIsolation.injectClientId(conf);
-    this.tenantIsolation.injectOfferType(conf, 'offerTypeAtCreation');
+    // this.tenantIsolation.injectClientId(conf);
+    // this.tenantIsolation.injectOfferType(conf, 'offerTypeAtCreation');
 
     return this.conferenceRepo.save(conf);
   }

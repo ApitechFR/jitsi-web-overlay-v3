@@ -29,7 +29,8 @@ export class UsersService {
       const user = this.userRepository.create(userData);
       return await this.userRepository.save(user);
     } catch (error) {
-      throw new InternalServerErrorException('cannot create user', error);
+      this.logger.error('Error creating user', { userData, error });
+      throw error;
     }
   }
 
