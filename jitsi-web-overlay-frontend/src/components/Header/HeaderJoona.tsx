@@ -81,11 +81,11 @@ export default function HeaderJoona() {
       ? [
         { linkProps: { href: '/', target: '_self' }, text: t('header.home') },
         { linkProps: { href: '/profile', target: '_self' }, text: t('header.account') },
+        { linkProps: { href: '/replays', target: '_self' }, text: t('header.conferences') },
         // { linkProps: { href: '#', target: '_self' }, text: t('header.conferences') },
         ...(isUserAdmin(user)
           ? [
             //{ linkProps: { href: '/admin', target: '_self' }, text: t('header.admin') },
-            { linkProps: { href: '/replays', target: '_self' }, text: t('header.conferences') },
             { linkProps: { href: '/dashboard', target: '_self' }, text: t('header.dashboard') },
           ]
           : []),
