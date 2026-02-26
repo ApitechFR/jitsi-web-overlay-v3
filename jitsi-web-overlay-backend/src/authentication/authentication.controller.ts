@@ -220,7 +220,7 @@ export class AuthenticationController {
 
 
 
-  @Post('authentication/logout')
+  @Get('authentication/logout')
   @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: 200, description: 'Logout successful (JWT RS256) or redirect (OIDC)' })
   async logout(

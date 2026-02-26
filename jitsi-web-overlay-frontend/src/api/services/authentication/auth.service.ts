@@ -103,7 +103,7 @@ function getLoginCallbackUrl(code: string, state: string) {
 async function logout() {
     try {
         const http = await getHttp();
-        return await http.post('/authentication/logout');
+        return await http.get('/authentication/logout');
     } catch (e) {
         throw toApiError(e);
     }
@@ -170,7 +170,7 @@ function getOfferTypeFromJwt(): 'basic' | 'premium' | null {
 async function logoutJwt() {
     try {
         const http = await getHttp();
-        await http.post('/authentication/logout');
+        await http.get('/authentication/logout');
     } catch (e) {
         // Logout échoue, on nettoie le token local quand même
         console.warn('JWT logout failed:', e);
