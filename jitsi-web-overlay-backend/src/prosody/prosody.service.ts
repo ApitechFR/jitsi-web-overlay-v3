@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class ProsodyService {
   constructor(
-    private configService: ConfigService,
+    private readonly configService: ConfigService,
     private readonly httpService: HttpService,
   ) { }
 
