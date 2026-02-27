@@ -45,6 +45,18 @@ export const ReplayService = {
         }
     },
 
+    async getReplaysByParticipantEmail(email: string): Promise<Record<string, Replay[]>> {
+        try {
+            const http = await getHttp();
+            const { data } = await http.post('/replays/participants/email', { email: email });
+            console.log({ data })
+            return data;
+
+        } catch (error) {
+            throw toApiError(error, 'Erreur lors de la récupération des replays par participant email')
+        }
+    },
+
     async getDownloadUrl(replay_uid: string) {
         try {
             const http = await getHttp();

@@ -4,12 +4,16 @@ import { AuthService } from '@/api';
 import { readState, clearState } from '@/api/services/authentication/oidc.utils';
 import { getHttp } from '@/api/http';
 import { useAuth } from '@/auth/useAuth';
+import { getCachedRuntimeConfig } from '../../config/runtimeConfig';
+import axios from 'axios';
 
 export default function LoginCallback() {
   const navigate = useNavigate();
   const { refresh: refreshAuth } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const cfg = getCachedRuntimeConfig();
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
@@ -38,8 +42,15 @@ export default function LoginCallback() {
 
           // Appele POST /authentication/reseller/login avec le Bearer token
           // L'interceptor axios injectera automatiquement le Authorization header
-          const http = await getHttp();
-          const response = await http.post('/authentication/reseller/login', {});
+          // const http = await getHttp();
+          // const response = await http.post('/authentication/reseller/login', {});
+
+          const response = await axios.post(`${cfg?.VITE_API_URL}/authentication/reseller/login`, {}, {
+            headers: {
+              Authorization: `Bearer ${jwtToken}`
+            },
+            withCredentials: true,
+          });
 
           console.log('Reseller login successful:', response.data);
 
