@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom';
 import Button from '@codegouvfr/react-dsfr/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import type { Replay } from '@/api';
-import { formatDate } from '@/utils/date';
+import { formatReplayDate } from '@/utils/date';
 
 const ReplayList: React.FC = () => {
     const { t } = useTranslation();
@@ -59,7 +59,7 @@ const ReplayList: React.FC = () => {
                     replays.map((replay) => (
                         <div className={styles.replayRow} key={replay.id}>
                             <div className={styles.filename}>{replay.conference_name}</div>
-                            <div className={styles.date}>{formatDate(replay.updated_at)}</div>
+                            <div className={styles.date}>{formatReplayDate(replay.created_at, replay.updated_at)}</div>
                             <Button
                                 className={styles.downloadButton}
                                 priority="primary"

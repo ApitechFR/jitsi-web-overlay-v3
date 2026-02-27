@@ -98,11 +98,15 @@
       },
       "replayListGrouped": {
         "loading": "Chargement...",
-        "error": "Erreur : {{message}}",
+        "error": "Erreur : {message}",
         "title": "Enregistrements Vidéo par conférence",
         "empty": "Aucun replay disponible",
         "download": "Télécharger",
-        "downloadError": "Erreur lors du téléchargement"
+        "downloadError": "Erreur lors du téléchargement",
+        "date": {
+          "sameDay": "{date} de {start} à {end}",
+          "multiDay": "Du {startDate} à {startTime} au {endDate} à {endTime}"
+        }
       },
       "admin": {
         "title": "Administration",
