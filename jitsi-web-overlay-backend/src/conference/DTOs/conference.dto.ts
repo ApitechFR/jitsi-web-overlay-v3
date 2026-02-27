@@ -20,6 +20,11 @@ export class CreateConferenceDTO {
   @IsOptional()
   @IsDateString()
   end_time?: Date;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  clientId?: string;
 }
 
 export class EndConferenceDTO {

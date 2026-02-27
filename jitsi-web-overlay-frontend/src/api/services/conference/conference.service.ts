@@ -5,7 +5,7 @@ import type { CreateByEmailRes, JitsiJwtResponse, JoinRes } from './conference.t
 
 export const ConferenceService = {
 
-    async create(payload: { name: string; room_uid: string }) {
+    async create(payload: { name: string; room_uid: string; clientId?: string }) {
         try {
             const http = await getHttp();
             const { data } = await http.post('/conferences', payload);

@@ -226,9 +226,9 @@ function AppInner() {
             <Route
               path="replays"
               element={
-                <AdminRoute>
+                <PrivateRoute>
                   <ReplayListGrouped />
-                </AdminRoute>
+                </PrivateRoute>
               }
             />
             <Route

@@ -6,6 +6,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Button from '@codegouvfr/react-dsfr/Button';
 import { formatReplayDate } from '@/utils/date';
 import type { Replay } from '@/api';
+import { useAuth } from '@/auth/useAuth';
+import { getUserEmail } from '@/utils/user';
 
 
 const ReplayListGrouped: React.FC = () => {
@@ -13,14 +15,18 @@ const ReplayListGrouped: React.FC = () => {
     const [groupedReplays, setGroupedReplays] = useState<Record<string, Replay[]>>({});
     const [downloading, setDownloading] = useState(false);
     const { t } = useTranslation();
+    const { user } = useAuth();
+    const userEmail = getUserEmail(user);
 
-    const { run: fetchGrouped, loading, error } = useApi(ReplayService.getAll);
+    const { run: fetchGrouped, loading, error } = useApi((email: string) => ReplayService.getReplaysByParticipantEmail(email));
 
     useEffect(() => {
-        fetchGrouped()
+        if (!userEmail) return;
+        
+        fetchGrouped(userEmail)
             .then(setGroupedReplays)
             .catch(() => { });
-    }, [fetchGrouped]);
+    }, [userEmail]);
 
     if (loading) return <p>{t('replayListGrouped.loading')}</p>;
     if (error) return <p>{t('replayListGrouped.error', { message: error.message })}</p>;

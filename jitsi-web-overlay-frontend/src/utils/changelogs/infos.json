@@ -8,28 +8,28 @@
           "id": "web-overlay",
           "label": "Version Web Overlay",
           "content": {
-            "title": "Nouvelle version 20/02/2026",
-            "version": "v3.3.0",
-            "releaseDate": "2026-02-20",
+            "title": "Nouvelle version 26/02/2026",
+            "version": "v3.3.2",
+            "releaseDate": "2026-02-26",
             "blocks": [
               {
-                "description": "La dernière version v3.3.0 du 20 février 2026 apporte des correctifs. Cette nouvelle version apporte notamment :",
+                "description": "La dernière version v3.3.2 du 26 février 2026 apporte des correctifs. Cette nouvelle version apporte notamment :",
                 "features": {
                   "ameliorations": [
-                    "Ajout de l'API Revendeur et le mode multi-tenant pour permettre à des revendeurs d'intégrer et personnaliser Visio by Apitech pour leurs clients.",
-                    "Template sondage de fin de réunion par défaut"
+                    "Récupération des enregistrements vidéo par participants sur la page Conférences"
                   ]
                 },
                 "fix": {
                   "bugs": [
-                    "Fix : popup authentification de jitsi qui apparait de manière inopinée",
-                    "Fix : Bouton \"terminer\" du webinaire de fonctionne pas"
+                    "Fix : la redirection vers la page Authentification en cours à l'infini",
+                    "Fix : l'ajout des données dans la BDD",
+                    "Fix : l'ajout de l'UID dans la page compte utilisateur"
                   ]
                 },
                 "link": [
                   {
                     "label": "Voir plus",
-                    "href": "https://git.joona.fr/visio-by-apitech/jitsi-web-overlay-v3/releases/tag/v3.3.0"
+                    "href": "https://git.joona.fr/visio-by-apitech/jitsi-web-overlay-v3/releases/tag/v3.3.2"
                   }
                 ]
               }
@@ -146,28 +146,28 @@
           "id": "web-overlay",
           "label": "Web Overlay Version",
           "content": {
-            "title": "New version 20/02/2026",
-            "version": "v3.3.0",
-            "releaseDate": "2026-02-20",
+            "title": "New version 26/02/2026",
+            "version": "v3.3.2",
+            "releaseDate": "2026-02-26",
             "blocks": [
               {
-                "description": "The latest version v3.3.0 from February 20, 2026 brings fixes. This new version notably includes:",
+                "description": "The latest version v3.3.2 from February 26, 2026 brings fixes. This new version notably includes:",
                 "features": {
                   "ameliorations": [
-                    "Addition of the Reseller API and multi-tenant mode to allow resellers to integrate and customize Visio by Apitech for their clients.",
-                    "Default end-of-meeting poll template"
+                    "Retrieval of video recordings by participants on the Conferences page"
                   ]
                 },
                 "fix": {
                   "bugs": [
-                    "Fix: jitsi authentication popup that appears unexpectedly",
-                    "Fix: The \"end\" button of the webinar does not work"
+                    "Fix: redirection to the Authentication page in progress infinitely",
+                    "Fix: adding data to the database",
+                    "Fix: adding the UID in the user account page"
                   ]
                 },
                 "link": [
                   {
                     "label": "See more",
-                    "href": "https://github.com/ApitechFR/jitsi-web-overlay-v3/releases/tag/v3.3.0"
+                    "href": "https://github.com/ApitechFR/jitsi-web-overlay-v3/releases/tag/v3.3.2"
                   }
                 ]
               }
