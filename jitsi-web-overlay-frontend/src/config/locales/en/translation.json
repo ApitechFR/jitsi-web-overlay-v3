@@ -98,11 +98,15 @@
   },
   "replayListGrouped": {
     "loading": "Loading...",
-    "error": "Error: {{message}}",
+    "error": "Error: {message}",
     "title": "Video Recordings by conference",
     "empty": "No replay available",
     "download": "Download",
-    "downloadError": "Error during download"
+    "downloadError": "Error during download",
+    "date": {
+      "sameDay": "{date} from {start} to {end}",
+      "multiDay": "From {startDate} at {startTime} to {endDate} at {endTime}"
+    }
   },
   "admin": {
     "title": "Administration",
@@ -251,7 +255,18 @@
       "input_room": "Enter your conference name",
       "copy_link": "Copy link",
       "success_copy_link": "Link copied successfully !",
-      "schedule_button": "Schedule a meeting"
+      "success_copy_link_planification": "Scheduling copied successfully !",
+      "schedule_button": "Schedule a meeting",
+      "calendarModal": {
+        "invitation": "Generate an invitation",
+        "start_date": "Start date",
+        "duration": "Duration",
+        "phone_details": "Phone details of the conference",
+        "phone_number": "Phone number",
+        "pin": "Conference code",
+        "add_button": "Add to calendar",
+        "copy_button": "Copy"
+      }
     },
     "webinar": {
       "title": "Join a webinar",

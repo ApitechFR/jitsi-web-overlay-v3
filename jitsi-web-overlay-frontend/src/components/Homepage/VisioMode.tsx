@@ -1,13 +1,18 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 
-import { Badge, Button, Alert, Input } from '@ds';
+import { Badge, Button, Alert, Input, createModal, useIsModalOpen } from '@ds';
 
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import { useRuntimeConfig } from '@/config/ConfigProvider';
 
+import ICalLink from 'react-icalendar-link';
+import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
+
 import styles from "../../pages/Home/HomeJoona.module.css"
 import { useTranslation } from 'react-i18next';
 import { validateConferenceName } from '@/utils/conferenceName';
+import { buildCalendarEvent, buildClipboardText, formatForInput } from '@/utils/CalendarModal';
+import { VoxifyService } from '@/api/services/jitsi/voxify.service';
 
 interface VisioModeProps {
   readonly isError: boolean;
@@ -23,10 +28,89 @@ interface VisioModeProps {
   readonly inputRef: React.RefObject<HTMLInputElement>;
 }
 
+const ICalendarLink = ICalLink as any;
+
+const calendarModal = createModal({
+  id: 'Calendar1',
+  isOpenedByDefault: false,
+});
+
 function VisioMode(props: VisioModeProps) {
 
-  const [isInputsVisible, setIsInputsVisible] = useState(false);
   const cfg = useRuntimeConfig();
+
+  //----------------------------- CALENDAR MODAL ---------------------------//
+  const voxApiUrl = cfg.VITE_VOXAPI_URL;
+  console.log('VOX API URL:', voxApiUrl);
+  const roomName = props.conferenceName;
+  const date = new Date()
+  date.setHours(date.getHours() + 2);
+
+  const isOpen = useIsModalOpen(calendarModal);
+  const [dateTimeStart, setDateTimeStart] = useState(formatForInput(date));
+  const [duration, setDuration] = useState('00:00');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [pin, setPin] = useState('');
+  const [disabled, setDisabled] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  const [hours, minutes] = duration.split(':').map(Number);
+
+  const startDate = new Date(dateTimeStart);
+
+  const dateTimeEnd = new Date(startDate.getTime() + (hours * 60 + minutes) * 60000);
+
+  const formattedEnd = formatForInput(dateTimeEnd);
+
+  const handleClose = (event: Event | React.SyntheticEvent<any, Event>, reason: SnackbarCloseReason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpen(false);
+  };
+
+  const copyEvent = () => {
+    const text = buildClipboardText({
+      meetingUrl: `${window.location}${roomName}`,
+      dateTimeStart,
+      formattedEnd,
+      phoneNumber,
+      pin,
+      voxApiUrl
+    });
+
+    navigator.clipboard.writeText(text);
+    setOpen(true);
+  };
+
+  useEffect(() => {
+    if (isOpen && voxApiUrl && cfg.VITE_JITSI_DOMAIN && roomName) {
+      VoxifyService.getConferenceInfo(roomName)
+        .then(({ pin, phone }) => {
+          setPin(pin);
+          setPhoneNumber(phone);
+        })
+        .catch(console.error);
+    }
+  }, [roomName, isOpen]);
+
+  const meetingUrl = `${window.location}${roomName}`;
+
+  const event = buildCalendarEvent({
+    appTemplate: props.AppTemplate,
+    roomName,
+    meetingUrl,
+    dateTimeStart,
+    dateTimeEnd,
+    phoneNumber,
+    pin,
+    voxApiUrl
+  });
+  //-------------------------------------------------------------------------------
+
+
+  const [isInputsVisible, setIsInputsVisible] = useState(false);
 
   const { t } = useTranslation();
 
@@ -73,10 +157,10 @@ function VisioMode(props: VisioModeProps) {
               </div>
               {isInputsVisible && (
                 <div className={styles.hiddenDropdownButtons}>
-                  <Button className={styles.joinButton} onClick={function noRefCheck() { }} priority="tertiary" disabled>
+                  <Button className={styles.joinButton} onClick={() => calendarModal.open()} priority="tertiary" disabled={props.isError} >
                     <span>{t('homeModes.visio.schedule_button')}</span>
                   </Button>
-                  <Button className={styles.joinButton} onClick={props.onCopyLink} priority="tertiary">
+                  <Button className={styles.joinButton} onClick={props.onCopyLink} priority="tertiary" disabled={props.isError}>
                     <span>{t('homeModes.visio.copy_link')}</span>
                   </Button>
                 </div>
@@ -132,6 +216,76 @@ function VisioMode(props: VisioModeProps) {
           })}
         </Badge>
       </div>
+      <calendarModal.Component title={t('homeModes.visio.schedule_button')} size="large" className={styles.calendarModal} apitechCustomCloseText={t('modal.close')}>
+        <br />
+        <h6>{t('homeModes.visio.calendarModal.invitation')} : {roomName}</h6>
+        <p>
+          <Input
+            label={<small id="input1-desc-error">{t('homeModes.visio.calendarModal.start_date')} :</small>}
+            nativeInputProps={{
+              id: 'input1',
+              type: 'datetime-local',
+              value: dateTimeStart,
+              onChange: e => setDateTimeStart(e.target.value),
+            }}
+          />
+        </p>
+        <p>
+          <Input
+            label={
+              <span id="input2-desc-error">
+                {t('homeModes.visio.calendarModal.duration')}{' '}
+                {`(${duration.split(':')[0]}h ${duration.split(':')[1]}min)`} :
+              </span>
+            }
+            nativeInputProps={{
+              id: 'input2',
+              type: 'time',
+              value: duration,
+              onChange: e => setDuration(e.target.value),
+            }}
+          />
+        </p>
+        {voxApiUrl && phoneNumber && pin && (
+          <>
+            <h6>{t('homeModes.visio.calendarModal.phone_details')} :</h6>
+            <p>- {t('homeModes.visio.calendarModal.phone_number')} : {phoneNumber}</p>
+            <p>- {t('homeModes.visio.calendarModal.pin')} : {`${pin}#`}</p>
+          </>
+        )}
+        <Snackbar
+          open={open}
+          autoHideDuration={6000}
+          onClose={handleClose}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+          sx={{
+            bottom: '10px !important'
+          }}
+        >
+          <Alert severity="success" title={t('homeModes.visio.success_copy_link_planification')} description="" small />
+        </Snackbar>
+
+        <div className={styles.calendarModalButtons}>
+          <ICalendarLink
+            event={event}
+            className={styles.modalButton}
+            filename={`${props.AppTemplate === 'webconf' ? 'Webconférence de l\'État :' : 'Visio by Apitech'} - Conférence ${roomName}`}
+          >
+            <Button className={styles.joinButton}>
+              {t('homeModes.visio.calendarModal.add_button')}
+            </Button>
+          </ICalendarLink>
+          <Button
+            className={styles.joinButton}
+            onClick={() => copyEvent()}
+            disabled={disabled}
+            type="button"
+          // nativeButtonProps={{ id: 'copyCalendarButton' }}
+          >
+            {t('homeModes.visio.calendarModal.copy_button')}
+          </Button>
+        </div>
+      </calendarModal.Component>
     </div>
   )
 };
