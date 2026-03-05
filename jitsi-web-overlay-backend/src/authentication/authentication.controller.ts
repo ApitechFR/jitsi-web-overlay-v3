@@ -174,8 +174,8 @@ export class AuthenticationController {
       sub: this.configService.get('JITSI_JITSIJWT_SUB'),
       email: this.authenticationService.extractEmail(userinfo),
       ...userInfos,
-      admin: user.admin || false, // Override admin from DB
-      role: user.role,   // Add role from DB
+      admin: user?.admin || false, // Override admin from DB
+      role: user?.role,   // Add role from DB
       uid: user.uid,
     };
 
@@ -284,7 +284,7 @@ export class AuthenticationController {
     description:
       "the returned state is not the same as the one that was sent",
   })
-  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: false, transform: true }))
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   logoutCallback(
     @Query() query: LogoutCallbackDTO,
     @Req() request: Request,

@@ -337,7 +337,7 @@ export class AuthenticationService {
       family_name: userinfo?.family_name || userinfo?.lastName || userinfo?.nom || '',
       preferred_username: userinfo?.preferred_username || '',
       email: userinfo?.email || '',
-      admin: userinfo?.admin === true || userinfo?.admin === 'true'
+      admin: userinfo?.admin === true || userinfo?.admin === 'true' || false
     };
   }
 }
