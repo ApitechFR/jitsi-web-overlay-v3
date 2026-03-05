@@ -176,7 +176,7 @@ export class AuthenticationController {
       ...userInfos,
       admin: user?.admin || false, // Override admin from DB
       role: user?.role,   // Add role from DB
-      uid: user?.uid,
+      uid: user.uid,
     };
 
     const accessToken = this.authenticationService.generateAccessToken(baseClaims);
