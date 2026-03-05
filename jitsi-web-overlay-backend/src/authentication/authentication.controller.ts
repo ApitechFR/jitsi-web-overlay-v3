@@ -15,6 +15,8 @@ import {
   Post,
   HttpCode,
   HttpStatus,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { AuthProvider } from '../users/entities/users.entity';
@@ -172,7 +174,7 @@ export class AuthenticationController {
       sub: this.configService.get('JITSI_JITSIJWT_SUB'),
       email: this.authenticationService.extractEmail(userinfo),
       ...userInfos,
-      admin: user.admin, // Override admin from DB
+      admin: user.admin || false, // Override admin from DB
       role: user.role,   // Add role from DB
       uid: user.uid,
     };
@@ -282,6 +284,7 @@ export class AuthenticationController {
     description:
       "the returned state is not the same as the one that was sent",
   })
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: false, transform: true }))
   logoutCallback(
     @Query() query: LogoutCallbackDTO,
     @Req() request: Request,
@@ -338,7 +341,7 @@ export class AuthenticationController {
         given_name: decoded?.given_name || '',
         family_name: decoded?.family_name || '',
         name: decoded?.name || '',
-        isAdmin: Boolean(decoded?.admin),
+        isAdmin: Boolean(decoded?.admin) || false,
         uid: decoded?.uid,
       };
 
