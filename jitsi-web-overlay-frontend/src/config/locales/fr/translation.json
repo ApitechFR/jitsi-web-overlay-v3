@@ -141,7 +141,7 @@
         "browser": "Navigateur",
         "browserTested": "Le navigateur est testé",
         "clickToTest": "Cliquer pour tester",
-        "browserOk": "Votre navigateur est compatible avec webConf de l'État. Pour bénéficier d'une meilleure expérience utilisateur nous vous recommandons de toujours utiliser les dernières versions stables des navigateurs.",
+        "browserOk": "Votre navigateur est compatible avec notre plateforme. Pour bénéficier d'une meilleure expérience utilisateur nous vous recommandons de toujours utiliser les dernières versions stables des navigateurs.",
         "browserKo": "Attention, vous utilisez un navigateur qui en l’état dégrade fortement la qualité de la conférence pour tous les participants. Nous vous conseillons donc d'utiliser les navigateurs Edge chromium, Chromium ou Google Chrome. L'application mobile 'Jitsi Meet' est utilisable pour simplement rejoindre un salon.",
         "test": "Tester",
         "microphone": "Microphone",

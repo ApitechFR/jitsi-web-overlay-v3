@@ -8,7 +8,7 @@ import { useRuntimeConfig } from '@/config/ConfigProvider';
 import ICalLink from 'react-icalendar-link';
 import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 
-import styles from "../../pages/Home/HomeJoona.module.css"
+import styles from "../../pages/Home/HomeJoona.module.css";
 import { useTranslation } from 'react-i18next';
 import { validateConferenceName } from '@/utils/conferenceName';
 import { buildCalendarEvent, buildClipboardText, formatForInput } from '@/utils/CalendarModal';
@@ -41,7 +41,6 @@ function VisioMode(props: VisioModeProps) {
 
   //----------------------------- CALENDAR MODAL ---------------------------//
   const voxApiUrl = cfg.VITE_VOXAPI_URL;
-  console.log('VOX API URL:', voxApiUrl);
   const roomName = props.conferenceName;
   const date = new Date()
   date.setHours(date.getHours() + 2);
@@ -271,12 +270,12 @@ function VisioMode(props: VisioModeProps) {
             className={styles.modalButton}
             filename={`${props.AppTemplate === 'webconf' ? 'Webconférence de l\'État :' : 'Visio by Apitech'} - Conférence ${roomName}`}
           >
-            <Button className={styles.joinButton}>
+            <Button className={styles.joinCalendarButton}>
               {t('homeModes.visio.calendarModal.add_button')}
             </Button>
           </ICalendarLink>
           <Button
-            className={styles.joinButton}
+            className={styles.joinCalendarButton}
             onClick={() => copyEvent()}
             disabled={disabled}
             type="button"
