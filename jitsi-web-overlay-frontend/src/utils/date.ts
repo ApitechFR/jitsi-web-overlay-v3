@@ -10,9 +10,11 @@ export const formatDate = (isoString: string): string => {
     }).format(new Date(isoString));
 };
 
+const parseSqlDate = (date: string) => new Date(date.replace(' ', 'T'));
+
 export const formatReplayDate = (createdAt: string, updatedAt: string) => {
-    const startDate = new Date(createdAt);
-    const endDate = new Date(updatedAt);
+    const startDate = parseSqlDate(createdAt);
+    const endDate = parseSqlDate(updatedAt);
     const lang = i18n.language || navigator.language || 'fr-FR';
 
     const sameDay = startDate.toDateString() === endDate.toDateString();
