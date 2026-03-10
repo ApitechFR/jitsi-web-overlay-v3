@@ -285,8 +285,6 @@ export class ReplayService {
     async getReplaysByParticipantEmail(email: string) {
         const conferenceUids = await this.participantService.getConferenceUIDsByEmail(email);
 
-        console.log({conferenceUids});
-
         if (!conferenceUids?.length) {
             return [];
         }
