@@ -291,9 +291,12 @@ export class ReplayService {
             return [];
         }
 
-        return this.replayRepository
+        const replays = await this.replayRepository
             .createQueryBuilder('r')
             .where('r.conference_uid IN (:...uids)', { uids: conferenceUids })
+            .orderBy('r.created_at', 'DESC')
             .getMany();
+
+        return replays.filter(replay => replay.file_path && fs.existsSync(replay.file_path));    
     }
 }

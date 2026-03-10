@@ -17,15 +17,19 @@ export const formatReplayDate = (createdAt: string, updatedAt: string) => {
 
     const sameDay = startDate.toDateString() === endDate.toDateString();
 
+    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
     const dateFormatter = new Intl.DateTimeFormat(lang, {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
+        timeZone: userTimeZone,
     });
 
     const timeFormatter = new Intl.DateTimeFormat(lang, {
         hour: '2-digit',
         minute: '2-digit',
+        timeZone: userTimeZone,
     });
 
     if (sameDay) {
