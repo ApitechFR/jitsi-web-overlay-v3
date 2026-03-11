@@ -23,13 +23,13 @@ export const formatReplayDate = (createdAt: string, updatedAt: string) => {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
-        // timeZone: userTimeZone,
+        timeZone: 'UTC',
     });
 
     const timeFormatter = new Intl.DateTimeFormat(lang, {
         hour: '2-digit',
         minute: '2-digit',
-        // timeZone: userTimeZone,
+        timeZone: 'UTC',
     });
 
     if (sameDay) {
