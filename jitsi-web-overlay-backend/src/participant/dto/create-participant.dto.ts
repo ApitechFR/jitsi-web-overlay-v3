@@ -12,7 +12,7 @@ export class CreateParticipantDto {
 
     @IsString()
     @Length(2, 128)
-    displayName!: string;
+    displayName?: string;
 
     @IsOptional()
     email?: string;

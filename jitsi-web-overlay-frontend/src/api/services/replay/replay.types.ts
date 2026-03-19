@@ -9,6 +9,7 @@ export interface Replay {
     id: number | string;
     uid: string;
     status: ReplayStatus | string;
+    isActive: boolean;
     message: string;
     conference_name: string;
     created_at: string;
