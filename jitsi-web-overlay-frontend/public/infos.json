@@ -8,22 +8,25 @@
                     "id": "web-overlay",
                     "label": "Version Web Overlay",
                     "content": {
-                        "title": "Nouvelle version 27/02/2026",
-                        "version": "v3.4.0",
-                        "releaseDate": "2026-02-27",
+                        "title": "Nouvelle version 16/03/2026",
+                        "version": "v3.4.2",
+                        "releaseDate": "2026-03-16",
                         "blocks": [
                             {
-                                "description": "La dernière version v3.4.0 du 27 février 2026 apporte des correctifs. Cette nouvelle version apporte notamment :",
+                                "description": "La dernière version v3.4.2 du 16 mars 2026 apporte des correctifs. Cette nouvelle version apporte notamment :",
                                 "features": {
                                     "ameliorations": [
-                                        "Gestion de l’approvisionnement et du désapprovisionnement des comptes",
-                                        "Ajout de l’heure de fin des enregistrements vidéo sur la page des conférences",
-                                        "Ajout d’un modal pour la planification d’une réunion"
+                                        "Les enregistrements ne sont plus affichés lorsque la vidéo correspondante n’est plus disponible sur le serveur."
                                     ]
                                 },
                                 "fix": {
                                     "bugs": [
-                                        "Fix : correction du décalage horaire lors de la récupération des enregistrements vidéo"
+                                        "Fix : Affichage des enregistrements vidéo (tri désormais chronologique).",
+                                        "Fix : Boutons dans la modale de planification de réunion.",
+                                        "Fix : Gestion d’erreur lorsqu’aucune adresse e-mail n’est fournie par OIDC.",
+                                        "Fix : Description du pied de page.",
+                                        "Fix : Décalage horaire lors de la récupération des enregistrements vidéo.",
+                                        "Fix : Correction d’un problème de texte sur la page de test matériel."
                                     ]
                                 },
                                 "link": [
@@ -146,22 +149,25 @@
                     "id": "web-overlay",
                     "label": "Web Overlay Version",
                     "content": {
-                        "title": "New version 27/02/2026",
-                        "version": "v3.4.0",
-                        "releaseDate": "2026-02-27",
+                        "title": "New version 16/03/2026",
+                        "version": "v3.4.2",
+                        "releaseDate": "2026-03-16",
                         "blocks": [
                             {
-                                "description": "The latest version v3.4.0 from February 27, 2026 brings fixes. This new version notably includes:",
+                                "description": "The latest version v3.4.2 from March 16, 2026 brings fixes. This new version notably includes:",
                                 "features": {
                                     "ameliorations": [
-                                        "Management of provisioning and deprovisioning of accounts",
-                                        "Addition of the end time of video recordings on the conference page",
-                                        "Addition of a modal for scheduling a meeting"
+                                        "Recordings are no longer displayed when the corresponding video is no longer available on the server."
                                     ]
                                 },
                                 "fix": {
                                     "bugs": [
-                                        "Fix: correction of the time shift when retrieving video recordings"
+                                        "Fix: Display of video recordings (now sorted chronologically).",
+                                        "Fix: Buttons in the meeting scheduling modal.",
+                                        "Fix: Error handling when no email address is provided by OIDC.",
+                                        "Fix: Footer description.",
+                                        "Fix: Time zone offset when retrieving video recordings.",
+                                        "Fix: Correction of a text issue on the hardware test page."
                                     ]
                                 },
                                 "link": [
