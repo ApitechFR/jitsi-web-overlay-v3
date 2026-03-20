@@ -10,6 +10,7 @@ import {
   Headers,
   UnauthorizedException,
   ForbiddenException,
+  BadRequestException,
   Inject,
   UseGuards,
   Post,
@@ -17,6 +18,7 @@ import {
   HttpStatus,
   UsePipes,
   ValidationPipe,
+  Logger,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { AuthProvider } from '../users/entities/users.entity';
@@ -26,20 +28,25 @@ import * as crypto from 'node:crypto';
 import { JwtService } from '@nestjs/jwt';
 import { LoginCallbackDTO } from './DTOs/LoginCallbackDTO';
 import { LogoutCallbackDTO } from './DTOs/LogoutCallbackDTO';
+import { SsoLoginDto } from './DTOs/SsoLoginDto';
 import {
   ApiOkResponse,
   ApiUnauthorizedResponse,
   ApiNotFoundResponse,
   ApiResponse,
+  ApiBadRequestResponse,
+  ApiForbiddenResponse,
 } from '@nestjs/swagger';
 import { IConferenceService } from '../conference/interfaces/conference-service.interface';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { TenantContext } from '../common/context/tenant.context';
 import { ClientDomainRepository } from '../reseller/repositories/client-domain.repository';
+import { SsoLoginService } from './services/sso-login.service';
 import { v4 as uuidv4 } from 'uuid';
 
 @Controller()
 export class AuthenticationController {
+  private readonly logger = new Logger(AuthenticationController.name);
 
   constructor(
     private readonly authenticationService: AuthenticationService,
@@ -50,6 +57,7 @@ export class AuthenticationController {
     private readonly usersService: UsersService,
     private readonly tenantContext: TenantContext,
     private readonly clientDomainRepository: ClientDomainRepository,
+    private readonly ssoLoginService: SsoLoginService,
   ) { }
 
   private getFrontBaseUrl(): string {
@@ -402,7 +410,7 @@ export class AuthenticationController {
     }
 
     // Convert literal \n to actual newlines
-    const publicKey = publicKeyRaw.replace(/\\n/g, '\n');
+    const publicKey = publicKeyRaw.replaceAll('\\n', '\n');
 
     // Validate JWT RS256
     let decoded: any;
@@ -497,5 +505,103 @@ export class AuthenticationController {
     });
 
     return { authenticated: true, email };
+  }
+
+  /**
+   * SSO Hybrid POST + JSON (Solution 3)
+   * 
+   * Secure SSO flow from Application A to Application B:
+   * - Token passed in POST body (not URL)
+   * - Anti-replay via nonce validation
+   * - Origin validation (CSRF protection)
+   * - RS256 signature validation
+   * - Direct conference access via room parameter
+   * 
+   * POST /authentication/sso-login
+   * Content-Type: application/json
+   * 
+   * Body:
+   * {
+   *   "token": "<JWT_RS256>",
+   *   "nonce": "<nonce_from_form>",
+   *   "room": "optional_conference_name"
+   * }
+   * 
+   * Response (Redirect 302):
+   * - Location: /room/{room} or /
+   * - Set-Cookie: accessToken, refreshToken (HttpOnly, Secure, SameSite)
+   */
+  @Post('authentication/sso-login')
+  @HttpCode(HttpStatus.OK)
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }))
+  @ApiOkResponse({ description: 'Redirect to /room/{room} or home with cookies set' })
+  @ApiBadRequestResponse({ description: 'Invalid token or nonce' })
+  @ApiForbiddenResponse({ description: 'Invalid origin or replay attack detected' })
+  async ssoLogin(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    // Extract data from POST body
+    const { token, nonce, room } = (request.body as SsoLoginDto) || {};
+
+    if (!token || !nonce) {
+      throw new BadRequestException('Missing token or nonce in request body');
+    }
+
+    // Get referer header for origin validation
+    const referer = request.headers.referer;
+
+    try {
+      // Process SSO login with all validations
+      const { user, redirectTarget } = await this.ssoLoginService.processSsoLogin(
+        token,
+        nonce,
+        room,
+        referer,
+      );
+
+      // Set session cookies
+      const baseClaims = {
+        iss: this.configService.get('JITSI_JITSIJWT_ISS'),
+        aud: this.configService.get('JITSI_JITSIJWT_AUD'),
+        sub: this.configService.get('JITSI_JITSIJWT_SUB'),
+        email: user.email,
+        name: user.displayName || user.email,
+        uid: user.uid,
+      };
+
+      const accessToken = this.authenticationService.generateAccessToken(baseClaims);
+      const refreshToken = this.authenticationService.generateRefreshToken(baseClaims);
+
+      // Set session cookies
+      this.authenticationService.setAuthCookie(response, 'accessToken', accessToken, {
+        maxAge: 2 * 60 * 60 * 1000, // 2h
+      });
+      this.authenticationService.setAuthCookie(response, 'refreshToken', refreshToken, {
+        maxAge: 12 * 60 * 60 * 1000, // 12h
+      });
+
+      // Store room name if provided (same pattern as OIDC login)
+      if (room) {
+        this.authenticationService.setAuthCookie(response, 'roomName', room);
+      }
+
+      // Return redirect URL as JSON (frontend will handle client-side redirect)
+      // This avoids CORS issues with HTTP 302 redirects
+      const redirectUrl = this.getFrontRedirectTarget(request, room);
+      this.logger.log(`[SSO] Redirecting to: ${redirectUrl}`);
+      return {
+        authenticated: true,
+        redirectUrl,
+        user: {
+          email: user.email,
+          displayName: user.displayName,
+          uid: user.uid,
+        },
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(`SSO login failed: ${message}`);
+    }
   }
 }

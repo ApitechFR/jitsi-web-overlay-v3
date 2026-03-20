@@ -8,6 +8,8 @@ import { JwtRs256Strategy } from './strategies/jwt-rs256.strategy';
 import { UsersModule } from '../users/users.module';
 import { ResellerModule } from '../reseller/reseller.module';
 import { TenantContext } from '../common/context/tenant.context';
+import { SsoNonceService } from './services/sso-nonce.service';
+import { SsoLoginService } from './services/sso-login.service';
 
 @Module({
   imports: [HttpModule, ConferenceModule, UsersModule, ResellerModule],
@@ -19,6 +21,9 @@ import { TenantContext } from '../common/context/tenant.context';
     // If RESELLER_MODE_ENABLED is false, the strategy will not be used by Passport
     JwtRs256Strategy,
     TenantContext,
+    // SSO Hybrid POST services
+    SsoNonceService,
+    SsoLoginService,
   ],
   controllers: [AuthenticationController],
 })

@@ -8,7 +8,7 @@ export class Offer {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'enum', enum: OfferType, unique: true })
+  @Column({ type: 'enum', enum: OfferType })
   type: OfferType;
 
   @Column({ type: 'varchar', length: 255 })

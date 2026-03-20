@@ -43,7 +43,7 @@ export class JwtRs256Strategy extends PassportStrategy(Strategy, 'jwt-rs256') {
         // Get the public key for JWT validation from config
         const publicKeyRaw = configService.get<string>('PROVIDER_JWT_PUBLIC_KEY');
         // Convert literal \n to actual newlines
-        const publicKey = publicKeyRaw ? publicKeyRaw.replace(/\\n/g, '\n') : undefined;
+        const publicKey = publicKeyRaw ? publicKeyRaw.replaceAll('\\n', '\n') : undefined;
 
         // En mode single-tenant, les paramètres ne sont pas fortement validés
         // car la clé publique n'est pas requise (OIDC sera utilisé)

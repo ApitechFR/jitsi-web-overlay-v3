@@ -6,6 +6,7 @@ import { AuthenticationModule } from './authentication/authentication.module';
 import { ConferenceModule } from './conference/conference.module';
 import { StatsModule } from './stats/stats.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import ssoConfig from './config/sso.config';
 import { FeedbackModule } from './feedback/feedback.module';
 import { ProsodyModule } from './prosody/prosody.module';
 import { JwtModule } from '@nestjs/jwt';
@@ -87,6 +88,7 @@ import { ResellerModule } from './reseller/reseller.module';
       isGlobal: true,
       envFilePath: `.env.${process.env.NODE_ENV}`,
       validationSchema: configValidationSchema,
+      load: [ssoConfig],
     }),
     CommonModule,
     AuthenticationModule,
