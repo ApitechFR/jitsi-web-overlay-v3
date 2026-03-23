@@ -8,6 +8,7 @@ import { isUserAdmin } from '@/utils/user';
 import { Item } from '@/utils/changelogs/Item';
 import ChangelogContent from '../IframePopup/ChangelogContent';
 import { useRuntimeConfig } from '@/config/ConfigProvider';
+import { CHANGELOG_VERSION } from '@/utils/changelogs/changelog-version';
 
 import { useTranslation } from 'react-i18next';
 
@@ -33,7 +34,11 @@ export default function HeaderJoona() {
   const [currentModalId, setCurrentModalId] = useState<string | null>(null);
 
   useEffect(() => {
-    const changelogUrl = cfg.VITE_APP_CHANGELOG_URL || '/infos.json';
+    // Use hash-based versioning for cache busting
+    let changelogUrl = cfg.VITE_APP_CHANGELOG_URL || '/infos.json';
+    if (changelogUrl.endsWith('.json')) {
+      changelogUrl = changelogUrl.replace('.json', `-${CHANGELOG_VERSION}.json`);
+    }
     fetch(changelogUrl)
       .then((res) => res.json())
       .then((data) => {
