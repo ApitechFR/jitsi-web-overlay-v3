@@ -21,6 +21,10 @@ export class AppController {
     return {
       VITE_APP_TEMPLATE: process.env.APP_TEMPLATE,
       VITE_JITSI_DOMAIN: process.env.JITSI_DOMAIN,
+      VITE_TURN_SERVER_SECRET: process.env.TURN_SERVER_SECRET,
+      VITE_WSS_URL: process.env.WSS_URL,
+      VITE_TURN_TCP_URLS: process.env.TURN_TCP_URLS,
+      VITE_TURN_UDP_URLS: process.env.TURN_UDP_URLS,
       VITE_VOXAPI_URL: process.env.VOXAPI_URL,
       VITE_CONFERENCE_NAME_REGEX: process.env.CONFERENCE_NAME_REGEX,
       VITE_CONFERENCE_NAME_REGEX_MESSAGE: process.env.CONFERENCE_NAME_REGEX_MESSAGE,

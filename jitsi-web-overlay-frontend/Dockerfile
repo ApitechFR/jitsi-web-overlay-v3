@@ -15,7 +15,9 @@ COPY package.json package-lock.json ./
 
 RUN mkdir -p public/@gouvfr-lasuite/integration
 # Installer les dépendances avec devDependencies (vite inclus)
-RUN npm ci --no-audit --no-fund
+RUN npm ci --no-audit --no-fund --legacy-peer-deps
+#RUN npm ci --no-audit --no-fund --legacy-peer-deps
+#RUN npm install --force
 
 # Copier le reste du code
 COPY . .

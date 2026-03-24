@@ -91,3 +91,99 @@
     /* width: 300px; */
   }
 }
+
+.networkContainer {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.networkVideos {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.networkVideoLabel {
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.networkIceInfo {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.networkConnectivity {
+  flex: 1;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.networkSectionTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.networkTestList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.networkTestItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  background-color: #f6f6f6;
+}
+
+.networkTestItemSuccess {
+  border-color: #18753c;
+  background-color: #b8fec9;
+}
+
+.networkTestItemError {
+  border-color: #ce0500;
+  background-color: #ffe9e9;
+}
+
+.networkTestLabel {
+  font-weight: 500;
+}
+
+.networkTestPending {
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.networkStatsList {
+  display: flex;
+  flex-direction: column;
+}
+
+.networkStatItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid #e5e5e5;
+  background-color: #f6f6f6;
+}
+
+.networkStatLabel {
+  color: #3a3a3a;
+  font-size: 0.875rem;
+}
+
+.networkStatValue {
+  font-weight: 700;
+  font-size: 0.875rem;
+}

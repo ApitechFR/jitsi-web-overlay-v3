@@ -7,8 +7,8 @@ import React, {
   SyntheticEvent,
 } from 'react';
 import styles from './BrowserTestJoona.module.css';
-// import { ReactMic } from 'react-mic';
-import { ReactMediaRecorder } from 'react-media-recorder';
+import { ReactMic } from 'react-mic';
+//import { ReactMediaRecorder } from 'react-media-recorder';
 import Webcam from 'react-webcam';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -26,6 +26,8 @@ import { JitsiMeeting } from '@jitsi/react-sdk';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Button } from '@ds';
 import { useRuntimeConfig } from '@/config/ConfigProvider';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 
 export default function BrowserTestJoona() {
   const { t } = useTranslation();
@@ -53,6 +55,60 @@ export default function BrowserTestJoona() {
 
   const navigate = useNavigate();
   const cfg = useRuntimeConfig();
+
+  type networkTestStatuses = {
+    wss: boolean | null;
+    tcp: boolean | null;
+    udp: boolean | null;
+  };
+  const [networkTests, setNetworkTests] = useState<networkTestStatuses>({
+    wss: null,
+    udp: null,
+    tcp: null,
+  });
+
+  type networkStatsEntries = {
+    bandwidth: number | null;
+    packetLoss: number | null;
+    frameRate: number | null;
+    lostImages: number | null;
+    framesDropped: number | null;
+    jitter: number | null;
+  };
+
+  const [networkStats, setNetworkStats] = useState<networkStatsEntries>({
+    bandwidth: null as number | null,
+    packetLoss: null as number | null,
+    frameRate: null as number | null,
+    lostImages: null as number | null,
+    framesDropped: null as number | null,
+    jitter: null as number | null,
+  });
+
+  // refs vidéo pour afficher local / remote
+  const localVideoRef = React.useRef<HTMLVideoElement | null>(null);
+  const remoteVideoRef = React.useRef<HTMLVideoElement | null>(null);
+
+  // état pour afficher dimensions et adresse ICE
+  const [localVideoDims, setLocalVideoDims] = useState<{ width: number, height: number } | null>(null);
+  const [remoteVideoDims, setRemoteVideoDims] = useState<{ width: number, height: number } | null>(null);
+  const [iceConnectionInfo, setIceConnectionInfo] = useState<string | null>(null);
+
+  // durée du test (ms) et intervalle stats
+  const STATS_INTERVAL_MS = 1000;
+  const STATS_DURATION_MS = 8000; // 8s
+
+  const testNetworkContext = React.useRef({
+    localPeerConnection: null as RTCPeerConnection | null,
+    remotePeerConnection: null as RTCPeerConnection | null,
+    localStream: null as MediaStream | null,
+    stats: { tcp: { bitrate: [], framesPerSecond: 0, framesDropped: 0, jitter: 0 }, udp: { bitrate: [], framesPerSecond: 0, framesDropped: 0, jitter: 0 } },
+    statuses: { tcp: null as boolean | null, udp: null as boolean | null, wss: null as boolean | null },
+    exceptions: {} as Record<string, any>,
+    testingProtocol: '' as 'tcp' | 'udp' | '',
+  });
+
+
 
   useEffect(() => {
     window
@@ -304,11 +360,22 @@ export default function BrowserTestJoona() {
     }, 3500);
     setTimeout(() => {
       handleStopCaptureClick();
-      setExpanded('');
-      setTimeout(() => {
-        setExpanded('panel4');
-      }, 500);
+      setExpanded('panel4');
     }, 8500);
+
+    setTimeout(async () => {
+      await handleNetworkTests();
+      setTimeout(() => setExpanded(''), 4000);
+    }, 9000);
+
+
+    setTimeout(() => {
+      setExpanded('panel5');
+      handleStartConference();
+      setTimeout(() => {
+        setExpanded('');
+      }, 4000);
+    }, 13000);
   };
 
   useEffect(() => {
@@ -404,6 +471,289 @@ export default function BrowserTestJoona() {
     iframeRef.style.width = '100%';
     iframeRef.style.aspectRatio = '16/9';
   };
+
+
+  const handleNetworkTests = async () => {
+    const context = testNetworkContext.current;
+    const websocketUrl = cfg.VITE_WSS_URL
+      ? `${cfg.VITE_WSS_URL}`
+      : undefined;
+    const turnServerSecret = cfg.VITE_TURN_SERVER_SECRET;
+    const turnTcpUrls =
+      cfg.VITE_TURN_TCP_URLS
+        ?.split(',')
+        .map(url => url.trim())
+        .filter(Boolean) || [];
+    const turnUdpUrls =
+      cfg.VITE_TURN_UDP_URLS
+        ?.split(',')
+        .map(url => url.trim())
+        .filter(Boolean) || [];
+
+
+
+    if (!websocketUrl || !turnServerSecret || !turnTcpUrls.length || !turnUdpUrls.length) {
+      setNetworkTests({ wss: false, udp: false, tcp: false });
+      setIceConnectionInfo('Configuration réseau manquante (domain/turn).');
+      return;
+    }
+    /** hold the state of ice connection */
+    let iceConnected = false;
+
+    // Reset des états
+    setNetworkTests({ wss: null, udp: null, tcp: null });
+    setNetworkStats({ bandwidth: null, packetLoss: null, frameRate: null, lostImages: null, jitter: null, framesDropped: null });
+    setIceConnectionInfo('Waiting...');
+    context.stats = {
+      udp: { bitrate: [], framesPerSecond: 0, framesDropped: 0, jitter: 0 },
+      tcp: { bitrate: [], framesPerSecond: 0, framesDropped: 0, jitter: 0 },
+    };
+    context.statuses = { wss: null, udp: null, tcp: null };
+    context.exceptions = {};
+
+    // ----------------------
+    // Test WebSocket
+    // ----------------------
+    try {
+      // const ws = new WebSocket('ws://localhost:8085/xmpp-websocket');
+
+      const ws = new WebSocket(websocketUrl, ['xmpp']);
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('timeout')), 4000);
+        ws.onopen = () => {
+          clearTimeout(timer);
+          setNetworkTests((prev: networkTestStatuses) => ({ ...prev, wss: true }));
+          ws.close();
+          resolve();
+        };
+        ws.onerror = () => {
+          clearTimeout(timer);
+          setNetworkTests((prev: networkTestStatuses) => ({ ...prev, wss: false }));
+          reject(new Error('WebSocket connection failed'));
+        };
+      });
+    } catch (err) {
+      setNetworkTests((prev: networkTestStatuses) => ({ ...prev, wss: false }));
+    }
+
+    // ----------------------
+    // Test WebRTC (UDP + TCP)
+    // ----------------------
+    const protocols: ('udp' | 'tcp')[] = ['udp', 'tcp'];
+    for (const protocol of protocols) {
+      // reset iceConnected variable
+      iceConnected = false;
+      let pcLocal: RTCPeerConnection | null = null;
+      let pcRemote: RTCPeerConnection | null = null;
+      let localStream: MediaStream | null = null;
+
+      // generate turn credentials
+      const { username, credential } = await generateTurnCredentials(turnServerSecret);
+
+      try {
+        //ICE servers
+        const turn_servers = {
+          username,
+          credential,
+          tcp_urls: turnTcpUrls,
+          udp_urls: turnUdpUrls
+          // tcp_urls: ['turn:localhost:3478?transport=tcp'], 
+          // udp_urls: ['turn:localhost:3478?transport=udp']
+        }
+        const servers = {
+          urls: protocol === 'tcp'
+            ? turn_servers.tcp_urls
+            : turn_servers.udp_urls,
+          username: turn_servers.username,
+          credential: turn_servers.credential
+        };
+        // Config WebRTC
+        const rtcConfig: RTCConfiguration = {
+          iceServers: [servers],
+          iceTransportPolicy: 'relay' as RTCIceTransportPolicy
+        };
+
+        pcLocal = new RTCPeerConnection(rtcConfig);
+        pcRemote = new RTCPeerConnection(rtcConfig);
+
+
+        context.localPeerConnection = pcLocal;
+        context.remotePeerConnection = pcRemote;
+
+        // Get user media
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: { width: 320, height: 240 } });
+        localStream.getTracks().forEach(track => pcLocal!.addTrack(track, localStream!));
+        if (localVideoRef.current) localVideoRef.current.srcObject = localStream;
+
+        // Remote track
+        pcRemote.ontrack = e => {
+          if (remoteVideoRef.current && remoteVideoRef.current.srcObject !== e.streams[0]) {
+            remoteVideoRef.current.srcObject = e.streams[0];
+          }
+        };
+
+        // ICE candidate exchange
+        pcLocal.onicecandidate = e => {
+          if (e.candidate) pcRemote?.addIceCandidate(e.candidate);
+        };
+        pcRemote.onicecandidate = e => {
+          if (e.candidate) pcLocal?.addIceCandidate(e.candidate);
+        };
+
+        // pcLocal.onicegatheringstatechange = () =>
+
+        // ICE connection state
+        pcLocal.oniceconnectionstatechange = () => {
+          if (['connected', 'completed'].includes(pcLocal!.iceConnectionState)) {
+            iceConnected = true;
+            setNetworkTests((prev: networkTestStatuses) => ({ ...prev, [protocol]: true }));
+          }
+        };
+
+        // Offer / answer
+        const offer = await pcLocal.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
+        await pcLocal.setLocalDescription(offer);
+        await pcRemote.setRemoteDescription(offer);
+
+        const answer = await pcRemote.createAnswer();
+        await pcRemote.setLocalDescription(answer);
+        await pcLocal.setRemoteDescription(answer);
+
+        // Collect stats
+        const stats = await pcLocal.getStats();
+        let bytesPrev = 0;
+        let timestampPrev = 0;
+        const bitrates: number[] = [];
+        let totalPacketsLost = 0;
+        let frameRate = 0;
+        let totalJitter = 0;
+        let remoteCandidate: any = null;
+        let activeCandidatePairId: string | null = null;
+        let framesDropped: number | null = null;
+        await new Promise<void>(resolve => {
+          let samples = 0;
+
+          const interval = setInterval(async () => {
+            if (!pcLocal || !pcRemote) return;
+
+            // Stats sur remotePeerConnection
+            const remoteStats = await pcRemote.getStats(null);
+
+            remoteStats.forEach((report: any) => {
+              const now = report.timestamp;
+
+              // Bitrate
+              if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
+                const bytes = report.bytesReceived;
+                if (timestampPrev && bytesPrev) {
+                  let bitrate = 8 * (bytes - bytesPrev) / (now - timestampPrev);
+                  bitrate = Math.floor(bitrate);
+                  if (bitrate > 0) bitrates.push(bitrate);
+                }
+                bytesPrev = bytes;
+                timestampPrev = now;
+              }
+
+              // framesPerSecond, framesDropped, packetsLost, jitter
+              (['framesPerSecond', 'framesDropped', 'packetsLost', 'jitter'] as const).forEach(item => {
+                if (report[item] !== undefined) {
+                  if (item === 'framesPerSecond') frameRate = report[item];
+                  if (item === 'framesDropped') framesDropped = report[item];
+                  if (item === 'packetsLost') totalPacketsLost = report[item];
+                  if (item === 'jitter') totalJitter = report[item];
+                }
+              });
+
+              // Remote candidate via transport (spec-way)
+              if (report.type === 'transport') {
+                const pair = remoteStats.get(report.selectedCandidatePairId);
+                if (pair?.remoteCandidateId) {
+                  const rc = remoteStats.get(pair.remoteCandidateId);
+                  if (rc?.address && rc?.port) {
+                    setIceConnectionInfo(`${rc.address}: ${rc.port}`);
+                  }
+                }
+              }
+            });
+
+            samples++;
+
+            if (samples >= 5) {
+              clearInterval(interval);
+
+              const avgBitrate = bitrates.length
+                ? Math.round(bitrates.reduce((a, b) => a + b, 0) / bitrates.length)
+                : 0;
+              const lastBitrate = bitrates.length
+                ? Math.round(bitrates[bitrates.length - 1])
+                : 0;
+
+              setNetworkStats(prev => ({
+                ...prev,
+                bandwidth: lastBitrate,
+                bandwidthAvg: avgBitrate,
+                packetLoss: totalPacketsLost,
+                frameRate,
+                lostImages: framesDropped,
+                jitter: Number(totalJitter.toFixed(3)),
+              }));
+
+              resolve();
+            }
+          }, 1000);
+        });
+
+        // ICE remote info (last candidate)
+        // const remoteCandidate = stats.get?.([...stats.keys()][stats.size - 1]) as any;
+        if (activeCandidatePairId) {
+          remoteCandidate = stats.get(activeCandidatePairId);
+        }
+        if (remoteCandidate && remoteCandidate.address && remoteCandidate.port) {
+          setIceConnectionInfo(`${remoteCandidate.address}:${remoteCandidate.port} `);
+        }
+
+        context.statuses[protocol] = true;
+
+      } catch (err) {
+        if (!iceConnected) {
+          setNetworkTests((prev: networkTestStatuses) => ({ ...prev, [protocol]: false }));
+        } context.statuses[protocol] = false;
+        context.exceptions[protocol] = err;
+      } finally {
+        // Cleanup
+        pcLocal?.close();
+        pcRemote?.close();
+        localStream?.getTracks().forEach(track => track.stop());
+        context.localPeerConnection = null;
+        context.remotePeerConnection = null;
+        context.localStream = null;
+        if (localVideoRef.current) localVideoRef.current.srcObject = null;
+        if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+      }
+    }
+  };
+
+
+  async function generateTurnCredentials(secret: string, userId: string = 'testuser') {
+    const timestamp = Math.floor(Date.now() / 1000) + 24 * 3600; // valide 24h
+    const username = `${timestamp}:${userId} `;
+
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(secret);
+    const messageData = encoder.encode(username);
+
+    const key = await crypto.subtle.importKey(
+      'raw', keyData,
+      { name: 'HMAC', hash: 'SHA-1' },
+      false, ['sign']
+    );
+
+    const signature = await crypto.subtle.sign('HMAC', key, messageData);
+    const credential = btoa(String.fromCharCode(...new Uint8Array(signature)));
+
+    return { username, credential };
+  }
+
 
   return (
     <div className={styles.main}>
@@ -520,43 +870,14 @@ export default function BrowserTestJoona() {
                 </Select>
               </FormControl>
             </Box>
-            <ReactMediaRecorder
-              audio={{ deviceId: mic ? { exact: mic } : undefined }}
-              onStart={() => {
-                setMicTest(null);
-                setErrorMessage(null);
-              }}
-              onStop={() => {
-                setMicTest(true);
-              }}
-              render={({ status, startRecording, stopRecording, mediaBlobUrl, error }) => {
-                // Handle error inside render
-                if (error) {
-                  setMicTest(false);
-                  setErrorMessage(
-                    <Alert
-                      closable
-                      description="Veuillez autoriser le navigateur à utiliser le microphone."
-                      onClose={() => { }}
-                      small
-                      title="Information"
-                      severity="error"
-                    />
-                  );
-                }
-                return (
-                  <>
-                    <Typography>Status : {status}</Typography>
-                    {mediaBlobUrl && (
-                      <audio
-                        src={mediaBlobUrl}
-                        controls
-                        style={{ display: 'block', margin: '10px auto' }}
-                      />
-                    )}
-                  </>
-                );
-              }}
+            <ReactMic
+              record={record}
+              visualSetting="frequencyBars"
+              className={styles.mic}
+              //onStop={onStop}
+              //onData={onData}
+              strokeColor="green"
+              backgroundColor="#BCBCBC"
             />
             <div className={styles.micAccordionContainer}>
               <Button
@@ -662,10 +983,18 @@ export default function BrowserTestJoona() {
         </AccordionDetails>
       </Accordion>
 
+
+      {/* Réseau */}
       <Accordion
         sx={{
           backgroundColor:
-            confTest === true ? '#1DC2A6' : confTest === false ? '#C21E56' : '',
+            networkTests.wss && networkTests.udp && networkTests.tcp
+              ? 'var(--background-contrast-success)'
+              : networkTests.wss === false ||
+                networkTests.udp === false ||
+                networkTests.tcp === false
+                ? 'var(--background-contrast-error)'
+                : '',
         }}
         expanded={expanded === 'panel4'}
         onChange={handleChange('panel4')}
@@ -674,6 +1003,123 @@ export default function BrowserTestJoona() {
           expandIcon={<ExpandMoreIcon />}
           aria-controls="panel4bh-content"
           id="panel4bh-header"
+        >
+          <Typography sx={{ width: '33%', flexShrink: 0 }}>Réseau</Typography>
+          <Typography sx={{ color: 'text.secondary' }}>
+            {networkTests.wss && networkTests.udp && networkTests.tcp
+              ? 'Connectivité OK'
+              : 'Cliquer pour tester'}
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Typography>Ce test vérifie la connectivité réseau : WebSocket, UDP et TCP.</Typography>
+          <Button
+            //variant="contained"
+            onClick={handleNetworkTests}
+            style={{
+              textTransform: 'none',
+              borderRadius: 0,
+              backgroundColor: '#0a76f6',
+              margin: '30px auto',
+              display: 'block',
+              width: matches ? '20%' : '50%',
+            }}
+          >
+            Lancer les tests réseau
+          </Button>
+
+          <div className={styles.networkContainer}>
+            {/* Vidéos */}
+            <div className={styles.networkVideos}>
+              <div>
+                <p className={styles.networkVideoLabel}>Vidéo locale</p>
+                <video ref={localVideoRef} autoPlay muted playsInline style={{ width: 280, height: 210, background: '#000' }} />
+              </div>
+              <div>
+                <p className={styles.networkVideoLabel}>Vidéo distante</p>
+                <video ref={remoteVideoRef} autoPlay playsInline style={{ width: 280, height: 210, background: '#000' }} />
+              </div>
+              <div>
+                <p className={styles.networkVideoLabel}>ICE info</p>
+                <p className={styles.networkIceInfo}>{iceConnectionInfo || '—'}</p>
+              </div>
+            </div>
+
+            {/* Colonne droite : connectivité + stats */}
+            <div className={styles.networkConnectivity}>
+
+              {/* Connectivité */}
+              <div>
+                <p className={styles.networkSectionTitle}>Connectivité</p>
+                <div className={styles.networkTestList}>
+                  {[
+                    { label: 'WebSocket', status: networkTests.wss },
+                    { label: 'Connexion UDP', status: networkTests.udp },
+                    { label: 'Connexion TCP', status: networkTests.tcp },
+                  ].map(({ label, status }) => (
+                    <div
+                      key={label}
+                      className={`${styles.networkTestItem} ${status === true ? styles.networkTestItemSuccess :
+                        status === false ? styles.networkTestItemError :
+                          ''
+                        } `}
+                    >
+                      <span className={styles.networkTestLabel}>{label}</span>
+                      <span>
+                        {status === true
+                          ? <CheckIcon color="success" />
+                          : status === false
+                            ? <CloseIcon color="error" />
+                            : <span className={styles.networkTestPending}>En attente...</span>}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Stats */}
+              <div>
+                <p className={styles.networkSectionTitle}>Qualité de la connexion</p>
+                <div className={styles.networkStatsList}>
+                  {[
+                    { label: 'Bande passante', value: networkStats.bandwidth != null ? `${networkStats.bandwidth} kbit / s` : '—' },
+                    { label: 'Paquets perdus', value: networkStats.packetLoss ?? '—' },
+                    { label: 'Débit d\'images', value: networkStats.frameRate != null ? `${networkStats.frameRate} fps` : '—' },
+                    { label: 'Images perdues', value: networkStats.lostImages ?? '—' },
+                    { label: 'Jitter', value: networkStats.jitter != null ? `${networkStats.jitter} s` : '—' },
+                  ].map(({ label, value }) => (
+                    <div
+                      key={label}
+                      className={styles.networkStatItem}
+                    >
+                      <span style={{ color: '#3a3a3a', fontSize: '0.875rem' }}>{label}</span>
+                      <span style={{ fontWeight: 700, fontSize: '0.875rem' }}>{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </AccordionDetails>
+      </Accordion>
+
+
+
+
+      <Accordion
+        sx={{
+          backgroundColor:
+            confTest === true ? '#1DC2A6' : confTest === false ? '#C21E56' : '',
+        }}
+        expanded={expanded === 'panel5'}
+        onChange={handleChange('panel5')}
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          aria-controls="panel5bh-content"
+          id="panel5bh-header"
         >
           <Typography sx={{ width: '33%', flexShrink: 0 }}>
             {t('browserTest.conference')}
@@ -688,7 +1134,7 @@ export default function BrowserTestJoona() {
           <Typography>
             {t('browserTest.waitConnection')}
           </Typography>
-          {expanded === 'panel4' ? (
+          {expanded === 'panel5' ? (
             <div className={styles.cam}>
               <br />
               {/* <div style={{ display: 'none' }}>{iframe}</div> */}

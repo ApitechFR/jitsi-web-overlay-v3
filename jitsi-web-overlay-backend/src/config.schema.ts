@@ -32,6 +32,11 @@ export const configValidationSchema = joi.object({
   JITSI_JITSIJWT_ISS: joi.string().required(),
   JITSI_JITSIJWT_SECRET: joi.string().required(),
   JITSI_JITSIJWT_SUB: joi.string().required(),
+  TURN_SERVER_SECRET: joi.string().optional(),
+  TURN_TCP_URLS: joi.string().optional(),
+  TURN_UDP_URLS: joi.string().optional(),
+  WSS_URL: joi.string().uri().optional(),
+
   //mongodb
   MONGO_URI: joi.when('DB_TYPE', {
     is: 'mongodb',
