@@ -11,6 +11,7 @@ export class CreateParticipantDto {
     userUid?: string; // si participant a un compte
 
     @IsString()
+    @IsOptional()
     @Length(2, 128)
     displayName?: string;
 
