@@ -19,14 +19,13 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
-import api from '@/axios/axios';
 import CircularProgress from '@mui/material/CircularProgress';
 import { JitsiMeeting } from '@jitsi/react-sdk';
-import { useNavigate } from 'react-router-dom';
 import { Alert, Button } from '@ds';
 import { useRuntimeConfig } from '@/config/ConfigProvider';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import { ConferenceService } from '@/api';
 
 type NetworkTestStatuses = {
   wss: boolean | null;
@@ -51,24 +50,31 @@ type DeviceChangeEvent = {
 
 export default function BrowserTestJoona() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const cfg = useRuntimeConfig();
-
+  const CONFERENCE_TEST_DURATION_MS = 5 * 60 * 1000;
+  const hostApiRef = React.useRef<any>(null);
+  const guestApiRef = React.useRef<any>(null);
+  const testTimeoutRef = React.useRef<number | null>(null);
+  const guestTimeoutRef = React.useRef<number | null>(null);
   const [expanded, setExpanded] = useState<string | boolean>('');
   const [mic, setMic] = useState('');
   const [cam, setCam] = useState('');
   const [micItems, setMicItems] = useState<MediaDeviceInfo[]>([]);
   const [camItems, setCamItems] = useState<MediaDeviceInfo[]>([]);
-  const [navTest, setNavTest] = useState<boolean | null>();
-  const [micTest, setMicTest] = useState<boolean | null>();
-  const [camTest, setCamTest] = useState<boolean | null>();
+
+  const [navTest, setNavTest] = useState<boolean | null>(null);
+  const [micTest, setMicTest] = useState<boolean | null>(null);
+  const [camTest, setCamTest] = useState<boolean | null>(null);
+  const [conferenceConfirmedByUser, setConferenceConfirmedByUser] = useState(false);
   const [record, setRecord] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<ReactNode | null>(<></>);
+  // const [errorMessage, setErrorMessage] = useState<ReactNode | null>(<></>);
+  const [errorMessage, setErrorMessage] = useState<ReactNode | null>(null);
   const [confTest, setConfTest] = useState<boolean | null>(null);
   const [capturing, setCapturing] = useState(false);
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
-  const [conference] = useState(getRandomConfName());
+  const [conference, setConference] = useState<string>('');
   const [jwt, setJwt] = useState<string | undefined>();
+  const [showGuestMeeting, setShowGuestMeeting] = useState(false);
   const [matches, setMatches] = useState<boolean>(
     window.matchMedia('(min-width: 600px)').matches
   );
@@ -104,6 +110,13 @@ export default function BrowserTestJoona() {
   const localVideoRef = React.useRef<HTMLVideoElement | null>(null);
   const remoteVideoRef = React.useRef<HTMLVideoElement | null>(null);
 
+
+  const resetConferenceResult = () => {
+    setConfTest(null);
+    setConferenceConfirmedByUser(false);
+  };
+
+
   const testNetworkContext = React.useRef({
     localPeerConnection: null as RTCPeerConnection | null,
     remotePeerConnection: null as RTCPeerConnection | null,
@@ -117,28 +130,34 @@ export default function BrowserTestJoona() {
     testingProtocol: '' as 'tcp' | 'udp' | '',
   });
 
-  function getRandomConfName() {
-    function makeid(length: number) {
-      let result = '';
-      const characters =
-        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      const charactersLength = characters.length;
-      for (let i = 0; i < length; i++) {
-        result += characters.charAt(
-          Math.floor(Math.random() * charactersLength)
-        );
-      }
-      return result;
-    }
-    return 'browsertest123' + makeid(16);
-  }
-
+  const styleJitsiIframe = (iframeRef: HTMLDivElement) => {
+    iframeRef.style.border = '1px solid #3d3d3d';
+    iframeRef.style.position = 'relative';
+    iframeRef.style.background = '#3d3d3d';
+    iframeRef.style.width = '100%';
+    iframeRef.style.aspectRatio = '16/9';
+  };
   const wait = (ms: number) =>
     new Promise(resolve => setTimeout(resolve, ms));
 
   const stopStream = (stream: MediaStream | null) => {
     stream?.getTracks().forEach(track => track.stop());
   };
+  const clearConferenceTimers = () => {
+    if (testTimeoutRef.current) {
+      window.clearTimeout(testTimeoutRef.current);
+      testTimeoutRef.current = null;
+    }
+
+    if (guestTimeoutRef.current) {
+      window.clearTimeout(guestTimeoutRef.current);
+      guestTimeoutRef.current = null;
+    }
+  };
+  const handleConfirmReception = () => {
+    setConferenceConfirmedByUser(true);
+  };
+
 
   const stopAllDeviceStreams = useCallback(() => {
     stopStream(micStreamRef.current);
@@ -170,6 +189,13 @@ export default function BrowserTestJoona() {
       mediaQuery.removeEventListener('change', handler);
     };
   }, []);
+  useEffect(() => {
+    return () => {
+      // clearConferenceTimers();
+      stopConferenceMeetings();
+      resetConferenceResult();
+    };
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -183,25 +209,6 @@ export default function BrowserTestJoona() {
     };
   }, [stopAllDeviceStreams, stopWebcamComponentStream]);
 
-  useEffect(() => {
-    const loadConference = async () => {
-      try {
-        setLoading(true);
-        const res = await api.get(`/${conference}`);
-        if (res.data.error) {
-          navigate('/error');
-          return;
-        }
-        if (res.data.jwt) {
-          setJwt(res.data.jwt);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadConference();
-  }, [conference, navigate]);
 
   useEffect(() => {
     const initDevices = async () => {
@@ -237,11 +244,26 @@ export default function BrowserTestJoona() {
 
     initDevices();
   }, []);
+  const stopConferenceMeetings = () => {
+    clearConferenceTimers();
+    hostApiRef.current?.executeCommand?.('hangup');
+    guestApiRef.current?.executeCommand?.('hangup');
+    hostApiRef.current = null;
+    guestApiRef.current = null;
+    setShowGuestMeeting(false);
+  };
+
 
   const handleChange =
     (panel: string) => (_event: SyntheticEvent, isExpanded: boolean) => {
+      if (panel === 'panel5' && !isExpanded) {
+        stopConferenceMeetings();
+
+      }
+
       setExpanded(isExpanded ? panel : '');
     };
+
 
   const handleDataAvailable = useCallback(({ data }: BlobEvent) => {
     if (data.size > 0) {
@@ -347,9 +369,7 @@ export default function BrowserTestJoona() {
     }
   }, [capturing, recordedChunks]);
 
-  const handleStartConference = () => {
-    setConfTest(true);
-  };
+
 
   const handleMicChange = (event: DeviceChangeEvent) => {
     stopStream(micStreamRef.current);
@@ -372,22 +392,6 @@ export default function BrowserTestJoona() {
     );
   };
 
-  const handleJitsiIFrameRef1 = (iframeRef: HTMLDivElement) => {
-    iframeRef.style.border = '1px solid #3d3d3d';
-    iframeRef.style.position = 'relative';
-    iframeRef.style.background = '#3d3d3d';
-    iframeRef.style.width = '100%';
-    iframeRef.style.aspectRatio = '16/9';
-  };
-
-  const handleJitsiIFrameRef2 = (iframeRef: HTMLDivElement) => {
-    iframeRef.style.border = '1px solid #3d3d3d';
-    iframeRef.style.position = 'relative';
-    iframeRef.style.background = '#3d3d3d';
-    iframeRef.style.width = '100%';
-    iframeRef.style.aspectRatio = '16/9';
-  };
-
   const handleNetworkTests = useCallback(async () => {
     setIsTestingNetwork(true);
 
@@ -406,9 +410,6 @@ export default function BrowserTestJoona() {
       const turnUdpUrls =
         cfg.VITE_TURN_UDP_URLS?.split(',').map(url => url.trim()).filter(Boolean) || [];
 
-      console.log('[TURN TEST] websocketUrl:', websocketUrl);
-      console.log('[TURN TEST] turnTcpUrls:', turnTcpUrls);
-      console.log('[TURN TEST] turnUdpUrls:', turnUdpUrls);
 
       if (!websocketUrl || !turnServerSecret || !turnTcpUrls.length || !turnUdpUrls.length) {
         console.error('[TURN TEST] Configuration réseau manquante (domain/turn).');
@@ -436,7 +437,6 @@ export default function BrowserTestJoona() {
       context.exceptions = {};
 
       try {
-        console.log('[TURN TEST] Testing WebSocket connection to', websocketUrl);
 
         const ws = new WebSocket(websocketUrl, ['xmpp']);
 
@@ -486,9 +486,6 @@ export default function BrowserTestJoona() {
             iceTransportPolicy: 'relay',
           };
 
-          console.log(`[TURN TEST] Testing protocol: ${protocol}`);
-          console.log('[TURN TEST] RTCConfiguration:', rtcConfig);
-
           pcLocal = new RTCPeerConnection(rtcConfig);
           pcRemote = new RTCPeerConnection(rtcConfig);
 
@@ -532,10 +529,6 @@ export default function BrowserTestJoona() {
           };
 
           pcLocal.oniceconnectionstatechange = () => {
-            console.log(
-              `[TURN TEST] ICE connection state (${protocol}):`,
-              pcLocal?.iceConnectionState
-            );
 
             if (pcLocal && ['connected', 'completed'].includes(pcLocal.iceConnectionState)) {
               iceConnected = true;
@@ -684,16 +677,19 @@ export default function BrowserTestJoona() {
   }
 
   const launchTest = async () => {
+    stopConferenceMeetings();
+    resetConferenceResult();
+
     setExpanded(false);
     setNavTest(null);
     setMicTest(null);
     setCamTest(null);
-    setConfTest(null);
     setErrorMessage(null);
     setLoading(true);
 
     try {
-      const isChromium = navigator.userAgent.includes('Chrome');
+      //const isChromium = navigator.userAgent.includes('Chrome');
+      const isChromium = /Chrome|Chromium|Edg/.test(navigator.userAgent);
 
       setExpanded('panel1');
       await wait(200);
@@ -716,11 +712,44 @@ export default function BrowserTestJoona() {
       await handleNetworkTests();
 
       await wait(500);
-      setExpanded('panel5');
-      handleStartConference();
+      try {
+        const res = await ConferenceService.jitsiTestJwt();
 
-      await wait(4000);
-      setExpanded('');
+        if (res.token && res.roomName) {
+          setJwt(res.token);
+          setConference(res.roomName);
+          setExpanded('panel5');
+        } else {
+          setConfTest(false);
+          setJwt(undefined);
+          setConference('');
+          setErrorMessage(
+            <Alert
+              closable
+              description="Impossible de récupérer le jeton de test Jitsi."
+              onClose={() => { }}
+              small
+              title="Erreur"
+              severity="error"
+            />
+          );
+        }
+      } catch {
+        setConfTest(false);
+        setJwt(undefined);
+        setConference('');
+        setErrorMessage(
+          <Alert
+            closable
+            description="Impossible de récupérer le jeton de test Jitsi."
+            onClose={() => { }}
+            small
+            title="Erreur"
+            severity="error"
+          />
+        );
+      }
+
     } finally {
       setLoading(false);
     }
@@ -731,7 +760,7 @@ export default function BrowserTestJoona() {
       {errorMessage}
 
       <div className={styles.buttonContainer}>
-        <Button onClick={launchTest} className={styles.buttonTestPage}>
+        <Button onClick={launchTest} className={styles.buttonTestPage} disabled={loading}>
           {t('browserTest.launchTest')}
         </Button>
       </div>
@@ -772,7 +801,8 @@ export default function BrowserTestJoona() {
               className={styles.buttonTestPage}
               onClick={() => {
                 setNavTest(null);
-                const isChromium = navigator.userAgent.includes('Chrome');
+                //const isChromium = navigator.userAgent.includes('Chrome');
+                const isChromium = /Chrome|Chromium|Edg/.test(navigator.userAgent);
                 setTimeout(() => {
                   setNavTest(isChromium);
                 }, 500);
@@ -1108,11 +1138,14 @@ export default function BrowserTestJoona() {
           </div>
         </AccordionDetails>
       </Accordion>
-
       <Accordion
         sx={{
           backgroundColor:
-            confTest === true ? 'var(--background-contrast-success)' : confTest === false ? 'var(--background-contrast-error)' : '',
+            confTest === true
+              ? 'var(--background-contrast-success)'
+              : confTest === false
+                ? 'var(--background-contrast-error)'
+                : '',
         }}
         expanded={expanded === 'panel5'}
         onChange={handleChange('panel5')}
@@ -1131,81 +1164,100 @@ export default function BrowserTestJoona() {
               : t('browserTest.clickToTest')}
           </Typography>
         </AccordionSummary>
+
         <AccordionDetails>
           <Typography>{t('browserTest.waitConnection')}</Typography>
+
           {expanded === 'panel5' ? (
             <div className={styles.cam}>
               <br />
-              <div className={styles.iframe}>
-                <JitsiMeeting
-                  domain={cfg.VITE_JITSI_DOMAIN}
-                  roomName={conference}
-                  jwt={jwt}
-                  spinner={renderSpinner}
-                  configOverwrite={{
-                    prejoinConfig: {
-                      enabled: false,
-                    },
-                    toolbarButtons: [
-                      'camera',
-                      'chat',
-                      'desktop',
-                      'filmstrip',
-                      'hangup',
-                      'microphone',
-                      'tileview',
-                      'toggle-camera',
-                      '__end',
-                    ],
-                    startWithAudioMuted: true,
-                    requireDisplayName: false,
-                  }}
-                  onApiReady={() => { }}
-                  onReadyToClose={() => { }}
-                  getIFrameRef={handleJitsiIFrameRef1}
-                />
-                <br />
-                <JitsiMeeting
-                  domain={cfg.VITE_JITSI_DOMAIN}
-                  roomName={conference}
-                  jwt={jwt}
-                  spinner={renderSpinner}
-                  configOverwrite={{
-                    prejoinConfig: {
-                      enabled: false,
-                    },
-                    toolbarButtons: [
-                      'camera',
-                      'chat',
-                      'desktop',
-                      'filmstrip',
-                      'hangup',
-                      'microphone',
-                      'tileview',
-                      'toggle-camera',
-                      '__end',
-                    ],
-                    startWithAudioMuted: true,
-                    requireDisplayName: false,
-                  }}
-                  onApiReady={() => { }}
-                  onReadyToClose={() => { }}
-                  getIFrameRef={handleJitsiIFrameRef2}
-                />
-              </div>
 
-              <br />
-              <br />
-              <Typography style={{ margin: 'auto' }}>
-                {t('browserTest.confirmReceptionText')}
-              </Typography>
-              <div className={styles.buttonContainerAccordion}>
-                <Button
-                  className={styles.buttonTestPage}
-                  onClick={handleStartConference}
-                >
-                  {t('browserTest.confirmReceptionButton')}
-                </Button>
+              <div className={styles.iframe}>
+                {jwt && conference ? (
+                  <>
+                    <JitsiMeeting
+                      domain={cfg.VITE_JITSI_DOMAIN}
+                      roomName={conference}
+                      jwt={jwt}
+                      spinner={renderSpinner}
+                      configOverwrite={{
+                        prejoinConfig: { enabled: false },
+                        requireDisplayName: false,
+                        userInfo: {
+                          displayName: 'Test Host',
+                          email: 'host@test.local',
+                        },
+                      }}
+                      onApiReady={(api) => {
+                        hostApiRef.current = api;
+
+                        if (!showGuestMeeting && !guestTimeoutRef.current) {
+                          guestTimeoutRef.current = window.setTimeout(() => {
+                            setShowGuestMeeting(true);
+                            guestTimeoutRef.current = null;
+                          }, 1500);
+                        }
+
+                        if (!testTimeoutRef.current) {
+                          testTimeoutRef.current = window.setTimeout(() => {
+                            hostApiRef.current?.executeCommand('hangup');
+                            guestApiRef.current?.executeCommand('hangup');
+                            setConfTest(true);
+                            clearConferenceTimers();
+                          }, CONFERENCE_TEST_DURATION_MS);
+                        }
+                      }}
+                      onReadyToClose={() => {
+                        hostApiRef.current = null;
+                      }}
+                      getIFrameRef={styleJitsiIframe}
+                    />
+
+                    <br />
+
+                    {showGuestMeeting && (
+                      <JitsiMeeting
+                        domain={cfg.VITE_JITSI_DOMAIN}
+                        roomName={conference}
+                        spinner={renderSpinner}
+                        configOverwrite={{
+                          prejoinConfig: { enabled: false },
+                          requireDisplayName: false,
+                          userInfo: {
+                            displayName: 'Test Guest',
+                            email: 'guest@test.local',
+                          },
+                        }}
+                        onApiReady={(api) => {
+                          guestApiRef.current = api;
+                        }}
+                        onReadyToClose={() => {
+                          guestApiRef.current = null;
+                        }}
+                        getIFrameRef={styleJitsiIframe}
+                      />
+                    )}
+                  </>
+                ) : (
+                  renderSpinner()
+                )}
+
+                <br />
+                <br />
+
+                <Typography style={{ margin: 'auto' }}>
+                  {t('browserTest.confirmReceptionText')}
+                </Typography>
+
+                <div className={styles.buttonContainerAccordion}>
+                  <Button
+                    className={styles.buttonTestPage}
+                    //onClick={handleStartConference}
+                    onClick={handleConfirmReception}
+                  >
+                    {t('browserTest.confirmReceptionButton')}
+                  </Button>
+                </div>
               </div>
             </div>
           ) : null}

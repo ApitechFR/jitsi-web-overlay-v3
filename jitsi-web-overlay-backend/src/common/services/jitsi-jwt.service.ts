@@ -88,8 +88,63 @@ export class JitsiJwtService {
         return { token, exp };
     }
 
+    /**
+     * Génère un JWT Jitsi pour un test matériel (durée 5 minutes, droits minimaux)
+     */
+    generateTestJitsiJwt(user: any, roomName: string): { token: string; exp: number } {
+        const aud = this.configService.get('JITSI_JITSIJWT_AUD') ?? 'jitsi';
+        const iss = this.configService.get('JITSI_JITSIJWT_ISS');
+        const sub = this.configService.get('JITSI_JITSIJWT_SUB');
+        const minutes = 5;
 
+        if (!iss || !sub) {
+            throw new Error('Jitsi JWT config missing (iss/sub)');
+        }
 
+        const displayName = user?.name || 'Test Guest';
+        const email = user?.email || '';
+
+        const now = Math.floor(Date.now() / 1000);
+        const exp = now + minutes * 60;
+        const nbf = now - 10;
+
+        const payload: any = {
+            context: {
+                user: {
+                    avatar: user?.avatar ?? '',
+                    name: displayName,
+                    email,
+                    moderator: true,
+                    role: 'moderator',
+                    affiliation: 'owner',
+                },
+            },
+            aud,
+            iss,
+            sub,
+            room: roomName,
+            iat: now,
+            nbf,
+            exp,
+        };
+
+        const secret = this.configService.get('JITSI_JITSIJWT_SECRET');
+        let token: string;
+
+        if (secret) {
+            token = this.jwtService.sign(payload, {
+                secret,
+                algorithm: 'HS256',
+            });
+        } else {
+            token = this.configService.get('JITSI_JWT');
+            if (!token) {
+                throw new Error('No signing secret or fallback token configured');
+            }
+        }
+
+        return { token, exp };
+    }
     /**
      * Generate a JWT for Jitsi/Prosody
      * If isWebinar=true and moderator=true, the role will be "moderator" (and affiliation "owner")

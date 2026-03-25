@@ -8,8 +8,10 @@ export interface Conference {
 export interface JitsiJwtResponse {
     token: string;            // JWT
     exp?: number;             // timestamp d’expiration (optionnel)
-    moderator: boolean;       // rôle accordé par le backend
+    moderator?: boolean;       // rôle accordé par le backend
+    roomName?: string;        // nom de la salle (optionnel)
 }
+
 export interface CreateByEmailRes {
     isWhitelisted: boolean;
     error?: string;
