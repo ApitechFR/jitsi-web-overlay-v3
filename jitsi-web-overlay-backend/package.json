@@ -38,6 +38,7 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/schedule": "^6.0.1",
     "@nestjs/swagger": "^7.3.1",
+    "@nestjs/throttler": "^6.5.0",
     "@nestjs/typeorm": "^10.0.2",
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^10.0.2",

@@ -15,9 +15,9 @@ COPY . .
 RUN npm install --force
 RUN cp -r node_modules/@apitechfr/react-dsapitech/dsfr public/dsfr/ 2>/dev/null || true
 
-
+# Generate changelog hash before starting dev server
+RUN npm run generate-hash
 
 EXPOSE 3000
-
 
 CMD ["npm", "run", "dev"]

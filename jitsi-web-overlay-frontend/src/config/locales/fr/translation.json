@@ -141,7 +141,7 @@
         "browser": "Navigateur",
         "browserTested": "Le navigateur est testé",
         "clickToTest": "Cliquer pour tester",
-        "browserOk": "Votre navigateur est compatible avec webConf de l'État. Pour bénéficier d'une meilleure expérience utilisateur nous vous recommandons de toujours utiliser les dernières versions stables des navigateurs.",
+        "browserOk": "Votre navigateur est compatible avec notre plateforme. Pour bénéficier d'une meilleure expérience utilisateur nous vous recommandons de toujours utiliser les dernières versions stables des navigateurs.",
         "browserKo": "Attention, vous utilisez un navigateur qui en l’état dégrade fortement la qualité de la conférence pour tous les participants. Nous vous conseillons donc d'utiliser les navigateurs Edge chromium, Chromium ou Google Chrome. L'application mobile 'Jitsi Meet' est utilisable pour simplement rejoindre un salon.",
         "test": "Tester",
         "microphone": "Microphone",
@@ -154,7 +154,28 @@
         "testCameraInstruction": "Testez votre Caméra en cliquant sur Commencer et Arrêter.",
         "conference": "Conférence",
         "connectionTested": "La connexion est testée",
-        "waitConnection": "Veuillez attendre l'établissement de la connexion."
+        "waitConnection": "Veuillez attendre l'établissement de la connexion.",
+        "network": "Réseau",
+        "networkOk": "Connectivité OK",
+        "clickToTestNetwork": "Cliquer pour tester",
+        "networkTestDescription": "Ce test vérifie la connectivité réseau : WebSocket, UDP et TCP.",
+        "launchNetworkTests": "Lancer les tests réseau",
+        "localVideo": "Vidéo locale",
+        "remoteVideo": "Vidéo distante",
+        "iceInfo": "ICE info",
+        "valueMissing": "—",
+        "connectivity": "Connectivité",
+        "websocket": "WebSocket",
+        "udpConnection": "Connexion UDP",
+        "tcpConnection": "Connexion TCP",
+        "pending": "En attente...",
+        "connectionQuality": "Qualité de la connexion",
+        "bandwidth": "Bande passante",
+        "packetLoss": "Paquets perdus",
+        "frameRate": "Débit d'images",
+        "lostImages": "Images perdues",
+        "jitter": "Jitter",
+        "unknownDevice": "Appareil inconnu"
       },
       "feedback": {
         "errorDetectOrigin": "Erreur de détection de la provenance de l'utilisateur",
@@ -257,7 +278,7 @@
           "success_copy_link": "Lien copié avec succès !",
           "success_copy_link_planification": "Planification copiée avec succès !",
           "schedule_button": "Planifier une réunion",
-          "calendarModal":{
+          "calendarModal": {
             "invitation": "Générer une invitation",
             "start_date": "Date de début",
             "duration": "Durée",
@@ -266,7 +287,6 @@
             "pin": "Code de la conférence",
             "add_button": "Ajouter au calendrier",
             "copy_button": "Copier"
-
           }
         },
         "webinar": {

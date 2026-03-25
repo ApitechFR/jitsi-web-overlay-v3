@@ -22,7 +22,7 @@ const ReplayListGrouped: React.FC = () => {
 
     useEffect(() => {
         if (!userEmail) return;
-        
+
         fetchGrouped(userEmail)
             .then(setGroupedReplays)
             .catch(() => { });
@@ -63,28 +63,41 @@ const ReplayListGrouped: React.FC = () => {
                     groups.map(([confName, replays]) => (
                         <div key={confName} className={styles.conferenceGroup}>
                             <h3>{confName}</h3>
-                            {replays.map((replay) => (
-                                <div className={styles.replayRow} key={replay.id}>
-                                    <div className={styles.filename}>{replay.uid}</div>
-                                    <div className={styles.date}>{formatReplayDate(replay.created_at, replay.updated_at)}</div>
-                                    <Button
-                                        className={styles.downloadButton}
-                                        priority="primary"
-                                        onClick={async () => {
-                                            setDownloading(true);
-                                            try {
-                                                await ReplayService.downloadReplay(replay.uid);
-                                            } catch (e: any) {
-                                                alert(e.message || t('replayListGrouped.downloadError'));
-                                            } finally {
-                                                setDownloading(false);
-                                            }
+                            {replays.map((replay) => {
+                                const isDisabled = !replay.isActive;
+                                return (
+                                    <div
+                                        className={styles.replayRow}
+                                        key={replay.id}
+                                        style={{
+                                            opacity: isDisabled ? 0.5 : 1, 
+                                            pointerEvents: isDisabled ? 'none' : 'auto',
                                         }}
                                     >
-                                        {t('replayListGrouped.download')}
-                                    </Button>
-                                </div>
-                            ))}
+                                        <div className={styles.filename}>{replay.uid}</div>
+                                        <div className={styles.date}>
+                                            {formatReplayDate(replay.created_at, replay.updated_at)}
+                                        </div>
+                                        <Button
+                                            className={styles.downloadButton}
+                                            priority="primary"
+                                            disabled={isDisabled}
+                                            onClick={async () => {
+                                                setDownloading(true);
+                                                try {
+                                                    await ReplayService.downloadReplay(replay.uid);
+                                                } catch (e: any) {
+                                                    alert(e.message || t('replayListGrouped.downloadError'));
+                                                } finally {
+                                                    setDownloading(false);
+                                                }
+                                            }}
+                                        >
+                                            {t('replayListGrouped.download')}
+                                        </Button>
+                                    </div>
+                                );
+                            })}
                         </div>
                     ))
                 )}

@@ -188,8 +188,6 @@ export class ReplayController {
             if (!grouped[key]) grouped[key] = [];
             grouped[key].push(replay);
         }
-
-        console.log({grouped});
         
         return grouped;
     }

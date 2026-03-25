@@ -108,6 +108,25 @@ export class ConferenceServiceSQL implements IConferenceService {
 
     return query.getMany();
   }
+  /**
+   * Test access token generation for a special test room
+   * @param roomName 
+   * @returns 
+   */
+  async getRoomTestAccessToken(roomName: string) {
+    this.logger.log("récupération de l'accessToken pour tester le materiel");
+    this.logger.debug(`Nom de la room de test : ${roomName}`);
+
+    if (roomName.toLowerCase().startsWith('browsertest123')) {
+      const { token } = this.jitsiJwtService.generateTestJitsiJwt(
+        { id: null, email: 'test@guest', name: 'Test Guest' },
+        roomName
+      );
+      return { roomName, jwt: token };
+    }
+
+    throw new BadRequestException('Nom de room de test invalide');
+  }
 
   async findOne(uid: string): Promise<Conference> {
     const query = this.conferenceRepo.createQueryBuilder('conference')

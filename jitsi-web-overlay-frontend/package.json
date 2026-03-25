@@ -5,10 +5,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host",
-    "build": "tsc && vite build",
-    "build:preprod": "tsc && vite build --mode staging",
-    "build:main": "tsc && vite build --mode production",
+    "generate-hash": "node scripts/generate-changelog-hash.mjs",
+    "dev": "npm run generate-hash && vite --host",
+    "build": "npm run generate-hash && tsc && vite build",
+    "build:preprod": "npm run generate-hash && tsc && vite build --mode staging",
+    "build:main": "npm run generate-hash && tsc && vite build --mode production",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "postinstall": "npm run copy-lasuite-assets",
@@ -50,6 +51,7 @@
     "react-icalendar-link": "^3.0.2",
     "react-markdown": "^8.0.7",
     "react-media-recorder": "^1.7.1",
+    "react-mic": "^12.4.6",
     "react-redux": "^8.0.5",
     "react-router": "^6.11.1",
     "react-router-dom": "^6.11.1",
@@ -64,6 +66,7 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@types/react-mic": "^12.0.0",
     "@types/node": "^20.1.5",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",

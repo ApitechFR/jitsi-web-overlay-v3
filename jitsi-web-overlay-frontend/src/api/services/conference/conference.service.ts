@@ -124,6 +124,43 @@ export const ConferenceService = {
     },
 
 
+
+    /**
+     * Récupère le token de test pour le test matériel 
+     * @returns 
+     */
+    async jitsiTestJwt(): Promise<JitsiJwtResponse> {
+        try {
+            const http = await getHttp();
+
+            const { data } = await http.post(
+                `/conferences/tokens/jitsi-test`,
+                {},
+                { withCredentials: false }
+            );
+
+            const token = data?.token ?? data?.jwt;
+            const roomName = data?.roomName;
+
+            if (!token) {
+                throw new Error('Réponse JWT de test invalide (champ "token" ou "jwt" manquant)');
+            }
+
+            if (!roomName) {
+                throw new Error('Réponse JWT de test invalide (champ "roomName" manquant)');
+            }
+
+            return {
+                token,
+                roomName,
+                exp: data?.exp,
+            };
+        } catch (e) {
+            throw toApiError(e, 'Échec de récupération du JWT de test Jitsi');
+        }
+    },
+
+
     async getStats() {
         try {
             const http = await getHttp();

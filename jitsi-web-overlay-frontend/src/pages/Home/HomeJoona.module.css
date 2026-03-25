@@ -102,6 +102,11 @@
   justify-content: center;
 }
 
+.joinCalendarButton {
+  display: flex;
+  justify-content: center;
+}
+
 .joinInput :global(.fr-btn) {
   border-radius: 0.25rem;
 }

@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, LessThan, Repository } from 'typeorm';
 import { Replay } from './entities/replay.entity';
 import { CreateReplayDto, UpdateReplayDto } from './DTOs/replay.dto';
 import { join } from 'path';
@@ -285,15 +285,36 @@ export class ReplayService {
     async getReplaysByParticipantEmail(email: string) {
         const conferenceUids = await this.participantService.getConferenceUIDsByEmail(email);
 
-        console.log({conferenceUids});
-
         if (!conferenceUids?.length) {
             return [];
         }
 
-        return this.replayRepository
+        const replays = await this.replayRepository
             .createQueryBuilder('r')
             .where('r.conference_uid IN (:...uids)', { uids: conferenceUids })
+            .orderBy('r.created_at', 'DESC')
             .getMany();
+
+        // return replays.filter(replay => replay.file_path && fs.existsSync(replay.file_path));
+        return replays;
+    }
+
+    async findOlderThanDays(days: number) {
+        const date = new Date();
+        date.setDate(date.getDate() - days);
+
+        return this.replayRepository.find({
+            where: {
+                created_at: LessThan(date),
+                isActive: true,
+                status: ReplayStatus.TERMINATED,
+            },
+        });
+    }
+
+    async deactivateReplay(id: number) {
+        return this.replayRepository.update(id, {
+            isActive: false,
+        });
     }
 }

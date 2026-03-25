@@ -70,7 +70,7 @@ export class ParticipantService {
             uid: uuidv4(),
             conference,
             user,
-            displayName: dto.displayName,
+            displayName: dto.displayName || dto.email,
             email: dto.email,
             phone: dto.phone,
             role: dto.role,

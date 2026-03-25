@@ -10,22 +10,28 @@ export const formatDate = (isoString: string): string => {
     }).format(new Date(isoString));
 };
 
+const parseSqlDate = (date: string) => new Date(date.replace(' ', 'T'));
+
 export const formatReplayDate = (createdAt: string, updatedAt: string) => {
-    const startDate = new Date(createdAt);
-    const endDate = new Date(updatedAt);
+    const startDate = parseSqlDate(createdAt);
+    const endDate = parseSqlDate(updatedAt);
     const lang = i18n.language || navigator.language || 'fr-FR';
 
     const sameDay = startDate.toDateString() === endDate.toDateString();
+
+    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
     const dateFormatter = new Intl.DateTimeFormat(lang, {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
+        timeZone: userTimeZone,
     });
 
     const timeFormatter = new Intl.DateTimeFormat(lang, {
         hour: '2-digit',
         minute: '2-digit',
+        timeZone:  userTimeZone,
     });
 
     if (sameDay) {

@@ -63,7 +63,10 @@ export class AuthenticationService {
    * Crée ou met à jour un utilisateur OIDC dans la base users
    */
   async upsertOidcUser(userinfo: any): Promise<User> {
-    if (!userinfo?.email) return null;
+    if (!userinfo?.email){
+      this.logger.warn("Userinfo object is missing 'email' property", { userinfo });
+      throw new UnauthorizedException("Invalid userinfo: missing 'email' property");
+    }
     const existing = await this.usersService.findByEmail(userinfo.email);
 
     // Récupère le rôle depuis OIDC si présent

@@ -21,8 +21,11 @@ export class Replay {
   @Column({ type: 'varchar', nullable: true })
   file_path: string;
 
-  @Column({ type: 'enum', enum: ReplayStatus, nullable: true})
+  @Column({ type: 'enum', enum: ReplayStatus, nullable: true })
   status: ReplayStatus;
+
+  @Column({ name: 'is_active', default: true })
+  isActive!: boolean;
 
   @Column({ type: 'varchar', nullable: true })
   message: string;
