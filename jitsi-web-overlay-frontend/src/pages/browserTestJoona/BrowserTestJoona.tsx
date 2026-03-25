@@ -154,10 +154,23 @@ export default function BrowserTestJoona() {
       guestTimeoutRef.current = null;
     }
   };
+  // const handleConfirmReception = () => {
+  //   setConferenceConfirmedByUser(true);
+  // };
+
   const handleConfirmReception = () => {
     setConferenceConfirmedByUser(true);
-  };
 
+    hostApiRef.current?.executeCommand('hangup');
+    guestApiRef.current?.executeCommand('hangup');
+
+    hostApiRef.current = null;
+    guestApiRef.current = null;
+    setShowGuestMeeting(false);
+
+    setConfTest(true);
+    clearConferenceTimers();
+  };
 
   const stopAllDeviceStreams = useCallback(() => {
     stopStream(micStreamRef.current);
