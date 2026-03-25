@@ -8,7 +8,6 @@ import React, {
 } from 'react';
 import styles from './BrowserTestJoona.module.css';
 import { ReactMic } from 'react-mic';
-//import { ReactMediaRecorder } from 'react-media-recorder';
 import Webcam from 'react-webcam';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -29,92 +28,94 @@ import { useRuntimeConfig } from '@/config/ConfigProvider';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 
+type NetworkTestStatuses = {
+  wss: boolean | null;
+  tcp: boolean | null;
+  udp: boolean | null;
+};
+
+type NetworkStatsEntries = {
+  bandwidth: number | null;
+  packetLoss: number | null;
+  frameRate: number | null;
+  lostImages: number | null;
+  framesDropped: number | null;
+  jitter: number | null;
+};
+
+type DeviceChangeEvent = {
+  target: {
+    value: string;
+  };
+};
+
 export default function BrowserTestJoona() {
   const { t } = useTranslation();
-  const [expanded, setExpanded] = React.useState<string | boolean>('');
-  const [mic, setMic] = React.useState('');
-  const [cam, setCam] = React.useState('');
-  const [micItems, setMicItems] = React.useState<MediaDeviceInfo[]>([]);
-  const [camItems, setCamItems] = React.useState<MediaDeviceInfo[]>([]);
+  const navigate = useNavigate();
+  const cfg = useRuntimeConfig();
+
+  const [expanded, setExpanded] = useState<string | boolean>('');
+  const [mic, setMic] = useState('');
+  const [cam, setCam] = useState('');
+  const [micItems, setMicItems] = useState<MediaDeviceInfo[]>([]);
+  const [camItems, setCamItems] = useState<MediaDeviceInfo[]>([]);
   const [navTest, setNavTest] = useState<boolean | null>();
   const [micTest, setMicTest] = useState<boolean | null>();
   const [camTest, setCamTest] = useState<boolean | null>();
   const [record, setRecord] = useState(false);
   const [errorMessage, setErrorMessage] = useState<ReactNode | null>(<></>);
   const [confTest, setConfTest] = useState<boolean | null>(null);
-  const webcamRef = React.useRef<any>(null);
-  const mediaRecorderRef = React.useRef<any>();
-  const [capturing, setCapturing] = React.useState(false);
-  const [recordedChunks, setRecordedChunks] = React.useState([]);
-  const [conference, setConference] = useState(getRandomConfName());
+  const [capturing, setCapturing] = useState(false);
+  const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
+  const [conference] = useState(getRandomConfName());
   const [jwt, setJwt] = useState<string | undefined>();
   const [matches, setMatches] = useState<boolean>(
     window.matchMedia('(min-width: 600px)').matches
   );
-  const [loading, setLoading] = useState<boolean>();
+  const [loading, setLoading] = useState<boolean>(false);
+  const [isTestingNetwork, setIsTestingNetwork] = useState(false);
 
-  const navigate = useNavigate();
-  const cfg = useRuntimeConfig();
-
-  type networkTestStatuses = {
-    wss: boolean | null;
-    tcp: boolean | null;
-    udp: boolean | null;
-  };
-  const [networkTests, setNetworkTests] = useState<networkTestStatuses>({
+  const [networkTests, setNetworkTests] = useState<NetworkTestStatuses>({
     wss: null,
     udp: null,
     tcp: null,
   });
 
-  type networkStatsEntries = {
-    bandwidth: number | null;
-    packetLoss: number | null;
-    frameRate: number | null;
-    lostImages: number | null;
-    framesDropped: number | null;
-    jitter: number | null;
-  };
-
-  const [networkStats, setNetworkStats] = useState<networkStatsEntries>({
-    bandwidth: null as number | null,
-    packetLoss: null as number | null,
-    frameRate: null as number | null,
-    lostImages: null as number | null,
-    framesDropped: null as number | null,
-    jitter: null as number | null,
+  const [networkStats, setNetworkStats] = useState<NetworkStatsEntries>({
+    bandwidth: null,
+    packetLoss: null,
+    frameRate: null,
+    lostImages: null,
+    framesDropped: null,
+    jitter: null,
   });
 
-  // refs vidéo pour afficher local / remote
+  const [iceConnectionInfo, setIceConnectionInfo] = useState<string | null>(
+    null
+  );
+
+  const webcamRef = React.useRef<Webcam | null>(null);
+  const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
+
+  const micStreamRef = React.useRef<MediaStream | null>(null);
+  const camStreamRef = React.useRef<MediaStream | null>(null);
+  const networkStreamRef = React.useRef<MediaStream | null>(null);
+
   const localVideoRef = React.useRef<HTMLVideoElement | null>(null);
   const remoteVideoRef = React.useRef<HTMLVideoElement | null>(null);
-
-  // état pour afficher dimensions et adresse ICE
-  const [localVideoDims, setLocalVideoDims] = useState<{ width: number, height: number } | null>(null);
-  const [remoteVideoDims, setRemoteVideoDims] = useState<{ width: number, height: number } | null>(null);
-  const [iceConnectionInfo, setIceConnectionInfo] = useState<string | null>(null);
-
-  // durée du test (ms) et intervalle stats
-  const STATS_INTERVAL_MS = 1000;
-  const STATS_DURATION_MS = 8000; // 8s
 
   const testNetworkContext = React.useRef({
     localPeerConnection: null as RTCPeerConnection | null,
     remotePeerConnection: null as RTCPeerConnection | null,
     localStream: null as MediaStream | null,
-    stats: { tcp: { bitrate: [], framesPerSecond: 0, framesDropped: 0, jitter: 0 }, udp: { bitrate: [], framesPerSecond: 0, framesDropped: 0, jitter: 0 } },
+    stats: {
+      tcp: { bitrate: [] as number[], framesPerSecond: 0, framesDropped: 0, jitter: 0 },
+      udp: { bitrate: [] as number[], framesPerSecond: 0, framesDropped: 0, jitter: 0 },
+    },
     statuses: { tcp: null as boolean | null, udp: null as boolean | null, wss: null as boolean | null },
-    exceptions: {} as Record<string, any>,
+    exceptions: {} as Record<string, unknown>,
     testingProtocol: '' as 'tcp' | 'udp' | '',
   });
-
-
-
-  useEffect(() => {
-    window
-      .matchMedia('(min-width: 768px)')
-      .addEventListener('change', e => setMatches(e.matches));
-  }, []);
 
   function getRandomConfName() {
     function makeid(length: number) {
@@ -132,317 +133,234 @@ export default function BrowserTestJoona() {
     return 'browsertest123' + makeid(16);
   }
 
+  const wait = (ms: number) =>
+    new Promise(resolve => setTimeout(resolve, ms));
+
+  const stopStream = (stream: MediaStream | null) => {
+    stream?.getTracks().forEach(track => track.stop());
+  };
+
+  const stopAllDeviceStreams = useCallback(() => {
+    stopStream(micStreamRef.current);
+    stopStream(camStreamRef.current);
+    stopStream(networkStreamRef.current);
+
+    micStreamRef.current = null;
+    camStreamRef.current = null;
+    networkStreamRef.current = null;
+  }, []);
+
+  const stopWebcamComponentStream = useCallback(() => {
+    const stream = webcamRef.current?.video?.srcObject as
+      | MediaStream
+      | undefined;
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      webcamRef.current!.video!.srcObject = null;
+    }
+  }, []);
+
   useEffect(() => {
-    setLoading(true);
-    api.get(`/${conference}`).then(res => {
-      if (res.data.error) {
-        navigate('/error');
-      } else {
+    const mediaQuery = window.matchMedia('(min-width: 768px)');
+    const handler = (e: MediaQueryListEvent) => setMatches(e.matches);
+
+    mediaQuery.addEventListener('change', handler);
+
+    return () => {
+      mediaQuery.removeEventListener('change', handler);
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      stopAllDeviceStreams();
+      stopWebcamComponentStream();
+      try {
+        mediaRecorderRef.current?.stop?.();
+      } catch {
+        // ignore
+      }
+    };
+  }, [stopAllDeviceStreams, stopWebcamComponentStream]);
+
+  useEffect(() => {
+    const loadConference = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get(`/${conference}`);
+        if (res.data.error) {
+          navigate('/error');
+          return;
+        }
         if (res.data.jwt) {
           setJwt(res.data.jwt);
-          setLoading(false);
         }
+      } finally {
+        setLoading(false);
       }
-    });
-  }, [conference]);
+    };
+
+    loadConference();
+  }, [conference, navigate]);
+
+  useEffect(() => {
+    const initDevices = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: true,
+        });
+
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const audio = devices.filter(device => device.kind === 'audioinput');
+        const video = devices.filter(device => device.kind === 'videoinput');
+
+        setMicItems(audio);
+        setCamItems(video);
+
+        if (audio.length > 0) setMic(audio[0].deviceId);
+        if (video.length > 0) setCam(video[0].deviceId);
+
+        stream.getTracks().forEach(track => track.stop());
+      } catch {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const audio = devices.filter(device => device.kind === 'audioinput');
+        const video = devices.filter(device => device.kind === 'videoinput');
+
+        setMicItems(audio);
+        setCamItems(video);
+
+        if (audio.length > 0) setMic(audio[0].deviceId);
+        if (video.length > 0) setCam(video[0].deviceId);
+      }
+    };
+
+    initDevices();
+  }, []);
 
   const handleChange =
-    (panel: string) => (event: SyntheticEvent, isExpanded: boolean) => {
+    (panel: string) => (_event: SyntheticEvent, isExpanded: boolean) => {
       setExpanded(isExpanded ? panel : '');
     };
 
-  const handleStartCaptureClick = React.useCallback(() => {
-    setCamTest(null);
-    navigator.mediaDevices
-      .getUserMedia({ video: { deviceId: cam }, audio: false })
-      .then((mediaStream: MediaStream) => {
-        // webcamRef.current = mediaStream;
-        setErrorMessage(null);
-        setCapturing(true);
-        mediaRecorderRef.current = new MediaRecorder(mediaStream, {
-          mimeType: 'video/webm',
-        });
-        mediaRecorderRef.current.addEventListener(
-          'dataavailable',
-          handleDataAvailable
-        );
-        mediaRecorderRef.current.start();
+  const handleDataAvailable = useCallback(({ data }: BlobEvent) => {
+    if (data.size > 0) {
+      setRecordedChunks(prev => [...prev, data]);
+    }
+  }, []);
 
-        setTimeout(
-          () =>
-            mediaStream.getTracks().forEach(function (track) {
-              track.stop();
-            }),
-          2500
-        );
-      })
-      .catch((err: Error) => {
-        setCamTest(false);
-        setErrorMessage(
-          <Alert
-            closable
-            description={t('browserTest.allowCamera')}
-            onClose={function noRefCheck() {
-              return;
-            }}
-            small
-            title={t('browserTest.info')}
-            severity="error"
-          />
-        );
+  const startRecording = useCallback(async (): Promise<boolean> => {
+    try {
+      stopStream(micStreamRef.current);
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: mic ? { deviceId: { exact: mic } } : true,
       });
-  }, [webcamRef, setCapturing, mediaRecorderRef, cam]);
 
-  const handleDataAvailable = React.useCallback(
-    ({ data }: any) => {
-      if (data.size > 0) {
-        setRecordedChunks(prev => prev.concat(data));
-      }
-    },
-    [setRecordedChunks]
-  );
+      micStreamRef.current = stream;
+      setErrorMessage(null);
+      setRecord(true);
+      setMicTest(null);
 
-  const handleStopCaptureClick = React.useCallback(() => {
-    mediaRecorderRef.current.stop();
+      return true;
+    } catch {
+      setMicTest(false);
+      setErrorMessage(
+        <Alert
+          closable
+          description={t('browserTest.allowMic')}
+          onClose={() => { }}
+          small
+          title={t('browserTest.info')}
+          severity="error"
+        />
+      );
+      return false;
+    }
+  }, [mic, t]);
+
+  const stopRecording = useCallback(() => {
+    setRecord(false);
+    stopStream(micStreamRef.current);
+    micStreamRef.current = null;
+    setMicTest(true);
+  }, []);
+
+  const handleStartCaptureClick = useCallback(async () => {
+    try {
+      setCamTest(null);
+      setRecordedChunks([]);
+      stopWebcamComponentStream();
+      stopStream(camStreamRef.current);
+
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: cam ? { deviceId: { exact: cam } } : true,
+        audio: false,
+      });
+
+      camStreamRef.current = mediaStream;
+      setErrorMessage(null);
+      setCapturing(true);
+
+      mediaRecorderRef.current = new MediaRecorder(mediaStream, {
+        mimeType: 'video/webm',
+      });
+
+      mediaRecorderRef.current.addEventListener(
+        'dataavailable',
+        handleDataAvailable
+      );
+      mediaRecorderRef.current.start();
+    } catch {
+      setCamTest(false);
+      setErrorMessage(
+        <Alert
+          closable
+          description={t('browserTest.allowCamera')}
+          onClose={() => { }}
+          small
+          title={t('browserTest.info')}
+          severity="error"
+        />
+      );
+    }
+  }, [cam, handleDataAvailable, stopWebcamComponentStream, t]);
+
+  const handleStopCaptureClick = useCallback(() => {
+    try {
+      mediaRecorderRef.current?.stop?.();
+    } catch {
+      // ignore
+    }
+
     setCapturing(false);
-    navigator.mediaDevices
-      .getUserMedia({ video: { deviceId: cam }, audio: false })
-      .then(mediaStream => {
-        setErrorMessage(null);
-        const stream = mediaStream;
-        // const tracks = stream.getTracks();
-        // tracks[0].stop();
-        stream.getTracks().forEach(function (track) {
-          track.stop();
-        });
-      })
-      .catch(err => {
-        setCamTest(false);
-        setErrorMessage(
-          <Alert
-            closable
-            description={t('browserTest.allowCamera')}
-            onClose={function noRefCheck() {
-              return;
-            }}
-            small
-            title={t('browserTest.info')}
-            severity="error"
-          />
-        );
-      });
-  }, [mediaRecorderRef, webcamRef, setCapturing]);
+    stopStream(camStreamRef.current);
+    camStreamRef.current = null;
+    setErrorMessage(null);
+  }, []);
 
   useEffect(() => {
     if (!capturing && recordedChunks.length > 0) {
       setCamTest(true);
-    } else {
+    } else if (!capturing && recordedChunks.length === 0) {
       setCamTest(null);
     }
   }, [capturing, recordedChunks]);
-
-  const startRecording = useCallback(() => {
-    setMicTest(state => null);
-    const constraints = { deviceId: { exact: mic } };
-    navigator.mediaDevices
-      .getUserMedia({ audio: constraints })
-      .then(stream => {
-        // Code for success
-        setErrorMessage(null);
-        setRecord(true);
-      })
-      .catch(err => {
-        setMicTest(false);
-        setErrorMessage(
-          <Alert
-            closable
-            description={t('browserTest.allowMic')}
-            onClose={function noRefCheck() {
-              return;
-            }}
-            small
-            title={t('browserTest.info')}
-            severity="error"
-          />
-        );
-      });
-  }, [mic]);
-
-  const stopRecording = () => {
-    const constraints = { deviceId: { exact: mic } };
-    navigator.mediaDevices
-      .getUserMedia({ audio: constraints })
-      .then(stream => {
-        // Code for success
-        setErrorMessage(null);
-        setRecord(false);
-        setMicTest(true);
-      })
-      .catch(err => {
-        setMicTest(false);
-        setErrorMessage(
-          <Alert
-            closable
-            description={t('browserTest.allowMic')}
-            onClose={function noRefCheck() {
-              return;
-            }}
-            small
-            title={t('browserTest.info')}
-            severity="error"
-          />
-        );
-      });
-  };
-
-  const onData = (recordedBlob: Blob) => {
-    return;
-  };
-
-  const onStop = (recordedBlob: Blob) => {
-    return;
-  };
 
   const handleStartConference = () => {
     setConfTest(true);
   };
 
-  const handleStopConference = () => {
-    setConfTest(false);
-  };
-
-  const launchTest = async () => {
-    setExpanded(false);
-    setNavTest(null);
-    setMicTest(null);
-    setCamTest(null);
-    setConfTest(null);
-    setLoading(true);
-    const isChromium = navigator.userAgent.includes('Chrome');
-
-    setTimeout(() => {
-      setNavTest(navTest => isChromium);
-      setExpanded('panel1');
-    }, 200);
-
-    await navigator.mediaDevices
-      .getUserMedia({ audio: { deviceId: mic } })
-      .then(stream => {
-        // Code for success
-        setErrorMessage(null);
-        setExpanded('panel2');
-        startRecording();
-        setTimeout(() => {
-          stopRecording();
-          setMicTest(true);
-          setExpanded('');
-        }, 3000);
-      })
-      .catch(err => {
-        setMicTest(false);
-        setErrorMessage(
-          <Alert
-            closable
-            description="Veuillez autoriser le navigateur à utiliser le microphone."
-            onClose={function noRefCheck() {
-              return;
-            }}
-            small
-            title="Information"
-            severity="error"
-          />
-        );
-      });
-
-    setTimeout(() => {
-      setExpanded('panel3');
-      handleStartCaptureClick();
-    }, 3500);
-    setTimeout(() => {
-      handleStopCaptureClick();
-      setExpanded('panel4');
-    }, 8500);
-
-    setTimeout(async () => {
-      await handleNetworkTests();
-      setTimeout(() => setExpanded(''), 4000);
-    }, 9000);
-
-
-    setTimeout(() => {
-      setExpanded('panel5');
-      handleStartConference();
-      setTimeout(() => {
-        setExpanded('');
-      }, 4000);
-    }, 13000);
-  };
-
-  useEffect(() => {
-    navigator.mediaDevices
-      .getUserMedia({ audio: true, video: true })
-      .then(stream => {
-        navigator.mediaDevices
-          .enumerateDevices()
-          .then(function (devices) {
-            const audio = devices.filter(
-              device => device.kind === 'audioinput'
-            );
-            const video = devices.filter(
-              device => device.kind === 'videoinput'
-            );
-            setCamItems(video);
-            setMicItems(audio);
-            setCam(video[0].deviceId);
-            setMic(audio[0].deviceId);
-          })
-          .then(() => {
-            stream.getTracks().forEach(function (track) {
-              track.stop();
-            });
-          })
-          .catch(function (err) {
-            return err;
-          });
-        return stream;
-      })
-      .then(stream => {
-        return;
-      })
-      .catch(err => {
-        navigator.mediaDevices
-          .enumerateDevices()
-          .then(function (devices) {
-            const audio = devices.filter(
-              device => device.kind === 'audioinput'
-            );
-            const video = devices.filter(
-              device => device.kind === 'videoinput'
-            );
-            setCamItems(video);
-            setMicItems(audio);
-            setCam(video[0].deviceId);
-            setMic(audio[0].deviceId);
-          })
-          .catch(function (err) {
-            return err;
-          });
-      });
-  }, [mic, cam]);
-
-  type Event = {
-    target: {
-      value: any;
-    };
-  };
-
-  const handleMicChange = (event: Event) => {
-    const constraints = { deviceId: { exact: event.target.value } };
-    navigator.mediaDevices.getUserMedia({ audio: constraints });
+  const handleMicChange = (event: DeviceChangeEvent) => {
+    stopStream(micStreamRef.current);
+    micStreamRef.current = null;
     setMic(event.target.value);
   };
 
-  const handleCamChange = (event: Event) => {
+  const handleCamChange = (event: DeviceChangeEvent) => {
+    stopStream(camStreamRef.current);
+    camStreamRef.current = null;
+    stopWebcamComponentStream();
     setCam(event.target.value);
   };
 
@@ -458,7 +376,6 @@ export default function BrowserTestJoona() {
     iframeRef.style.border = '1px solid #3d3d3d';
     iframeRef.style.position = 'relative';
     iframeRef.style.background = '#3d3d3d';
-    // iframeRef.style.height = '100%';
     iframeRef.style.width = '100%';
     iframeRef.style.aspectRatio = '16/9';
   };
@@ -467,302 +384,354 @@ export default function BrowserTestJoona() {
     iframeRef.style.border = '1px solid #3d3d3d';
     iframeRef.style.position = 'relative';
     iframeRef.style.background = '#3d3d3d';
-    // iframeRef.style.height = '100%';
     iframeRef.style.width = '100%';
     iframeRef.style.aspectRatio = '16/9';
   };
 
+  const handleNetworkTests = useCallback(async () => {
+    setIsTestingNetwork(true);
 
-  const handleNetworkTests = async () => {
-    const context = testNetworkContext.current;
-    const websocketUrl = cfg.VITE_WSS_URL
-      ? `${cfg.VITE_WSS_URL}`
-      : undefined;
-    const turnServerSecret = cfg.VITE_TURN_SERVER_SECRET;
-    const turnTcpUrls =
-      cfg.VITE_TURN_TCP_URLS
-        ?.split(',')
-        .map(url => url.trim())
-        .filter(Boolean) || [];
-    const turnUdpUrls =
-      cfg.VITE_TURN_UDP_URLS
-        ?.split(',')
-        .map(url => url.trim())
-        .filter(Boolean) || [];
-
-
-
-    if (!websocketUrl || !turnServerSecret || !turnTcpUrls.length || !turnUdpUrls.length) {
-      setNetworkTests({ wss: false, udp: false, tcp: false });
-      setIceConnectionInfo('Configuration réseau manquante (domain/turn).');
-      return;
-    }
-    /** hold the state of ice connection */
-    let iceConnected = false;
-
-    // Reset des états
-    setNetworkTests({ wss: null, udp: null, tcp: null });
-    setNetworkStats({ bandwidth: null, packetLoss: null, frameRate: null, lostImages: null, jitter: null, framesDropped: null });
-    setIceConnectionInfo('Waiting...');
-    context.stats = {
-      udp: { bitrate: [], framesPerSecond: 0, framesDropped: 0, jitter: 0 },
-      tcp: { bitrate: [], framesPerSecond: 0, framesDropped: 0, jitter: 0 },
-    };
-    context.statuses = { wss: null, udp: null, tcp: null };
-    context.exceptions = {};
-
-    // ----------------------
-    // Test WebSocket
-    // ----------------------
     try {
-      // const ws = new WebSocket('ws://localhost:8085/xmpp-websocket');
+      stopAllDeviceStreams();
+      stopWebcamComponentStream();
 
-      const ws = new WebSocket(websocketUrl, ['xmpp']);
-      await new Promise<void>((resolve, reject) => {
-        const timer = setTimeout(() => reject(new Error('timeout')), 4000);
-        ws.onopen = () => {
-          clearTimeout(timer);
-          setNetworkTests((prev: networkTestStatuses) => ({ ...prev, wss: true }));
-          ws.close();
-          resolve();
-        };
-        ws.onerror = () => {
-          clearTimeout(timer);
-          setNetworkTests((prev: networkTestStatuses) => ({ ...prev, wss: false }));
-          reject(new Error('WebSocket connection failed'));
-        };
+      const context = testNetworkContext.current;
+
+      const websocketUrl = cfg.VITE_WSS_URL ? `${cfg.VITE_WSS_URL}` : undefined;
+      const turnServerSecret = cfg.VITE_TURN_SERVER_SECRET;
+
+      const turnTcpUrls =
+        cfg.VITE_TURN_TCP_URLS?.split(',').map(url => url.trim()).filter(Boolean) || [];
+
+      const turnUdpUrls =
+        cfg.VITE_TURN_UDP_URLS?.split(',').map(url => url.trim()).filter(Boolean) || [];
+
+      console.log('[TURN TEST] websocketUrl:', websocketUrl);
+      console.log('[TURN TEST] turnTcpUrls:', turnTcpUrls);
+      console.log('[TURN TEST] turnUdpUrls:', turnUdpUrls);
+
+      if (!websocketUrl || !turnServerSecret || !turnTcpUrls.length || !turnUdpUrls.length) {
+        console.error('[TURN TEST] Configuration réseau manquante (domain/turn).');
+        setNetworkTests({ wss: false, udp: false, tcp: false });
+        setIceConnectionInfo('Configuration réseau manquante (domain/turn).');
+        return;
+      }
+
+      setNetworkTests({ wss: null, udp: null, tcp: null });
+      setNetworkStats({
+        bandwidth: null,
+        packetLoss: null,
+        frameRate: null,
+        lostImages: null,
+        framesDropped: null,
+        jitter: null,
       });
-    } catch (err) {
-      setNetworkTests((prev: networkTestStatuses) => ({ ...prev, wss: false }));
-    }
+      setIceConnectionInfo('Waiting...');
 
-    // ----------------------
-    // Test WebRTC (UDP + TCP)
-    // ----------------------
-    const protocols: ('udp' | 'tcp')[] = ['udp', 'tcp'];
-    for (const protocol of protocols) {
-      // reset iceConnected variable
-      iceConnected = false;
-      let pcLocal: RTCPeerConnection | null = null;
-      let pcRemote: RTCPeerConnection | null = null;
-      let localStream: MediaStream | null = null;
-
-      // generate turn credentials
-      const { username, credential } = await generateTurnCredentials(turnServerSecret);
+      context.stats = {
+        udp: { bitrate: [], framesPerSecond: 0, framesDropped: 0, jitter: 0 },
+        tcp: { bitrate: [], framesPerSecond: 0, framesDropped: 0, jitter: 0 },
+      };
+      context.statuses = { wss: null, udp: null, tcp: null };
+      context.exceptions = {};
 
       try {
-        //ICE servers
-        const turn_servers = {
-          username,
-          credential,
-          tcp_urls: turnTcpUrls,
-          udp_urls: turnUdpUrls
-          // tcp_urls: ['turn:localhost:3478?transport=tcp'], 
-          // udp_urls: ['turn:localhost:3478?transport=udp']
-        }
-        const servers = {
-          urls: protocol === 'tcp'
-            ? turn_servers.tcp_urls
-            : turn_servers.udp_urls,
-          username: turn_servers.username,
-          credential: turn_servers.credential
-        };
-        // Config WebRTC
-        const rtcConfig: RTCConfiguration = {
-          iceServers: [servers],
-          iceTransportPolicy: 'relay' as RTCIceTransportPolicy
-        };
+        console.log('[TURN TEST] Testing WebSocket connection to', websocketUrl);
 
-        pcLocal = new RTCPeerConnection(rtcConfig);
-        pcRemote = new RTCPeerConnection(rtcConfig);
+        const ws = new WebSocket(websocketUrl, ['xmpp']);
 
+        await new Promise<void>((resolve, reject) => {
+          const timer = setTimeout(() => reject(new Error('timeout')), 4000);
 
-        context.localPeerConnection = pcLocal;
-        context.remotePeerConnection = pcRemote;
+          ws.onopen = () => {
+            clearTimeout(timer);
+            setNetworkTests(prev => ({ ...prev, wss: true }));
+            ws.close();
+            console.log('[TURN TEST] WebSocket connection successful');
+            resolve();
+          };
 
-        // Get user media
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: { width: 320, height: 240 } });
-        localStream.getTracks().forEach(track => pcLocal!.addTrack(track, localStream!));
-        if (localVideoRef.current) localVideoRef.current.srcObject = localStream;
+          ws.onerror = e => {
+            clearTimeout(timer);
+            setNetworkTests(prev => ({ ...prev, wss: false }));
+            console.error('[TURN TEST] WebSocket connection failed', e);
+            reject(new Error('WebSocket connection failed'));
+          };
+        });
+      } catch (err) {
+        setNetworkTests(prev => ({ ...prev, wss: false }));
+        console.error('[TURN TEST] WebSocket test error:', err);
+      }
 
-        // Remote track
-        pcRemote.ontrack = e => {
-          if (remoteVideoRef.current && remoteVideoRef.current.srcObject !== e.streams[0]) {
-            remoteVideoRef.current.srcObject = e.streams[0];
+      const protocols: ('udp' | 'tcp')[] = ['udp', 'tcp'];
+
+      for (const protocol of protocols) {
+        let iceConnected = false;
+        let pcLocal: RTCPeerConnection | null = null;
+        let pcRemote: RTCPeerConnection | null = null;
+
+        try {
+          const { username, credential } = await generateTurnCredentials(
+            turnServerSecret
+          );
+
+          const rtcConfig: RTCConfiguration = {
+            iceServers: [
+              {
+                urls: protocol === 'tcp' ? turnTcpUrls : turnUdpUrls,
+                username,
+                credential,
+              },
+            ],
+            iceTransportPolicy: 'relay',
+          };
+
+          console.log(`[TURN TEST] Testing protocol: ${protocol}`);
+          console.log('[TURN TEST] RTCConfiguration:', rtcConfig);
+
+          pcLocal = new RTCPeerConnection(rtcConfig);
+          pcRemote = new RTCPeerConnection(rtcConfig);
+
+          context.localPeerConnection = pcLocal;
+          context.remotePeerConnection = pcRemote;
+
+          networkStreamRef.current = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: { width: 320, height: 240 },
+          });
+
+          context.localStream = networkStreamRef.current;
+
+          networkStreamRef.current.getTracks().forEach(track => {
+            pcLocal!.addTrack(track, networkStreamRef.current!);
+          });
+
+          if (localVideoRef.current) {
+            localVideoRef.current.srcObject = networkStreamRef.current;
           }
-        };
 
-        // ICE candidate exchange
-        pcLocal.onicecandidate = e => {
-          if (e.candidate) pcRemote?.addIceCandidate(e.candidate);
-        };
-        pcRemote.onicecandidate = e => {
-          if (e.candidate) pcLocal?.addIceCandidate(e.candidate);
-        };
+          pcRemote.ontrack = e => {
+            if (
+              remoteVideoRef.current &&
+              remoteVideoRef.current.srcObject !== e.streams[0]
+            ) {
+              remoteVideoRef.current.srcObject = e.streams[0];
+            }
+          };
 
-        // pcLocal.onicegatheringstatechange = () =>
+          pcLocal.onicecandidate = e => {
+            if (e.candidate) {
+              pcRemote?.addIceCandidate(e.candidate);
+            }
+          };
 
-        // ICE connection state
-        pcLocal.oniceconnectionstatechange = () => {
-          if (['connected', 'completed'].includes(pcLocal!.iceConnectionState)) {
-            iceConnected = true;
-            setNetworkTests((prev: networkTestStatuses) => ({ ...prev, [protocol]: true }));
-          }
-        };
+          pcRemote.onicecandidate = e => {
+            if (e.candidate) {
+              pcLocal?.addIceCandidate(e.candidate);
+            }
+          };
 
-        // Offer / answer
-        const offer = await pcLocal.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
-        await pcLocal.setLocalDescription(offer);
-        await pcRemote.setRemoteDescription(offer);
+          pcLocal.oniceconnectionstatechange = () => {
+            console.log(
+              `[TURN TEST] ICE connection state (${protocol}):`,
+              pcLocal?.iceConnectionState
+            );
 
-        const answer = await pcRemote.createAnswer();
-        await pcRemote.setLocalDescription(answer);
-        await pcLocal.setRemoteDescription(answer);
+            if (pcLocal && ['connected', 'completed'].includes(pcLocal.iceConnectionState)) {
+              iceConnected = true;
+              setNetworkTests(prev => ({ ...prev, [protocol]: true }));
+            }
+          };
 
-        // Collect stats
-        const stats = await pcLocal.getStats();
-        let bytesPrev = 0;
-        let timestampPrev = 0;
-        const bitrates: number[] = [];
-        let totalPacketsLost = 0;
-        let frameRate = 0;
-        let totalJitter = 0;
-        let remoteCandidate: any = null;
-        let activeCandidatePairId: string | null = null;
-        let framesDropped: number | null = null;
-        await new Promise<void>(resolve => {
-          let samples = 0;
+          const offer = await pcLocal.createOffer({
+            offerToReceiveAudio: true,
+            offerToReceiveVideo: true,
+          });
 
-          const interval = setInterval(async () => {
-            if (!pcLocal || !pcRemote) return;
+          await pcLocal.setLocalDescription(offer);
+          await pcRemote.setRemoteDescription(offer);
 
-            // Stats sur remotePeerConnection
-            const remoteStats = await pcRemote.getStats(null);
+          const answer = await pcRemote.createAnswer();
+          await pcRemote.setLocalDescription(answer);
+          await pcLocal.setRemoteDescription(answer);
 
-            remoteStats.forEach((report: any) => {
-              const now = report.timestamp;
+          let bytesPrev = 0;
+          let timestampPrev = 0;
+          const bitrates: number[] = [];
+          let totalPacketsLost = 0;
+          let frameRate = 0;
+          let totalJitter = 0;
+          let framesDropped: number | null = null;
 
-              // Bitrate
-              if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
-                const bytes = report.bytesReceived;
-                if (timestampPrev && bytesPrev) {
-                  let bitrate = 8 * (bytes - bytesPrev) / (now - timestampPrev);
-                  bitrate = Math.floor(bitrate);
-                  if (bitrate > 0) bitrates.push(bitrate);
+          await new Promise<void>(resolve => {
+            let samples = 0;
+
+            const interval = setInterval(async () => {
+              if (!pcRemote) return;
+
+              const remoteStats = await pcRemote.getStats(null);
+
+              remoteStats.forEach((report: any) => {
+                const now = report.timestamp;
+
+                if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
+                  const bytes = report.bytesReceived;
+
+                  if (timestampPrev && bytesPrev) {
+                    let bitrate = (8 * (bytes - bytesPrev)) / (now - timestampPrev);
+                    bitrate = Math.floor(bitrate);
+                    if (bitrate > 0) bitrates.push(bitrate);
+                  }
+
+                  bytesPrev = bytes;
+                  timestampPrev = now;
                 }
-                bytesPrev = bytes;
-                timestampPrev = now;
-              }
 
-              // framesPerSecond, framesDropped, packetsLost, jitter
-              (['framesPerSecond', 'framesDropped', 'packetsLost', 'jitter'] as const).forEach(item => {
-                if (report[item] !== undefined) {
-                  if (item === 'framesPerSecond') frameRate = report[item];
-                  if (item === 'framesDropped') framesDropped = report[item];
-                  if (item === 'packetsLost') totalPacketsLost = report[item];
-                  if (item === 'jitter') totalJitter = report[item];
+                if (report.framesPerSecond !== undefined) frameRate = report.framesPerSecond;
+                if (report.framesDropped !== undefined) framesDropped = report.framesDropped;
+                if (report.packetsLost !== undefined) totalPacketsLost = report.packetsLost;
+                if (report.jitter !== undefined) totalJitter = report.jitter;
+
+                if (report.type === 'transport') {
+                  const pair = remoteStats.get(report.selectedCandidatePairId);
+                  if (pair?.remoteCandidateId) {
+                    const rc = remoteStats.get(pair.remoteCandidateId);
+                    if (rc?.address && rc?.port) {
+                      setIceConnectionInfo(`${rc.address}:${rc.port}`);
+                    }
+                  }
                 }
               });
 
-              // Remote candidate via transport (spec-way)
-              if (report.type === 'transport') {
-                const pair = remoteStats.get(report.selectedCandidatePairId);
-                if (pair?.remoteCandidateId) {
-                  const rc = remoteStats.get(pair.remoteCandidateId);
-                  if (rc?.address && rc?.port) {
-                    setIceConnectionInfo(`${rc.address}: ${rc.port}`);
-                  }
-                }
+              samples++;
+
+              if (samples >= 5) {
+                clearInterval(interval);
+
+                const lastBitrate = bitrates.length
+                  ? Math.round(bitrates[bitrates.length - 1])
+                  : 0;
+
+                setNetworkStats(prev => ({
+                  ...prev,
+                  bandwidth: lastBitrate,
+                  packetLoss: totalPacketsLost,
+                  frameRate,
+                  lostImages: framesDropped,
+                  framesDropped,
+                  jitter: Number(totalJitter.toFixed(3)),
+                }));
+
+                resolve();
               }
-            });
+            }, 1000);
+          });
 
-            samples++;
+          context.statuses[protocol] = true;
+        } catch (err) {
+          if (!iceConnected) {
+            setNetworkTests(prev => ({ ...prev, [protocol]: false }));
+            console.error(`[TURN TEST] ${protocol} connection failed`, err);
+          }
 
-            if (samples >= 5) {
-              clearInterval(interval);
+          context.statuses[protocol] = false;
+          context.exceptions[protocol] = err;
+        } finally {
+          pcLocal?.close();
+          pcRemote?.close();
 
-              const avgBitrate = bitrates.length
-                ? Math.round(bitrates.reduce((a, b) => a + b, 0) / bitrates.length)
-                : 0;
-              const lastBitrate = bitrates.length
-                ? Math.round(bitrates[bitrates.length - 1])
-                : 0;
+          stopStream(networkStreamRef.current);
+          networkStreamRef.current = null;
 
-              setNetworkStats(prev => ({
-                ...prev,
-                bandwidth: lastBitrate,
-                bandwidthAvg: avgBitrate,
-                packetLoss: totalPacketsLost,
-                frameRate,
-                lostImages: framesDropped,
-                jitter: Number(totalJitter.toFixed(3)),
-              }));
+          context.localPeerConnection = null;
+          context.remotePeerConnection = null;
+          context.localStream = null;
 
-              resolve();
-            }
-          }, 1000);
-        });
-
-        // ICE remote info (last candidate)
-        // const remoteCandidate = stats.get?.([...stats.keys()][stats.size - 1]) as any;
-        if (activeCandidatePairId) {
-          remoteCandidate = stats.get(activeCandidatePairId);
+          if (localVideoRef.current) localVideoRef.current.srcObject = null;
+          if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
         }
-        if (remoteCandidate && remoteCandidate.address && remoteCandidate.port) {
-          setIceConnectionInfo(`${remoteCandidate.address}:${remoteCandidate.port} `);
-        }
-
-        context.statuses[protocol] = true;
-
-      } catch (err) {
-        if (!iceConnected) {
-          setNetworkTests((prev: networkTestStatuses) => ({ ...prev, [protocol]: false }));
-        } context.statuses[protocol] = false;
-        context.exceptions[protocol] = err;
-      } finally {
-        // Cleanup
-        pcLocal?.close();
-        pcRemote?.close();
-        localStream?.getTracks().forEach(track => track.stop());
-        context.localPeerConnection = null;
-        context.remotePeerConnection = null;
-        context.localStream = null;
-        if (localVideoRef.current) localVideoRef.current.srcObject = null;
-        if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
       }
+    } finally {
+      setIsTestingNetwork(false);
     }
-  };
+  }, [cfg, stopAllDeviceStreams, stopWebcamComponentStream]);
 
-
-  async function generateTurnCredentials(secret: string, userId: string = 'testuser') {
-    const timestamp = Math.floor(Date.now() / 1000) + 24 * 3600; // valide 24h
-    const username = `${timestamp}:${userId} `;
+  async function generateTurnCredentials(
+    secret: string,
+    userId: string = 'testuser'
+  ) {
+    const timestamp = Math.floor(Date.now() / 1000) + 24 * 3600;
+    const username = `${timestamp}:${userId}`;
 
     const encoder = new TextEncoder();
     const keyData = encoder.encode(secret);
     const messageData = encoder.encode(username);
 
     const key = await crypto.subtle.importKey(
-      'raw', keyData,
+      'raw',
+      keyData,
       { name: 'HMAC', hash: 'SHA-1' },
-      false, ['sign']
+      false,
+      ['sign']
     );
 
     const signature = await crypto.subtle.sign('HMAC', key, messageData);
-    const credential = btoa(String.fromCharCode(...new Uint8Array(signature)));
+    const credential = btoa(
+      String.fromCharCode(...new Uint8Array(signature))
+    );
 
     return { username, credential };
   }
 
+  const launchTest = async () => {
+    setExpanded(false);
+    setNavTest(null);
+    setMicTest(null);
+    setCamTest(null);
+    setConfTest(null);
+    setErrorMessage(null);
+    setLoading(true);
+
+    try {
+      const isChromium = navigator.userAgent.includes('Chrome');
+
+      setExpanded('panel1');
+      await wait(200);
+      setNavTest(isChromium);
+
+      setExpanded('panel2');
+      const micOk = await startRecording();
+
+      if (micOk) {
+        await wait(3000);
+        stopRecording();
+      }
+
+      setExpanded('panel3');
+      await handleStartCaptureClick();
+      await wait(3000);
+      handleStopCaptureClick();
+
+      setExpanded('panel4');
+      await handleNetworkTests();
+
+      await wait(500);
+      setExpanded('panel5');
+      handleStartConference();
+
+      await wait(4000);
+      setExpanded('');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className={styles.main}>
       {errorMessage}
+
       <div className={styles.buttonContainer}>
-        <Button
-          onClick={launchTest}
-          className={styles.buttonTestPage}
-        >
+        <Button onClick={launchTest} className={styles.buttonTestPage}>
           {t('browserTest.launchTest')}
         </Button>
       </div>
@@ -805,7 +774,7 @@ export default function BrowserTestJoona() {
                 setNavTest(null);
                 const isChromium = navigator.userAgent.includes('Chrome');
                 setTimeout(() => {
-                  setNavTest(navTest => isChromium);
+                  setNavTest(isChromium);
                 }, 500);
               }}
             >
@@ -838,9 +807,7 @@ export default function BrowserTestJoona() {
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography>
-            {t('browserTest.testMicrophoneInstruction')}
-          </Typography>
+          <Typography>{t('browserTest.testMicrophoneInstruction')}</Typography>
           <br />
           <div>
             <Box
@@ -852,7 +819,9 @@ export default function BrowserTestJoona() {
               }}
             >
               <FormControl fullWidth>
-                <InputLabel id="microphone">{t('browserTest.microphone')}</InputLabel>
+                <InputLabel id="microphone">
+                  {t('browserTest.microphone')}
+                </InputLabel>
                 <Select
                   labelId="microphone"
                   id="microphoneSelect"
@@ -874,22 +843,14 @@ export default function BrowserTestJoona() {
               record={record}
               visualSetting="frequencyBars"
               className={styles.mic}
-              //onStop={onStop}
-              //onData={onData}
               strokeColor="green"
               backgroundColor="#BCBCBC"
             />
             <div className={styles.micAccordionContainer}>
-              <Button
-                className={styles.buttonTestPage}
-                onClick={startRecording}
-              >
+              <Button className={styles.buttonTestPage} onClick={startRecording}>
                 {t('browserTest.start')}
               </Button>
-              <Button
-                className={styles.buttonTestPage}
-                onClick={stopRecording}
-              >
+              <Button className={styles.buttonTestPage} onClick={stopRecording}>
                 {t('browserTest.stop')}
               </Button>
             </div>
@@ -910,15 +871,17 @@ export default function BrowserTestJoona() {
           aria-controls="panel3bh-content"
           id="panel3bh-header"
         >
-          <Typography sx={{ width: '33%', flexShrink: 0 }}>{t('browserTest.camera')}</Typography>
+          <Typography sx={{ width: '33%', flexShrink: 0 }}>
+            {t('browserTest.camera')}
+          </Typography>
           <Typography sx={{ color: 'text.secondary' }}>
-            {camTest === true ? t('browserTest.cameraTested') : t('browserTest.clickToTest')}
+            {camTest === true
+              ? t('browserTest.cameraTested')
+              : t('browserTest.clickToTest')}
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography>
-            {t('browserTest.testCameraInstruction')}
-          </Typography>
+          <Typography>{t('browserTest.testCameraInstruction')}</Typography>
           <Box
             sx={{
               minWidth: 300,
@@ -947,12 +910,14 @@ export default function BrowserTestJoona() {
               </Select>
             </FormControl>
           </Box>
-          {expanded === 'panel3' ? (
+
+          {expanded === 'panel3' && !isTestingNetwork ? (
             <div className={styles.cam}>
-              {camItems.map((device, key) => {
+              {camItems.map(device => {
                 if (device.deviceId === cam) {
                   return (
                     <Webcam
+                      key={device.deviceId}
                       className={styles.camera}
                       audio={false}
                       ref={webcamRef}
@@ -960,6 +925,7 @@ export default function BrowserTestJoona() {
                     />
                   );
                 }
+                return null;
               })}
               <div className={styles.buttonContainerAccordion}>
                 {capturing ? (
@@ -983,8 +949,6 @@ export default function BrowserTestJoona() {
         </AccordionDetails>
       </Accordion>
 
-
-      {/* Réseau */}
       <Accordion
         sx={{
           backgroundColor:
@@ -1012,9 +976,10 @@ export default function BrowserTestJoona() {
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography>Ce test vérifie la connectivité réseau : WebSocket, UDP et TCP.</Typography>
+          <Typography>
+            Ce test vérifie la connectivité réseau : WebSocket, UDP et TCP.
+          </Typography>
           <Button
-            //variant="contained"
             onClick={handleNetworkTests}
             style={{
               textTransform: 'none',
@@ -1029,26 +994,35 @@ export default function BrowserTestJoona() {
           </Button>
 
           <div className={styles.networkContainer}>
-            {/* Vidéos */}
             <div className={styles.networkVideos}>
               <div>
                 <p className={styles.networkVideoLabel}>Vidéo locale</p>
-                <video ref={localVideoRef} autoPlay muted playsInline style={{ width: 280, height: 210, background: '#000' }} />
+                <video
+                  ref={localVideoRef}
+                  autoPlay
+                  muted
+                  playsInline
+                  style={{ width: 280, height: 210, background: '#000' }}
+                />
               </div>
               <div>
                 <p className={styles.networkVideoLabel}>Vidéo distante</p>
-                <video ref={remoteVideoRef} autoPlay playsInline style={{ width: 280, height: 210, background: '#000' }} />
+                <video
+                  ref={remoteVideoRef}
+                  autoPlay
+                  playsInline
+                  style={{ width: 280, height: 210, background: '#000' }}
+                />
               </div>
               <div>
                 <p className={styles.networkVideoLabel}>ICE info</p>
-                <p className={styles.networkIceInfo}>{iceConnectionInfo || '—'}</p>
+                <p className={styles.networkIceInfo}>
+                  {iceConnectionInfo || '—'}
+                </p>
               </div>
             </div>
 
-            {/* Colonne droite : connectivité + stats */}
             <div className={styles.networkConnectivity}>
-
-              {/* Connectivité */}
               <div>
                 <p className={styles.networkSectionTitle}>Connectivité</p>
                 <div className={styles.networkTestList}>
@@ -1059,54 +1033,81 @@ export default function BrowserTestJoona() {
                   ].map(({ label, status }) => (
                     <div
                       key={label}
-                      className={`${styles.networkTestItem} ${status === true ? styles.networkTestItemSuccess :
-                        status === false ? styles.networkTestItemError :
-                          ''
-                        } `}
+                      className={`${styles.networkTestItem} ${status === true
+                          ? styles.networkTestItemSuccess
+                          : status === false
+                            ? styles.networkTestItemError
+                            : ''
+                        }`}
                     >
                       <span className={styles.networkTestLabel}>{label}</span>
                       <span>
-                        {status === true
-                          ? <CheckIcon color="success" />
-                          : status === false
-                            ? <CloseIcon color="error" />
-                            : <span className={styles.networkTestPending}>En attente...</span>}
+                        {status === true ? (
+                          <CheckIcon color="success" />
+                        ) : status === false ? (
+                          <CloseIcon color="error" />
+                        ) : (
+                          <span className={styles.networkTestPending}>
+                            En attente...
+                          </span>
+                        )}
                       </span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Stats */}
               <div>
-                <p className={styles.networkSectionTitle}>Qualité de la connexion</p>
+                <p className={styles.networkSectionTitle}>
+                  Qualité de la connexion
+                </p>
                 <div className={styles.networkStatsList}>
                   {[
-                    { label: 'Bande passante', value: networkStats.bandwidth != null ? `${networkStats.bandwidth} kbit / s` : '—' },
-                    { label: 'Paquets perdus', value: networkStats.packetLoss ?? '—' },
-                    { label: 'Débit d\'images', value: networkStats.frameRate != null ? `${networkStats.frameRate} fps` : '—' },
-                    { label: 'Images perdues', value: networkStats.lostImages ?? '—' },
-                    { label: 'Jitter', value: networkStats.jitter != null ? `${networkStats.jitter} s` : '—' },
+                    {
+                      label: 'Bande passante',
+                      value:
+                        networkStats.bandwidth != null
+                          ? `${networkStats.bandwidth} kbit / s`
+                          : '—',
+                    },
+                    {
+                      label: 'Paquets perdus',
+                      value: networkStats.packetLoss ?? '—',
+                    },
+                    {
+                      label: "Débit d'images",
+                      value:
+                        networkStats.frameRate != null
+                          ? `${networkStats.frameRate} fps`
+                          : '—',
+                    },
+                    {
+                      label: 'Images perdues',
+                      value: networkStats.lostImages ?? '—',
+                    },
+                    {
+                      label: 'Jitter',
+                      value:
+                        networkStats.jitter != null
+                          ? `${networkStats.jitter} s`
+                          : '—',
+                    },
                   ].map(({ label, value }) => (
-                    <div
-                      key={label}
-                      className={styles.networkStatItem}
-                    >
-                      <span style={{ color: '#3a3a3a', fontSize: '0.875rem' }}>{label}</span>
-                      <span style={{ fontWeight: 700, fontSize: '0.875rem' }}>{value}</span>
+                    <div key={label} className={styles.networkStatItem}>
+                      <span style={{ color: '#3a3a3a', fontSize: '0.875rem' }}>
+                        {label}
+                      </span>
+                      <span style={{ fontWeight: 700, fontSize: '0.875rem' }}>
+                        {value}
+                      </span>
                     </div>
                   ))}
                 </div>
               </div>
-
             </div>
-
           </div>
         </AccordionDetails>
       </Accordion>
-
-
-
 
       <Accordion
         sx={{
@@ -1131,13 +1132,10 @@ export default function BrowserTestJoona() {
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography>
-            {t('browserTest.waitConnection')}
-          </Typography>
+          <Typography>{t('browserTest.waitConnection')}</Typography>
           {expanded === 'panel5' ? (
             <div className={styles.cam}>
               <br />
-              {/* <div style={{ display: 'none' }}>{iframe}</div> */}
               <div className={styles.iframe}>
                 <JitsiMeeting
                   domain={cfg.VITE_JITSI_DOMAIN}
@@ -1162,12 +1160,8 @@ export default function BrowserTestJoona() {
                     startWithAudioMuted: true,
                     requireDisplayName: false,
                   }}
-                  onApiReady={() => {
-                    return;
-                  }}
-                  onReadyToClose={() => {
-                    return;
-                  }}
+                  onApiReady={() => { }}
+                  onReadyToClose={() => { }}
                   getIFrameRef={handleJitsiIFrameRef1}
                 />
                 <br />
@@ -1194,12 +1188,8 @@ export default function BrowserTestJoona() {
                     startWithAudioMuted: true,
                     requireDisplayName: false,
                   }}
-                  onApiReady={() => {
-                    return;
-                  }}
-                  onReadyToClose={() => {
-                    return;
-                  }}
+                  onApiReady={() => { }}
+                  onReadyToClose={() => { }}
                   getIFrameRef={handleJitsiIFrameRef2}
                 />
               </div>
