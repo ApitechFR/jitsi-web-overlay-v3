@@ -740,7 +740,7 @@ export default function BrowserTestJoona() {
         className="data-fr-theme"
         sx={{
           backgroundColor:
-            navTest === true ? '#1DC2A6' : navTest === false ? '#C21E56' : '',
+            navTest === true ? 'var(--background-contrast-success)' : navTest === false ? 'var(--background-contrast-error)' : '',
         }}
         expanded={expanded === 'panel1'}
         onChange={handleChange('panel1')}
@@ -787,7 +787,7 @@ export default function BrowserTestJoona() {
       <Accordion
         sx={{
           backgroundColor:
-            micTest === true ? '#1DC2A6' : micTest === false ? '#C21E56' : '',
+            micTest === true ? 'var(--background-contrast-success)' : micTest === false ? 'var(--background-contrast-error)' : '',
         }}
         expanded={expanded === 'panel2'}
         onChange={handleChange('panel2')}
@@ -861,7 +861,7 @@ export default function BrowserTestJoona() {
       <Accordion
         sx={{
           backgroundColor:
-            camTest === true ? '#1DC2A6' : camTest === false ? '#C21E56' : '',
+            camTest === true ? 'var(--background-contrast-success)' : camTest === false ? 'var(--background-contrast-error)' : '',
         }}
         expanded={expanded === 'panel3'}
         onChange={handleChange('panel3')}
@@ -903,7 +903,7 @@ export default function BrowserTestJoona() {
                 {camItems.map(item =>
                   item.deviceId !== 'communications' ? (
                     <MenuItem key={item.deviceId} value={item.deviceId}>
-                      {item.label}
+                      {item.label || t('browserTest.unknownDevice')}
                     </MenuItem>
                   ) : null
                 )}
@@ -968,16 +968,16 @@ export default function BrowserTestJoona() {
           aria-controls="panel4bh-content"
           id="panel4bh-header"
         >
-          <Typography sx={{ width: '33%', flexShrink: 0 }}>Réseau</Typography>
+          <Typography sx={{ width: '33%', flexShrink: 0 }}>{t('browserTest.network')}</Typography>
           <Typography sx={{ color: 'text.secondary' }}>
             {networkTests.wss && networkTests.udp && networkTests.tcp
-              ? 'Connectivité OK'
-              : 'Cliquer pour tester'}
+              ? t('browserTest.networkOk')
+              : t('browserTest.clickToTestNetwork')}
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Typography>
-            Ce test vérifie la connectivité réseau : WebSocket, UDP et TCP.
+            {t('browserTest.networkTestDescription')}
           </Typography>
           <Button
             onClick={handleNetworkTests}
@@ -990,13 +990,13 @@ export default function BrowserTestJoona() {
               width: matches ? '20%' : '50%',
             }}
           >
-            Lancer les tests réseau
+            {t('browserTest.launchNetworkTests')}
           </Button>
 
           <div className={styles.networkContainer}>
             <div className={styles.networkVideos}>
               <div>
-                <p className={styles.networkVideoLabel}>Vidéo locale</p>
+                <p className={styles.networkVideoLabel}>{t('browserTest.localVideo')}</p>
                 <video
                   ref={localVideoRef}
                   autoPlay
@@ -1006,7 +1006,7 @@ export default function BrowserTestJoona() {
                 />
               </div>
               <div>
-                <p className={styles.networkVideoLabel}>Vidéo distante</p>
+                <p className={styles.networkVideoLabel}>{t('browserTest.remoteVideo')}</p>
                 <video
                   ref={remoteVideoRef}
                   autoPlay
@@ -1015,29 +1015,29 @@ export default function BrowserTestJoona() {
                 />
               </div>
               <div>
-                <p className={styles.networkVideoLabel}>ICE info</p>
+                <p className={styles.networkVideoLabel}>{t('browserTest.iceInfo')}</p>
                 <p className={styles.networkIceInfo}>
-                  {iceConnectionInfo || '—'}
+                  {iceConnectionInfo || t('browserTest.valueMissing')}
                 </p>
               </div>
             </div>
 
             <div className={styles.networkConnectivity}>
               <div>
-                <p className={styles.networkSectionTitle}>Connectivité</p>
+                <p className={styles.networkSectionTitle}>{t('browserTest.connectivity')}</p>
                 <div className={styles.networkTestList}>
                   {[
-                    { label: 'WebSocket', status: networkTests.wss },
-                    { label: 'Connexion UDP', status: networkTests.udp },
-                    { label: 'Connexion TCP', status: networkTests.tcp },
+                    { label: t('browserTest.websocket'), status: networkTests.wss },
+                    { label: t('browserTest.udpConnection'), status: networkTests.udp },
+                    { label: t('browserTest.tcpConnection'), status: networkTests.tcp },
                   ].map(({ label, status }) => (
                     <div
                       key={label}
                       className={`${styles.networkTestItem} ${status === true
-                          ? styles.networkTestItemSuccess
-                          : status === false
-                            ? styles.networkTestItemError
-                            : ''
+                        ? styles.networkTestItemSuccess
+                        : status === false
+                          ? styles.networkTestItemError
+                          : ''
                         }`}
                     >
                       <span className={styles.networkTestLabel}>{label}</span>
@@ -1048,7 +1048,7 @@ export default function BrowserTestJoona() {
                           <CloseIcon color="error" />
                         ) : (
                           <span className={styles.networkTestPending}>
-                            En attente...
+                            {t('browserTest.pending')}
                           </span>
                         )}
                       </span>
@@ -1059,38 +1059,38 @@ export default function BrowserTestJoona() {
 
               <div>
                 <p className={styles.networkSectionTitle}>
-                  Qualité de la connexion
+                  {t('browserTest.connectionQuality')}
                 </p>
                 <div className={styles.networkStatsList}>
                   {[
                     {
-                      label: 'Bande passante',
+                      label: t('browserTest.bandwidth'),
                       value:
                         networkStats.bandwidth != null
                           ? `${networkStats.bandwidth} kbit / s`
-                          : '—',
+                          : t('browserTest.valueMissing'),
                     },
                     {
-                      label: 'Paquets perdus',
-                      value: networkStats.packetLoss ?? '—',
+                      label: t('browserTest.packetLoss'),
+                      value: networkStats.packetLoss ?? t('browserTest.valueMissing'),
                     },
                     {
-                      label: "Débit d'images",
+                      label: t('browserTest.frameRate'),
                       value:
                         networkStats.frameRate != null
                           ? `${networkStats.frameRate} fps`
-                          : '—',
+                          : t('browserTest.valueMissing'),
                     },
                     {
-                      label: 'Images perdues',
-                      value: networkStats.lostImages ?? '—',
+                      label: t('browserTest.lostImages'),
+                      value: networkStats.lostImages ?? t('browserTest.valueMissing'),
                     },
                     {
-                      label: 'Jitter',
+                      label: t('browserTest.jitter'),
                       value:
                         networkStats.jitter != null
                           ? `${networkStats.jitter} s`
-                          : '—',
+                          : t('browserTest.valueMissing'),
                     },
                   ].map(({ label, value }) => (
                     <div key={label} className={styles.networkStatItem}>
@@ -1112,7 +1112,7 @@ export default function BrowserTestJoona() {
       <Accordion
         sx={{
           backgroundColor:
-            confTest === true ? '#1DC2A6' : confTest === false ? '#C21E56' : '',
+            confTest === true ? 'var(--background-contrast-success)' : confTest === false ? 'var(--background-contrast-error)' : '',
         }}
         expanded={expanded === 'panel5'}
         onChange={handleChange('panel5')}
