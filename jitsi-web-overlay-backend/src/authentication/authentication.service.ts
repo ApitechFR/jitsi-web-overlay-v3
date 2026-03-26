@@ -414,7 +414,7 @@ export class AuthenticationService {
       sub: userinfo?.sub || '',
       email_verified: Boolean(userinfo?.email_verified),
       name: fullName,
-      given_name: userinfo?.given_name || userinfo?.firstName || userinfo?.prenom || '',
+      given_name: userinfo?.given_name || userinfo?.firstName || userinfo?.prenom || fullName || '',
       family_name: userinfo?.family_name || userinfo?.lastName || userinfo?.nom || '',
       preferred_username: userinfo?.preferred_username || '',
       email: userinfo?.email || '',
