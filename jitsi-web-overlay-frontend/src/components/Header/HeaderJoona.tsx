@@ -34,11 +34,10 @@ export default function HeaderJoona() {
   const [currentModalId, setCurrentModalId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Use hash-based versioning for cache busting
-    let changelogUrl = cfg.VITE_APP_CHANGELOG_URL || '/infos.json';
-    if (changelogUrl.endsWith('.json')) {
-      changelogUrl = changelogUrl.replace('.json', `-${CHANGELOG_VERSION}.json`);
-    }
+    // Apply hash-based versioning only to the default bundled file, not to custom URLs
+    const changelogUrl = cfg.VITE_APP_CHANGELOG_URL
+      ? (cfg.VITE_APP_CHANGELOG_URL as string)
+      : `/infos-${CHANGELOG_VERSION}.json`;
     fetch(changelogUrl)
       .then((res) => res.json())
       .then((data) => {
