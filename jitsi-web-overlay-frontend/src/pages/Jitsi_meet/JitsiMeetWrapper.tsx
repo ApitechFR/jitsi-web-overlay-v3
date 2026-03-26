@@ -78,7 +78,6 @@ const JitsiMeetWrapper: React.FC<JitsiMeetWrapperProps> = (props) => {
         (authUser as any)?.family_name ||
         (authUser as any)?.lastName ||
         (authUser as any)?.nom ||
-        (authUser as any)?.name ||
         '';
       const full = [first, last].filter(Boolean).join(' ').trim();
       if (full) return full;
