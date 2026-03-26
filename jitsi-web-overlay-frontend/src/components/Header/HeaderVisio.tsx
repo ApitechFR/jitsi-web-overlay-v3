@@ -30,11 +30,10 @@ export default function HeaderVisio() {
     let lang = i18n.language || 'fr';
     if (lang.startsWith('en')) lang = 'en';
     else lang = 'fr';
-    // Use hash-based versioning for cache busting
-    let changelogUrl = cfg.VITE_APP_CHANGELOG_URL || '/infos.json';
-    if (changelogUrl.endsWith('.json')) {
-      changelogUrl = changelogUrl.replace('.json', `-${CHANGELOG_VERSION}.json`);
-    }
+    // Apply hash-based versioning only to the default bundled file, not to custom URLs
+    const changelogUrl = cfg.VITE_APP_CHANGELOG_URL
+      ? (cfg.VITE_APP_CHANGELOG_URL as string)
+      : `/infos-${CHANGELOG_VERSION}.json`;
     fetch(changelogUrl)
       .then((res) => {
         if (!res.ok) throw new Error('Changelog not found');
