@@ -63,7 +63,7 @@ export class AuthenticationService {
    * Crée ou met à jour un utilisateur OIDC dans la base users
    */
   async upsertOidcUser(userinfo: any): Promise<User> {
-    if (!userinfo?.email){
+    if (!userinfo?.email) {
       this.logger.warn("Userinfo object is missing 'email' property", { userinfo });
       throw new UnauthorizedException("Invalid userinfo: missing 'email' property");
     }
@@ -194,7 +194,12 @@ export class AuthenticationService {
           },
       );
 
-      return { idToken, userinfo };
+      // merge claims from id_token and userinfo, with precedence to userinfo
+      const decodeIdToken = (this.jwtService.decode(idToken) as Record<string, any>) || {};
+      const mergedUserInfo = { ...decodeIdToken, ...userinfo };
+
+
+      return { idToken, userinfo: mergedUserInfo };
     } catch (error) {
       this.logger.error("Erreur dans loginCallback", {
         message: error?.message,
