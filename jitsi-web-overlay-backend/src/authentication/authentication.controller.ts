@@ -17,6 +17,7 @@ import {
   HttpStatus,
   UsePipes,
   ValidationPipe,
+  Logger,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { AuthProvider } from '../users/entities/users.entity';
@@ -40,7 +41,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 @Controller()
 export class AuthenticationController {
-
+  private readonly logger = new Logger(AuthenticationService.name);
   constructor(
     private readonly authenticationService: AuthenticationService,
     @Inject(IConferenceService)
@@ -162,11 +163,15 @@ export class AuthenticationController {
     const { userinfo, idToken } =
       await this.authenticationService.loginCallback(code, state, sendedState);
 
+
+
     // Create or update the OIDC user in the database
     const user = await this.authenticationService.upsertOidcUser(userinfo);
 
     // Always use the admin value from the database
     const userInfos = this.authenticationService.extractUserInfos(userinfo);
+
+    this.logger.log(`NORMALIZED userInfos: ${JSON.stringify(userInfos)}`);
 
     const baseClaims = {
       iss: this.configService.get('JITSI_JITSIJWT_ISS'),

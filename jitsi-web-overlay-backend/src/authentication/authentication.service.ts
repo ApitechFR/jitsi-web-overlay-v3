@@ -198,7 +198,9 @@ export class AuthenticationService {
       const decodeIdToken = (this.jwtService.decode(idToken) as Record<string, any>) || {};
       const mergedUserInfo = { ...decodeIdToken, ...userinfo };
 
-
+      this.logger.log(`OIDC id_token decoded: ${JSON.stringify(decodeIdToken)}`);
+      this.logger.log(`OIDC userinfo: ${JSON.stringify(userinfo)}`);
+      this.logger.log(`OIDC mergedUserInfo: ${JSON.stringify(mergedUserInfo)}`);
       return { idToken, userinfo: mergedUserInfo };
     } catch (error) {
       this.logger.error("Erreur dans loginCallback", {
