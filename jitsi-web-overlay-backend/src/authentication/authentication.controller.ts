@@ -171,7 +171,6 @@ export class AuthenticationController {
     // Always use the admin value from the database
     const userInfos = this.authenticationService.extractUserInfos(userinfo);
 
-    this.logger.log(`NORMALIZED userInfos: ${JSON.stringify(userInfos)}`);
 
     const baseClaims = {
       iss: this.configService.get('JITSI_JITSIJWT_ISS'),
