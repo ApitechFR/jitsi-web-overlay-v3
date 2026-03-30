@@ -18,7 +18,7 @@ function getBaseApiOrThrow(): string {
     const api = getApiBaseUrl();
     return api;
 }
-async function userinfo(): Promise<UserInfos | null> {
+export async function userinfo(): Promise<UserInfos | null> {
     const withTimeout = <T,>(p: Promise<T>, ms = 5000): Promise<T> =>
         new Promise((resolve, reject) => {
             const t = setTimeout(() => reject(Object.assign(new Error('auth timeout'), { status: 0 })), ms);
@@ -40,6 +40,28 @@ async function userinfo(): Promise<UserInfos | null> {
 }
 
 async function userinfoDecoded(): Promise<UserInfos | null> {
+    // In JWT RS256 mode (reseller), extract userinfo from the JWT token itself
+    if (isJwtMode()) {
+        const token = getBearer();
+        if (token) {
+            const payload = decodeJwtPayload(token);
+            const userinfos = await userinfo() as UserInfos | null;
+            if (payload) {
+                return {
+                    uid: payload.uid || userinfos?.uid,
+                    email: payload.email,
+                    name: payload.name || payload.preferred_username,
+                    given_name: payload.given_name,
+                    family_name: payload.family_name,
+                    idToken: token, // Include the JWT as idToken for consistency
+                    clientId: payload.clientId,
+                } as UserInfos;
+            }
+        }
+        return null;
+    }
+
+    // In OIDC mode (single-tenant), get userinfo from endpoint
     const data = await userinfo();
     if (!data) return null;
     if (data.idToken && typeof data.idToken === 'string') {
@@ -81,7 +103,7 @@ function getLoginCallbackUrl(code: string, state: string) {
 async function logout() {
     try {
         const http = await getHttp();
-        return await http.post('/authentication/logout');
+        return await http.get('/authentication/logout');
     } catch (e) {
         throw toApiError(e);
     }
@@ -89,6 +111,72 @@ async function logout() {
 
 function getLogoutUrl() {
     return joinUrl(getBaseApiOrThrow(), '/authentication/logout');
+}
+
+// ===== JWT RS256 (Multi-Tenant) Functions =====
+
+function setBearer(token: string) {
+    localStorage.setItem('accessToken', token);
+}
+
+function getBearer(): string | null {
+    return localStorage.getItem('accessToken');
+}
+
+function clearBearer() {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+}
+
+function isJwtMode(): boolean {
+    // Check if system is configured for multi-tenant (JWT RS256) mode
+    // In that case, check if we have a valid Bearer token
+    const cfg = getCachedRuntimeConfig();
+    const resellerModeEnabled = cfg?.VITE_RESELLER_MODE_ENABLED === true || cfg?.VITE_RESELLER_MODE_ENABLED === 'true';
+    if (!resellerModeEnabled) {
+        // Single-tenant mode (OIDC): never JWT mode
+        return false;
+    }
+    // Multi-tenant mode: check if we have a Bearer token
+    return !!getBearer();
+}
+
+function decodeJwtPayload(token: string): Record<string, any> | null {
+    try {
+        const parts = token.split('.');
+        if (parts.length !== 3) return null;
+        const decoded = JSON.parse(atob(parts[1]));
+        return decoded;
+    } catch {
+        return null;
+    }
+}
+
+function getClientIdFromJwt(): string | null {
+    const token = getBearer();
+    if (!token) return null;
+    const decoded = decodeJwtPayload(token);
+    return decoded?.clientId || null;
+}
+
+function getOfferTypeFromJwt(): 'basic' | 'premium' | null {
+    const token = getBearer();
+    if (!token) return null;
+    const decoded = decodeJwtPayload(token);
+    const offerType = decoded?.offerType;
+    return (offerType === 'basic' || offerType === 'premium') ? offerType : null;
+}
+
+async function logoutJwt() {
+    try {
+        const http = await getHttp();
+        await http.get('/authentication/logout');
+    } catch (e) {
+        // Logout échoue, on nettoie le token local quand même
+        console.warn('JWT logout failed:', e);
+    } finally {
+        clearBearer();
+    }
 }
 
 
@@ -99,6 +187,15 @@ export const AuthService = {
     getLogoutUrl,
     getLoginCallbackUrl,
     logout,
+    // JWT RS256
+    setBearer,
+    getBearer,
+    clearBearer,
+    isJwtMode,
+    decodeJwtPayload,
+    getClientIdFromJwt,
+    getOfferTypeFromJwt,
+    logoutJwt,
 };
 
 

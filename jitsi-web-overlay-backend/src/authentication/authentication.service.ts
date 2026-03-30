@@ -5,6 +5,7 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
+  Inject,
 } from '@nestjs/common';
 import * as queryString from 'querystring';
 import { HttpsProxyAgent } from 'https-proxy-agent';
@@ -14,6 +15,7 @@ import { AuthCookieUtil } from './utils/auth-cookie.util';
 import { UsersService } from '../users/users.service';
 import { User, AuthProvider } from '../users/entities/users.entity';
 import { v4 as uuidv4 } from 'uuid';
+import { TenantContext } from '../common/context/tenant.context';
 
 @Injectable()
 export class AuthenticationService {
@@ -25,6 +27,7 @@ export class AuthenticationService {
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
+    private readonly tenantContext: TenantContext,
   ) {
     this.cookieUtil = new AuthCookieUtil(this.configService);
   }
@@ -59,11 +62,73 @@ export class AuthenticationService {
   /**
    * Crée ou met à jour un utilisateur OIDC dans la base users
    */
-  async upsertOidcUser(userinfo: any): Promise<User> {
-    if (!userinfo?.email) return null;
-    const existing = await this.usersService.findByEmail(userinfo.email);
+  // async upsertOidcUser(userinfo: any): Promise<User> {
 
-    // Récupère le rôle depuis OIDC si présent
+  //   const normalized = this.extractUserInfos(userinfo);
+
+  //   if (!normalized.email) {
+  //     this.logger.warn("Userinfo object is missing 'email' property", { userinfo });
+  //     throw new UnauthorizedException("Invalid userinfo: missing 'email' property");
+  //   }
+  //   const existing = await this.usersService.findByEmail(normalized.email);
+
+  //   // Récupère le rôle depuis OIDC si présent
+  //   let oidcRole: string | null = null;
+  //   if (userinfo?.realm_access?.roles?.length) {
+  //     oidcRole = userinfo.realm_access.roles[0];
+  //   } else if (userinfo?.resource_access?.account?.roles?.length) {
+  //     oidcRole = userinfo.resource_access.account.roles[0];
+  //   } else if (userinfo?.role) {
+  //     oidcRole = userinfo.role;
+  //   }
+
+
+  //   const userData: Partial<User> = {
+  //     email: userinfo.email,
+  //     username: userinfo.preferred_username || userinfo.name || userinfo.email,
+  //     displayName: userinfo.name || userinfo.preferred_username || userinfo.email,
+  //     provider: AuthProvider.OIDC,
+  //     externalId: userinfo.sub || userinfo.external_id || null,
+  //     avatarUrl: userinfo.picture || null,
+  //     isActive: true,
+  //     role: oidcRole || undefined,
+  //     // admin is true if either OIDC or the database value is true
+  //     admin: this.isAdmin(userinfo, typeof existing?.admin === 'boolean' ? existing.admin : false),
+  //   };
+
+  //   if (!existing) {
+  //     userData.uid = uuidv4();
+  //     return this.usersService.createUser(userData);
+  //   } else {
+  //     if (!existing.uid) {
+  //       userData.uid = uuidv4();
+  //     }
+  //     // Update if OIDC or admin value has changed compared to the database
+  //     let changed = false;
+  //     for (const key of Object.keys(userData)) {
+  //       if (userData[key] !== undefined && existing[key] !== userData[key]) changed = true;
+  //     }
+  //     // If OIDC does not provide a role, keep the one from the database
+  //     if (!oidcRole && existing.role) {
+  //       userData.role = existing.role;
+  //     }
+  //     // admin is true if OIDC OR the database value is true (see calculation above)
+  //     if (changed) {
+  //       return this.usersService.update(existing.id, { ...userData });
+  //     }
+  //     return existing;
+  //   }
+  // }
+  async upsertOidcUser(userinfo: any): Promise<User> {
+    const normalized = this.extractUserInfos(userinfo);
+
+    if (!normalized.email) {
+      this.logger.warn("Userinfo object is missing 'email' property", { userinfo });
+      throw new UnauthorizedException("Invalid userinfo: missing 'email' property");
+    }
+
+    const existing = await this.usersService.findByEmail(normalized.email);
+
     let oidcRole: string | null = null;
     if (userinfo?.realm_access?.roles?.length) {
       oidcRole = userinfo.realm_access.roles[0];
@@ -73,17 +138,21 @@ export class AuthenticationService {
       oidcRole = userinfo.role;
     }
 
-
     const userData: Partial<User> = {
-      email: userinfo.email,
-      username: userinfo.preferred_username || userinfo.name || userinfo.email,
-      displayName: userinfo.name || userinfo.preferred_username || userinfo.email,
+      email: normalized.email,
+      username:
+        normalized.preferred_username ||
+        normalized.name ||
+        normalized.email,
+      displayName:
+        normalized.name ||
+        normalized.preferred_username ||
+        normalized.email,
       provider: AuthProvider.OIDC,
-      externalId: userinfo.sub || userinfo.external_id || null,
+      externalId: normalized.sub || userinfo.sub || userinfo.external_id || null,
       avatarUrl: userinfo.picture || null,
       isActive: true,
       role: oidcRole || undefined,
-      // admin is true if either OIDC or the database value is true
       admin: this.isAdmin(userinfo, typeof existing?.admin === 'boolean' ? existing.admin : false),
     };
 
@@ -94,19 +163,22 @@ export class AuthenticationService {
       if (!existing.uid) {
         userData.uid = uuidv4();
       }
-      // Update if OIDC or admin value has changed compared to the database
-      let changed = false;
-      for (const key of Object.keys(userData)) {
-        if (userData[key] !== undefined && existing[key] !== userData[key]) changed = true;
-      }
-      // If OIDC does not provide a role, keep the one from the database
+
       if (!oidcRole && existing.role) {
         userData.role = existing.role;
       }
-      // admin is true if OIDC OR the database value is true (see calculation above)
+
+      let changed = false;
+      for (const key of Object.keys(userData)) {
+        if (userData[key] !== undefined && existing[key] !== userData[key]) {
+          changed = true;
+        }
+      }
+
       if (changed) {
         return this.usersService.update(existing.id, { ...userData });
       }
+
       return existing;
     }
   }
@@ -188,7 +260,11 @@ export class AuthenticationService {
           },
       );
 
-      return { idToken, userinfo };
+      // merge claims from id_token and userinfo, with precedence to userinfo
+      const decodeIdToken = (this.jwtService.decode(idToken) as Record<string, any>) || {};
+      const mergedUserInfo = { ...decodeIdToken, ...userinfo };
+
+      return { idToken, userinfo: mergedUserInfo };
     } catch (error) {
       this.logger.error("Erreur dans loginCallback", {
         message: error?.message,
@@ -218,6 +294,27 @@ export class AuthenticationService {
 
     const url = this.configService.get('OIDC_END_SESSION_ENDPOINT') + '?';
     return url + queryString.stringify(query);
+  }
+
+  /**
+   * Logout pour mode JWT RS256 (Multi-Tenant/Reseller)
+   * En mode stateless JWT, il y a pas de session serveur à détruire
+   * Le logout consiste simplement à nettoyer le contexte client
+   * 
+   * @param clientId UUID du client à déconnecter
+   * @returns Objet de confirmation avec succès et message
+   */
+  logoutJwtRs256(clientId: string): { success: boolean; message: string; clientId: string } {
+    this.logger.log(`JWT RS256 logout for clientId: ${clientId}`);
+
+    // Nettoyage du contexte (TenantContext REQUEST-scoped)
+    this.tenantContext.clear();
+
+    return {
+      success: true,
+      message: 'Session cleared successfully. Token will expire at natural expiration time.',
+      clientId,
+    };
   }
 
   generateJwtPair(claims: Record<string, any>) {
@@ -305,15 +402,23 @@ export class AuthenticationService {
     };
   }
   extractUserInfos(userinfo: any) {
+    const fallbackUsername =
+      userinfo?.preferred_username ||
+      userinfo?.id ||
+      (typeof userinfo?.email === 'string' ? userinfo.email.split('@')[0] : '') ||
+      userinfo?.sub ||
+      '';
+    const fullName = userinfo?.name || fallbackUsername;
+
     return {
       sub: userinfo?.sub || '',
       email_verified: Boolean(userinfo?.email_verified),
-      name: userinfo?.name || '',
-      given_name: userinfo?.given_name || userinfo?.firstName || userinfo?.prenom || '',
+      name: fullName,
+      given_name: userinfo?.given_name || userinfo?.firstName || userinfo?.prenom || fullName || '',
       family_name: userinfo?.family_name || userinfo?.lastName || userinfo?.nom || '',
       preferred_username: userinfo?.preferred_username || '',
       email: userinfo?.email || '',
-      admin: userinfo?.admin === true || userinfo?.admin === 'true'
+      admin: userinfo?.admin === true || userinfo?.admin === 'true' || false
     };
   }
 }

@@ -5,7 +5,7 @@ export interface Participant {
   userUid?: string | null;
   email?: string | null;
   phone?: string | null;
-  displayName: string;
+  displayName?: string;
   role: string;
   status: string;
   inviteMethod: string;
@@ -16,7 +16,7 @@ export interface Participant {
 export interface CreateParticipantDto {
   conferenceUid: string;
   userUid?: string;
-  displayName: string;
+  displayName?: string;
   email?: string;
   phone?: string;
   role?: string;

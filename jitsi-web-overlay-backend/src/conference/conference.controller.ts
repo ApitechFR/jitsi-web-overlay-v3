@@ -12,8 +12,8 @@ import {
   Query,
   Header,
   UseGuards,
-  Patch,
   Inject as NestInject,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -23,12 +23,13 @@ import {
   ApiUnauthorizedResponse,
   ApiBadRequestResponse,
   ApiBearerAuth,
+
 } from '@nestjs/swagger';
 
+import { Throttle } from '@nestjs/throttler';
 import { IConferenceService } from './interfaces/conference-service.interface';
 import { CreateConferenceDTO, EndConferenceDTO } from './DTOs/conference.dto';
 import { ByEmailDTO } from './DTOs/byEmail.dto';
-import { JwtDTO } from './DTOs/jwt.dto';
 import { RoomNameDto } from './DTOs/room-name.dto';
 import { ConferenceFilter } from './enum/conference_filter.enum';
 import { ParseConferenceFilterPipe } from './utils/ParseConferenceFilterPipe';
@@ -54,7 +55,7 @@ export class ConferenceController {
     private readonly webinarService: WebinarService,
   ) { }
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('conferences')
   @ApiOkResponse({ description: 'Conférence créée avec succès' })
   async create(@Body() dto: CreateConferenceDTO) {
@@ -233,6 +234,27 @@ export class ConferenceController {
     );
   }
 
+  /**
+   * Endpoint public pour obtenir un JWT Jitsi de test (durée courte, droits minimaux)
+   * Génère un roomName test côté backend
+   * Rate limité par IP
+   */
+  @Post('conferences/tokens/jitsi-test')
+  @Throttle({ default: { limit: 3, ttl: 60 } }) // 3 requêtes par minute
+  @Header('Cache-Control', 'no-store')
+  @ApiOkResponse({ description: 'JWT Jitsi test pour conférence de test' })
+  async createJitsiTestToken(@Req() req) {
+    // Générer un nom de room test unique (préfixé, longueur 30)
+    const roomName = `browserTest123${Math.random().toString(36).substring(2, 28)}`;
+
+    // Générer le JWT avec droits minimaux et durée très courte (1 min)
+    const { jwt } = await this.conferenceService.getRoomTestAccessToken(roomName);
+    if (!jwt) {
+      throw new BadRequestException('Impossible de générer le JWT de test');
+    }
+    // Retourne le JWT, l'expiration et le roomName
+    return { token: jwt, roomName };
+  }
   // @UseGuards(JwtAuthGuard)
   // @Post('conferences/:roomName/tokens/jitsi')
   // @Header('Cache-Control', 'no-store')

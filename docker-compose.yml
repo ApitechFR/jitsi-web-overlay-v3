@@ -26,7 +26,7 @@ services:
     depends_on:
       - jitsi-web-overlay-backend
     volumes:
-    - ./client-resources:/usr/share/nginx/html/assets/client-resources:ro
+      - ./client-resources:/usr/share/nginx/html/assets/client-resources:ro
 
   jitsi-web-overlay-outlook-plugin:
     build:

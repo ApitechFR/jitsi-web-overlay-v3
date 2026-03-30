@@ -5,7 +5,7 @@ import type { CreateByEmailRes, JitsiJwtResponse, JoinRes } from './conference.t
 
 export const ConferenceService = {
 
-    async create(payload: { name: string; room_uid: string }) {
+    async create(payload: { name: string; room_uid: string; clientId?: string }) {
         try {
             const http = await getHttp();
             const { data } = await http.post('/conferences', payload);
@@ -120,6 +120,43 @@ export const ConferenceService = {
             };
         } catch (e) {
             throw toApiError(e, "Échec de récupération du JWT Jitsi");
+        }
+    },
+
+
+
+    /**
+     * Récupère le token de test pour le test matériel 
+     * @returns 
+     */
+    async jitsiTestJwt(): Promise<JitsiJwtResponse> {
+        try {
+            const http = await getHttp();
+
+            const { data } = await http.post(
+                `/conferences/tokens/jitsi-test`,
+                {},
+                { withCredentials: false }
+            );
+
+            const token = data?.token ?? data?.jwt;
+            const roomName = data?.roomName;
+
+            if (!token) {
+                throw new Error('Réponse JWT de test invalide (champ "token" ou "jwt" manquant)');
+            }
+
+            if (!roomName) {
+                throw new Error('Réponse JWT de test invalide (champ "roomName" manquant)');
+            }
+
+            return {
+                token,
+                roomName,
+                exp: data?.exp,
+            };
+        } catch (e) {
+            throw toApiError(e, 'Échec de récupération du JWT de test Jitsi');
         }
     },
 

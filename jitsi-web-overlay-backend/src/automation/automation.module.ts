@@ -16,6 +16,7 @@ import { ProsodyModule } from '../prosody/prosody.module';
 import { RoomModule } from '../room/room.module';
 import { ParticipantModule } from '../participant/participant.module';
 import { WinstonLoggerService } from '../common/services/winston-logger.service';
+import { ReplayCleanerService } from './crons/replay-cleaner.service';
 
 
 @Module({
@@ -32,6 +33,7 @@ import { WinstonLoggerService } from '../common/services/winston-logger.service'
   providers: [
     AutomationService,
     WinstonLoggerService,
+    ReplayCleanerService,
   ]
 })
 export class AutomationModule { }

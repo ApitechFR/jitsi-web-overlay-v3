@@ -3,9 +3,9 @@ import { useState, useEffect } from 'react';
 import styles from './HeaderJoona.module.css';
 import { Header, createModal, SideMenu } from '@ds';
 import { Item } from '@/utils/changelogs/Item'
-import dataChangelog from '@/utils/changelogs/infos.json'
 import ChangelogContent from '../IframePopup/ChangelogContent';
 import { useRuntimeConfig } from '@/config/ConfigProvider';
+import { CHANGELOG_VERSION } from '@/utils/changelogs/changelog-version';
 import { useTranslation } from 'react-i18next';
 
 const modal = createModal({
@@ -30,7 +30,10 @@ export default function HeaderVisio() {
     let lang = i18n.language || 'fr';
     if (lang.startsWith('en')) lang = 'en';
     else lang = 'fr';
-    const changelogUrl = cfg.VITE_APP_CHANGELOG_URL || '/utils/changelogs/infos.json';
+    // Apply hash-based versioning only to the default bundled file, not to custom URLs
+    const changelogUrl = cfg.VITE_APP_CHANGELOG_URL
+      ? (cfg.VITE_APP_CHANGELOG_URL as string)
+      : `/infos-${CHANGELOG_VERSION}.json`;
     fetch(changelogUrl)
       .then((res) => {
         if (!res.ok) throw new Error('Changelog not found');

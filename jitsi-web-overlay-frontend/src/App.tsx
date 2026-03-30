@@ -181,6 +181,12 @@ function AppInner() {
       <Routes>
         <>
           <Route path="/webinar/invite/:token" element={<WebinarInvitePage />} />
+          <Route path="/logout/callback" element={<LogoutCallback />} />
+          <Route path="/login_callback" element={<LoginCallback />} />
+          <Route path="/auth/logout" element={<LogoutCallback />} />
+          <Route path="/login/callback" element={<LoginCallback />} />
+          <Route path="/auth/callback" element={<LoginCallback />} />
+          <Route path="/callback" element={<LoginCallback />} />
           <Route
             path=":conferenceName"
             element={
@@ -189,17 +195,6 @@ function AppInner() {
               </PrivateRoute>
             }
           />
-          <Route path="/logout/callback" element={<LogoutCallback />} />
-          <Route
-            path="/login_callback"
-            element={<LoginCallback />}
-          />
-          <Route path="/auth/logout" element={<LogoutCallback />} />
-          <Route
-            path="/login/callback"
-            element={<LoginCallback />}
-          />
-          <Route path="/auth/callback" element={<LoginCallback />} />
           <Route path="/" element={<LayoutJoona />}>
             <Route
               index
@@ -231,9 +226,9 @@ function AppInner() {
             <Route
               path="replays"
               element={
-                <AdminRoute>
+                <PrivateRoute>
                   <ReplayListGrouped />
-                </AdminRoute>
+                </PrivateRoute>
               }
             />
             <Route

@@ -14,6 +14,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RoomNameValidator } from './common/validators/room-name.validator';
 import { JwtOidcMiddleware } from './authentication/utils/jwt-oidc.middleware';
+import { TenantMiddleware } from './common/middleware/tenant.middleware';
 import { ScheduleModule } from '@nestjs/schedule';
 import { OriginMiddleware } from './common/middleware/origin.middleware';
 
@@ -26,6 +27,9 @@ import { AutomationModule } from './automation/automation.module';
 import { LdapModule } from './providers/directory-provider/ldap/ldap.module';
 import { OidcModule } from './providers/directory-provider/oidc/oidc.module';
 import { WebinarModule } from './webinar/webinar.module';
+import { VoxifyModule } from './voxify/voxify.module';
+import { CommonModule } from './common/common.module';
+import { ResellerModule } from './reseller/reseller.module';
 
 
 @Module({
@@ -84,6 +88,7 @@ import { WebinarModule } from './webinar/webinar.module';
       envFilePath: `.env.${process.env.NODE_ENV}`,
       validationSchema: configValidationSchema,
     }),
+    CommonModule,
     AuthenticationModule,
     ConferenceModule,
     StatsModule,
@@ -96,6 +101,8 @@ import { WebinarModule } from './webinar/webinar.module';
     LdapModule,
     OidcModule,
     WebinarModule,
+    VoxifyModule,
+    ResellerModule,
   ],
   controllers: [AppController],
   providers: [AppService, RoomNameValidator],
@@ -103,6 +110,12 @@ import { WebinarModule } from './webinar/webinar.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
+    // Register TenantMiddleware globally for ALL routes
+    // (first, before the other middleware)
+
+    consumer
+      .apply(TenantMiddleware)
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
 
     consumer
       .apply(JwtOidcMiddleware)

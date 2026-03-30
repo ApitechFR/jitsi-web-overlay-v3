@@ -16,7 +16,17 @@ function FooterJoona({ apitechHeaderFooterDisplayItem }: FooterJoonaProps) {
   const cfg = useRuntimeConfig();
   const VisioLogo = (cfg.VITE_APP_LIGHTVISIOLOGOFOOTER as string);
   const DarkVisioLogo = (cfg.VITE_APP_DARKVISIOLOGOFOOTER as string);
-  const FooterDescription = t('footer.description', (cfg.VITE_APP_FOOTERDESCRIPTION as string) || '');
+
+  const rawFooter = cfg.VITE_APP_FOOTERDESCRIPTION || '';
+
+  const translations = Object.fromEntries(
+    rawFooter.split(',').map(item => {
+      const [lang, text] = item.split(':');
+      return [lang, text];
+    })
+  );
+
+  const FooterDescription = translations[i18n.language] || '';
   // Must be one of: "non compliant", "partially compliant", "fully compliant"
   const accessibilityLabel: "non compliant" | "partially compliant" | "fully compliant" = "fully compliant";
   const FooterLinks = (cfg.VITE_APP_FOOTERLINKS as string) || '';

@@ -2,6 +2,8 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ConfigService } from '@nestjs/config';
+import { TenantContext } from './common/context/tenant.context';
+import { ModuleKey, OFFER_MODULES } from './reseller/enums/module-key.enum';
 
 
 
@@ -9,7 +11,8 @@ import { ConfigService } from '@nestjs/config';
 export class AppController {
   constructor(
     private readonly appService: AppService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly tenantContext: TenantContext,
   ) { }
 
 
@@ -18,6 +21,10 @@ export class AppController {
     return {
       VITE_APP_TEMPLATE: process.env.APP_TEMPLATE,
       VITE_JITSI_DOMAIN: process.env.JITSI_DOMAIN,
+      VITE_TURN_SERVER_SECRET: process.env.TURN_SERVER_SECRET,
+      VITE_WSS_URL: process.env.WSS_URL,
+      VITE_TURN_TCP_URLS: process.env.TURN_TCP_URLS,
+      VITE_TURN_UDP_URLS: process.env.TURN_UDP_URLS,
       VITE_VOXAPI_URL: process.env.VOXAPI_URL,
       VITE_CONFERENCE_NAME_REGEX: process.env.CONFERENCE_NAME_REGEX,
       VITE_CONFERENCE_NAME_REGEX_MESSAGE: process.env.CONFERENCE_NAME_REGEX_MESSAGE,
@@ -47,6 +54,8 @@ export class AppController {
       VITE_IS_WEBINAR_ENABLED: process.env.IS_WEBINAR_ENABLED,
       VITE_ENABLE_LANGUAGE_SWITCH: process.env.ENABLE_LANGUAGE_SWITCH,
       VITE_ENABLE_HARDWARE_TEST: process.env.ENABLE_HARDWARE_TEST,
+      VITE_RESELLER_MODE_ENABLED: process.env.RESELLER_MODE_ENABLED === 'true',
+      VITE_RESELLER_AUTH_URL: process.env.RESELLER_AUTH_URL,
     };
   }
 
@@ -59,6 +68,24 @@ export class AppController {
 
   @Get('/jitsi/modules')
   getJitsiModules() {
+    // In reseller mode, modules are determined by client offer type
+    const offerType = this.tenantContext.getOfferType();
+    const resellerModeEnabled = this.configService.get('RESELLER_MODE_ENABLED') === 'true';
+    console.log(`getJitsiModules called - resellerModeEnabled: ${resellerModeEnabled}, offerType: ${offerType}`);
+    if (resellerModeEnabled && offerType) {
+      // Reseller mode: return modules based on offer
+      const modulesForOffer = OFFER_MODULES[offerType] || [];
+      console.log(`Modules for offer type "${offerType}":`, modulesForOffer);
+      return {
+        etherpad: modulesForOffer.includes(ModuleKey.ETHERPAD),
+        transcription: modulesForOffer.includes(ModuleKey.TRANSCRIPTION),
+        recording: modulesForOffer.includes(ModuleKey.RECORDING),
+        excalidraw: modulesForOffer.includes(ModuleKey.WHITEBOARD),
+        voxify: modulesForOffer.includes(ModuleKey.VOXIFY),
+      };
+    }
+
+    // Single-tenant mode (OIDC): use environment variables
     return {
       etherpad: this.configService.get('JITSI_MOD_ETHERPAD', 'false') === 'true',
       transcription: this.configService.get('JITSI_MOD_TRANSCRIPTION', 'false') === 'true',

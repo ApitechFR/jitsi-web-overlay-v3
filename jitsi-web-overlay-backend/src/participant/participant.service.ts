@@ -3,10 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Participant } from './entities/participant.entity';
 import { Conference } from '../conference/entities/conference.entity';
 import { User } from '../users/entities/users.entity';
-import { Between, Repository } from 'typeorm';
+import { Between, In, Repository } from 'typeorm';
 import { CreateParticipantDto, UpdateParticipantDto } from './dto/create-participant.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { PaginationDto } from './dto/pagination.dto';
+import { TenantIsolationService } from '../common/services/tenant-isolation.service';
 
 @Injectable()
 export class ParticipantService {
@@ -19,16 +20,31 @@ export class ParticipantService {
 
         @InjectRepository(User)
         private readonly userRepo: Repository<User>,
+
+        private readonly tenantIsolation: TenantIsolationService,
     ) { }
 
+    /**
+     * Helper: Validate that a conference belongs to the current client
+     */
+    private async validateConferenceOwnership(conferenceUid: string): Promise<Conference> {
+        const query = this.conferenceRepo.createQueryBuilder('conference')
+            .where('conference.uid = :uid', { uid: conferenceUid });
+
+        // Apply multi-tenant filter
+        this.tenantIsolation.applyClientFilter(query, 'conference');
+
+        const conference = await query.getOne();
+        if (!conference) {
+            throw new NotFoundException('Conférence non trouvée ou accès refusé');
+        }
+
+        return conference;
+    }
 
     async create(dto: CreateParticipantDto): Promise<Participant> {
-        const conference = await this.conferenceRepo.findOne({
-            where: { uid: dto.conferenceUid },
-        });
-        if (!conference) {
-            throw new NotFoundException('Conférence non trouvée');
-        }
+        // Validate conference ownership (this also checks multi-tenant access)
+        const conference = await this.validateConferenceOwnership(dto.conferenceUid);
 
         let user: User | null = null;
         if (dto.userUid) {
@@ -54,7 +70,7 @@ export class ParticipantService {
             uid: uuidv4(),
             conference,
             user,
-            displayName: dto.displayName,
+            displayName: dto.displayName || dto.email,
             email: dto.email,
             phone: dto.phone,
             role: dto.role,
@@ -66,6 +82,9 @@ export class ParticipantService {
     }
 
     async findByEmail(email: string, conferenceUid: string): Promise<Participant | null> {
+        // Validate conference ownership first
+        await this.validateConferenceOwnership(conferenceUid);
+
         return await this.participantRepo.findOne({
             where: {
                 email,
@@ -76,6 +95,9 @@ export class ParticipantService {
     }
 
     async findByDisplayName(displayName: string, conferenceUid: string): Promise<Participant | null> {
+        // Validate conference ownership first
+        await this.validateConferenceOwnership(conferenceUid);
+
         return await this.participantRepo.findOne({
             where: {
                 displayName,
@@ -86,7 +108,19 @@ export class ParticipantService {
     }
 
     async findAll(): Promise<Participant[]> {
+        // Get all conferences for the current client
+        const conferenceQuery = this.conferenceRepo.createQueryBuilder('conference');
+        this.tenantIsolation.applyClientFilter(conferenceQuery, 'conference');
+        const conferences = await conferenceQuery.getMany();
+
+        if (conferences.length === 0) {
+            return [];
+        }
+
+        const conferenceUids = conferences.map(c => c.uid);
+
         return await this.participantRepo.find({
+            where: { conference: { uid: In(conferenceUids) } as any },
             relations: ['conference', 'user'],
         });
     }
@@ -99,11 +133,15 @@ export class ParticipantService {
         if (!participant) {
             throw new NotFoundException('Participant non trouvé');
         }
+
+        // Validate that the conference belongs to current client
+        this.tenantIsolation.validateOwnership(participant.conference, 'conference');
+
         return participant;
     }
 
     async update(uid: string, dto: UpdateParticipantDto): Promise<Participant> {
-        const participant = await this.findOne(uid);
+        const participant = await this.findOne(uid); // This already validates multi-tenant access
 
         Object.assign(participant, dto);
 
@@ -116,13 +154,10 @@ export class ParticipantService {
     }
 
     async getParticipantByConfUID(conferenceUid: string, paginationDto: PaginationDto): Promise<{ data: Participant[]; total: number; page: number; pageCount: number; }> {
-        const { page = 1, limit = 20 } = paginationDto
-        const conference = await this.conferenceRepo.findOne({
-            where: { uid: conferenceUid },
-        });
-        if (!conference) {
-            throw new NotFoundException('Conférence non trouvée');
-        }
+        const { page = 1, limit = 20 } = paginationDto;
+
+        // Validate conference ownership (also ensures multi-tenant access)
+        await this.validateConferenceOwnership(conferenceUid);
 
         const skip = (page - 1) * limit;
 
@@ -138,11 +173,36 @@ export class ParticipantService {
     }
 
     async countParticipantsByDateRange(start: Date, end: Date): Promise<number> {
+        // Get all conferences for the current client
+        const conferenceQuery = this.conferenceRepo.createQueryBuilder('conference');
+        this.tenantIsolation.applyClientFilter(conferenceQuery, 'conference');
+        const conferences = await conferenceQuery.getMany();
+
+        if (conferences.length === 0) {
+            return 0;
+        }
+
+        const conferenceUids = conferences.map(c => c.uid);
+
         return this.participantRepo.count({
             where: {
                 createdAt: Between(start, end),
+                conference: { uid: In(conferenceUids) } as any,
             },
         });
+    }
+
+    async getConferenceUIDsByEmail(email: string): Promise<string[]> {
+        const rows = await this.participantRepo.query(
+        `
+            SELECT DISTINCT conference_uid
+            FROM participants
+            WHERE email = ?
+        `,
+            [email],
+        );
+
+        return rows.map(r => r.conference_uid);
     }
 
 }

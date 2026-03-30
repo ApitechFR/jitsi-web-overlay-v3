@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, LessThan, Repository } from 'typeorm';
 import { Replay } from './entities/replay.entity';
 import { CreateReplayDto, UpdateReplayDto } from './DTOs/replay.dto';
 import { join } from 'path';
@@ -12,6 +12,7 @@ import { Conference } from '../conference/entities/conference.entity';
 import { ReplayStatus } from './enum/replay_status.enum';
 import { safeStatFile } from './utils/FileVerification';
 import { WinstonLoggerService } from '../common/services/winston-logger.service';
+import { ParticipantService } from '../participant/participant.service';
 
 @Injectable()
 export class ReplayService {
@@ -25,6 +26,7 @@ export class ReplayService {
         private readonly conferenceRepository: Repository<Conference>,
         private readonly dataSource: DataSource,
         private readonly loggerWinston: WinstonLoggerService,
+        private readonly participantService: ParticipantService
     ) { }
 
     async findAll(): Promise<Replay[]> {
@@ -278,5 +280,41 @@ export class ReplayService {
                 count: Number(r.count),
             })),
         };
+    }
+
+    async getReplaysByParticipantEmail(email: string) {
+        const conferenceUids = await this.participantService.getConferenceUIDsByEmail(email);
+
+        if (!conferenceUids?.length) {
+            return [];
+        }
+
+        const replays = await this.replayRepository
+            .createQueryBuilder('r')
+            .where('r.conference_uid IN (:...uids)', { uids: conferenceUids })
+            .orderBy('r.created_at', 'DESC')
+            .getMany();
+
+        // return replays.filter(replay => replay.file_path && fs.existsSync(replay.file_path));
+        return replays;
+    }
+
+    async findOlderThanDays(days: number) {
+        const date = new Date();
+        date.setDate(date.getDate() - days);
+
+        return this.replayRepository.find({
+            where: {
+                created_at: LessThan(date),
+                isActive: true,
+                status: ReplayStatus.TERMINATED,
+            },
+        });
+    }
+
+    async deactivateReplay(id: number) {
+        return this.replayRepository.update(id, {
+            isActive: false,
+        });
     }
 }

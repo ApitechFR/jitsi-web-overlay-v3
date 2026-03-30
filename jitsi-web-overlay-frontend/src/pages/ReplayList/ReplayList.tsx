@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom';
 import Button from '@codegouvfr/react-dsfr/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import type { Replay } from '@/api';
-import { formatDate } from '@/utils/date';
+import { formatReplayDate } from '@/utils/date';
 
 const ReplayList: React.FC = () => {
     const { t } = useTranslation();
@@ -56,28 +56,42 @@ const ReplayList: React.FC = () => {
                 {replays.length === 0 ? (
                     <p className={styles.noReplays}>{t('replayList.none')}</p>
                 ) : (
-                    replays.map((replay) => (
-                        <div className={styles.replayRow} key={replay.id}>
-                            <div className={styles.filename}>{replay.conference_name}</div>
-                            <div className={styles.date}>{formatDate(replay.updated_at)}</div>
-                            <Button
-                                className={styles.downloadButton}
-                                priority="primary"
-                                onClick={async () => {
-                                    setDownloading(true);
-                                    try {
-                                        await ReplayService.downloadReplay(replay.uid);
-                                    } catch (e: any) {
-                                        alert(e.message || t('replayList.downloadError'));
-                                    } finally {
-                                        setDownloading(false);
-                                    }
+                    replays.map((replay) => {
+                        const isDisabled = !replay.isActive;
+
+                        return (
+                            <div
+                                className={styles.replayRow}
+                                key={replay.id}
+                                style={{
+                                    opacity: isDisabled ? 0.5 : 1,
+                                    pointerEvents: isDisabled ? 'none' : 'auto',
                                 }}
                             >
-                                {t('replayList.download')}
-                            </Button>
-                        </div>
-                    ))
+                                <div className={styles.filename}>{replay.conference_name}</div>
+                                <div className={styles.date}>
+                                    {formatReplayDate(replay.created_at, replay.updated_at)}
+                                </div>
+                                <Button
+                                    className={styles.downloadButton}
+                                    priority="primary"
+                                    disabled={isDisabled}
+                                    onClick={async () => {
+                                        setDownloading(true);
+                                        try {
+                                            await ReplayService.downloadReplay(replay.uid);
+                                        } catch (e: any) {
+                                            alert(e.message || t('replayList.downloadError'));
+                                        } finally {
+                                            setDownloading(false);
+                                        }
+                                    }}
+                                >
+                                    {t('replayList.download')}
+                                </Button>
+                            </div>
+                        );
+                    })
                 )}
             </div>
         </div>

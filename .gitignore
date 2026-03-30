@@ -1,4 +1,5 @@
 
+docs/
 # Compiled output
 dist/
 dist-ssr/
@@ -223,3 +224,8 @@ dist/
 ## variables env
 .env
 vars.json
+
+# Auto-generated changelog version file
+src/utils/changelogs/changelog-version.ts
+# Auto-generated hash-versioned changelog files
+public/infos-*.json

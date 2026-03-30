@@ -15,7 +15,9 @@ COPY package.json package-lock.json ./
 
 RUN mkdir -p public/@gouvfr-lasuite/integration
 # Installer les dépendances avec devDependencies (vite inclus)
-RUN npm ci --no-audit --no-fund
+RUN npm ci --no-audit --no-fund --legacy-peer-deps
+#RUN npm ci --no-audit --no-fund --legacy-peer-deps
+#RUN npm install --force
 
 # Copier le reste du code
 COPY . .
@@ -23,7 +25,9 @@ COPY . .
 # Build
 RUN npm run build
 
-#RUN cp -r node_modules/@apitechfr/react-dsapitech/dsfr dist/ 2>/dev/null || true
+# Copy generated hash-versioned changelog files to dist root (where Nginx serves from)
+RUN cp -f public/infos-*.json dist/ 2>/dev/null || true
+RUN cp -f public/infos.json dist/ 2>/dev/null || true
 RUN mkdir -p dist/dsfr/icons && cp -r node_modules/@apitechfr/react-dsapitech/dsfr/icons dist/dsfr/
 # RUN mkdir -p dist/dsfr \
 #     && cp -r node_modules/@apitechfr/react-dsapitech/dsfr/* dist/dsfr/

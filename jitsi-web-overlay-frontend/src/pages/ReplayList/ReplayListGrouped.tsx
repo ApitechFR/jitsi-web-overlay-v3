@@ -4,8 +4,10 @@ import { useApi, ReplayService } from '@/api';
 import styles from './ReplayList.module.css';
 import CircularProgress from '@mui/material/CircularProgress';
 import Button from '@codegouvfr/react-dsfr/Button';
-import { formatDate } from '@/utils/date';
+import { formatReplayDate } from '@/utils/date';
 import type { Replay } from '@/api';
+import { useAuth } from '@/auth/useAuth';
+import { getUserEmail } from '@/utils/user';
 
 
 const ReplayListGrouped: React.FC = () => {
@@ -13,14 +15,18 @@ const ReplayListGrouped: React.FC = () => {
     const [groupedReplays, setGroupedReplays] = useState<Record<string, Replay[]>>({});
     const [downloading, setDownloading] = useState(false);
     const { t } = useTranslation();
+    const { user } = useAuth();
+    const userEmail = getUserEmail(user);
 
-    const { run: fetchGrouped, loading, error } = useApi(ReplayService.getAll);
+    const { run: fetchGrouped, loading, error } = useApi((email: string) => ReplayService.getReplaysByParticipantEmail(email));
 
     useEffect(() => {
-        fetchGrouped()
+        if (!userEmail) return;
+
+        fetchGrouped(userEmail)
             .then(setGroupedReplays)
             .catch(() => { });
-    }, [fetchGrouped]);
+    }, [userEmail]);
 
     if (loading) return <p>{t('replayListGrouped.loading')}</p>;
     if (error) return <p>{t('replayListGrouped.error', { message: error.message })}</p>;
@@ -57,28 +63,41 @@ const ReplayListGrouped: React.FC = () => {
                     groups.map(([confName, replays]) => (
                         <div key={confName} className={styles.conferenceGroup}>
                             <h3>{confName}</h3>
-                            {replays.map((replay) => (
-                                <div className={styles.replayRow} key={replay.id}>
-                                    <div className={styles.filename}>{replay.uid}</div>
-                                    <div className={styles.date}>{formatDate(replay.updated_at)}</div>
-                                    <Button
-                                        className={styles.downloadButton}
-                                        priority="primary"
-                                        onClick={async () => {
-                                            setDownloading(true);
-                                            try {
-                                                await ReplayService.downloadReplay(replay.uid);
-                                            } catch (e: any) {
-                                                alert(e.message || t('replayListGrouped.downloadError'));
-                                            } finally {
-                                                setDownloading(false);
-                                            }
+                            {replays.map((replay) => {
+                                const isDisabled = !replay.isActive;
+                                return (
+                                    <div
+                                        className={styles.replayRow}
+                                        key={replay.id}
+                                        style={{
+                                            opacity: isDisabled ? 0.5 : 1, 
+                                            pointerEvents: isDisabled ? 'none' : 'auto',
                                         }}
                                     >
-                                        {t('replayListGrouped.download')}
-                                    </Button>
-                                </div>
-                            ))}
+                                        <div className={styles.filename}>{replay.uid}</div>
+                                        <div className={styles.date}>
+                                            {formatReplayDate(replay.created_at, replay.updated_at)}
+                                        </div>
+                                        <Button
+                                            className={styles.downloadButton}
+                                            priority="primary"
+                                            disabled={isDisabled}
+                                            onClick={async () => {
+                                                setDownloading(true);
+                                                try {
+                                                    await ReplayService.downloadReplay(replay.uid);
+                                                } catch (e: any) {
+                                                    alert(e.message || t('replayListGrouped.downloadError'));
+                                                } finally {
+                                                    setDownloading(false);
+                                                }
+                                            }}
+                                        >
+                                            {t('replayListGrouped.download')}
+                                        </Button>
+                                    </div>
+                                );
+                            })}
                         </div>
                     ))
                 )}

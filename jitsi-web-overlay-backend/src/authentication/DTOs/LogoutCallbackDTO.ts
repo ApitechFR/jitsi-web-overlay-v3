@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 @Injectable()
 export class LogoutCallbackDTO {
@@ -10,4 +10,8 @@ export class LogoutCallbackDTO {
     description: "le code 'state' envoyé par le fournisseur d'identité",
   })
   state: string;
+
+  @IsOptional()
+  @IsString()
+  client_id?: string;
 }

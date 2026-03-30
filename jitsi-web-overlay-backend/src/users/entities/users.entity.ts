@@ -9,6 +9,7 @@ export enum AuthProvider {
   LOCAL = 'LOCAL',
   OIDC = 'OIDC',
   LDAP = 'LDAP',
+  JWT_RS256 = 'JWT_RS256',
 }
 
 @Entity('users')
@@ -57,6 +58,10 @@ export class User {
 
   @Column({ name: 'is_active', default: true })
   isActive!: boolean;
+
+  // Multi-tenant: UUID du client (null en mode single-tenant)
+  @Column({ name: 'client_id', type: 'varchar', length: 36, nullable: true })
+  clientId?: string | null;
 
   // Relations
   @OneToMany(() => Participant, p => p.user)

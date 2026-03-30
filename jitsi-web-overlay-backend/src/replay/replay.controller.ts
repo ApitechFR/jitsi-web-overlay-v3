@@ -169,6 +169,29 @@ export class ReplayController {
         stream.pipe(res);
     }
 
+    @Post('participants/email')
+    async getReplaysByParticipantEmail(@Body('email') email: string) {
+        if (!email) {
+            return {
+                message: 'email is required',
+                data: [],
+            };
+        }
+
+        const replays = await this.replayService.getReplaysByParticipantEmail(email);
+
+        console.log({ replays });
+
+        const grouped = {};
+        for (const replay of replays) {
+            const key = replay.conference_name || 'no_conference';
+            if (!grouped[key]) grouped[key] = [];
+            grouped[key].push(replay);
+        }
+        
+        return grouped;
+    }
+
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles('admin')
     @Get('')

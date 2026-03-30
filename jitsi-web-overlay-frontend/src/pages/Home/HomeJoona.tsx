@@ -43,20 +43,25 @@ function HomeJoona(props: HomeJoonaProps) {
 
   const [message, setMessage] = useState<JSX.Element | string>(<></>);
 
-  // Timer pour le délai supplémentaire de 2s avant d’ouvrir le modal
+  // Timer for additional 2s delay before opening the modal
   const extraDelayTimerRef = useRef<number | null>(null);
+  const navigationProcessedRef = useRef(false);
 
-  const isValidConferenceName = (name: string) => validateConferenceName(name);
+  const isValidConferenceName = React.useCallback(
+    (name: string) => validateConferenceName(name),
+    []
+  );
 
-  const { authenticated, login } = useAuth();
+  const { authenticated, login, email, setEmail } = useAuth();
   const { t } = useTranslation();
 
-  // pour intercepter toute fermeture de modal
+  // To intercept modal close events
   const stopRef = useRef<null | ((byModalClose?: boolean) => void)>(null);
+  const authRestorationProcessedRef = useRef(false);
 
   const originalCloseRef = useRef<() => void>();
 
-  // Polling 
+  // Conference polling 
   const {
     runFirstCheckThenMaybeWait,
     stopPolling,
@@ -88,7 +93,7 @@ function HomeJoona(props: HomeJoonaProps) {
   useIsModalOpen(modal, {
     onConceal: () => stopWaitingAndPoll(true),
   });
-  // Arrêter l’attente AVANT de fermer
+  // Stop waiting BEFORE closing
   useEffect(() => {
     const originalClose = modal.close;
     originalCloseRef.current = originalClose;
@@ -102,7 +107,7 @@ function HomeJoona(props: HomeJoonaProps) {
   }, [modal]);
 
 
-  // Met à jour l'état d'erreur dès que le nom change (affiche l'erreur si invalide, la retire si valide)
+  // Updates error state as soon as name changes (displays error if invalid, removes if valid)
   const isConferenceNameInvalid = (value: string) =>
     value.trim() !== "" && !isValidConferenceName(value).isValidConfName;
 
@@ -133,7 +138,7 @@ function HomeJoona(props: HomeJoonaProps) {
     };
   }, []);
 
-  //  Navigation state
+  // Navigation state - processes each navigation only once
   useEffect(() => {
     const st = (location.state || {}) as {
       prefillRoomName?: string;
@@ -141,28 +146,44 @@ function HomeJoona(props: HomeJoonaProps) {
       openAuthModal?: boolean;
     };
 
+    // Prevents processing the same navigation multiple times
+    if (navigationProcessedRef.current && !st.prefillRoomName && !st.waitForRoom) {
+      return;
+    }
+
     if (st.prefillRoomName) {
+      navigationProcessedRef.current = true;
       const nm = st.prefillRoomName.trim();
       props.setConferenceName(nm);
-      setIsError(!validateConferenceName(nm));
-      setTimeout(() => inputRef.current?.focus(), 0);
+      setIsError(!validateConferenceName(nm).isValidConfName);
+      inputRef.current?.focus();
       navigate('.', { replace: true, state: {} });
+      return;
     }
 
     if (st.waitForRoom) {
+      navigationProcessedRef.current = true;
       const target = st.waitForRoom;
-      if (props.conferenceName !== target) props.setConferenceName(target);
+      props.setConferenceName(target);
+      // Starts polling which will open the modal if conference hasn't started
       runFirstCheckThenMaybeWait(target);
       navigate('.', { replace: true, state: {} });
+      return;
     }
+  }, [location, navigate, props.setConferenceName, runFirstCheckThenMaybeWait, validateConferenceName]);
 
-    if (st.openAuthModal && !authenticated) {
-      const target = st.waitForRoom ?? props.conferenceName;
-      if (target && target !== props.conferenceName) props.setConferenceName(target);
-      runFirstCheckThenMaybeWait(target);
-      navigate('.', { replace: true, state: {} });
+  // After authentication, restarts polling with saved conference
+  useEffect(() => {
+    if (!authenticated || authRestorationProcessedRef.current) return;
+
+    const roomFromStorage = sessionStorage.getItem('pendingConferenceName');
+    if (roomFromStorage) {
+      authRestorationProcessedRef.current = true;
+      props.setConferenceName(roomFromStorage);
+      runFirstCheckThenMaybeWait(roomFromStorage);
+      sessionStorage.removeItem('pendingConferenceName');
     }
-  }, [location.state, authenticated, navigate, props.conferenceName, props.setConferenceName]);
+  }, [authenticated, props.setConferenceName, runFirstCheckThenMaybeWait]);
 
   const onCopyLink = () => {
     if (!props.conferenceName || !isValidConferenceName(props.conferenceName).isValidConfName) return;
@@ -182,7 +203,7 @@ function HomeJoona(props: HomeJoonaProps) {
       navigate(`/${props.conferenceName}`);
     }
 
-    // invité : premier check via backend, puis éventuel waiting + poll
+    // Guest: first check via backend, then potential waiting + poll
     runFirstCheckThenMaybeWait(props.conferenceName);
   }
 
@@ -191,84 +212,62 @@ function HomeJoona(props: HomeJoonaProps) {
   };
 
   const switchMode = () => {
-    if (!isWebinarEnabled && mode === 'visio') return; // n'autorise pas le passage en mode webinaire si désactivé
+    if (!isWebinarEnabled && mode === 'visio') return; // Do not allow switching to webinar mode if disabled
     setMode(mode === "visio" ? "webinaire" : "visio")
   }
 
   /*********** Fonction verif regex Webconf *************/
 
-  const verifyAndSetVAlue = React.useCallback(
+  // Generates validation message once per value
+  const getValidationMessage = React.useCallback(
     (value: string) => {
-      if (value) {
-        if (isValidConferenceName(value).isValidConfName) {
-          props.setConferenceName(value);
-          setMessage(
-            <div className={styles.message}>
-              <Badge className={styles.badge} severity="success">
-                {t('homeForm.atLeast3Digits')}
-              </Badge>
-              <Badge className={styles.badge} severity="success">
-                {t('homeForm.min10Chars')}
-              </Badge>
-              <Badge className={styles.badge} severity="success">
-                {t('homeForm.digitsAndLetters')}
-              </Badge>
-            </div>
-          );
-        } else {
-          props.setConferenceName(value);
-          const message = (
-            <div className={styles.message}>
-              {getCountOfDigits(value) >= 3 ? (
-                <Badge className={styles.badge} severity="success">
-                  {t('homeForm.atLeast3Digits')}
-                </Badge>
-              ) : (
-                <Badge className={styles.badge} severity="error">
-                  {t('homeForm.atLeast3Digits')}
-                </Badge>
-              )}
-              {getCountCaracters(value) >= 10 ? (
-                <Badge className={styles.badge} severity="success">
-                  {t('homeForm.min10Chars')}
-                </Badge>
-              ) : (
-                <Badge className={styles.badge} severity="error">
-                  {t('homeForm.min10Chars')}
-                </Badge>
-              )}
-              {isAlphaNumeric(value) ? (
-                <Badge className={styles.badge} severity="success">
-                  {t('homeForm.digitsAndLetters')}
-                </Badge>
-              ) : (
-                <Badge className={styles.badge} severity="error">
-                  {t('homeForm.digitsAndLetters')}
-                </Badge>
-              )}
-            </div>
-          );
-          setMessage(message);
-        }
-      } else {
-        props.setConferenceName(value);
-        setMessage('');
-      }
+      if (!value) return '';
+      return (
+        <div className={styles.message}>
+          {getCountOfDigits(value) >= 3 ? (
+            <Badge className={styles.badge} severity="success">
+              {t('homeForm.atLeast3Digits')}
+            </Badge>
+          ) : (
+            <Badge className={styles.badge} severity="error">
+              {t('homeForm.atLeast3Digits')}
+            </Badge>
+          )}
+          {getCountCaracters(value) >= 10 ? (
+            <Badge className={styles.badge} severity="success">
+              {t('homeForm.min10Chars')}
+            </Badge>
+          ) : (
+            <Badge className={styles.badge} severity="error">
+              {t('homeForm.min10Chars')}
+            </Badge>
+          )}
+          {isAlphaNumeric(value) ? (
+            <Badge className={styles.badge} severity="success">
+              {t('homeForm.digitsAndLetters')}
+            </Badge>
+          ) : (
+            <Badge className={styles.badge} severity="error">
+              {t('homeForm.digitsAndLetters')}
+            </Badge>
+          )}
+        </div>
+      );
     },
-    [props, setMessage, t]
+    [t]
   );
 
-  const change = (e: string) => {
-    verifyAndSetVAlue(e);
-  };
-
+  // Updates message when valid value changes
   useEffect(() => {
-    verifyAndSetVAlue(props.conferenceName);
-  }, [props.conferenceName, verifyAndSetVAlue]);
+    if (props.conferenceName) {
+      setMessage(getValidationMessage(props.conferenceName));
+    } else {
+      setMessage('');
+    }
+  }, [props.conferenceName, getValidationMessage]);
 
-  // function webconf pour random confName ? 
-  const onclickGenerateRoomName = () => {
-    verifyAndSetVAlue(props.conferenceName);
+  const change = (e: string) => {
+    props.setConferenceName(e);
   };
 
   /********************************************************/
@@ -304,6 +303,12 @@ function HomeJoona(props: HomeJoonaProps) {
         login={login}
         conferenceName={props.conferenceName}
         validateConferenceName={validateConferenceName}
+        appTemplate={AppTemplate}
+        email={email}
+        isWhitelisted={props.isWhitelisted}
+        setEmail={setEmail}
+        sendEmail={props.sendEmail}
+        setIsWhitelisted={props.setIsWhitelisted}
       />
 
       <div className={styles.firstContainer}>
@@ -348,13 +353,13 @@ function HomeJoona(props: HomeJoonaProps) {
               kind="hover"
               title={t('homeModes.tooltip')}
             >
-              <span
+              <button
                 onClick={(e) => e.stopPropagation()}
-                role="button"
-                tabIndex={0}
+                type="button"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
               >
                 <i className="ri-question-line" />
-              </span>
+              </button>
             </Tooltip>
           </div>
         )}
